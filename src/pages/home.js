@@ -41,7 +41,7 @@ export default {
       const year = new Date(poem.published_at).getFullYear();
       return `
       <article class="poem-row fade-in" style="display: flex; justify-content: space-between; align-items: baseline; padding: var(--space-md) 0; border-bottom: 1px solid var(--border-subtle); transition: opacity var(--transition-fast);">
-        <a href="/poema/${poem.slug}" data-link style="flex: 1; display: flex; justify-content: space-between; align-items: baseline;">
+        <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link style="flex: 1; display: flex; justify-content: space-between; align-items: baseline;">
           <h2 style="font-size: 1.4rem; font-family: var(--font-display); letter-spacing: 0.5px;">${poem.title}</h2>
           <span style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted);">${year}</span>
         </a>

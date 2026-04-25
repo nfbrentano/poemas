@@ -22,7 +22,7 @@ export default {
       container.innerHTML = `
         <div class="error" style="text-align:center; padding: 4rem;">
           <h2 style="margin-bottom: 1rem; font-family: var(--font-display);">Obra não encontrada</h2>
-          <p><a href="/" data-link style="color: var(--accent-subtle); border-bottom: 1px solid var(--accent-subtle);">Voltar ao sumário</a></p>
+          <p><a href="${import.meta.env.BASE_URL}" data-link style="color: var(--accent-subtle); border-bottom: 1px solid var(--accent-subtle);">Voltar ao sumário</a></p>
         </div>
       `;
       return;
@@ -60,7 +60,7 @@ export default {
             <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; transition: border-color var(--transition-fast);" data-link>Editar Obra</a>
             <button id="export-ig-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; transition: border-color var(--transition-fast);">Gerar Card Instagram</button>
           ` : ''}
-          <a href="/" data-link class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">← Voltar ao sumário</a>
+          <a href="${import.meta.env.BASE_URL}" data-link class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">← Voltar ao sumário</a>
         </div>
       </article>
       
