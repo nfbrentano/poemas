@@ -96,12 +96,50 @@ export default {
     
     // Delete handlers
     container.querySelectorAll('.delete-btn').forEach(btn => {
+      let confirmState = false;
+      
       btn.addEventListener('click', async (e) => {
-        if (confirm('Tem certeza que deseja excluir este poema?')) {
-          const id = e.target.dataset.id;
-          await supabase.from('poems').delete().eq('id', id);
-          navigateTo('/admin');
+        e.preventDefault();
+        
+        if (!confirmState) {
+          const originalText = btn.innerText;
+          btn.innerText = 'Tem certeza?';
+          btn.style.color = '#fff';
+          btn.style.backgroundColor = 'var(--error)';
+          btn.style.padding = '0.2rem 0.5rem';
+          btn.style.borderRadius = '2px';
+          btn.style.opacity = '1';
+          confirmState = true;
+          
+          setTimeout(() => {
+            if (btn && !btn.disabled) {
+              btn.innerText = originalText;
+              btn.style.color = 'var(--error)';
+              btn.style.backgroundColor = 'transparent';
+              btn.style.padding = '0';
+              btn.style.opacity = '0.7';
+              confirmState = false;
+            }
+          }, 3000);
+          return;
         }
+        
+        btn.innerText = 'Excluindo...';
+        btn.disabled = true;
+        
+        const id = e.target.dataset.id;
+        const { error } = await supabase.from('poems').delete().eq('id', id);
+        
+        if (error) {
+          console.error(error);
+          alert('Erro ao excluir: ' + error.message);
+          btn.innerText = 'Excluir';
+          btn.disabled = false;
+          return;
+        }
+        
+        // Refresh the list view
+        navigateTo('/admin');
       });
     });
   },
@@ -302,13 +340,20 @@ export default {
         // Trigger edge function
         if (poemId) {
           try {
-            await supabase.functions.invoke('send-newsletter', {
+            const { data, error: invokeError } = await supabase.functions.invoke('send-newsletter', {
               body: { poemId }
             });
+            
+            if (invokeError) throw invokeError;
+            
+            if (data && data.error) {
+              throw new Error(data.error);
+            }
+            
             alert('Obra publicada e e-mails enviados com sucesso!');
           } catch(err) {
-            console.error(err);
-            alert('Obra publicada, mas houve um erro ao enviar e-mails.');
+            console.error('Newsletter erro:', err);
+            alert(`Obra publicada, mas houve um erro ao enviar e-mails: ${err.message || 'Falha na Edge Function'}`);
           }
         }
         
