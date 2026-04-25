@@ -63,3 +63,20 @@
   --border-subtle: #eeeeee;
   --border-strong: #dddddd;
 }
+
+/* High Contrast Theme Overrides */
+:root[data-high-contrast="true"] {
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
+  --bg-elevated: #000000;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #ffffff;
+  --text-muted: #ffff00; /* Yellow for muted text in high contrast */
+  
+  --accent-subtle: #ffff00;
+  --accent-muted: rgba(255, 255, 0, 0.2);
+  
+  --border-subtle: #ffffff;
+  --border-strong: #ffffff;
+}

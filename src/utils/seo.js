@@ -1,6 +1,6 @@
 export function updateSEO({ title, description, url, imageUrl }) {
-  const defaultTitle = 'Natanael Brentano — Poemas';
-  const defaultDesc = 'Site autoral de poemas por Natanael Brentano.';
+  const defaultTitle = 'Poemas Brasileiros - Natanael Brentano';
+  const defaultDesc = 'Coleção de poemas originais em português por Natanael Fernando Gatti Brentano. Temas de amor, natureza e reflexões cotidianas.';
   const defaultImage = 'https://nfbrentano.github.io/poemas/og-cover.jpg';
   
   // Set document title

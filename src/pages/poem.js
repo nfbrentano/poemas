@@ -61,25 +61,40 @@ export default {
         
         <div id="poem-text" class="poem-content">${poem.content}</div>
         
-        <div class="poem-actions">
-          <button id="copy-poem-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; color: var(--text-secondary);">Copiar Poema</button>
+        <div class="share-section" style="margin-top: var(--space-xl); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: var(--space-xs); text-transform: uppercase; letter-spacing: 1px;">Compartilhar obra</p>
+          <div class="share-buttons" style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+            <button class="share-btn whatsapp" aria-label="Compartilhar no WhatsApp" data-platform="whatsapp" style="background: #25D366; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">WhatsApp</button>
+            <button class="share-btn twitter" aria-label="Compartilhar no X (Twitter)" data-platform="twitter" style="background: #000000; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">𝕏 (Twitter)</button>
+            <button class="share-btn facebook" aria-label="Compartilhar no Facebook" data-platform="facebook" style="background: #1877F2; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Facebook</button>
+            <button id="web-share-btn" aria-label="Mais opções de compartilhamento" style="background: var(--accent-subtle); color: var(--bg-primary); border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Compartilhar...</button>
+          </div>
+        </div>
+
+        <div class="poem-actions" style="margin-top: var(--space-lg);">
+          <button id="copy-poem-btn" class="btn-secondary" aria-label="Copiar texto do poema" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; color: var(--text-secondary);">Copiar Poema</button>
           
           ${isAdmin ? `
             <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;" data-link>Editar Obra</a>
             <button id="export-ig-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;">Gerar Card Instagram</button>
           ` : ''}
-          <a href="${import.meta.env.BASE_URL}" data-link class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary);">← Voltar ao sumário</a>
         </div>
       </article>
+
+      <!-- Comments Section -->
+      <section class="comments-section container" style="max-width: var(--container-poetry); margin-top: var(--space-4xl); padding-bottom: var(--space-2xl);">
+        <div id="disqus_thread"></div>
+        <noscript>Por favor, habilite o JavaScript para visualizar os <a href="https://disqus.com/?ref_noscript">comentários.</a></noscript>
+      </section>
       
       <!-- Newsletter Section -->
-      <section class="newsletter-section fade-in" style="margin-top: var(--space-4xl); padding: var(--space-2xl) var(--space-lg); background-color: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 2px; text-align: center; max-width: var(--container-poetry); margin-left: auto; margin-right: auto;">
+      <section class="newsletter-section fade-in" style="margin-top: var(--space-2xl); padding: var(--space-2xl) var(--space-lg); background-color: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 2px; text-align: center; max-width: var(--container-poetry); margin-left: auto; margin-right: auto;">
         <h3 style="margin-bottom: var(--space-sm); font-family: var(--font-display); font-size: 2rem; color: var(--accent-subtle); font-weight: 400;">O Eco das Palavras</h3>
         <p style="color: var(--text-secondary); margin-bottom: var(--space-lg); font-size: 0.95rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">
           Receba ocasionalmente novos poemas e devaneios direto na sua caixa de entrada. Sem spam, apenas poesia.
         </p>
         <form id="subscribe-form" style="display: flex; gap: var(--space-sm); max-width: 380px; margin: 0 auto;">
-          <input type="email" id="subscriber-email" placeholder="Endereço de e-mail" required style="flex: 1; font-size: 0.9rem; padding: 0.75rem 1rem; border: 1px solid var(--border-strong); background: transparent; color: var(--text-primary);">
+          <input type="email" id="subscriber-email" placeholder="Endereço de e-mail" required aria-label="Endereço de e-mail para newsletter" style="flex: 1; font-size: 0.9rem; padding: 0.75rem 1rem; border: 1px solid var(--border-strong); background: transparent; color: var(--text-primary);">
           <button type="submit" style="background: var(--text-primary); color: var(--bg-primary); padding: 0.75rem 1.5rem; font-weight: 500; font-size: 0.9rem; border-radius: 2px;">Assinar</button>
         </form>
         <div id="subscribe-message" style="margin-top: var(--space-sm); font-size: 0.85rem; font-family: var(--font-ui);"></div>
@@ -94,6 +109,66 @@ export default {
       <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
     `;
     
+    // Sharing Logic
+    const shareUrl = window.location.href;
+    const shareText = `Leia "${poem.title}", um poema de Natanael Brentano:`;
+
+    document.querySelectorAll('.share-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const platform = btn.dataset.platform;
+        let url = '';
+        if (platform === 'whatsapp') url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
+        if (platform === 'twitter') url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        if (platform === 'facebook') url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+      });
+    });
+
+    const webShareBtn = document.getElementById('web-share-btn');
+    if (navigator.share) {
+      webShareBtn.addEventListener('click', async () => {
+        try {
+          await navigator.share({
+            title: poem.title,
+            text: shareText,
+            url: shareUrl
+          });
+        } catch (err) {
+          console.log('Share failed:', err);
+        }
+      });
+    } else {
+      webShareBtn.innerText = 'Copiar Link';
+      webShareBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          webShareBtn.innerText = 'Copiado!';
+          setTimeout(() => webShareBtn.innerText = 'Copiar Link', 2000);
+        });
+      });
+    }
+
+    // Disqus Integration
+    if (window.DISQUS) {
+      window.DISQUS.reset({
+        reload: true,
+        config: function () {
+          this.page.identifier = poem.slug;
+          this.page.url = shareUrl;
+          this.page.title = poem.title;
+        }
+      });
+    } else {
+      window.disqus_config = function () {
+        this.page.url = shareUrl;
+        this.page.identifier = poem.slug;
+        this.page.title = poem.title;
+      };
+      const d = document, s = d.createElement('script');
+      s.src = 'https://nfgbrentano-poemas.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+
     // Copy Poem Logic
     const copyBtn = document.getElementById('copy-poem-btn');
     if (copyBtn) {
