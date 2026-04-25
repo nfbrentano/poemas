@@ -7,6 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Scripts
+scripts/import_subscribers.js
+
 # Node
 node_modules
 dist
