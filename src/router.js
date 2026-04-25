@@ -1,3 +1,5 @@
+import { updateActiveNavLink } from './utils/navigation.js';
+
 export const routes = {
   '/': () => import('./pages/home.js').then(m => m.default),
   '/poema/:slug': () => import('./pages/poem.js').then(m => m.default),
@@ -61,12 +63,18 @@ export async function router() {
       await component.render(view, params);
       
       // Update active nav state
-      const { updateActiveNavLink } = await import('./main.js');
       updateActiveNavLink();
       
-      // Update meta tags if component provides them
-      if (component.meta) {
-        if (component.meta.title) document.title = component.meta.title;
+      // Update meta tags if component provides them AND hasn't already updated title (like poem.js does via updateSEO)
+      // We prioritize the title set during render (e.g. in updateSEO)
+      if (component.meta && component.meta.title) {
+        const currentTitle = document.title;
+        // If the title hasn't been "personalized" by render (still contains default or "Poema"), we apply the meta title
+        if (currentTitle.includes('Natanael Brentano') && !currentTitle.includes(' — ')) {
+           document.title = `${component.meta.title} — Natanael Brentano`;
+        } else if (!currentTitle.includes('Natanael Brentano')) {
+           document.title = `${component.meta.title} — Natanael Brentano`;
+        }
       }
     } catch (e) {
       console.error(e);
