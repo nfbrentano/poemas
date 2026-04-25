@@ -225,10 +225,21 @@ export default {
         payload.published_at = new Date().toISOString();
       }
       
+      let error = null;
       if (id) {
-        await supabase.from('poems').update(payload).eq('id', id);
+        const res = await supabase.from('poems').update(payload).eq('id', id);
+        error = res.error;
       } else {
-        await supabase.from('poems').insert([payload]);
+        const res = await supabase.from('poems').insert([payload]);
+        error = res.error;
+      }
+      
+      if (error) {
+        console.error(error);
+        alert('Erro ao salvar: ' + error.message);
+        btn.innerText = 'Gravar Alterações';
+        btn.disabled = false;
+        return;
       }
       
       navigateTo('/admin');
@@ -237,7 +248,11 @@ export default {
     const publishBtn = document.getElementById('publish-btn');
     if (publishBtn) {
       publishBtn.addEventListener('click', async () => {
-        if (!confirm('Isto irá publicar o poema e disparar e-mails para os assinantes. Continuar?')) return;
+        // Enforce form validation before proceeding
+        const form = document.getElementById('editor-form');
+        if (!form.reportValidity()) return;
+        
+        if (!confirm('Isto irá publicar a obra e disparar e-mails para os assinantes. Continuar?')) return;
         
         publishBtn.innerText = 'Publicando...';
         publishBtn.disabled = true;
@@ -247,12 +262,23 @@ export default {
         payload.published_at = new Date().toISOString();
         
         let poemId = id;
+        let error = null;
         
         if (id) {
-          await supabase.from('poems').update(payload).eq('id', id);
+          const res = await supabase.from('poems').update(payload).eq('id', id);
+          error = res.error;
         } else {
-          const { data } = await supabase.from('poems').insert([payload]).select().single();
-          if (data) poemId = data.id;
+          const res = await supabase.from('poems').insert([payload]).select().single();
+          error = res.error;
+          if (res.data) poemId = res.data.id;
+        }
+        
+        if (error) {
+          console.error(error);
+          alert('Erro ao publicar: ' + error.message);
+          publishBtn.innerText = 'Publicar e Notificar Assinantes';
+          publishBtn.disabled = false;
+          return;
         }
         
         // Trigger edge function
@@ -261,10 +287,10 @@ export default {
             await supabase.functions.invoke('send-newsletter', {
               body: { poemId }
             });
-            alert('Poema publicado e e-mails enviados com sucesso!');
+            alert('Obra publicada e e-mails enviados com sucesso!');
           } catch(err) {
             console.error(err);
-            alert('Poema publicado, mas houve um erro ao enviar e-mails.');
+            alert('Obra publicada, mas houve um erro ao enviar e-mails.');
           }
         }
         
