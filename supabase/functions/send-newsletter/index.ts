@@ -3,7 +3,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 // @ts-ignore
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 // @ts-ignore
-import { SmtpClient } from 'https://deno.land/x/smtp@v0.7.0/mod.ts';
+import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,7 +30,7 @@ serve(async (req: any) => {
       // @ts-ignore
       Deno.env.get('SUPABASE_URL') ?? '',
       // @ts-ignore
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '' // We need service role to read subscribers bypassing RLS if needed, or just admin token
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
@@ -68,18 +68,25 @@ serve(async (req: any) => {
     // @ts-ignore
     const bccList = subscribers.map((s: any) => s.email);
     
-    // Connect to SMTP (Gmail)
-    const client = new SmtpClient();
-    
     // @ts-ignore
-    await client.connectTLS({
-      hostname: 'smtp.gmail.com',
-      port: 465,
-      // @ts-ignore
-      username: Deno.env.get('SMTP_USERNAME') ?? '',
-      // @ts-ignore
-      password: Deno.env.get('SMTP_PASSWORD') ?? '', // App Password
+    const smtpUsername = Deno.env.get('SMTP_USERNAME') ?? '';
+    // @ts-ignore
+    const smtpPassword = Deno.env.get('SMTP_PASSWORD') ?? '';
+
+    // Connect to SMTP (Gmail) using denomailer (modern, Deno-compatible)
+    const client = new SMTPClient({
+      connection: {
+        hostname: 'smtp.gmail.com',
+        port: 465,
+        tls: true,
+        auth: {
+          username: smtpUsername,
+          password: smtpPassword, // App Password
+        },
+      },
     });
+
+    const siteUrl = 'https://nfbrentano.github.io/poemas';
 
     const emailContent = `
 Novo poema publicado: ${poem.title}
@@ -87,18 +94,16 @@ Novo poema publicado: ${poem.title}
 ${poem.excerpt || 'Leia o poema completo no site.'}
 
 Para ler, acesse:
-https://SEUDOMINIO.com/poema/${poem.slug}
+${siteUrl}/poema/${poem.slug}
 
 ---
 Enviado por Poemas de Natanael.
     `.trim();
 
     await client.send({
-      // @ts-ignore
-      from: Deno.env.get('SMTP_USERNAME') ?? '',
-      // @ts-ignore
-      to: Deno.env.get('SMTP_USERNAME') ?? '', // To self
-      bcc: bccList.join(','),
+      from: smtpUsername,
+      to: smtpUsername, // To self
+      bcc: bccList,
       subject: `Novo poema: ${poem.title}`,
       content: emailContent,
     });
