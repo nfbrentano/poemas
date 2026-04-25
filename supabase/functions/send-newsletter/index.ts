@@ -2,8 +2,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 // @ts-ignore
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-// @ts-ignore
-import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,10 +42,10 @@ serve(async (req: any) => {
       });
     }
 
-    // Fetch Poem
+    // Fetch Poem (including full content for the email body)
     const { data: poem } = await supabaseClient
       .from('poems')
-      .select('title, excerpt, slug')
+      .select('title, content, excerpt, slug')
       .eq('id', poemId)
       .single();
 
@@ -66,58 +64,132 @@ serve(async (req: any) => {
     }
 
     // @ts-ignore
-    const bccList = subscribers.map((s: any) => s.email);
-    
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
     // @ts-ignore
-    const smtpUsername = Deno.env.get('SMTP_USERNAME') ?? '';
-    // @ts-ignore
-    const smtpPassword = Deno.env.get('SMTP_PASSWORD') ?? '';
-
-    // Connect to SMTP (Gmail) using denomailer (modern, Deno-compatible)
-    const client = new SMTPClient({
-      connection: {
-        hostname: 'smtp.gmail.com',
-        port: 465,
-        tls: true,
-        auth: {
-          username: smtpUsername,
-          password: smtpPassword, // App Password
-        },
-      },
-    });
+    const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev';
 
     const siteUrl = 'https://nfbrentano.github.io/poemas';
+    const poemUrl = `${siteUrl}/poema/${poem.slug}`;
 
-    const emailContent = `
-Novo poema publicado: ${poem.title}
+    // Convert plain-text line breaks to HTML for the poem body
+    const poemContentHtml = poem.content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n\n/g, '</p><p style="margin: 1.5em 0; line-height: 2;">')
+      .replace(/\n/g, '<br>');
 
-${poem.excerpt || 'Leia o poema completo no site.'}
+    // Build editorial HTML email
+    const htmlEmail = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${poem.title}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #050505; font-family: Georgia, 'Times New Roman', serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #050505;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; width: 100%;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="text-align: center; padding-bottom: 40px; border-bottom: 1px solid #1a1a1a;">
+              <p style="margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #666666;">
+                Novo poema publicado
+              </p>
+            </td>
+          </tr>
 
-Para ler, acesse:
-${siteUrl}/poema/${poem.slug}
+          <!-- Title -->
+          <tr>
+            <td style="text-align: center; padding: 60px 20px 20px;">
+              <h1 style="margin: 0; font-size: 36px; font-weight: 400; color: #e2e2e2; letter-spacing: -0.5px; line-height: 1.2;">
+                ${poem.title}
+              </h1>
+            </td>
+          </tr>
 
----
-Enviado por Poemas de Natanael.
-    `.trim();
+          <!-- Decorative divider -->
+          <tr>
+            <td align="center" style="padding: 20px 0 50px;">
+              <table role="presentation" width="40" cellspacing="0" cellpadding="0">
+                <tr><td style="border-bottom: 1px solid #333333;">&nbsp;</td></tr>
+              </table>
+            </td>
+          </tr>
 
-    await client.send({
-      from: smtpUsername,
-      to: smtpUsername, // To self
-      bcc: bccList,
-      subject: `Novo poema: ${poem.title}`,
-      content: emailContent,
+          <!-- Poem Content -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <p style="margin: 1.5em 0; font-size: 18px; line-height: 2; color: #e2e2e2; font-weight: 400;">
+                ${poemContentHtml}
+              </p>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td style="text-align: center; padding: 60px 20px 40px;">
+              <a href="${poemUrl}" style="display: inline-block; padding: 14px 32px; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: #050505; background-color: #e2e2e2; text-decoration: none; border-radius: 2px;">
+                Ler no site
+              </a>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="text-align: center; padding: 40px 20px; border-top: 1px solid #1a1a1a;">
+              <p style="margin: 0 0 8px; font-family: Georgia, serif; font-size: 16px; font-style: italic; color: #666666;">
+                Natanael Brentano
+              </p>
+              <p style="margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; color: #444444; letter-spacing: 1px;">
+                Você recebeu este e-mail por assinar a newsletter.
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+    // @ts-ignore
+    const bccEmails = subscribers.map((s: any) => s.email);
+
+    // Send via Resend API (HTTP-based, works perfectly on Deno Deploy / Supabase Edge Functions)
+    const resendRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        bcc: bccEmails,
+        subject: `${poem.title} — novo poema`,
+        html: htmlEmail,
+        text: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\n\nEnviado por Natanael Brentano.`,
+      }),
     });
 
-    await client.close();
+    const resendData = await resendRes.json();
+
+    if (!resendRes.ok) {
+      throw new Error(resendData.message || JSON.stringify(resendData));
+    }
 
     // Log success
     await supabaseClient.from('email_campaign_logs').insert([{
       poem_id: poemId,
       status: 'success',
-      details: `Sent to ${bccList.length} subscribers.`
+      details: `Sent to ${bccEmails.length} subscribers via Resend. ID: ${resendData.id}`
     }]);
 
-    return new Response(JSON.stringify({ success: true, count: bccList.length }), {
+    return new Response(JSON.stringify({ success: true, count: bccEmails.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
