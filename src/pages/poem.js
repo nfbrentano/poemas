@@ -44,23 +44,23 @@ export default {
     
     // Render
     container.innerHTML = `
-      <article class="single-poem fade-in" style="max-width: var(--container-poetry); margin: 0 auto; padding-bottom: var(--space-4xl);">
-        <header style="margin-bottom: var(--space-3xl); text-align: center; padding-top: var(--space-xl);">
-          <h1 style="font-size: 3.5rem; margin-bottom: var(--space-md); color: var(--text-primary); font-weight: 400; letter-spacing: -0.5px;">${poem.title}</h1>
-          <div class="poem-meta" style="display: flex; justify-content: center; gap: var(--space-sm); font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px;">
+      <article class="single-poem fade-in">
+        <header>
+          <h1>${poem.title}</h1>
+          <div class="poem-meta">
             <span>${new Date(poem.published_at).toLocaleDateString('pt-BR')}</span>
             ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span>${poem.tags.join(', ')}</span>` : ''}
           </div>
         </header>
         
-        <div class="poem-content" style="font-size: 1.25rem; line-height: 2; color: var(--text-primary); white-space: pre-wrap; margin-bottom: var(--space-4xl); font-weight: 400; max-width: 600px; margin-left: auto; margin-right: auto;">${poem.content}</div>
+        <div class="poem-content">${poem.content}</div>
         
-        <div class="poem-actions" style="display: flex; gap: var(--space-md); justify-content: center; border-top: 1px solid var(--border-subtle); padding-top: var(--space-2xl); font-family: var(--font-ui);">
+        <div class="poem-actions">
           ${isAdmin ? `
-            <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; transition: border-color var(--transition-fast);" data-link>Editar Obra</a>
-            <button id="export-ig-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; transition: border-color var(--transition-fast);">Gerar Card Instagram</button>
+            <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;" data-link>Editar Obra</a>
+            <button id="export-ig-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;">Gerar Card Instagram</button>
           ` : ''}
-          <a href="${import.meta.env.BASE_URL}" data-link class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">← Voltar ao sumário</a>
+          <a href="${import.meta.env.BASE_URL}" data-link class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary);">← Voltar ao sumário</a>
         </div>
       </article>
       

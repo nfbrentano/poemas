@@ -40,6 +40,7 @@
 }
 
 .social-card-content {
+  font-family: var(--font-poem, serif);
   font-size: 2.5rem;
   line-height: 1.8;
   text-align: center;

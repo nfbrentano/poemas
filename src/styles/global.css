@@ -151,3 +151,58 @@ input:focus, textarea:focus, select:focus {
   letter-spacing: 1px;
   border-top: 1px solid var(--border-subtle);
 }
+
+/* Poem Editorial Styles */
+.single-poem {
+  max-width: var(--container-poetry);
+  margin: 0 auto;
+  padding-bottom: var(--space-4xl);
+}
+
+.single-poem header {
+  margin-bottom: var(--space-3xl);
+  text-align: center;
+  padding-top: var(--space-xl);
+}
+
+.single-poem h1 {
+  font-size: 3.5rem;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+  font-weight: 400;
+  letter-spacing: -0.5px;
+}
+
+.poem-content {
+  font-family: var(--font-poem);
+  font-size: 1.25rem;
+  line-height: 2.1; /* Slightly increased for Merriweather */
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  margin-bottom: var(--space-4xl);
+  font-weight: 300; /* Merriweather looks great at 300 for poetry */
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  letter-spacing: 0.01em;
+}
+
+.poem-meta {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.poem-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-2xl);
+  font-family: var(--font-ui);
+}
