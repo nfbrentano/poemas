@@ -1,7 +1,7 @@
 export function updateSEO({ title, description, url, imageUrl }) {
-  const defaultTitle = 'Natanael Brentano - Poemas';
-  const defaultDesc = 'Site autoral de poesia contemporânea por Natanael Brentano.';
-  const defaultImage = 'https://nfbrentano.github.io/poemas/og-image.jpg'; // Path to a default cover image
+  const defaultTitle = 'Natanael Brentano — Poemas';
+  const defaultDesc = 'Site autoral de poemas por Natanael Brentano.';
+  const defaultImage = 'https://nfbrentano.github.io/poemas/og-cover.jpg';
   
   // Set document title
   const finalTitle = title ? `${title} — Natanael Brentano` : defaultTitle;
@@ -15,7 +15,6 @@ export function updateSEO({ title, description, url, imageUrl }) {
       const isProperty = selector.includes('property');
       const attrName = isProperty ? 'property' : 'name';
       
-      // Extract the name from selector like meta[name="description"]
       const match = selector.match(/["'](.*?)["']/);
       if (match) {
         tag.setAttribute(attrName, match[1]);
@@ -25,10 +24,11 @@ export function updateSEO({ title, description, url, imageUrl }) {
     if (tag) tag.setAttribute(attribute, value);
   };
 
-  const finalDesc = description || defaultDesc;
+  const finalDesc = (description || defaultDesc).slice(0, 160);
   const finalUrl = url || window.location.href;
   const finalImage = imageUrl || defaultImage;
 
+  // Dynamic Meta Description
   setMeta('meta[name="description"]', 'content', finalDesc);
   
   // Open Graph

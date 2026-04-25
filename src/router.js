@@ -18,7 +18,7 @@ export async function router() {
     path = '/';
   }
   
-  const view = document.getElementById('router-view');
+  const view = document.getElementById('main-content');
   
   // Clear current view
   view.innerHTML = '<div class="loading">Carregando...</div>';
@@ -66,10 +66,8 @@ export async function router() {
       updateActiveNavLink();
       
       // Update meta tags if component provides them AND hasn't already updated title (like poem.js does via updateSEO)
-      // We prioritize the title set during render (e.g. in updateSEO)
       if (component.meta && component.meta.title) {
         const currentTitle = document.title;
-        // If the title hasn't been "personalized" by render (still contains default or "Poema"), we apply the meta title
         if (currentTitle.includes('Natanael Brentano') && !currentTitle.includes(' — ')) {
            document.title = `${component.meta.title} — Natanael Brentano`;
         } else if (!currentTitle.includes('Natanael Brentano')) {
@@ -77,7 +75,7 @@ export async function router() {
         }
       }
     } catch (e) {
-      console.error(e);
+      if (import.meta.env.DEV) console.error(e);
       view.innerHTML = '<h2>Erro ao carregar a página.</h2>';
     }
   } else {

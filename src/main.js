@@ -26,7 +26,7 @@ document.querySelector('#app').innerHTML = `
       </div>
     </div>
   </header>
-  <main id="router-view" class="site-content container"></main>
+  <main id="main-content" class="site-content container"></main>
   <footer class="site-footer">
     <div class="container">
       &copy; ${new Date().getFullYear()} Natanael Brentano. Todos os direitos reservados.
