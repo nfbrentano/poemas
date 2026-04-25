@@ -1,4 +1,6 @@
 import { updateActiveNavLink } from './utils/navigation.js';
+import { trackPageView } from './utils/analytics.js';
+
 
 export const routes = {
   '/': () => import('./pages/home.js').then(m => m.default),
@@ -79,7 +81,13 @@ export async function router() {
            document.title = `${component.meta.title} — Natanael Brentano`;
         }
       }
+
+      // Rastrear visita (não rastrear /admin e /login)
+      if (path !== '/admin' && path !== '/login') {
+        trackPageView(path);
+      }
     } catch (e) {
+
       if (import.meta.env.DEV) console.error(e);
       view.innerHTML = '<h2>Erro ao carregar a página.</h2>';
     }

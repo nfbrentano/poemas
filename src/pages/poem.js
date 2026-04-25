@@ -1,5 +1,7 @@
 import { supabase } from '../utils/supabase.js';
 import { updateSEO } from '../utils/seo.js';
+import { trackPageView } from '../utils/analytics.js';
+
 
 export default {
   meta: {
@@ -19,6 +21,7 @@ export default {
       .single();
       
     if (error || !poem) {
+
       container.innerHTML = `
         <div class="error" style="text-align:center; padding: 4rem;">
           <h2 style="margin-bottom: 1rem; font-family: var(--font-display);">Obra não encontrada</h2>
@@ -27,8 +30,12 @@ export default {
       `;
       return;
     }
+
+    // Rastrear visualização do poema
+    trackPageView('/poema/' + poem.slug, poem.id);
     
     // Update SEO dynamically
+
     const poemUrl = window.location.href;
     const cleanExcerpt = (poem.excerpt || poem.content)
       .replace(/<[^>]*>?/gm, '')

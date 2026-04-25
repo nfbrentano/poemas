@@ -22,7 +22,12 @@ export default {
           <h2 style="font-family: var(--font-display); font-size: 2rem; font-weight: 400; color: var(--text-primary);">Escrivaninha</h2>
           <div style="display: flex; gap: var(--space-sm); align-items: center; font-family: var(--font-ui);">
             <a href="${import.meta.env.BASE_URL}admin?view=list" data-link style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">Obras</a>
+            <a href="${import.meta.env.BASE_URL}admin?view=analytics" data-link 
+               style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">
+              Estatísticas
+            </a>
             <a href="${import.meta.env.BASE_URL}admin?view=editor" data-link style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; transition: border-color var(--transition-fast);">Nova Obra</a>
+
             <button id="logout-btn" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--error); border: 1px solid transparent;">Sair</button>
           </div>
         </header>
@@ -41,7 +46,11 @@ export default {
       await this.renderList(contentDiv);
     } else if (view === 'editor') {
       await this.renderEditor(contentDiv, urlParams.get('id'));
+    } else if (view === 'analytics') {
+      const { default: Analytics } = await import('./analytics.js');
+      await Analytics.render(contentDiv);
     }
+
   },
   
   async renderList(container) {
