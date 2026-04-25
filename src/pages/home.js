@@ -37,8 +37,27 @@ export default {
     }
     
     // Generate HTML for poems (Editorial List)
-    const poemsHtml = poems.map(poem => {
+    const poemsHtml = poems.map((poem, index) => {
       const year = new Date(poem.published_at).getFullYear();
+      const dateStr = new Date(poem.published_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      
+      if (index === 0) {
+        // Featured Poem (The first one)
+        return `
+        <article class="poem-featured fade-in">
+          <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link>
+            <h2 class="featured-title">${poem.title}</h2>
+            <div class="featured-excerpt">${poem.excerpt || ''}</div>
+            <div class="featured-meta">
+              <span>${dateStr}</span>
+              ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span>${poem.tags[0]}</span>` : ''}
+            </div>
+          </a>
+          <div class="featured-separator"></div>
+        </article>
+        `;
+      }
+      
       return `
       <article class="poem-row fade-in" style="display: flex; justify-content: space-between; align-items: baseline; padding: var(--space-md) 0; border-bottom: 1px solid var(--border-subtle); transition: opacity var(--transition-fast);">
         <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link style="flex: 1; display: flex; justify-content: space-between; align-items: baseline;">
@@ -55,7 +74,7 @@ export default {
           <h1 style="font-size: 4rem; margin-bottom: var(--space-md); color: var(--text-primary); font-weight: 300; letter-spacing: -1px;">
             A poética<br>do silêncio.
           </h1>
-          <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto; font-family: var(--font-body); font-size: 1.1rem; line-height: 1.8;">
+          <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto; font-family: var(--font-ui); font-size: 1.1rem; line-height: 1.8;">
             Obras contemporâneas de Natanael Brentano. Textos curtos sobre a imensidão do efêmero.
           </p>
         </section>

@@ -60,6 +60,10 @@ export async function router() {
       const component = await match();
       await component.render(view, params);
       
+      // Update active nav state
+      const { updateActiveNavLink } = await import('./main.js');
+      updateActiveNavLink();
+      
       // Update meta tags if component provides them
       if (component.meta) {
         if (component.meta.title) document.title = component.meta.title;

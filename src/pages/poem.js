@@ -30,7 +30,6 @@ export default {
     
     // Update SEO dynamically
     const poemUrl = window.location.href;
-    // Clean content for SEO: remove HTML if any, remove multiple spaces/newlines
     const cleanExcerpt = (poem.excerpt || poem.content)
       .replace(/<[^>]*>?/gm, '')
       .replace(/\s+/g, ' ')
@@ -49,6 +48,8 @@ export default {
     
     // Render
     container.innerHTML = `
+      <div class="scroll-progress-container"><div id="scroll-bar" class="scroll-progress-bar"></div></div>
+      
       <article class="single-poem fade-in">
         <header>
           <h1>${poem.title}</h1>
@@ -58,9 +59,11 @@ export default {
           </div>
         </header>
         
-        <div class="poem-content">${poem.content}</div>
+        <div id="poem-text" class="poem-content">${poem.content}</div>
         
         <div class="poem-actions">
+          <button id="copy-poem-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; color: var(--text-secondary);">Copiar Poema</button>
+          
           ${isAdmin ? `
             <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;" data-link>Editar Obra</a>
             <button id="export-ig-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;">Gerar Card Instagram</button>
@@ -88,30 +91,50 @@ export default {
         </a>
       </div>
       
-      <!-- Hidden layout for Instagram Export -->
       <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
     `;
     
-    // Setup Newsletter form logic
+    // Copy Poem Logic
+    const copyBtn = document.getElementById('copy-poem-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        const text = document.getElementById('poem-text').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+          const originalText = copyBtn.innerText;
+          copyBtn.innerText = 'Copiado!';
+          copyBtn.style.color = 'var(--success)';
+          copyBtn.style.borderColor = 'var(--success)';
+          setTimeout(() => {
+            copyBtn.innerText = originalText;
+            copyBtn.style.color = 'var(--text-secondary)';
+            copyBtn.style.borderColor = 'var(--border-strong)';
+          }, 2000);
+        });
+      });
+    }
+
+    // Scroll Progress Logic
+    const scrollBar = document.getElementById('scroll-bar');
+    const updateScroll = () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      if (scrollBar) scrollBar.style.width = scrolled + "%";
+    };
+    window.addEventListener('scroll', updateScroll);
+    
+    // Newsletter form logic
     const subForm = document.getElementById('subscribe-form');
     if (subForm) {
       subForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('subscriber-email').value;
         const msgEl = document.getElementById('subscribe-message');
-        
         msgEl.innerHTML = 'Enviando...';
-        msgEl.style.color = 'var(--text-secondary)';
-        
         const { error } = await supabase.from('subscribers').insert([{ email }]);
-        
         if (error) {
-          if (error.code === '23505') { // unique violation
-            msgEl.innerHTML = 'Este e-mail já está inscrito.';
-          } else {
-            msgEl.innerHTML = 'Erro ao inscrever. Tente novamente.';
-            msgEl.style.color = 'var(--error)';
-          }
+          msgEl.innerHTML = error.code === '23505' ? 'Este e-mail já está inscrito.' : 'Erro ao inscrever.';
+          msgEl.style.color = 'var(--error)';
         } else {
           msgEl.innerHTML = 'Obrigado por assinar.';
           msgEl.style.color = 'var(--success)';
@@ -125,7 +148,6 @@ export default {
       exportBtn.addEventListener('click', async () => {
         exportBtn.innerText = 'Gerando...';
         exportBtn.disabled = true;
-        
         try {
           const { generateSocialCard } = await import('../utils/social-export.js');
           await generateSocialCard(poem, document.getElementById('social-card-container'));

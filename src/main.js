@@ -12,10 +12,9 @@ document.querySelector('#app').innerHTML = `
         <nav class="main-nav">
           <ul>
             <li><a href="${import.meta.env.BASE_URL}" data-link>Poemas</a></li>
-            <li><a href="${import.meta.env.BASE_URL}sobre" data-link>Sobre</a></li>
           </ul>
         </nav>
-        <button id="theme-toggle" class="theme-toggle" title="Alternar tema">
+        <button id="theme-toggle" class="theme-toggle">
           <span class="icon-moon">
             <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           </span>
@@ -38,15 +37,42 @@ document.querySelector('#app').innerHTML = `
 const themeToggle = document.getElementById('theme-toggle');
 const currentTheme = localStorage.getItem('theme') || 'dark';
 
+const updateThemeAria = (theme) => {
+  const label = theme === 'light' ? 'Alternar para modo escuro' : 'Alternar para modo claro';
+  themeToggle.setAttribute('aria-label', label);
+  themeToggle.setAttribute('title', label);
+};
+
 if (currentTheme === 'light') {
   document.documentElement.setAttribute('data-theme', 'light');
 }
+updateThemeAria(currentTheme);
 
 themeToggle.addEventListener('click', () => {
   const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
+  updateThemeAria(theme);
 });
+
+// Navigation Active State Logic
+export function updateActiveNavLink() {
+  const currentPath = window.location.pathname;
+  const basePath = import.meta.env.BASE_URL;
+  const navLinks = document.querySelectorAll('.main-nav a');
+  
+  navLinks.forEach(link => {
+    // If we are at home or on a poem page, "Poemas" should be active
+    const isPoemPage = currentPath.includes('/poema/');
+    const isHome = currentPath === basePath || currentPath === basePath.slice(0, -1) || currentPath === '/';
+    
+    if (link.textContent.trim() === 'Poemas' && (isHome || isPoemPage)) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+}
 
 // Add scroll listener for header
 window.addEventListener('scroll', () => {
@@ -62,3 +88,4 @@ window.addEventListener('scroll', () => {
 
 // Initialize Router
 initRouter();
+updateActiveNavLink();

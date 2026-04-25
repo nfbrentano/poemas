@@ -20,7 +20,7 @@
 
   /* Typography */
   --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'Lora', Georgia, serif;
+  --font-body: var(--font-ui);
   --font-poem: 'Merriweather', serif;
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
   
@@ -42,7 +42,7 @@
   --header-height: 100px;
 
   /* Transitions */
-  --transition-fade: 0.4s ease;
+  --transition-fade: 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-fast: 0.2s ease;
   --transition-theme: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
 }
