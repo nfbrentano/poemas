@@ -11,12 +11,17 @@ export async function router() {
   const basePath = import.meta.env.BASE_URL; // e.g. "/" or "/poemas/"
   let path = window.location.pathname;
   
-  // Strip base path from current path so routing logic works regardless of deployment subfolder
-  if (basePath !== '/' && path.startsWith(basePath)) {
-    path = '/' + path.slice(basePath.length);
-  } else if (path === basePath.slice(0, -1)) {
+  // Normalize paths for matching
+  const cleanBasePath = basePath.replace(/\/$/, ''); // Remove trailing slash if exists
+  
+  if (path.startsWith(cleanBasePath + '/')) {
+    path = path.slice(cleanBasePath.length) || '/';
+  } else if (path === cleanBasePath) {
     path = '/';
   }
+  
+  // Ensure path starts with / and remove duplicate slashes
+  path = '/' + path.replace(/\/+/g, '/').replace(/^\//, '');
   
   const view = document.getElementById('main-content');
   

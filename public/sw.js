@@ -16,10 +16,20 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Navigation fallback: serve index.html for all navigation requests (SPA)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      caches.match('/poemas/index.html').then((response) => {
+        return response || fetch(event.request).catch(() => caches.match('/poemas/index.html'));
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request).then((fetchResponse) => {
-        // Cache new poems dynamically only if successful
+        // Cache new poems dynamically only if successful (200 OK)
         if (fetchResponse.status === 200 && event.request.url.includes('/poema/')) {
           return caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, fetchResponse.clone());
