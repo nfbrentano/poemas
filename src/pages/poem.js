@@ -49,7 +49,7 @@ export default {
         
         <div class="poem-actions" style="display: flex; gap: 1rem; justify-content: center; border-top: 1px solid var(--border-color); padding-top: 2rem;">
           ${isAdmin ? `
-            <a href="/admin/editor?id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem;" data-link>Editar Poema</a>
+            <a href="/admin?view=editor&id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem;" data-link>Editar Poema</a>
             <button id="export-ig-btn" class="btn-secondary" style="font-size: 0.85rem;">Exportar p/ Instagram</button>
           ` : ''}
           <a href="/" data-link class="btn-secondary" style="font-size: 0.85rem;">Voltar aos poemas</a>
