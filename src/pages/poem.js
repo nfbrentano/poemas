@@ -81,11 +81,6 @@ export default {
         </div>
       </article>
 
-      <!-- Comments Section -->
-      <section class="comments-section container" style="max-width: var(--container-poetry); margin-top: var(--space-4xl); padding-bottom: var(--space-2xl);">
-        <div id="disqus_thread"></div>
-        <noscript>Por favor, habilite o JavaScript para visualizar os <a href="https://disqus.com/?ref_noscript">comentários.</a></noscript>
-      </section>
       
       <!-- Newsletter Section -->
       <section class="newsletter-section fade-in" style="margin-top: var(--space-2xl); padding: var(--space-2xl) var(--space-lg); background-color: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 2px; text-align: center; max-width: var(--container-poetry); margin-left: auto; margin-right: auto;">
@@ -147,27 +142,6 @@ export default {
       });
     }
 
-    // Disqus Integration
-    if (window.DISQUS) {
-      window.DISQUS.reset({
-        reload: true,
-        config: function () {
-          this.page.identifier = poem.slug;
-          this.page.url = shareUrl;
-          this.page.title = poem.title;
-        }
-      });
-    } else {
-      window.disqus_config = function () {
-        this.page.url = shareUrl;
-        this.page.identifier = poem.slug;
-        this.page.title = poem.title;
-      };
-      const d = document, s = d.createElement('script');
-      s.src = 'https://nfgbrentano-poemas.disqus.com/embed.js';
-      s.setAttribute('data-timestamp', +new Date());
-      (d.head || d.body).appendChild(s);
-    }
 
     // Copy Poem Logic
     const copyBtn = document.getElementById('copy-poem-btn');

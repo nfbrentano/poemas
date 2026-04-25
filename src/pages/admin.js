@@ -353,14 +353,27 @@ export default {
             alert('Obra publicada e e-mails enviados com sucesso!');
           } catch(err) {
             let realMessage = 'Falha na Edge Function';
-            if (err && err.context && typeof err.context.json === 'function') {
-               try {
-                 const errBody = await err.context.json();
-                 realMessage = errBody.error || errBody.message || realMessage;
-               } catch (e) {}
+            
+            if (err && err.context) {
+              try {
+                // If the error response is JSON, parse it
+                const errBody = typeof err.context.json === 'function' 
+                  ? await err.context.json() 
+                  : (err.context._body ? JSON.parse(err.context._body) : null);
+                
+                if (errBody) {
+                  realMessage = errBody.error || errBody.message || realMessage;
+                  if (errBody.details) {
+                    console.error('Erro detalhado:', errBody.details);
+                  }
+                }
+              } catch (e) {
+                console.error('Erro ao processar corpo do erro:', e);
+              }
             } else if (err.message) {
                realMessage = err.message;
             }
+            
             console.error('Newsletter erro:', err);
             alert(`Obra publicada, mas houve um erro ao enviar e-mails: ${realMessage}`);
           }
