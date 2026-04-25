@@ -1,6 +1,41 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { SmtpClient } from 'https://deno.land/x/smtp@v0.8.0/mod.ts';
+
+// Polyfills for Deno APIs (deprecated/removed in newer Deno versions used by Supabase)
+// @ts-ignore
+if (typeof Deno.writeAll !== 'function') {
+  // @ts-ignore
+  Deno.writeAll = async function(w: any, data: Uint8Array) {
+    let nwritten = 0;
+    while (nwritten < data.length) {
+      nwritten += await w.write(data.subarray(nwritten));
+    }
+  };
+}
+// @ts-ignore
+if (typeof Deno.readAll !== 'function') {
+  // @ts-ignore
+  Deno.readAll = async function(r: any) {
+    const buf = new Uint8Array(1024);
+    let nread = 0;
+    const chunks = [];
+    while (true) {
+      const n = await r.read(buf);
+      if (n === null) break;
+      chunks.push(buf.slice(0, n));
+      nread += n;
+    }
+    const result = new Uint8Array(nread);
+    let offset = 0;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return result;
+  };
+}
+
+import { SmtpClient } from 'https://deno.land/x/smtp@v0.7.0/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
