@@ -22,7 +22,7 @@ export default {
       
     if (error) {
       console.error(error);
-      container.innerHTML = '<div class="error" style="text-align:center; color: var(--error-color);">Erro ao carregar os poemas. Tente novamente mais tarde.</div>';
+      container.innerHTML = '<div class="error" style="text-align:center; color: var(--error);">Erro ao carregar os poemas. Tente novamente mais tarde.</div>';
       return;
     }
     
@@ -96,11 +96,11 @@ export default {
             msgEl.innerHTML = 'Este e-mail já está inscrito.';
           } else {
             msgEl.innerHTML = 'Erro ao inscrever. Tente novamente.';
-            msgEl.style.color = 'var(--error-color)';
+            msgEl.style.color = 'var(--error)';
           }
         } else {
           msgEl.innerHTML = 'Obrigado por assinar.';
-          msgEl.style.color = 'var(--success-color)';
+          msgEl.style.color = 'var(--success)';
           subForm.reset();
         }
       });
