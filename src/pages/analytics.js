@@ -300,17 +300,4 @@ function countryFlag(code) {
     ...code.toUpperCase().split('').map(c => 0x1F1E0 - 65 + c.charCodeAt(0))
   );
 }
-
-function fillDays(rows, days) {
-  const map = {};
-  rows.forEach(r => { map[r.label] = r.count; });
-  const result = [];
-  const now = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    result.push({ label: key, count: map[key] || 0 });
-  }
-  return result;
 }
