@@ -6,7 +6,16 @@ export const routes = {
 };
 
 export async function router() {
-  const path = window.location.pathname;
+  const basePath = import.meta.env.BASE_URL; // e.g. "/" or "/poemas/"
+  let path = window.location.pathname;
+  
+  // Strip base path from current path so routing logic works regardless of deployment subfolder
+  if (basePath !== '/' && path.startsWith(basePath)) {
+    path = '/' + path.slice(basePath.length);
+  } else if (path === basePath.slice(0, -1)) {
+    path = '/';
+  }
+  
   const view = document.getElementById('router-view');
   
   // Clear current view
@@ -65,7 +74,16 @@ export async function router() {
 }
 
 export function navigateTo(url) {
-  history.pushState(null, null, url);
+  const basePath = import.meta.env.BASE_URL;
+  let finalUrl = url;
+  
+  if (url.startsWith('/') && basePath !== '/') {
+    // Prevent double slashes if basePath ends with /
+    const cleanBase = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+    finalUrl = cleanBase + url;
+  }
+  
+  history.pushState(null, null, finalUrl);
   router();
 }
 
