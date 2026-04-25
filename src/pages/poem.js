@@ -30,7 +30,12 @@ export default {
     
     // Update SEO dynamically
     const poemUrl = window.location.href;
-    const cleanExcerpt = (poem.excerpt || poem.content).replace(/<[^>]*>?/gm, '').slice(0, 150) + '...';
+    // Clean content for SEO: remove HTML if any, remove multiple spaces/newlines
+    const cleanExcerpt = (poem.excerpt || poem.content)
+      .replace(/<[^>]*>?/gm, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 160) + '...';
     
     updateSEO({
       title: poem.title,
@@ -76,6 +81,12 @@ export default {
         </form>
         <div id="subscribe-message" style="margin-top: var(--space-sm); font-size: 0.85rem; font-family: var(--font-ui);"></div>
       </section>
+
+      <div style="text-align: center; margin-top: var(--space-3xl); margin-bottom: var(--space-xl);">
+        <a href="${import.meta.env.BASE_URL}" data-link style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; padding: 1rem; transition: color var(--transition-fast);">
+          ← Voltar para o início
+        </a>
+      </div>
       
       <!-- Hidden layout for Instagram Export -->
       <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>

@@ -44,4 +44,22 @@
   /* Transitions */
   --transition-fade: 0.4s ease;
   --transition-fast: 0.2s ease;
+  --transition-theme: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+}
+
+/* Light Theme Overrides */
+:root[data-theme="light"] {
+  --bg-primary: #fdfdfd; /* Off-white bookish background */
+  --bg-secondary: #f7f7f7;
+  --bg-elevated: #ffffff;
+  
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #888888;
+  
+  --accent-subtle: #967d54; /* More contrasted gold for light mode */
+  --accent-muted: rgba(150, 125, 84, 0.1);
+  
+  --border-subtle: #eeeeee;
+  --border-strong: #dddddd;
 }
