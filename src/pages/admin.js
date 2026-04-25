@@ -352,8 +352,17 @@ export default {
             
             alert('Obra publicada e e-mails enviados com sucesso!');
           } catch(err) {
+            let realMessage = 'Falha na Edge Function';
+            if (err && err.context && typeof err.context.json === 'function') {
+               try {
+                 const errBody = await err.context.json();
+                 realMessage = errBody.error || errBody.message || realMessage;
+               } catch (e) {}
+            } else if (err.message) {
+               realMessage = err.message;
+            }
             console.error('Newsletter erro:', err);
-            alert(`Obra publicada, mas houve um erro ao enviar e-mails: ${err.message || 'Falha na Edge Function'}`);
+            alert(`Obra publicada, mas houve um erro ao enviar e-mails: ${realMessage}`);
           }
         }
         
