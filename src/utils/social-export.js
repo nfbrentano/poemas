@@ -38,10 +38,10 @@ export async function generateSocialCard(poem, container) {
   // Wait a small tick to ensure fonts are applied
   await new Promise(r => setTimeout(r, 100));
   
-  // Auto-resize font to fit the container (max ~650px height available for text)
-  let fontSize = 2.2;
+  // Auto-resize font to fit the container (max ~850px height available for text in vertical format)
+  let fontSize = 2.5;
   textEl.style.fontSize = `${fontSize}rem`;
-  while (textEl.scrollHeight > 650 && fontSize > 0.8) {
+  while (textEl.scrollHeight > 850 && fontSize > 0.8) {
     fontSize -= 0.1;
     textEl.style.fontSize = `${fontSize}rem`;
   }
@@ -49,7 +49,7 @@ export async function generateSocialCard(poem, container) {
   const canvas = await html2canvas(renderEl, {
     scale: 2, // High resolution
     useCORS: true,
-    backgroundColor: '#0a0a0a'
+    backgroundColor: '#050505'
   });
   
   // Download logic

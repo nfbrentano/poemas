@@ -5,84 +5,85 @@
 }
 
 body {
-  background-color: var(--bg-color);
+  background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans);
-  line-height: 1.6;
+  font-family: var(--font-body);
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  font-size: 18px; /* Base editorial size */
 }
 
 a {
   color: inherit;
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
 }
 
 a:hover {
-  color: var(--accent-color);
+  color: var(--accent-subtle);
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif-title);
+  font-family: var(--font-display);
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1.2;
+  color: var(--text-primary);
 }
 
+/* UI Elements */
 button {
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   border: none;
   background: none;
+  transition: all var(--transition-fast);
 }
 
 input, textarea, select {
-  font-family: var(--font-sans);
-  background: var(--bg-color-light);
-  border: 1px solid var(--border-color);
+  font-family: var(--font-ui);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: 4px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 2px;
   outline: none;
   transition: border-color var(--transition-fast);
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: var(--accent-color);
+  border-color: var(--accent-subtle);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: var(--bg-color);
+  background: var(--bg-primary);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
+  background: var(--border-strong);
+  border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
 
 /* Layout Classes */
 .container {
-  max-width: var(--container-width);
+  max-width: var(--container-poetry);
   margin: 0 auto;
-  padding: 0 var(--spacing-md);
+  padding: 0 var(--space-lg);
 }
 
 .fade-in {
-  animation: fadeIn var(--transition-normal) forwards;
+  animation: fadeIn var(--transition-fade) forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -99,35 +100,37 @@ input:focus, textarea:focus, select:focus {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid transparent;
-  transition: border-color var(--transition-normal);
+  transition: border-color var(--transition-fade), background-color var(--transition-fade);
+  font-family: var(--font-ui);
 }
 
 .site-header.scrolled {
-  border-bottom-color: var(--border-color);
-  background-color: rgba(10, 10, 10, 0.95);
-  backdrop-filter: blur(5px);
+  border-bottom-color: var(--border-subtle);
+  background-color: rgba(5, 5, 5, 0.95);
+  backdrop-filter: blur(8px);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
 .logo {
-  font-family: var(--font-serif-title);
-  font-size: 1.5rem;
-  letter-spacing: 1px;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
 }
 
 .main-nav ul {
   list-style: none;
   display: flex;
-  gap: var(--spacing-lg);
+  gap: var(--space-lg);
 }
 
 .main-nav a {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
   color: var(--text-secondary);
+  text-transform: uppercase;
 }
 
 .main-nav a:hover, .main-nav a.active {
@@ -136,13 +139,15 @@ input:focus, textarea:focus, select:focus {
 
 .site-content {
   flex: 1;
-  padding: var(--spacing-xl) 0;
+  padding: var(--space-2xl) 0;
 }
 
 .site-footer {
   text-align: center;
-  padding: var(--spacing-lg) 0;
+  padding: var(--space-xl) 0;
   color: var(--text-muted);
-  font-size: 0.85rem;
-  border-top: 1px solid var(--border-color);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  border-top: 1px solid var(--border-subtle);
 }

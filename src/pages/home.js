@@ -1,10 +1,16 @@
 import { supabase } from '../utils/supabase.js';
+import { updateSEO } from '../utils/seo.js';
 
 export default {
   meta: {
     title: 'Natanael Brentano - Poemas'
   },
   async render(container) {
+    updateSEO({
+      title: 'A poética do silêncio',
+      description: 'Obras contemporâneas de Natanael Brentano. Textos curtos sobre a imensidão do efêmero.'
+    });
+    
     container.innerHTML = '<div class="loading fade-in" style="text-align:center; padding: 4rem;">Carregando poemas...</div>';
     
     // Fetch published poems
@@ -30,40 +36,44 @@ export default {
       return;
     }
     
-    // Generate HTML for poems
-    const poemsHtml = poems.map(poem => `
-      <article class="poem-card fade-in">
-        <a href="/poema/${poem.slug}" data-link class="poem-card-link">
-          <h2 class="poem-title">${poem.title}</h2>
-          <p class="poem-excerpt">${poem.excerpt || '...'}</p>
-          <div class="poem-meta">
-            <span class="poem-date">${new Date(poem.published_at).toLocaleDateString('pt-BR')}</span>
-            ${poem.tags && poem.tags.length > 0 ? `<span class="poem-tags">${poem.tags.join(', ')}</span>` : ''}
-          </div>
+    // Generate HTML for poems (Editorial List)
+    const poemsHtml = poems.map(poem => {
+      const year = new Date(poem.published_at).getFullYear();
+      return `
+      <article class="poem-row fade-in" style="display: flex; justify-content: space-between; align-items: baseline; padding: var(--space-md) 0; border-bottom: 1px solid var(--border-subtle); transition: opacity var(--transition-fast);">
+        <a href="/poema/${poem.slug}" data-link style="flex: 1; display: flex; justify-content: space-between; align-items: baseline;">
+          <h2 style="font-size: 1.4rem; font-family: var(--font-display); letter-spacing: 0.5px;">${poem.title}</h2>
+          <span style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted);">${year}</span>
         </a>
       </article>
-    `).join('');
+    `}).join('');
     
     container.innerHTML = `
-      <div class="home-layout">
-        <section class="hero-section fade-in" style="margin-bottom: 4rem; text-align: center;">
-          <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Poemas</h1>
-          <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
-            Bem-vindo ao meu espaço autoral. Uma coleção de pensamentos, silêncios e palavras.
+      <div class="home-layout" style="padding-bottom: var(--space-4xl);">
+        
+        <section class="hero-section fade-in" style="margin-bottom: var(--space-4xl); padding-top: var(--space-xl); text-align: center;">
+          <h1 style="font-size: 4rem; margin-bottom: var(--space-md); color: var(--text-primary); font-weight: 300; letter-spacing: -1px;">
+            A poética<br>do silêncio.
+          </h1>
+          <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto; font-family: var(--font-body); font-size: 1.1rem; line-height: 1.8;">
+            Obras contemporâneas de Natanael Brentano. Textos curtos sobre a imensidão do efêmero.
           </p>
         </section>
-        <div class="poems-grid" style="display: grid; gap: 2rem; max-width: 700px; margin: 0 auto;">
+
+        <section class="poems-list fade-in" style="max-width: var(--container-poetry); margin: 0 auto;">
           ${poemsHtml}
-        </div>
+        </section>
         
-        <section class="newsletter-section fade-in" style="margin-top: 6rem; padding-top: 4rem; border-top: 1px solid var(--border-color); text-align: center;">
-          <h3 style="margin-bottom: 1rem; font-family: var(--font-serif-title); font-size: 1.5rem;">Acompanhe as publicações</h3>
-          <p style="color: var(--text-secondary); margin-bottom: 2rem;">Deixe seu e-mail para receber novos poemas diretamente na sua caixa de entrada.</p>
-          <form id="subscribe-form" style="display: flex; gap: 1rem; max-width: 400px; margin: 0 auto;">
-            <input type="email" id="subscriber-email" placeholder="Seu melhor e-mail" required style="flex: 1;">
-            <button type="submit" style="background: var(--text-primary); color: var(--bg-color); padding: 0.5rem 1.5rem; border-radius: 4px; font-weight: 500;">Assinar</button>
+        <section class="newsletter-section fade-in" style="margin-top: var(--space-4xl); padding: var(--space-2xl) var(--space-lg); background-color: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 2px; text-align: center; max-width: var(--container-poetry); margin-left: auto; margin-right: auto;">
+          <h3 style="margin-bottom: var(--space-sm); font-family: var(--font-display); font-size: 2rem; color: var(--accent-subtle); font-weight: 400;">O Eco das Palavras</h3>
+          <p style="color: var(--text-secondary); margin-bottom: var(--space-lg); font-size: 0.95rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+            Receba ocasionalmente novos poemas e devaneios direto na sua caixa de entrada. Sem spam, apenas poesia.
+          </p>
+          <form id="subscribe-form" style="display: flex; gap: var(--space-sm); max-width: 380px; margin: 0 auto;">
+            <input type="email" id="subscriber-email" placeholder="Endereço de e-mail" required style="flex: 1; font-size: 0.9rem; padding: 0.75rem 1rem; border: 1px solid var(--border-strong); background: transparent;">
+            <button type="submit" style="background: var(--text-primary); color: var(--bg-primary); padding: 0.75rem 1.5rem; font-weight: 500; font-size: 0.9rem; border-radius: 2px;">Assinar</button>
           </form>
-          <div id="subscribe-message" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+          <div id="subscribe-message" style="margin-top: var(--space-sm); font-size: 0.85rem; font-family: var(--font-ui);"></div>
         </section>
       </div>
     `;

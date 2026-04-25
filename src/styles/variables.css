@@ -1,40 +1,46 @@
-/* CSS Variables for elegant dark theme */
+/* Design System: Minimalismo Noturno */
 :root {
   /* Colors */
-  --bg-color: #0a0a0a;
-  --bg-color-light: #151515;
-  --bg-color-hover: #1f1f1f;
+  --bg-primary: #050505;
+  --bg-secondary: #0a0a0a;
+  --bg-elevated: #121212;
   
-  --text-primary: #eaeaea;
-  --text-secondary: #999999;
-  --text-muted: #666666;
+  --text-primary: #e2e2e2;
+  --text-secondary: #8c8c8c;
+  --text-muted: #555555;
   
-  --accent-color: #d4af37; /* Subtle gold/champagne for literary feel */
-  --accent-color-hover: #f3d56d;
+  --accent-subtle: #c5a880; /* Champagne / Ouro Velho */
+  --accent-muted: rgba(197, 168, 128, 0.15);
   
-  --border-color: #2a2a2a;
-  --error-color: #ff5e5e;
-  --success-color: #4caf50;
+  --border-subtle: #1a1a1a;
+  --border-strong: #333333;
+  
+  --error: #cc4a4a;
+  --success: #3a8c54;
 
   /* Typography */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-serif-title: 'Playfair Display', Georgia, serif;
-  --font-serif-text: 'Lora', Georgia, serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Lora', Georgia, serif;
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
   
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 4rem;
-  --spacing-xxl: 8rem;
+  /* Spacing (Editorial scale) */
+  --space-3xs: 0.25rem;  /* 4px */
+  --space-2xs: 0.5rem;   /* 8px */
+  --space-xs: 0.75rem;   /* 12px */
+  --space-sm: 1rem;      /* 16px */
+  --space-md: 1.5rem;    /* 24px */
+  --space-lg: 2rem;      /* 32px */
+  --space-xl: 3rem;      /* 48px */
+  --space-2xl: 4rem;     /* 64px */
+  --space-3xl: 6rem;     /* 96px */
+  --space-4xl: 8rem;     /* 128px */
   
   /* Layout */
-  --container-width: 800px;
-  --container-width-admin: 1000px;
-  --header-height: 80px;
+  --container-poetry: 680px; /* Optimal reading width for poetry */
+  --container-admin: 1000px;
+  --header-height: 100px;
 
   /* Transitions */
+  --transition-fade: 0.4s ease;
   --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
 }
