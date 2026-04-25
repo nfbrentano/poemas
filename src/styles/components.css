@@ -1,0 +1,79 @@
+/* components.css */
+
+.poem-card {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 2rem;
+  transition: opacity var(--transition-normal);
+}
+
+.poem-card:last-child {
+  border-bottom: none;
+}
+
+.poem-card-link {
+  display: block;
+}
+
+.poem-title {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  transition: color var(--transition-fast);
+}
+
+.poem-card-link:hover .poem-title {
+  color: var(--accent-color);
+}
+
+.poem-excerpt {
+  color: var(--text-secondary);
+  font-family: var(--font-serif-text);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.poem-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Form elements */
+input, textarea {
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: var(--text-primary);
+  color: var(--bg-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color var(--transition-fast);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-color);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  border-color: var(--text-primary);
+}

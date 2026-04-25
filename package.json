@@ -1,0 +1,19 @@
+{
+  "name": "sitepoemas",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && cp dist/index.html dist/404.html",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "fast-xml-parser": "^5.7.1",
+    "vite": "^8.0.10"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.104.1",
+    "html2canvas": "^1.4.1"
+  }
+}

@@ -1,0 +1,40 @@
+/* CSS Variables for elegant dark theme */
+:root {
+  /* Colors */
+  --bg-color: #0a0a0a;
+  --bg-color-light: #151515;
+  --bg-color-hover: #1f1f1f;
+  
+  --text-primary: #eaeaea;
+  --text-secondary: #999999;
+  --text-muted: #666666;
+  
+  --accent-color: #d4af37; /* Subtle gold/champagne for literary feel */
+  --accent-color-hover: #f3d56d;
+  
+  --border-color: #2a2a2a;
+  --error-color: #ff5e5e;
+  --success-color: #4caf50;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif-title: 'Playfair Display', Georgia, serif;
+  --font-serif-text: 'Lora', Georgia, serif;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 4rem;
+  --spacing-xxl: 8rem;
+  
+  /* Layout */
+  --container-width: 800px;
+  --container-width-admin: 1000px;
+  --header-height: 80px;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
