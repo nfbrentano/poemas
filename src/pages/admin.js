@@ -247,12 +247,30 @@ export default {
     
     const publishBtn = document.getElementById('publish-btn');
     if (publishBtn) {
-      publishBtn.addEventListener('click', async () => {
+      let confirmState = false;
+      
+      publishBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
         // Enforce form validation before proceeding
         const form = document.getElementById('editor-form');
         if (!form.reportValidity()) return;
         
-        if (!confirm('Isto irá publicar a obra e disparar e-mails para os assinantes. Continuar?')) return;
+        if (!confirmState) {
+          publishBtn.innerText = 'Tem certeza? Clique para confirmar.';
+          publishBtn.style.background = 'var(--error)';
+          confirmState = true;
+          
+          // Reset confirm state after 4 seconds
+          setTimeout(() => {
+            if (publishBtn && !publishBtn.disabled) {
+              publishBtn.innerText = 'Publicar e Notificar Assinantes';
+              publishBtn.style.background = 'var(--success)';
+              confirmState = false;
+            }
+          }, 4000);
+          return;
+        }
         
         publishBtn.innerText = 'Publicando...';
         publishBtn.disabled = true;
