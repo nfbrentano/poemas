@@ -112,7 +112,15 @@ export default {
     if (id) {
       container.innerHTML = '<div class="loading">Carregando poema...</div>';
       const { data } = await supabase.from('poems').select('*').eq('id', id).single();
-      if (data) poem = data;
+      if (data) {
+        poem = data;
+        // Clean imported HTML tags so the editor is always pure natural text
+        poem.content = (poem.content || '')
+          .replace(/<br\s*[\/]?>/gi, '\n')
+          .replace(/<\/p>\s*<p>/gi, '\n\n')
+          .replace(/<\/?(p|pre|div|span|strong|em|b|i)[^>]*>/gi, '')
+          .trim();
+      }
     }
     
     container.innerHTML = `
@@ -165,8 +173,7 @@ export default {
     const slugInput = document.getElementById('poem-slug');
     
     titleInput.addEventListener('input', () => {
-      if (!id && !slugInput.value) { // only auto-fill for new if user hasn't typed
-        // basic slugify
+      if (!id || slugInput.value === '') { // Auto-fill for new poems or if slug is empty
         let slug = titleInput.value.toLowerCase().trim()
           .replace(/[áàãâä]/g, 'a')
           .replace(/[éèêë]/g, 'e')
@@ -174,19 +181,21 @@ export default {
           .replace(/[óòõôö]/g, 'o')
           .replace(/[úùûü]/g, 'u')
           .replace(/ç/g, 'c')
-          .replace(/[^a-z0-9-]/g, '-')
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
           .replace(/-+/g, '-')
           .replace(/^-|-$/g, '');
-        // We only set it on blur usually, but input is ok for now.
+        
+        slugInput.value = slug;
       }
     });
     
     titleInput.addEventListener('blur', () => {
-       if (!id && !slugInput.value) {
+       if (!slugInput.value) {
          let slug = titleInput.value.toLowerCase().trim()
           .replace(/[áàãâä]/g, 'a').replace(/[éèêë]/g, 'e').replace(/[íìîï]/g, 'i')
           .replace(/[óòõôö]/g, 'o').replace(/[úùûü]/g, 'u').replace(/ç/g, 'c')
-          .replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-');
+          .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
          slugInput.value = slug;
        }
     });
