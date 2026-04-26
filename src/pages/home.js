@@ -64,7 +64,7 @@ export default {
     const renderPoemList = (items, isSearchActive = false, searchTerm = '') => {
       if (items.length === 0) {
         return `
-          <p style="color: var(--text-secondary); padding: var(--space-md) 0; font-family: var(--font-ui); font-size: 0.9rem;">
+          <p class="search-empty-msg">
             Nenhum poema encontrado para "<strong>${searchTerm}</strong>".
           </p>
         `;

@@ -4,6 +4,12 @@
   box-sizing: border-box;
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent-subtle);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -249,14 +255,6 @@ body.is-poem-page .site-footer {
   fill: none;
 }
 
-/* Accessibility */
-.poem-card-link:focus-visible, 
-.poem-row a:focus-visible,
-.main-nav a:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--accent-subtle);
-  outline-offset: 4px;
-}
 
 /* Scroll Progress */
 .scroll-progress-container {
@@ -317,9 +315,14 @@ button:focus-visible {
   background-color: var(--accent-muted);
   margin: var(--space-lg) 0;
 }
+
 @media (prefers-reduced-motion: reduce) {
   .fade-in {
     animation: none;
     opacity: 1;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

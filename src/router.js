@@ -111,13 +111,10 @@ export async function router() {
     }
   } else {
     view.innerHTML = `
-      <div class="error-page fade-in">
-        <div class="error-code">404</div>
-        <h2>Página não encontrada</h2>
-        <p>O silêncio que você procura não está neste endereço.</p>
-        <div style="margin-top: var(--space-xl);">
-          <a href="${import.meta.env.BASE_URL}" data-link class="back-link">Voltar para o início</a>
-        </div>
+      <div style="text-align: center; padding: var(--space-4xl) var(--space-lg);">
+        <h2 style="font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 400; color: var(--text-primary); margin-bottom: var(--space-md);">Página não encontrada.</h2>
+        <p style="font-family: var(--font-ui); color: var(--text-secondary); margin-bottom: var(--space-lg);">O poema que você procura pode ter mudado de endereço — ou nunca existiu.</p>
+        <a href="${import.meta.env.BASE_URL}" data-link style="font-family: var(--font-ui); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-subtle); border-bottom: 1px solid var(--accent-subtle); padding-bottom: 2px;">← Voltar para o início</a>
       </div>
     `;
   }

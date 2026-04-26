@@ -154,6 +154,13 @@ input, textarea {
   margin: 0 auto;
 }
 
+.search-empty-msg {
+  color: var(--text-secondary);
+  padding: var(--space-md) 0;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+}
+
 /* Poem Row */
 .poem-row {
   display: flex;
