@@ -137,7 +137,24 @@ export default {
         
         <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
 
-
+        <div class="poem-nav">
+          <button id="prev-btn" class="nav-btn" style="${!prevSlug ? 'display:none;' : ''}" aria-label="Poema anterior">
+            ← Anterior
+          </button>
+          
+          <div class="nav-center">
+            <div id="progress" class="nav-progress">
+              Poema ${currentIndex} de ${totalCount}
+            </div>
+            <div class="nav-footer-text">
+              &copy; ${new Date().getFullYear()} Natanael Brentano. Todos os direitos reservados.
+            </div>
+          </div>
+          
+          <button id="next-btn" class="nav-btn nav-btn-next" style="${!nextSlug ? 'display:none;' : ''}" aria-label="Próximo poema">
+            Próximo →
+          </button>
+        </div>
       </div>
     `;
     
@@ -221,11 +238,9 @@ export default {
 
       // Show Nav Container if any scroll happened
       if (scrollTop > 50) {
-        poemNav.style.opacity = '1';
-        poemNav.style.pointerEvents = 'auto';
+        poemNav.classList.add('visible');
       } else {
-        poemNav.style.opacity = '0';
-        poemNav.style.pointerEvents = 'none';
+        poemNav.classList.remove('visible');
       }
 
       // Next (95% scroll)
