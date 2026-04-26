@@ -154,6 +154,10 @@ input:focus, textarea:focus, select:focus {
   border-top: 1px solid var(--border-subtle);
 }
 
+body.is-poem-page .site-footer {
+  display: none;
+}
+
 /* Poem Editorial Styles */
 .single-poem {
   max-width: var(--container-poetry);

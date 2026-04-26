@@ -81,7 +81,6 @@ export default {
     
     // Render
     container.innerHTML = `
-    container.innerHTML = `
       <div class="poem-container">
         <div class="scroll-progress-container"><div id="scroll-bar" class="scroll-progress-bar"></div></div>
         
@@ -138,20 +137,7 @@ export default {
         
         <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
 
-        <div class="poem-nav">
-          
-          <button id="prev-btn" class="nav-btn" style="${!prevSlug ? 'display:none;' : ''}">
-            ← Anterior
-          </button>
-          
-          <div id="progress" class="nav-progress">
-            Poema ${currentIndex} de ${totalCount}
-          </div>
-          
-          <button id="next-btn" class="nav-btn nav-btn-next" style="${!nextSlug ? 'display:none;' : ''}">
-            Próximo →
-          </button>
-        </div>
+
       </div>
     `;
     

@@ -300,4 +300,3 @@ function countryFlag(code) {
     ...code.toUpperCase().split('').map(c => 0x1F1E0 - 65 + c.charCodeAt(0))
   );
 }
-}

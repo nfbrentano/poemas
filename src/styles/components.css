@@ -254,18 +254,34 @@ input, textarea {
 /* Navigation */
 .poem-nav {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s;
+  transition: all 0.3s ease;
   font-family: var(--font-ui);
   font-size: 0.9rem;
+  padding: 12px 20px;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-subtle);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.poem-nav.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  .poem-nav {
+    padding: 10px 15px;
+  }
 }
 
 .nav-btn {
@@ -292,13 +308,33 @@ input, textarea {
   min-width: 110px;
 }
 
+.nav-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
 .nav-progress {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.nav-footer-text {
+  font-size: 0.65rem;
   color: var(--text-muted);
-  font-size: 0.8rem;
+  text-transform: uppercase;
   letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .nav-footer-text {
+    display: none; /* Hide copyright on very small screens to save space if needed */
+  }
 }
 
 /* States */

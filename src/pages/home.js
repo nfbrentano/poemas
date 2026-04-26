@@ -85,7 +85,7 @@ export default {
       return `
       <article class="poem-row fade-in">
         <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link class="poem-row-link">
-          <h2 class="poem-row-title">${poem.title}</h2>
+          <h3 class="poem-row-title">${poem.title}</h3>
           <span class="poem-row-year">${year}</span>
         </a>
       </article>

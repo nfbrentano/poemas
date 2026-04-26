@@ -27,9 +27,14 @@ export async function router() {
   
   const view = document.getElementById('main-content');
   
-  // Clear current view
   // Clear current view with a minimal skeleton or loading class
   view.innerHTML = '<div class="loading-container fade-in">Carregando...</div>';
+  
+  // Manage body classes for specific layouts
+  document.body.classList.remove('is-poem-page');
+  if (path.includes('/poema/')) {
+    document.body.classList.add('is-poem-page');
+  }
   
   // Find matching route
   let match = null;
