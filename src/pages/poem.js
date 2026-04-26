@@ -1,6 +1,20 @@
 import { supabase } from '../utils/supabase.js';
 import { updateSEO } from '../utils/seo.js';
 import { trackPageView } from '../utils/analytics.js';
+import { navigateTo } from '../router.js';
+
+function throttle(func, limit) {
+  let inThrottle;
+  return function() {
+    const args = arguments;
+    const context = this;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  }
+}
 
 
 export default {
@@ -21,7 +35,6 @@ export default {
       .single();
       
     if (error || !poem) {
-
       container.innerHTML = `
         <div class="error" style="text-align:center; padding: 4rem;">
           <h2 style="margin-bottom: 1rem; font-family: var(--font-display);">Obra não encontrada</h2>
@@ -30,6 +43,19 @@ export default {
       `;
       return;
     }
+
+    // Fetch navigation data
+    const [prevRes, nextRes, countRes, newerCountRes] = await Promise.all([
+      supabase.from('poems').select('slug, title').eq('status', 'published').lt('published_at', poem.published_at).order('published_at', { ascending: false }).limit(1).maybeSingle(),
+      supabase.from('poems').select('slug, title').eq('status', 'published').gt('published_at', poem.published_at).order('published_at', { ascending: true }).limit(1).maybeSingle(),
+      supabase.from('poems').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+      supabase.from('poems').select('id', { count: 'exact', head: true }).eq('status', 'published').gt('published_at', poem.published_at)
+    ]);
+
+    const prevSlug = prevRes.data?.slug || null;
+    const nextSlug = nextRes.data?.slug || null;
+    const totalCount = countRes.count || 0;
+    const currentIndex = (newerCountRes.count || 0) + 1;
 
     // Rastrear visualização do poema
     trackPageView('/poema/' + poem.slug, poem.id);
@@ -55,60 +81,91 @@ export default {
     
     // Render
     container.innerHTML = `
-      <div class="scroll-progress-container"><div id="scroll-bar" class="scroll-progress-bar"></div></div>
-      
-      <article class="single-poem fade-in">
-        <header>
-          <h1>${poem.title}</h1>
-          <div class="poem-meta">
-            <span>${new Date(poem.published_at).toLocaleDateString('pt-BR')}</span>
-            ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span>${poem.tags.join(', ')}</span>` : ''}
-          </div>
-        </header>
+      <div class="poem-container" style="position:relative; min-height:100vh;">
+        <div class="scroll-progress-container"><div id="scroll-bar" class="scroll-progress-bar"></div></div>
         
-        <div id="poem-text" class="poem-content">${poem.content}</div>
-        
-        <div class="share-section" style="margin-top: var(--space-xl); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: var(--space-xs); text-transform: uppercase; letter-spacing: 1px;">Compartilhar obra</p>
-          <div class="share-buttons" style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
-            <button class="share-btn whatsapp" aria-label="Compartilhar no WhatsApp" data-platform="whatsapp" style="background: #25D366; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">WhatsApp</button>
-            <button class="share-btn twitter" aria-label="Compartilhar no X (Twitter)" data-platform="twitter" style="background: #000000; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">𝕏 (Twitter)</button>
-            <button class="share-btn facebook" aria-label="Compartilhar no Facebook" data-platform="facebook" style="background: #1877F2; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Facebook</button>
-            <button id="web-share-btn" aria-label="Mais opções de compartilhamento" style="background: var(--accent-subtle); color: var(--bg-primary); border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Compartilhar...</button>
-          </div>
-        </div>
-
-        <div class="poem-actions" style="margin-top: var(--space-lg);">
-          <button id="copy-poem-btn" class="btn-secondary" aria-label="Copiar texto do poema" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; color: var(--text-secondary);">Copiar Poema</button>
+        <article class="single-poem fade-in">
+          <header>
+            <h1>${poem.title}</h1>
+            <div class="poem-meta">
+              <span>${new Date(poem.published_at).toLocaleDateString('pt-BR')}</span>
+              ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span>${poem.tags.join(', ')}</span>` : ''}
+            </div>
+          </header>
           
-          ${isAdmin ? `
-            <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;" data-link>Editar Obra</a>
-            <button id="export-ig-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;">Gerar Card Instagram</button>
-          ` : ''}
+          <div id="poem-text" class="poem-content">${poem.content}</div>
+          
+          <div class="share-section" style="margin-top: var(--space-xl); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: var(--space-xs); text-transform: uppercase; letter-spacing: 1px;">Compartilhar obra</p>
+            <div class="share-buttons" style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+              <button class="share-btn whatsapp" aria-label="Compartilhar no WhatsApp" data-platform="whatsapp" style="background: #25D366; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">WhatsApp</button>
+              <button class="share-btn twitter" aria-label="Compartilhar no X (Twitter)" data-platform="twitter" style="background: #000000; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">𝕏 (Twitter)</button>
+              <button class="share-btn facebook" aria-label="Compartilhar no Facebook" data-platform="facebook" style="background: #1877F2; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Facebook</button>
+              <button id="web-share-btn" aria-label="Mais opções de compartilhamento" style="background: var(--accent-subtle); color: var(--bg-primary); border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Compartilhar...</button>
+            </div>
+          </div>
+
+          <div class="poem-actions" style="margin-top: var(--space-lg);">
+            <button id="copy-poem-btn" class="btn-secondary" aria-label="Copiar texto do poema" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; color: var(--text-secondary);">Copiar Poema</button>
+            
+            ${isAdmin ? `
+              <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;" data-link>Editar Obra</a>
+              <button id="export-ig-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;">Gerar Card Instagram</button>
+            ` : ''}
+          </div>
+        </article>
+
+        
+        <!-- Newsletter Section -->
+        <section class="newsletter-section fade-in" style="margin-top: var(--space-2xl); padding: var(--space-2xl) var(--space-lg); background-color: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 2px; text-align: center; max-width: var(--container-poetry); margin-left: auto; margin-right: auto;">
+          <h3 style="margin-bottom: var(--space-sm); font-family: var(--font-display); font-size: 2rem; color: var(--accent-subtle); font-weight: 400;">O Eco das Palavras</h3>
+          <p style="color: var(--text-secondary); margin-bottom: var(--space-lg); font-size: 0.95rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+            Receba ocasionalmente novos poemas e devaneios direto na sua caixa de entrada. Sem spam, apenas poesia.
+          </p>
+          <form id="subscribe-form" style="display: flex; gap: var(--space-sm); max-width: 380px; margin: 0 auto;">
+            <input type="email" id="subscriber-email" placeholder="Endereço de e-mail" required aria-label="Endereço de e-mail para newsletter" style="flex: 1; font-size: 0.9rem; padding: 0.75rem 1rem; border: 1px solid var(--border-strong); background: transparent; color: var(--text-primary);">
+            <button type="submit" style="background: var(--text-primary); color: var(--bg-primary); padding: 0.75rem 1.5rem; font-weight: 500; font-size: 0.9rem; border-radius: 2px;">Assinar</button>
+          </form>
+          <div id="subscribe-message" style="margin-top: var(--space-sm); font-size: 0.85rem; font-family: var(--font-ui);"></div>
+        </section>
+
+        <div style="text-align: center; margin-top: var(--space-3xl); margin-bottom: var(--space-xl);">
+          <a href="${import.meta.env.BASE_URL}" data-link style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; padding: 1rem; transition: color var(--transition-fast);">
+            ← Voltar para o início
+          </a>
         </div>
-      </article>
+        
+        <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
 
-      
-      <!-- Newsletter Section -->
-      <section class="newsletter-section fade-in" style="margin-top: var(--space-2xl); padding: var(--space-2xl) var(--space-lg); background-color: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 2px; text-align: center; max-width: var(--container-poetry); margin-left: auto; margin-right: auto;">
-        <h3 style="margin-bottom: var(--space-sm); font-family: var(--font-display); font-size: 2rem; color: var(--accent-subtle); font-weight: 400;">O Eco das Palavras</h3>
-        <p style="color: var(--text-secondary); margin-bottom: var(--space-lg); font-size: 0.95rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">
-          Receba ocasionalmente novos poemas e devaneios direto na sua caixa de entrada. Sem spam, apenas poesia.
-        </p>
-        <form id="subscribe-form" style="display: flex; gap: var(--space-sm); max-width: 380px; margin: 0 auto;">
-          <input type="email" id="subscriber-email" placeholder="Endereço de e-mail" required aria-label="Endereço de e-mail para newsletter" style="flex: 1; font-size: 0.9rem; padding: 0.75rem 1rem; border: 1px solid var(--border-strong); background: transparent; color: var(--text-primary);">
-          <button type="submit" style="background: var(--text-primary); color: var(--bg-primary); padding: 0.75rem 1.5rem; font-weight: 500; font-size: 0.9rem; border-radius: 2px;">Assinar</button>
-        </form>
-        <div id="subscribe-message" style="margin-top: var(--space-sm); font-size: 0.85rem; font-family: var(--font-ui);"></div>
-      </section>
-
-      <div style="text-align: center; margin-top: var(--space-3xl); margin-bottom: var(--space-xl);">
-        <a href="${import.meta.env.BASE_URL}" data-link style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; padding: 1rem; transition: color var(--transition-fast);">
-          ← Voltar para o início
-        </a>
+        <div class="poem-nav" style="
+          position:fixed; bottom:20px; left:20px; right:20px; display:flex;
+          justify-content:space-between; align-items:center; z-index:1000;
+          opacity:0; pointer-events:none; transition:opacity 0.3s;
+          font-family:var(--font-ui); font-size:0.9rem;">
+          
+          <button id="prev-btn" style="
+            opacity:0.7; padding:12px 20px; border:1px solid var(--border-strong);
+            background:var(--bg-primary); color:var(--text-primary); border-radius:8px;
+            cursor:pointer; transition:all 0.2s; font-weight:500; min-width:90px;
+            ${!prevSlug ? 'display:none;' : ''}">
+            ← Anterior
+          </button>
+          
+          <div id="progress" style="
+            position:absolute; left:50%; transform:translateX(-50%);
+            color:var(--text-muted); font-size:0.8rem; letter-spacing:1px;">
+            Poema ${currentIndex} de ${totalCount}
+          </div>
+          
+          <button id="next-btn" style="
+            opacity:0.9; padding:14px 28px; border:1px solid var(--border-strong);
+            background:var(--border-strong); color:var(--text-primary); border-radius:8px;
+            cursor:pointer; transition:all 0.2s; font-weight:600; min-width:110px;
+            ${!nextSlug ? 'display:none;' : ''}">
+            Próximo →
+          </button>
+        </div>
       </div>
-      
-      <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
     `;
     
     // Sharing Logic
@@ -169,15 +226,68 @@ export default {
       });
     }
 
-    // Scroll Progress Logic
+    // Scroll logic (Progress bar + Instagram-style nav)
     const scrollBar = document.getElementById('scroll-bar');
-    const updateScroll = () => {
+    const poemContainer = document.querySelector('.poem-container');
+    const poemNav = document.querySelector('.poem-nav');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    let showedNext = false, showedPrev = false;
+
+    const handleScroll = throttle(() => {
+      // Progress bar
       const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       const scrolled = (winScroll / height) * 100;
       if (scrollBar) scrollBar.style.width = scrolled + "%";
-    };
-    window.addEventListener('scroll', updateScroll);
+
+      // Sequential Nav Logic
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+
+      // Show Nav Container if any scroll happened
+      if (scrollTop > 50) {
+        poemNav.style.opacity = '1';
+        poemNav.style.pointerEvents = 'auto';
+      } else {
+        poemNav.style.opacity = '0';
+        poemNav.style.pointerEvents = 'none';
+      }
+
+      // Next (95% scroll)
+      if (scrollTop + clientHeight > scrollHeight * 0.90 && nextSlug && !showedNext) {
+        showedNext = true;
+        if (nextBtn) nextBtn.style.transform = 'scale(1.05)';
+        setTimeout(() => { if(nextBtn) nextBtn.style.transform = 'scale(1)'; }, 200)
+      }
+      
+      // Prev (5% scroll)
+      if (scrollTop < scrollHeight * 0.05 && prevSlug && !showedPrev) {
+        showedPrev = true;
+      }
+    }, 100);
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Touch swipe mobile
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, {passive: true});
+    document.addEventListener('touchend', e => {
+      const deltaX = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(deltaX) > 80) { // Threshold for swipe
+        if (deltaX > 0 && nextSlug) navigateTo(`/poema/${nextSlug}`);
+        else if (deltaX < 0 && prevSlug) navigateTo(`/poema/${prevSlug}`);
+      }
+    }, {passive: true});
+
+    // Click handlers
+    nextBtn?.addEventListener('click', () => {
+      if (nextSlug) navigateTo(`/poema/${nextSlug}`);
+    });
+    prevBtn?.addEventListener('click', () => {
+      if (prevSlug) navigateTo(`/poema/${prevSlug}`);
+    });
     
     // Newsletter form logic
     const subForm = document.getElementById('subscribe-form');
