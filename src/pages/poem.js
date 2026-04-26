@@ -24,7 +24,7 @@ export default {
   async render(container, params) {
     const slug = params.slug;
     
-    container.innerHTML = '<div class="loading fade-in" style="text-align:center; padding: 4rem;">Carregando...</div>';
+    container.innerHTML = '<div class="loading-container fade-in">Carregando...</div>';
     
     // Fetch poem
     const { data: poem, error } = await supabase
@@ -36,7 +36,7 @@ export default {
       
     if (error || !poem) {
       container.innerHTML = `
-        <div class="error" style="text-align:center; padding: 4rem;">
+        <div class="error-container">
           <h2 style="margin-bottom: 1rem; font-family: var(--font-display);">Obra não encontrada</h2>
           <p><a href="${import.meta.env.BASE_URL}" data-link style="color: var(--accent-subtle); border-bottom: 1px solid var(--accent-subtle);">Voltar ao sumário</a></p>
         </div>
@@ -81,7 +81,8 @@ export default {
     
     // Render
     container.innerHTML = `
-      <div class="poem-container" style="position:relative; min-height:100vh;">
+    container.innerHTML = `
+      <div class="poem-container">
         <div class="scroll-progress-container"><div id="scroll-bar" class="scroll-progress-bar"></div></div>
         
         <article class="single-poem fade-in">
@@ -95,73 +96,59 @@ export default {
           
           <div id="poem-text" class="poem-content">${poem.content}</div>
           
-          <div class="share-section" style="margin-top: var(--space-xl); padding-top: var(--space-md); border-top: 1px solid var(--border-subtle);">
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: var(--space-xs); text-transform: uppercase; letter-spacing: 1px;">Compartilhar obra</p>
-            <div class="share-buttons" style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
-              <button class="share-btn whatsapp" aria-label="Compartilhar no WhatsApp" data-platform="whatsapp" style="background: #25D366; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">WhatsApp</button>
-              <button class="share-btn twitter" aria-label="Compartilhar no X (Twitter)" data-platform="twitter" style="background: #000000; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">𝕏 (Twitter)</button>
-              <button class="share-btn facebook" aria-label="Compartilhar no Facebook" data-platform="facebook" style="background: #1877F2; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Facebook</button>
-              <button id="web-share-btn" aria-label="Mais opções de compartilhamento" style="background: var(--accent-subtle); color: var(--bg-primary); border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Compartilhar...</button>
+          <div class="share-section">
+            <p class="share-label">Compartilhar obra</p>
+            <div class="share-buttons">
+              <button class="share-btn whatsapp" aria-label="Compartilhar no WhatsApp" data-platform="whatsapp">WhatsApp</button>
+              <button class="share-btn twitter" aria-label="Compartilhar no X (Twitter)" data-platform="twitter">𝕏 (Twitter)</button>
+              <button class="share-btn facebook" aria-label="Compartilhar no Facebook" data-platform="facebook">Facebook</button>
+              <button id="web-share-btn" class="share-btn generic" aria-label="Mais opções de compartilhamento">Compartilhar...</button>
             </div>
           </div>
 
-          <div class="poem-actions" style="margin-top: var(--space-lg);">
-            <button id="copy-poem-btn" class="btn-secondary" aria-label="Copiar texto do poema" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; color: var(--text-secondary);">Copiar Poema</button>
+          <div class="poem-actions">
+            <button id="copy-poem-btn" class="btn-secondary" aria-label="Copiar texto do poema">Copiar Poema</button>
             
             ${isAdmin ? `
-              <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;" data-link>Editar Obra</a>
-              <button id="export-ig-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px;">Gerar Card Instagram</button>
+              <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" data-link>Editar Obra</a>
+              <button id="export-ig-btn" class="btn-secondary">Gerar Card Instagram</button>
             ` : ''}
           </div>
         </article>
 
         
         <!-- Newsletter Section -->
-        <section class="newsletter-section fade-in" style="margin-top: var(--space-2xl); padding: var(--space-2xl) var(--space-lg); background-color: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 2px; text-align: center; max-width: var(--container-poetry); margin-left: auto; margin-right: auto;">
-          <h3 style="margin-bottom: var(--space-sm); font-family: var(--font-display); font-size: 2rem; color: var(--accent-subtle); font-weight: 400;">O Eco das Palavras</h3>
-          <p style="color: var(--text-secondary); margin-bottom: var(--space-lg); font-size: 0.95rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+        <section class="newsletter-section fade-in">
+          <h3 class="newsletter-title">O Eco das Palavras</h3>
+          <p class="newsletter-description">
             Receba ocasionalmente novos poemas e devaneios direto na sua caixa de entrada. Sem spam, apenas poesia.
           </p>
-          <form id="subscribe-form" style="display: flex; gap: var(--space-sm); max-width: 380px; margin: 0 auto;">
-            <input type="email" id="subscriber-email" placeholder="Endereço de e-mail" required aria-label="Endereço de e-mail para newsletter" style="flex: 1; font-size: 0.9rem; padding: 0.75rem 1rem; border: 1px solid var(--border-strong); background: transparent; color: var(--text-primary);">
-            <button type="submit" style="background: var(--text-primary); color: var(--bg-primary); padding: 0.75rem 1.5rem; font-weight: 500; font-size: 0.9rem; border-radius: 2px;">Assinar</button>
+          <form id="subscribe-form" class="subscribe-form">
+            <input type="email" id="subscriber-email" class="subscribe-input" placeholder="Endereço de e-mail" required aria-label="Endereço de e-mail para newsletter">
+            <button type="submit" class="subscribe-button">Assinar</button>
           </form>
-          <div id="subscribe-message" style="margin-top: var(--space-sm); font-size: 0.85rem; font-family: var(--font-ui);"></div>
+          <div id="subscribe-message" class="subscribe-message"></div>
         </section>
 
         <div style="text-align: center; margin-top: var(--space-3xl); margin-bottom: var(--space-xl);">
-          <a href="${import.meta.env.BASE_URL}" data-link style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; padding: 1rem; transition: color var(--transition-fast);">
+          <a href="${import.meta.env.BASE_URL}" data-link class="back-link">
             ← Voltar para o início
           </a>
         </div>
         
         <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
 
-        <div class="poem-nav" style="
-          position:fixed; bottom:20px; left:20px; right:20px; display:flex;
-          justify-content:space-between; align-items:center; z-index:1000;
-          opacity:0; pointer-events:none; transition:opacity 0.3s;
-          font-family:var(--font-ui); font-size:0.9rem;">
+        <div class="poem-nav">
           
-          <button id="prev-btn" style="
-            opacity:0.7; padding:12px 20px; border:1px solid var(--border-strong);
-            background:var(--bg-primary); color:var(--text-primary); border-radius:8px;
-            cursor:pointer; transition:all 0.2s; font-weight:500; min-width:90px;
-            ${!prevSlug ? 'display:none;' : ''}">
+          <button id="prev-btn" class="nav-btn" style="${!prevSlug ? 'display:none;' : ''}">
             ← Anterior
           </button>
           
-          <div id="progress" style="
-            position:absolute; left:50%; transform:translateX(-50%);
-            color:var(--text-muted); font-size:0.8rem; letter-spacing:1px;">
+          <div id="progress" class="nav-progress">
             Poema ${currentIndex} de ${totalCount}
           </div>
           
-          <button id="next-btn" style="
-            opacity:0.9; padding:14px 28px; border:1px solid var(--border-strong);
-            background:var(--border-strong); color:var(--text-primary); border-radius:8px;
-            cursor:pointer; transition:all 0.2s; font-weight:600; min-width:110px;
-            ${!nextSlug ? 'display:none;' : ''}">
+          <button id="next-btn" class="nav-btn nav-btn-next" style="${!nextSlug ? 'display:none;' : ''}">
             Próximo →
           </button>
         </div>

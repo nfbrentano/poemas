@@ -28,7 +28,8 @@ export async function router() {
   const view = document.getElementById('main-content');
   
   // Clear current view
-  view.innerHTML = '<div class="loading">Carregando...</div>';
+  // Clear current view with a minimal skeleton or loading class
+  view.innerHTML = '<div class="loading-container fade-in">Carregando...</div>';
   
   // Find matching route
   let match = null;
@@ -92,7 +93,16 @@ export async function router() {
       view.innerHTML = '<h2>Erro ao carregar a página.</h2>';
     }
   } else {
-    view.innerHTML = '<h2>Página não encontrada (404)</h2><p><a href="/" data-link>Voltar para o início</a></p>';
+    view.innerHTML = `
+      <div class="error-page fade-in">
+        <div class="error-code">404</div>
+        <h2>Página não encontrada</h2>
+        <p>O silêncio que você procura não está neste endereço.</p>
+        <div style="margin-top: var(--space-xl);">
+          <a href="${import.meta.env.BASE_URL}" data-link class="back-link">Voltar para o início</a>
+        </div>
+      </div>
+    `;
   }
 }
 

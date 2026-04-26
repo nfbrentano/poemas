@@ -77,3 +77,328 @@ input, textarea {
 .btn-secondary:hover {
   border-color: var(--text-primary);
 }
+
+/* Layout & Sections */
+.home-layout {
+  padding-bottom: var(--space-4xl);
+}
+
+.hero-section {
+  margin-bottom: var(--space-4xl);
+  padding-top: var(--space-xl);
+  text-align: center;
+}
+
+.hero-section h1 {
+  font-size: 4rem;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+  font-weight: 300;
+  letter-spacing: -1px;
+}
+
+@media (max-width: 768px) {
+  .hero-section h1 {
+    font-size: 2.5rem;
+  }
+}
+
+.hero-section p {
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto;
+  font-family: var(--font-ui);
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.poems-list {
+  max-width: var(--container-poetry);
+  margin: 0 auto;
+}
+
+/* Poem Row */
+.poem-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: opacity var(--transition-fast);
+}
+
+.poem-row-link {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.poem-row-title {
+  font-size: 1.4rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.poem-row-year {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Newsletter Section */
+.newsletter-section {
+  margin-top: var(--space-4xl);
+  padding: var(--space-2xl) var(--space-lg);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  text-align: center;
+  max-width: var(--container-poetry);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.newsletter-title {
+  margin-bottom: var(--space-sm);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--accent-subtle);
+  font-weight: 400;
+}
+
+.newsletter-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+  font-size: 0.95rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.subscribe-form {
+  display: flex;
+  gap: var(--space-sm);
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.subscribe-input {
+  flex: 1;
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.subscribe-button {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-radius: 2px;
+}
+
+.subscribe-message {
+  margin-top: var(--space-sm);
+  font-size: 0.85rem;
+  font-family: var(--font-ui);
+}
+
+/* Sharing & Actions */
+.share-section {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.share-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.share-buttons {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.share-btn {
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: white;
+}
+
+.share-btn.whatsapp { background: #25D366; }
+.share-btn.twitter { background: #000000; }
+.share-btn.facebook { background: #1877F2; }
+.share-btn.generic { background: var(--accent-subtle); color: var(--bg-primary); }
+
+.poem-actions {
+  margin-top: var(--space-lg);
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+/* Navigation */
+.poem-nav {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+}
+
+.nav-btn {
+  opacity: 0.8;
+  padding: 12px 20px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  min-width: 90px;
+}
+
+.nav-btn:hover {
+  opacity: 1;
+  border-color: var(--accent-subtle);
+}
+
+.nav-btn-next {
+  background: var(--border-strong);
+  font-weight: 600;
+  min-width: 110px;
+}
+
+.nav-progress {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+/* States */
+.loading-container {
+  text-align: center;
+  padding: 4rem;
+}
+
+.error-container {
+  text-align: center;
+  padding: 4rem;
+  color: var(--error);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+}
+
+.empty-state h2 {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+/* Error Page (404) */
+.error-page {
+  text-align: center;
+  padding: var(--space-4xl) var(--space-lg);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.error-code {
+  font-size: 6rem;
+  font-family: var(--font-display);
+  color: var(--accent-subtle);
+  line-height: 1;
+  margin-bottom: var(--space-md);
+  opacity: 0.3;
+}
+
+.error-page h2 {
+  font-size: 2rem;
+  margin-bottom: var(--space-lg);
+}
+
+.back-link {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 1rem;
+  transition: color var(--transition-fast);
+}
+
+.back-link:hover {
+  color: var(--accent-subtle);
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: var(--bg-elevated);
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    var(--border-subtle) 50%,
+    var(--bg-elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: 2px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+  height: 1rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.skeleton-title {
+  height: 2rem;
+  margin-bottom: 1rem;
+  width: 60%;
+}
+
+.skeleton-row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.skeleton-featured {
+  padding: var(--space-2xl) 0 var(--space-3xl) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-2xl);
+}
