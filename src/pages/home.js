@@ -129,6 +129,13 @@ export default {
         const email = document.getElementById('subscriber-email').value;
         const msgEl = document.getElementById('subscribe-message');
         
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          msgEl.innerHTML = 'Por favor, insira um e-mail válido.';
+          msgEl.style.color = 'var(--error)';
+          return;
+        }
+
         msgEl.innerHTML = 'Enviando...';
         msgEl.style.color = 'var(--text-secondary)';
         

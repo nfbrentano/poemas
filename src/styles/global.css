@@ -317,3 +317,9 @@ button:focus-visible {
   background-color: var(--accent-muted);
   margin: var(--space-lg) 0;
 }
+@media (prefers-reduced-motion: reduce) {
+  .fade-in {
+    animation: none;
+    opacity: 1;
+  }
+}
