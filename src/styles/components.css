@@ -78,6 +78,30 @@ input, textarea {
   border-color: var(--text-primary);
 }
 
+/* Search field */
+.search-container {
+  max-width: var(--container-poetry);
+  margin: 0 auto var(--space-xl) auto;
+  padding: 0;
+}
+
+#search-input {
+  border-radius: 2px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  padding: 0.75rem 1rem;
+  width: 100%;
+  font-size: 1rem;
+  transition: border-color var(--transition-fast);
+  outline: none;
+}
+
+#search-input:focus {
+  border-color: var(--accent-subtle);
+}
+
 /* Layout & Sections */
 .home-layout {
   padding-bottom: var(--space-4xl);

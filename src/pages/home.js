@@ -60,36 +60,46 @@ export default {
       return;
     }
     
-    // Generate HTML for poems (Editorial List)
-    const poemsHtml = poems.map((poem, index) => {
-      const year = new Date(poem.published_at).getFullYear();
-      const dateStr = new Date(poem.published_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-      
-      if (index === 0) {
-        // Featured Poem (The first one)
+    // Helper to render the poem list
+    const renderPoemList = (items, isSearchActive = false, searchTerm = '') => {
+      if (items.length === 0) {
         return `
-        <article class="poem-featured fade-in">
-          <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link>
-            <h2 class="featured-title">${poem.title}</h2>
-            <div class="featured-excerpt">${poem.excerpt || ''}</div>
-            <div class="featured-meta">
-              <span>${dateStr}</span>
-              ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span>${poem.tags[0]}</span>` : ''}
-            </div>
-          </a>
-          <div class="featured-separator"></div>
-        </article>
+          <p style="color: var(--text-secondary); padding: var(--space-md) 0; font-family: var(--font-ui); font-size: 0.9rem;">
+            Nenhum poema encontrado para "<strong>${searchTerm}</strong>".
+          </p>
         `;
       }
-      
-      return `
-      <article class="poem-row fade-in">
-        <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link class="poem-row-link">
-          <h3 class="poem-row-title">${poem.title}</h3>
-          <span class="poem-row-year">${year}</span>
-        </a>
-      </article>
-    `}).join('');
+
+      return items.map((poem, index) => {
+        const year = new Date(poem.published_at).getFullYear();
+        const dateStr = new Date(poem.published_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        
+        // Show featured only if NOT searching and it's the first one
+        if (!isSearchActive && index === 0) {
+          return `
+          <article class="poem-featured fade-in">
+            <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link>
+              <h2 class="featured-title">${poem.title}</h2>
+              <div class="featured-excerpt">${poem.excerpt || ''}</div>
+              <div class="featured-meta">
+                <span>${dateStr}</span>
+                ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span>${poem.tags[0]}</span>` : ''}
+              </div>
+            </a>
+            <div class="featured-separator"></div>
+          </article>
+          `;
+        }
+        
+        return `
+        <article class="poem-row fade-in">
+          <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link class="poem-row-link">
+            <h3 class="poem-row-title">${poem.title}</h3>
+            <span class="poem-row-year">${year}</span>
+          </a>
+        </article>
+      `}).join('');
+    };
     
     container.innerHTML = `
       <div class="home-layout">
@@ -103,8 +113,12 @@ export default {
           </p>
         </section>
 
+        <div class="search-container fade-in">
+          <input type="search" id="search-input" placeholder="Buscar poema..." aria-label="Buscar poema">
+        </div>
+
         <section class="poems-list fade-in">
-          ${poemsHtml}
+          ${renderPoemList(poems)}
         </section>
         
         <section class="newsletter-section fade-in">
@@ -120,6 +134,26 @@ export default {
         </section>
       </div>
     `;
+
+    // Search logic
+    const searchInput = document.getElementById('search-input');
+    const poemsList = container.querySelector('.poems-list');
+
+    if (searchInput && poemsList) {
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const isSearchActive = term.length > 0;
+        
+        const filtered = isSearchActive 
+          ? poems.filter(p => 
+              p.title.toLowerCase().includes(term) || 
+              (p.excerpt && p.excerpt.toLowerCase().includes(term))
+            )
+          : poems;
+
+        poemsList.innerHTML = renderPoemList(filtered, isSearchActive, term);
+      });
+    }
     
     // Setup Newsletter form logic
     const subForm = document.getElementById('subscribe-form');
