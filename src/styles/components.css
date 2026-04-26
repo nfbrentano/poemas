@@ -78,28 +78,41 @@ input, textarea {
   border-color: var(--text-primary);
 }
 
-/* Search field */
-.search-container {
-  max-width: var(--container-poetry);
-  margin: 0 auto var(--space-xl) auto;
-  padding: 0;
+/* Header Search */
+.header-search-container {
+  flex: 1;
+  max-width: 300px;
+  margin: 0 var(--space-xl);
 }
 
-#search-input {
+#header-search-input {
   border-radius: 2px;
   border: 1px solid var(--border-strong);
   background: transparent;
   color: var(--text-primary);
   font-family: var(--font-ui);
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
   width: 100%;
-  font-size: 1rem;
+  font-size: 0.9rem;
   transition: border-color var(--transition-fast);
   outline: none;
 }
 
-#search-input:focus {
+#header-search-input:focus {
   border-color: var(--accent-subtle);
+}
+
+@media (max-width: 768px) {
+  .header-search-container {
+    max-width: 180px;
+    margin: 0 var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .header-search-container {
+    display: none !important;
+  }
 }
 
 /* Layout & Sections */

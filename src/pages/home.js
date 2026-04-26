@@ -113,10 +113,6 @@ export default {
           </p>
         </section>
 
-        <div class="search-container fade-in">
-          <input type="search" id="search-input" placeholder="Buscar poema..." aria-label="Buscar poema">
-        </div>
-
         <section class="poems-list fade-in">
           ${renderPoemList(poems)}
         </section>
@@ -135,12 +131,17 @@ export default {
       </div>
     `;
 
-    // Search logic
-    const searchInput = document.getElementById('search-input');
+    // Search logic (using header search input)
+    const searchInput = document.getElementById('header-search-input');
     const poemsList = container.querySelector('.poems-list');
 
     if (searchInput && poemsList) {
-      searchInput.addEventListener('input', (e) => {
+      // Remove previous listener if any (to avoid capturing old poems data)
+      if (searchInput._handleSearch) {
+        searchInput.removeEventListener('input', searchInput._handleSearch);
+      }
+
+      searchInput._handleSearch = (e) => {
         const term = e.target.value.toLowerCase().trim();
         const isSearchActive = term.length > 0;
         
@@ -152,7 +153,9 @@ export default {
           : poems;
 
         poemsList.innerHTML = renderPoemList(filtered, isSearchActive, term);
-      });
+      };
+
+      searchInput.addEventListener('input', searchInput._handleSearch);
     }
     
     // Setup Newsletter form logic

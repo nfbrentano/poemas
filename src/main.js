@@ -9,6 +9,11 @@ document.querySelector('#app').innerHTML = `
   <header class="site-header">
     <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
       <a href="${import.meta.env.BASE_URL}" class="logo" data-link>Natanael Brentano</a>
+      
+      <div id="header-search-container" class="header-search-container" style="display: none;">
+        <input type="search" id="header-search-input" placeholder="Buscar poema..." aria-label="Buscar poema">
+      </div>
+
       <div style="display: flex; align-items: center;">
         <nav class="main-nav">
           <ul>

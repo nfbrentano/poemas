@@ -30,6 +30,18 @@ export async function router() {
   // Clear current view with a minimal skeleton or loading class
   view.innerHTML = '<div class="loading-container fade-in">Carregando...</div>';
   
+  // Manage header search visibility
+  const headerSearch = document.getElementById('header-search-container');
+  const headerSearchInput = document.getElementById('header-search-input');
+  if (headerSearch) {
+    if (path === '/') {
+      headerSearch.style.display = 'block';
+    } else {
+      headerSearch.style.display = 'none';
+      if (headerSearchInput) headerSearchInput.value = ''; // Reset on page change
+    }
+  }
+
   // Manage body classes for specific layouts
   document.body.classList.remove('is-poem-page');
   if (path.includes('/poema/')) {
