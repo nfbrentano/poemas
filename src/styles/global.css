@@ -103,16 +103,16 @@ input:focus, textarea:focus, select:focus {
   border-bottom: 1px solid transparent;
   transition: border-color var(--transition-fade), background-color var(--transition-fade);
   font-family: var(--font-ui);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
 }
 
 .site-header.scrolled {
   border-bottom-color: var(--border-subtle);
   background-color: var(--bg-primary);
   opacity: 0.98;
-  backdrop-filter: blur(8px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
 }
 
 .logo {
