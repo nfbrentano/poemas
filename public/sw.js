@@ -65,10 +65,11 @@ self.addEventListener('fetch', (event) => {
         }
         return fetchResponse;
       }).catch((err) => {
-      // Fail gracefully on network errors
-      if (event.request.destination !== 'image') {
-        console.warn('[SW] Fetch failed for:', event.request.url);
-      }
+        // Fail gracefully on network errors
+        if (event.request.destination !== 'image') {
+          console.warn('[SW] Fetch failed for:', event.request.url);
+        }
+      });
     })
   );
 });
