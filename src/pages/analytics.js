@@ -176,9 +176,9 @@ export default {
     // All views in period
     const { data: views, error } = await supabase
       .from('page_views')
-      .select('viewed_at, page, poem_id, ip_hash, country')
-      .gte('viewed_at', sinceISO)
-      .order('viewed_at', { ascending: false });
+      .select('created_at, page, poem_id, ip_hash, country')
+      .gte('created_at', sinceISO)
+      .order('created_at', { ascending: false });
 
     if (error) {
       container.querySelector('#chart-area').innerHTML = `<p style="color:var(--error)">${error.message}</p>`;
@@ -188,7 +188,7 @@ export default {
     const total      = views.length;
     const uniqueIPs  = new Set(views.map(v => v.ip_hash).filter(Boolean)).size;
     const today      = new Date().toISOString().slice(0, 10);
-    const todayViews = views.filter(v => v.viewed_at.slice(0, 10) === today).length;
+    const todayViews = views.filter(v => v.created_at.slice(0, 10) === today).length;
     const poemViews  = views.filter(v => v.poem_id).length;
 
     // KPI cards
@@ -208,7 +208,7 @@ export default {
     // Daily chart data
     const dayMap = {};
     views.forEach(v => {
-      const day = v.viewed_at.slice(0, 10);
+      const day = v.created_at.slice(0, 10);
       dayMap[day] = (dayMap[day] || 0) + 1;
     });
     const chartData = fillDays(
@@ -248,7 +248,7 @@ export default {
     for (const v of views) {
       if (v.ip_hash && !ipSeen.has(v.ip_hash)) {
         ipSeen.add(v.ip_hash);
-        recentIPs.push({ hash: v.ip_hash, when: v.viewed_at.slice(0, 10), country: v.country || '—' });
+        recentIPs.push({ hash: v.ip_hash, when: v.created_at.slice(0, 10), country: v.country || '—' });
       }
       if (recentIPs.length >= 10) break;
     }

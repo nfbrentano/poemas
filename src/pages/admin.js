@@ -301,7 +301,8 @@ export default {
     statusSelect.addEventListener('change', () => {
       schedulingFields.style.display = statusSelect.value === 'scheduled' ? 'block' : 'none';
     });
-
+    const getFormData = () => {
+      const tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
       const scheduledAtInput = document.getElementById('scheduled-at');
       
       return {
@@ -313,6 +314,7 @@ export default {
         status: document.getElementById('poem-status').value,
         scheduled_at: scheduledAtInput.value ? new Date(scheduledAtInput.value).toISOString() : null
       };
+    };
     
     document.getElementById('editor-form').addEventListener('submit', async (e) => {
       e.preventDefault();
