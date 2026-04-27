@@ -132,9 +132,7 @@ export default {
         </section>
 
         <section class="hero-section fade-in">
-          <h1>
-            A poética<br>do silêncio.
-          </h1>
+          <h1>A poética do silêncio</h1>
           <p>
             Obras contemporâneas de Natanael Brentano. Textos curtos sobre a imensidão do efêmero.
           </p>

@@ -122,16 +122,20 @@ input, textarea {
 
 .hero-section {
   margin-bottom: var(--space-4xl);
-  padding-top: var(--space-xl);
+  padding-top: 0;
   text-align: center;
 }
 
 .hero-section h1 {
   font-size: 4rem;
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
   color: var(--text-primary);
   font-weight: 300;
   letter-spacing: -1px;
+  max-width: 32ch;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.2;
 }
 
 @media (max-width: 768px) {
@@ -144,6 +148,7 @@ input, textarea {
   color: var(--text-secondary);
   max-width: 500px;
   margin: 0 auto;
+  margin-top: 0;
   font-family: var(--font-ui);
   font-size: 1.1rem;
   line-height: 1.8;
@@ -486,7 +491,7 @@ input, textarea {
 /* 1. Poema do Dia (Home) */
 .poem-of-day {
   max-width: var(--container-poetry);
-  margin: 0 auto var(--space-3xl) auto;
+  margin: 0 auto var(--space-lg) auto;
   padding: var(--space-2xl) 0;
   border-top: 1px solid var(--border-subtle);
   border-bottom: 1px solid var(--border-subtle);
