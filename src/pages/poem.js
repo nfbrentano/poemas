@@ -2,6 +2,7 @@ import { supabase } from '../utils/supabase.js';
 import { updateSEO } from '../utils/seo.js';
 import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
+import { newsletter } from '../components/newsletter.js';
 
 function throttle(func, limit) {
   let inThrottle;
@@ -117,17 +118,7 @@ export default {
 
         
         <!-- Newsletter Section -->
-        <section class="newsletter-section fade-in">
-          <h3 class="newsletter-title">O Eco das Palavras</h3>
-          <p class="newsletter-description">
-            Receba ocasionalmente novos poemas e devaneios direto na sua caixa de entrada. Sem spam, apenas poesia.
-          </p>
-          <form id="subscribe-form" class="subscribe-form">
-            <input type="email" id="subscriber-email" class="subscribe-input" placeholder="Endereço de e-mail" required aria-label="Endereço de e-mail para newsletter">
-            <button type="submit" class="subscribe-button">Assinar</button>
-          </form>
-          <div id="subscribe-message" class="subscribe-message"></div>
-        </section>
+        ${newsletter.render()}
 
         <div style="text-align: center; margin-top: var(--space-3xl); margin-bottom: var(--space-xl);">
           <a href="${import.meta.env.BASE_URL}" data-link class="back-link">
@@ -278,24 +269,7 @@ export default {
     });
     
     // Newsletter form logic
-    const subForm = document.getElementById('subscribe-form');
-    if (subForm) {
-      subForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('subscriber-email').value;
-        const msgEl = document.getElementById('subscribe-message');
-        msgEl.innerHTML = 'Enviando...';
-        const { error } = await supabase.from('subscribers').insert([{ email }]);
-        if (error) {
-          msgEl.innerHTML = error.code === '23505' ? 'Este e-mail já está inscrito.' : 'Erro ao inscrever.';
-          msgEl.style.color = 'var(--error)';
-        } else {
-          msgEl.innerHTML = 'Obrigado por assinar.';
-          msgEl.style.color = 'var(--success)';
-          subForm.reset();
-        }
-      });
-    }
+    newsletter.init();
 
     if (isAdmin) {
       const exportBtn = document.getElementById('export-ig-btn');
