@@ -114,8 +114,16 @@ export async function router() {
         trackPageView(path);
       }
     } catch (e) {
-
       if (import.meta.env.DEV) console.error(e);
+      
+      // Detect failed dynamic imports (usually due to a new deployment with different hashes)
+      if (e.message?.includes('Failed to fetch dynamically imported module') || 
+          e.name === 'ChunkLoadError' ||
+          e.message?.includes('error loading dynamically imported module')) {
+        window.location.reload();
+        return;
+      }
+
       view.innerHTML = '<h2>Erro ao carregar a página.</h2>';
     }
   } else {
