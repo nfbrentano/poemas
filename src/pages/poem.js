@@ -65,7 +65,6 @@ export default {
           
           <div class="poem-actions">
             <div class="skeleton" style="width: 140px; height: 3rem;"></div>
-            <div class="skeleton" style="width: 140px; height: 3rem;"></div>
           </div>
         </article>
       </div>
@@ -164,7 +163,6 @@ export default {
             <button id="immersive-btn" class="btn-secondary" aria-label="Modo leitura imersiva">
               ⬜ Leitura Imersiva
             </button>
-            <button id="copy-poem-btn" class="btn-secondary" aria-label="Copiar texto do poema">Copiar Poema</button>
             
             ${isAdmin ? `
               <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" data-link>Editar Obra</a>
@@ -228,24 +226,7 @@ export default {
     }
 
 
-    // Copy Poem Logic
-    const copyBtn = document.getElementById('copy-poem-btn');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', () => {
-        const text = document.getElementById('poem-text').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-          const originalText = copyBtn.innerText;
-          copyBtn.innerText = 'Copiado!';
-          copyBtn.style.color = 'var(--success)';
-          copyBtn.style.borderColor = 'var(--success)';
-          setTimeout(() => {
-            copyBtn.innerText = originalText;
-            copyBtn.style.color = 'var(--text-secondary)';
-            copyBtn.style.borderColor = 'var(--border-strong)';
-          }, 2000);
-        });
-      });
-    }
+
 
     // Reactions Logic
     const { counts, userReactions } = await loadReactions(poem.id);
