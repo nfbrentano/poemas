@@ -88,30 +88,6 @@ export default {
       return;
     }
 
-    // Fetch prev and next poems titles/slugs
-    const { data: prevPoem } = await supabase
-      .from('poems')
-      .select('title, slug')
-      .lt('published_at', poem.published_at)
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    const { data: nextPoem } = await supabase
-      .from('poems')
-      .select('title, slug')
-      .gt('published_at', poem.published_at)
-      .eq('status', 'published')
-      .order('published_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    const prevSlug = prevPoem?.slug;
-    const nextSlug = nextPoem?.slug;
-    const prevTitle = prevPoem?.title;
-    const nextTitle = nextPoem?.title;
-
     // Tempo Estimado de Leitura
     const plainText = (poem.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     const wordCount = plainText.split(' ').filter(w => w.length > 0).length;
@@ -160,10 +136,7 @@ export default {
           
           <div id="poem-text" class="poem-content">${poem.content}</div>
 
-          <nav class="poem-navigation" aria-label="Navegar entre poemas">
-            ${prevSlug ? `<a href="${import.meta.env.BASE_URL}poema/${prevSlug}" data-link class="poem-nav-prev">← ${prevTitle}</a>` : '<span></span>'}
-            ${nextSlug ? `<a href="${import.meta.env.BASE_URL}poema/${nextSlug}" data-link class="poem-nav-next">${nextTitle} →</a>` : '<span></span>'}
-          </nav>
+
           
           <div class="share-section">
             <p class="share-label">Compartilhar obra</p>
@@ -212,21 +185,7 @@ export default {
         
         <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
 
-        <div class="poem-nav">
-          <button id="prev-btn" class="nav-btn" style="${!prevSlug ? 'display:none;' : ''}" aria-label="Poema anterior">
-            ← Anterior
-          </button>
-          
-          <div class="nav-center">
-            <div class="nav-footer-text">
-              &copy; ${new Date().getFullYear()} Natanael Brentano. Todos os direitos reservados.
-            </div>
-          </div>
-          
-          <button id="next-btn" class="nav-btn nav-btn-next" style="${!nextSlug ? 'display:none;' : ''}" aria-label="Próximo poema">
-            Próximo →
-          </button>
-        </div>
+
       </div>
     `;
     
@@ -340,65 +299,16 @@ export default {
     };
     document.addEventListener('keydown', handleKeydown);
 
-    // Scroll logic (Progress bar + Instagram-style nav)
+    // Progress bar logic
     const scrollBar = document.getElementById('scroll-bar');
-    const poemNav = document.querySelector('.poem-nav');
-    const nextBtn = document.getElementById('next-btn');
-    let showedNext = false;
-
     handleScroll = throttle(() => {
-      // Progress bar
       const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       const scrolled = (winScroll / height) * 100;
       if (scrollBar) scrollBar.style.width = scrolled + "%";
-
-      // Sequential Nav Logic
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight;
-      const clientHeight = document.documentElement.clientHeight;
-
-      // Show Nav Container if any scroll happened
-      if (poemNav) {
-        if (scrollTop > 50) {
-          poemNav.classList.add('visible');
-        } else {
-          poemNav.classList.remove('visible');
-        }
-      }
-
-      // Next (95% scroll)
-      if (scrollTop + clientHeight > scrollHeight * 0.90 && nextSlug && !showedNext) {
-        showedNext = true;
-        if (nextBtn) nextBtn.style.transform = 'scale(1.05)';
-        setTimeout(() => { if(nextBtn) nextBtn.style.transform = 'scale(1)'; }, 200)
-      }
     }, 100);
-
     window.addEventListener('scroll', handleScroll);
 
-    // Touch swipe mobile
-    let touchStartX = 0;
-    handleTouchStart = e => touchStartX = e.touches[0].clientX;
-    handleTouchEnd = e => {
-      const deltaX = touchStartX - e.changedTouches[0].clientX;
-      if (Math.abs(deltaX) > 80) { // Threshold for swipe
-        if (deltaX > 0 && nextSlug) navigateTo(`/poema/${nextSlug}`);
-        else if (deltaX < 0 && prevSlug) navigateTo(`/poema/${prevSlug}`);
-      }
-    };
-
-    document.addEventListener('touchstart', handleTouchStart, {passive: true});
-    document.addEventListener('touchend', handleTouchEnd, {passive: true});
-
-    // Click handlers
-    nextBtn?.addEventListener('click', () => {
-      if (nextSlug) navigateTo(`/poema/${nextSlug}`);
-    });
-    document.getElementById('prev-btn')?.addEventListener('click', () => {
-      if (prevSlug) navigateTo(`/poema/${prevSlug}`);
-    });
-    
     // Newsletter form logic
     newsletter.init();
 
