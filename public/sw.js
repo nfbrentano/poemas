@@ -69,6 +69,8 @@ self.addEventListener('fetch', (event) => {
         if (event.request.destination !== 'image') {
           console.warn('[SW] Fetch failed for:', event.request.url);
         }
+        // Return a generic error response to avoid "Failed to convert value to 'Response'"
+        return new Response('Network error occurred', { status: 408, statusText: 'Network Error' });
       });
     })
   );
