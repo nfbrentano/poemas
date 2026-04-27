@@ -153,18 +153,12 @@ export default {
     // Setup Newsletter form logic
     newsletter.init();
 
-    // Search Logic Implementation
-    const headerSearchInput = document.getElementById('header-search-input');
-    const mobileSearchInput = document.getElementById('mobile-search-input');
-    const listContainer = container.querySelector('.list-container');
-
     const handleSearch = (e) => {
-      const searchTerm = e.target.value.toLowerCase().trim();
+      if (e.target.id !== 'overlay-search-input' && e.target.id !== 'header-search-input') return;
       
-      // Update both inputs to stay in sync
-      if (headerSearchInput) headerSearchInput.value = e.target.value;
-      if (mobileSearchInput) mobileSearchInput.value = e.target.value;
-
+      const searchTerm = e.target.value.toLowerCase().trim();
+      const listContainer = container.querySelector('.list-container');
+      
       const filteredPoems = remainingPoems.filter(poem => 
         poem.title.toLowerCase().includes(searchTerm) || 
         (poem.excerpt && poem.excerpt.toLowerCase().includes(searchTerm)) ||
@@ -187,8 +181,11 @@ export default {
       }
     };
 
-    headerSearchInput?.addEventListener('input', handleSearch);
-    mobileSearchInput?.addEventListener('input', handleSearch);
+    document.addEventListener('input', handleSearch);
+    
+    this.cleanup = () => {
+      document.removeEventListener('input', handleSearch);
+    };
 
     // Random Poem logic
     const randomHomeBtn = container.querySelector('#random-home-btn');

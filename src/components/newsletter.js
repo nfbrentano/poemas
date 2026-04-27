@@ -39,18 +39,33 @@ export const newsletter = {
       
       const { error } = await supabase.from('subscribers').insert([{ email }]);
       
-      if (error) {
-        if (error.code === '23505') { // unique violation
-          msgEl.innerHTML = 'Este e-mail já está inscrito.';
-          msgEl.style.color = 'var(--text-secondary)';
-        } else {
-          msgEl.innerHTML = 'Erro ao inscrever. Tente novamente.';
-          msgEl.style.color = 'var(--error)';
+      if (!error || error.code === '23505') {
+        // Chamar a Edge Function para registrar no Loops
+        try {
+          const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/loops-subscribe`;
+          await fetch(fnUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ email })
+          });
+        } catch (e) {
+          // Falha silenciosa no Loops não impede a confirmação ao usuário
+          console.warn('Loops sync failed:', e);
         }
+
+        msgEl.innerHTML = error?.code === '23505'
+          ? 'Este e-mail já está inscrito.'
+          : 'Obrigado por assinar.';
+        msgEl.style.color = error?.code === '23505'
+          ? 'var(--text-secondary)'
+          : 'var(--success)';
+        if (!error) subForm.reset();
       } else {
-        msgEl.innerHTML = 'Obrigado por assinar.';
-        msgEl.style.color = 'var(--success)';
-        subForm.reset();
+        msgEl.innerHTML = 'Erro ao inscrever. Tente novamente.';
+        msgEl.style.color = 'var(--error)';
       }
     });
   }

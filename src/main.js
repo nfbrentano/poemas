@@ -11,14 +11,8 @@ document.querySelector('#app').innerHTML = `
     <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
       <a href="${import.meta.env.BASE_URL}" class="logo" data-link>Natanael Brentano</a>
       
-      <div id="header-search-container" class="header-search-container" style="display: none;">
-        <input type="search" id="header-search-input" placeholder="Buscar poema..." aria-label="Buscar poema">
-      </div>
-
-      <div style="display: flex; align-items: center;">
-        <button id="search-toggle-btn" class="search-toggle-btn" aria-label="Abrir busca" style="display: none;">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </button>
+      <div style="display: flex; align-items: center; gap: var(--space-sm);">
+        <div id="header-search-container" class="header-search-container"></div>
 
         <nav class="main-nav">
           <ul>
@@ -32,13 +26,6 @@ document.querySelector('#app').innerHTML = `
           ⚄ <span class="btn-text">Aleatório</span>
         </button>
 
-        <button id="menu-toggle" class="menu-toggle" aria-label="Menu" title="Abrir menu">
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12" class="line-1"></line>
-            <line x1="3" y1="6" x2="21" y2="6" class="line-2"></line>
-            <line x1="3" y1="18" x2="21" y2="18" class="line-3"></line>
-          </svg>
-        </button>
         <button id="mode-toggle" class="theme-toggle" aria-label="Alternar modo de visualização" title="Alternar entre modo escuro, claro e alto contraste">
           <span class="icon-moon"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>
           <span class="icon-sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>
@@ -48,14 +35,6 @@ document.querySelector('#app').innerHTML = `
     </div>
   </header>
 
-  <div id="search-overlay" class="search-overlay">
-    <button id="search-close-btn" class="search-close-btn" aria-label="Fechar busca">✕</button>
-    <div class="search-overlay-content">
-      <input type="search" id="mobile-search-input" placeholder="Buscar poema..." aria-label="Buscar poema mobile">
-      <p class="search-overlay-help">Digite para filtrar os poemas</p>
-    </div>
-  </div>
-
   <main id="main-content" class="site-content container"></main>
   <footer class="site-footer">
     <div class="container">
@@ -63,6 +42,189 @@ document.querySelector('#app').innerHTML = `
     </div>
   </footer>
 `;
+
+// Dinamicamente cria os botões do cabeçalho
+const headerSearchContainer = document.querySelector('#header-search-container');
+if (headerSearchContainer) {
+  // Cria botão de busca para mobile
+  const searchToggleBtn = document.createElement('button');
+  searchToggleBtn.id = 'search-toggle-btn';
+  searchToggleBtn.className = 'header-search-toggle';
+  searchToggleBtn.setAttribute('aria-label', 'Abrir busca');
+  searchToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+  headerSearchContainer.appendChild(searchToggleBtn);
+  
+  // Cria hambúrguer menu
+  const menuToggleBtn = document.createElement('button');
+  menuToggleBtn.id = 'menu-toggle';
+  menuToggleBtn.className = 'menu-toggle';
+  menuToggleBtn.setAttribute('aria-label', 'Menu');
+  menuToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12" class="line-1"></line><line x1="3" y1="6" x2="21" y2="6" class="line-2"></line><line x1="3" y1="18" x2="21" y2="18" class="line-3"></line></svg>';
+  headerSearchContainer.appendChild(menuToggleBtn);
+  
+  // Lógica do overlay de busca
+  let searchOverlay = null;
+  
+  const createSearchOverlay = () => {
+    if (searchOverlay) return searchOverlay;
+    
+    searchOverlay = document.createElement('div');
+    searchOverlay.id = 'search-overlay';
+    searchOverlay.className = 'search-overlay';
+    searchOverlay.innerHTML = `
+      <div class="search-overlay-content">
+        <button class="search-overlay-close" id="search-close-btn" aria-label="Fechar busca">&times;</button>
+        <input type="search" id="overlay-search-input" placeholder="Buscar poema..." aria-label="Buscar poema">
+        <p class="search-overlay-help">Digite para filtrar os poemas</p>
+      </div>
+    `;
+    document.body.appendChild(searchOverlay);
+    return searchOverlay;
+  };
+  
+  const openSearchOverlay = () => {
+    const overlay = createSearchOverlay();
+    overlay.classList.add('active');
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      const input = overlay.querySelector('#overlay-search-input');
+      if (input) input.focus();
+    }, 100);
+  };
+  
+  const closeSearchOverlay = () => {
+    if (searchOverlay) {
+      searchOverlay.classList.remove('active');
+      searchOverlay.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  };
+  
+  searchToggleBtn.addEventListener('click', openSearchOverlay);
+  
+  document.addEventListener('click', (e) => {
+    if (searchOverlay && 
+        searchOverlay.classList.contains('active') &&
+        e.target === searchOverlay) {
+      closeSearchOverlay();
+    }
+    if (e.target.id === 'search-close-btn') {
+        closeSearchOverlay();
+    }
+  });
+  
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && searchOverlay && searchOverlay.classList.contains('active')) {
+      closeSearchOverlay();
+    }
+  });
+  
+  // Lógica do hambúrguer menu
+  const mainNav = document.querySelector('.main-nav');
+  if (mainNav && menuToggleBtn) {
+    menuToggleBtn.addEventListener('click', () => {
+      const isExpanded = menuToggleBtn.getAttribute('aria-expanded') === 'true';
+      menuToggleBtn.setAttribute('aria-expanded', !isExpanded);
+      mainNav.classList.toggle('active');
+      menuToggleBtn.classList.toggle('active');
+    });
+    
+    // Fecha menu ao clicar em um link
+    mainNav.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A' || e.target.hasAttribute('data-link')) {
+        mainNav.classList.remove('active');
+        menuToggleBtn.classList.remove('active');
+        menuToggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+  
+  // CSS para o overlay
+  const style = document.createElement('style');
+  style.textContent = `
+    .search-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .search-overlay.active {
+      opacity: 1;
+    }
+    .search-overlay-content {
+      position: relative;
+      width: 90%;
+      max-width: 600px;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      padding: var(--space-xl);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    .search-overlay.active .search-overlay-content {
+      transform: translateY(0);
+    }
+    .search-overlay-close {
+      position: absolute;
+      top: var(--space-md);
+      right: var(--space-md);
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .search-overlay-close:hover {
+      color: var(--accent-subtle);
+    }
+    #overlay-search-input {
+      width: 100%;
+      padding: var(--space-lg);
+      font-size: 1.5rem;
+      border: none;
+      border-bottom: 2px solid var(--border-strong);
+      background: transparent;
+      color: var(--text-primary);
+      font-family: var(--font-main);
+    }
+    #overlay-search-input:focus {
+      outline: none;
+      border-color: var(--accent-subtle);
+    }
+    .search-overlay-help {
+      margin-top: var(--space-md);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    .menu-toggle.active .line-1 {
+      transform: translateY(6px) rotate(45deg);
+      transform-origin: center;
+    }
+    .menu-toggle.active .line-2 {
+      opacity: 0;
+    }
+    .menu-toggle.active .line-3 {
+      transform: translateY(-6px) rotate(-45deg);
+      transform-origin: center;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 
 // Unified Mode Logic (Dark -> Light -> High Contrast)
 const modeToggle = document.getElementById('mode-toggle');
@@ -104,44 +266,6 @@ modeToggle.addEventListener('click', () => {
   applyMode(currentMode);
 });
 
-// Search Overlay Logic
-const searchToggleBtn = document.getElementById('search-toggle-btn');
-const searchOverlay = document.getElementById('search-overlay');
-const searchCloseBtn = document.getElementById('search-close-btn');
-const mobileSearchInput = document.getElementById('mobile-search-input');
-
-const openSearch = () => {
-  searchOverlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-  setTimeout(() => mobileSearchInput.focus(), 100);
-};
-
-const closeSearch = () => {
-  searchOverlay.classList.remove('active');
-  document.body.style.overflow = '';
-};
-
-searchToggleBtn?.addEventListener('click', openSearch);
-searchCloseBtn?.addEventListener('click', closeSearch);
-
-// Close on Escape
-window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeSearch();
-  }
-});
-
-// Hamburger Menu Logic
-const menuToggle = document.getElementById('menu-toggle');
-const mainNav = document.querySelector('.site-header .main-nav');
-
-menuToggle?.addEventListener('click', () => {
-  const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
-  menuToggle.setAttribute('aria-expanded', !isExpanded);
-  mainNav?.classList.toggle('active');
-  menuToggle.classList.toggle('active');
-});
-
 // Random Poem logic
 const randomPoemBtn = document.getElementById('random-poem-btn');
 randomPoemBtn?.addEventListener('click', () => {
@@ -159,15 +283,6 @@ const updateFavoritesNav = async () => {
 
 updateFavoritesNav();
 window.addEventListener('favorites-updated', updateFavoritesNav);
-
-// Close menu on link click
-mainNav?.addEventListener('click', (e) => {
-  if (e.target.tagName === 'A') {
-    mainNav.classList.remove('active');
-    menuToggle?.classList.remove('active');
-    menuToggle?.setAttribute('aria-expanded', 'false');
-  }
-});
 
 // Load reading font size preference
 const savedReadingFont = localStorage.getItem('reading-font-size') || 'font-reading-md';

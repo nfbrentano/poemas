@@ -40,19 +40,14 @@ export async function router() {
   view.innerHTML = '<div class="loading-container fade-in">Carregando...</div>';
   
   // Manage header search visibility
-  const headerSearch = document.getElementById('header-search-container');
-  const headerSearchInput = document.getElementById('header-search-input');
   const searchToggleBtn = document.getElementById('search-toggle-btn');
-  const mobileSearchInput = document.getElementById('mobile-search-input');
+  const overlaySearchInput = document.getElementById('overlay-search-input');
   
   if (path === '/') {
-    if (headerSearch) headerSearch.style.display = 'block';
     if (searchToggleBtn) searchToggleBtn.style.display = 'block';
   } else {
-    if (headerSearch) headerSearch.style.display = 'none';
     if (searchToggleBtn) searchToggleBtn.style.display = 'none';
-    if (headerSearchInput) headerSearchInput.value = ''; // Reset on page change
-    if (mobileSearchInput) mobileSearchInput.value = ''; 
+    if (overlaySearchInput) overlaySearchInput.value = ''; // Reset on page change
   }
 
   // Manage body classes for specific layouts

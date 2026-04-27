@@ -55,7 +55,43 @@ Você pode usar o `npx` para rodar os comandos do Supabase sem precisar instalá
    npx supabase functions deploy send-newsletter
    ```
 
-## 4. Importar Poemas do WordPress (XML/WXR)
+## 4. Configuração de Email (Loops.so)
+
+Para gerenciar os contatos da newsletter e enviar e-mails de boas-vindas, utilizamos o [Loops.so](https://loops.so/).
+
+### 4.1. Obter Chaves no Loops.so
+
+1. Crie uma conta no Loops.so.
+2. Vá em **Settings > API** e gere uma nova **API Key**.
+3. (Opcional) Em **Audience**, crie uma mailing list e copie o **Mailing List ID**.
+
+### 4.2. Configurar Variáveis no Supabase
+
+Adicione as chaves do Loops como segredos no Supabase:
+
+```bash
+npx supabase secrets set LOOPS_API_KEY=sua_chave_aqui
+npx supabase secrets set LOOPS_MAILING_LIST_ID=seu_id_aqui  # Opcional
+```
+
+### 4.3. Deploy da Edge Function
+
+Faça o deploy da função que sincroniza os inscritos com o Loops:
+
+```bash
+npx supabase functions deploy loops-subscribe
+```
+
+### 4.4. Automação de Boas-vindas
+
+No painel do Loops:
+1. Vá em **Workflows** e crie uma nova automação.
+2. Defina o gatilho como **Event Received**.
+3. Use o nome do evento `newsletter_subscribe`.
+4. Adicione o passo de envio de e-mail com sua mensagem de boas-vindas.
+
+
+## 5. Importar Poemas do WordPress (XML/WXR)
 
 1. Exporte seus posts do WordPress (Ferramentas > Exportar > Posts). Salve o arquivo `.xml`.
 2. Rode o script utilitário do projeto, passando a URL do Supabase e a **Service Role Key** (você acha no painel do Supabase, em Settings > API). A Service Role Key é necessária para burlar temporariamente o RLS e injetar os dados de fora.
@@ -63,7 +99,7 @@ Você pode usar o `npx` para rodar os comandos do Supabase sem precisar instalá
    SUPABASE_URL="sua_url" SUPABASE_SERVICE_ROLE_KEY="sua_service_role" node scripts/import_wp.js /caminho/para/arquivo.xml
    ```
 
-## 5. Deploy no GitHub Pages (e Domínio Customizado)
+## 6. Deploy no GitHub Pages (e Domínio Customizado)
 
 ### 5.1. GitHub Actions (Deploy Automático)
 
@@ -88,7 +124,7 @@ Você pode usar o `npx` para rodar os comandos do Supabase sem precisar instalá
 
 > O HTTPS será ativado automaticamente pelo GitHub Pages assim que a propagação do DNS for concluída.
 
-## 6. Geração de Arte para o Instagram
+## 7. Geração de Arte para o Instagram
 
 No painel Admin, ao editar ou visualizar um poema publicado, você verá um botão **"Exportar p/ Instagram"**.
 Ele utiliza o CSS da classe `.social-card-layout` e a biblioteca `html2canvas` para "tirar uma foto" invisível do poema e baixar um PNG nas proporções `1080x1080` (fundo preto e estilo premium), pronto para postar, preservando totalmente a privacidade das suas credenciais já que ocorre do lado do cliente e só expõe dados já públicos do poema.
