@@ -4,6 +4,7 @@ import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
 import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
+import { favorites } from '../utils/favorites.js';
 
 function throttle(func, limit) {
   let inThrottle;
@@ -168,6 +169,10 @@ export default {
               <button class="font-btn" data-size="md" title="Fonte padrão">A</button>
               <button class="font-btn" data-size="lg" title="Aumentar fonte">A+</button>
             </div>
+            <button id="fav-btn" class="btn-secondary" aria-label="Salvar poema">
+              <span class="fav-icon">♡</span> <span class="fav-text">Salvar</span>
+            </button>
+            
             <button id="immersive-btn" class="btn-secondary" aria-label="Modo leitura imersiva">
               ⬜ Leitura Imersiva
             </button>
@@ -275,6 +280,30 @@ export default {
         updateReactionUI(newCounts, newUR);
         btn.disabled = false;
       });
+    });
+
+    // Favorites Logic
+    const favBtn = document.getElementById('fav-btn');
+    const updateFavUI = async () => {
+      const isFav = await favorites.has(poem.slug);
+      if (favBtn) {
+        favBtn.querySelector('.fav-icon').textContent = isFav ? '♥' : '♡';
+        favBtn.querySelector('.fav-text').textContent = isFav ? 'Salvo' : 'Salvar';
+        favBtn.classList.toggle('active', isFav);
+      }
+    };
+    updateFavUI();
+
+    favBtn?.addEventListener('click', async () => {
+      const isFav = await favorites.has(poem.slug);
+      if (isFav) {
+        await favorites.remove(poem.slug);
+      } else {
+        await favorites.save(poem);
+      }
+      updateFavUI();
+      // Notify main.js to update header if needed
+      window.dispatchEvent(new CustomEvent('favorites-updated'));
     });
 
     // Immersive Mode Logic

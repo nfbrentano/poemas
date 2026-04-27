@@ -1,7 +1,7 @@
 export function updateSEO({ title, description, url, imageUrl, type = 'website', publishedTime, tags }) {
   const defaultTitle = 'Poemas Brasileiros - Natanael Brentano';
   const defaultDesc = 'Coleção de poemas originais em português por Natanael Fernando Gatti Brentano. Temas de amor, natureza e reflexões cotidianas.';
-  const defaultImage = 'https://nfbrentano.github.io/poemas/og-cover.jpg';
+  const defaultImage = `${window.location.origin}${import.meta.env.BASE_URL}og-default.png`;
   
   // Set document title
   const finalTitle = title ? `${title} — Natanael Brentano` : defaultTitle;
@@ -12,7 +12,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
     let tag = document.querySelector(selector);
     if (!tag) {
       tag = document.createElement('meta');
-      const isProperty = selector.includes('property');
+      const isProperty = selector.includes('property') || selector.includes('itemprop');
       const attrName = isProperty ? 'property' : 'name';
       
       const match = selector.match(/["'](.*?)["']/);
@@ -52,9 +52,11 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   setMeta('meta[property="og:url"]', 'content', finalUrl);
   setMeta('meta[property="og:type"]', 'content', type);
   setMeta('meta[property="og:image"]', 'content', finalImage);
+  setMeta('meta[property="og:image:width"]', 'content', '1200');
+  setMeta('meta[property="og:image:height"]', 'content', '630');
 
   // Twitter
-  setMeta('meta[name="twitter:card"]', 'content', 'summary');
+  setMeta('meta[name="twitter:card"]', 'content', 'summary_large_image');
   setMeta('meta[name="twitter:title"]', 'content', finalTitle);
   setMeta('meta[name="twitter:description"]', 'content', finalDesc);
   setMeta('meta[name="twitter:image"]', 'content', finalImage);

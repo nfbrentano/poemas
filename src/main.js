@@ -2,7 +2,8 @@ import './styles/variables.css';
 import './styles/global.css';
 import './styles/components.css';
 import { initRouter } from './router.js';
-import { updateActiveNavLink } from './utils/navigation.js';
+import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
+import { favorites } from './utils/favorites.js';
 
 // Setup Base Layout
 document.querySelector('#app').innerHTML = `
@@ -22,9 +23,15 @@ document.querySelector('#app').innerHTML = `
         <nav class="main-nav">
           <ul>
             <li><a href="${import.meta.env.BASE_URL}" data-link>Poemas</a></li>
+            <li id="nav-favorites" style="display: none;"><a href="${import.meta.env.BASE_URL}favoritos" data-link>Salvos</a></li>
             <li><a href="${import.meta.env.BASE_URL}sobre" data-link>Sobre</a></li>
           </ul>
         </nav>
+        
+        <button id="random-poem-btn" class="random-poem-btn" aria-label="Poema aleatório" title="Ver um poema aleatório">
+          ⚄ <span class="btn-text">Aleatório</span>
+        </button>
+
         <button id="menu-toggle" class="menu-toggle" aria-label="Menu" title="Abrir menu">
           <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12" class="line-1"></line>
@@ -135,6 +142,24 @@ menuToggle?.addEventListener('click', () => {
   menuToggle.classList.toggle('active');
 });
 
+// Random Poem logic
+const randomPoemBtn = document.getElementById('random-poem-btn');
+randomPoemBtn?.addEventListener('click', () => {
+  getRandomPoem();
+});
+
+// Favorites Nav Visibility logic
+const updateFavoritesNav = async () => {
+  const count = await favorites.count();
+  const navFav = document.getElementById('nav-favorites');
+  if (navFav) {
+    navFav.style.display = count > 0 ? 'block' : 'none';
+  }
+};
+
+updateFavoritesNav();
+window.addEventListener('favorites-updated', updateFavoritesNav);
+
 // Close menu on link click
 mainNav?.addEventListener('click', (e) => {
   if (e.target.tagName === 'A') {
@@ -163,6 +188,7 @@ window.addEventListener('scroll', () => {
 // Initialize Router
 initRouter();
 updateActiveNavLink();
+updateFavoritesNav();
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {

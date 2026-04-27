@@ -1,6 +1,7 @@
 import { supabase } from '../utils/supabase.js';
 import { updateSEO } from '../utils/seo.js';
 import { newsletter } from '../components/newsletter.js';
+import { getRandomPoem } from '../utils/navigation.js';
 
 export default {
   meta: {
@@ -138,6 +139,9 @@ export default {
           <div class="list-container">
             ${renderPoemList(remainingPoems)}
           </div>
+          <div class="random-home-container">
+            <button id="random-home-btn" class="random-home-link">→ Poema aleatório</button>
+          </div>
         </section>
         
         ${newsletter.render()}
@@ -185,5 +189,11 @@ export default {
 
     headerSearchInput?.addEventListener('input', handleSearch);
     mobileSearchInput?.addEventListener('input', handleSearch);
+
+    // Random Poem logic
+    const randomHomeBtn = container.querySelector('#random-home-btn');
+    randomHomeBtn?.addEventListener('click', () => {
+      getRandomPoem();
+    });
   }
 };

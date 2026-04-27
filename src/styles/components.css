@@ -1145,3 +1145,157 @@ html.immersive-mode #immersive-btn {
   border-color: var(--accent-muted);
   background: var(--accent-muted);
 }
+
+/* Random Poem Buttons */
+.random-poem-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 0.5rem 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  margin-left: var(--space-md);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.random-poem-btn:hover {
+  border-color: var(--accent-subtle);
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.random-home-container {
+  margin-top: var(--space-2xl);
+  text-align: center;
+}
+
+.random-home-link {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: var(--space-sm);
+  transition: color var(--transition-fast);
+}
+
+.random-home-link:hover {
+  color: var(--accent-subtle);
+}
+
+@media (max-width: 639px) {
+  .random-poem-btn {
+    display: none;
+  }
+}
+
+/* Favorite Button (Poem Page) */
+#fav-btn.active {
+  border-color: var(--accent-subtle);
+  color: var(--accent-subtle);
+}
+
+#fav-btn.active .fav-icon {
+  color: var(--accent-subtle);
+}
+
+/* Favorites Page */
+.favorites-page {
+  max-width: var(--container-poetry);
+  margin: 0 auto var(--space-4xl) auto;
+  padding-top: var(--space-xl);
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: var(--space-3xl);
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 300;
+  margin-bottom: var(--space-xs);
+}
+
+.page-subtitle {
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+}
+
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.favorite-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-lg) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: opacity var(--transition-fast);
+}
+
+.favorite-content {
+  flex: 1;
+}
+
+.favorite-link {
+  display: block;
+  text-decoration: none;
+}
+
+.favorite-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.3rem;
+}
+
+.favorite-excerpt {
+  font-family: var(--font-serif-text);
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.favorite-year {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.remove-fav-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--space-sm);
+  transition: color var(--transition-fast);
+  opacity: 0.5;
+}
+
+.remove-fav-btn:hover {
+  color: var(--error);
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .page-title { font-size: 2.5rem; }
+}
