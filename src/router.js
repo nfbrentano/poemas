@@ -6,7 +6,8 @@ export const routes = {
   '/': () => import('./pages/home.js').then(m => m.default),
   '/poema/:slug': () => import('./pages/poem.js').then(m => m.default),
   '/admin': () => import('./pages/admin.js').then(m => m.default),
-  '/login': () => import('./pages/login.js').then(m => m.default)
+  '/login': () => import('./pages/login.js').then(m => m.default),
+  '/sobre': () => import('./pages/about.js').then(m => m.default)
 };
 
 let currentViewComponent = null;

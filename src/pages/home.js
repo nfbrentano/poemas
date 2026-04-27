@@ -15,8 +15,8 @@ export default {
   },
   async render(container) {
     updateSEO({
-      title: 'A poética do silêncio',
-      description: 'Obras contemporâneas de Natanael Brentano. Textos curtos sobre a imensidão do efêmero.'
+      title: 'Natanael Brentano — Poemas',
+      description: 'Poesia contemporânea e textos curtos sobre o efêmero.'
     });
     
     const skeletonHtml = `
@@ -132,10 +132,8 @@ export default {
         </section>
 
         <section class="hero-section fade-in">
-          <h1>A poética do silêncio</h1>
-          <p>
-            Obras contemporâneas de Natanael Brentano. Textos curtos sobre a imensidão do efêmero.
-          </p>
+          <h1>Natanael Brentano</h1>
+          <p></p>
         </section>
 
         <section class="poems-list fade-in">

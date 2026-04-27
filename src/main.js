@@ -18,6 +18,7 @@ document.querySelector('#app').innerHTML = `
         <nav class="main-nav">
           <ul>
             <li><a href="${import.meta.env.BASE_URL}" data-link>Poemas</a></li>
+            <li><a href="${import.meta.env.BASE_URL}sobre" data-link>Sobre</a></li>
           </ul>
         </nav>
         <button id="mode-toggle" class="theme-toggle" aria-label="Alternar modo de visualização" title="Alternar entre modo escuro, claro e alto contraste">
