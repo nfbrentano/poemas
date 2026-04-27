@@ -132,7 +132,7 @@ export default {
         </section>
 
         <section class="hero-section fade-in">
-          <h1>Natanael Brentano</h1>
+          <h1></h1>
           <p></p>
         </section>
 
