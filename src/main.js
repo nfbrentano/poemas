@@ -1,9 +1,10 @@
 import './styles/variables.css';
 import './styles/global.css';
 import './styles/components.css';
-import { initRouter } from './router.js';
+import { initRouter, navigateTo } from './router.js';
 import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
 import { favorites } from './utils/favorites.js';
+import { supabase } from './utils/supabase.js';
 
 // Setup Base Layout
 document.querySelector('#app').innerHTML = `
@@ -64,7 +65,72 @@ if (headerSearchContainer) {
   
   // Lógica do overlay de busca
   let searchOverlay = null;
+  let allPoemsCache = null;
   
+  const fetchPoemsForSearch = async () => {
+    if (allPoemsCache) return allPoemsCache;
+    const { data, error } = await supabase
+      .from('poems')
+      .select('id, title, slug, excerpt, tags')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false });
+    
+    if (!error && data) {
+      allPoemsCache = data;
+      return data;
+    }
+    return [];
+  };
+
+  const renderSearchResults = (results, query) => {
+    const resultsContainer = document.getElementById('search-results');
+    if (!resultsContainer) return;
+
+    if (query.length < 2) {
+      resultsContainer.innerHTML = '';
+      return;
+    }
+
+    if (results.length === 0) {
+      resultsContainer.innerHTML = '<p class="search-no-results">Nenhum poema encontrado.</p>';
+      return;
+    }
+
+    resultsContainer.innerHTML = results.map(poem => `
+      <div class="search-result-item" data-slug="${poem.slug}">
+        <div class="search-result-title">${poem.title}</div>
+        <div class="search-result-excerpt">${poem.excerpt || ''}</div>
+      </div>
+    `).join('');
+
+    // Adiciona eventos de clique para navegação
+    resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const slug = item.getAttribute('data-slug');
+        closeSearchOverlay();
+        navigateTo(`/poema/${slug}`);
+      });
+    });
+  };
+
+  const handleGlobalSearch = async (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    const poems = await fetchPoemsForSearch();
+    
+    const results = poems.filter(poem => 
+      poem.title.toLowerCase().includes(query) || 
+      (poem.excerpt && poem.excerpt.toLowerCase().includes(query)) ||
+      (poem.tags && poem.tags.some(tag => tag.toLowerCase().includes(query)))
+    );
+
+    renderSearchResults(results, query);
+    
+    // Notifica outras páginas (como a Home) sobre a mudança na busca
+    window.dispatchEvent(new CustomEvent('global-search', { 
+      detail: { query, results } 
+    }));
+  };
+
   const createSearchOverlay = () => {
     if (searchOverlay) return searchOverlay;
     
@@ -74,11 +140,19 @@ if (headerSearchContainer) {
     searchOverlay.innerHTML = `
       <div class="search-overlay-content">
         <button class="search-overlay-close" id="search-close-btn" aria-label="Fechar busca">&times;</button>
-        <input type="search" id="overlay-search-input" placeholder="Buscar poema..." aria-label="Buscar poema">
-        <p class="search-overlay-help">Digite para filtrar os poemas</p>
+        <div class="search-input-wrapper">
+          <input type="search" id="overlay-search-input" placeholder="Buscar poema..." aria-label="Buscar poema" autocomplete="off">
+          <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
+        <div id="search-results" class="search-results-container"></div>
+        <p class="search-overlay-help">Digite título, trecho ou tema do poema</p>
       </div>
     `;
     document.body.appendChild(searchOverlay);
+
+    const input = searchOverlay.querySelector('#overlay-search-input');
+    input.addEventListener('input', handleGlobalSearch);
+
     return searchOverlay;
   };
   
@@ -87,6 +161,10 @@ if (headerSearchContainer) {
     overlay.classList.add('active');
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    
+    // Pré-carrega poemas ao abrir
+    fetchPoemsForSearch();
+
     setTimeout(() => {
       const input = overlay.querySelector('#overlay-search-input');
       if (input) input.focus();
@@ -98,6 +176,16 @@ if (headerSearchContainer) {
       searchOverlay.classList.remove('active');
       searchOverlay.style.display = 'none';
       document.body.style.overflow = '';
+      
+      // Limpa busca ao fechar
+      const input = searchOverlay.querySelector('#overlay-search-input');
+      const resultsContainer = searchOverlay.querySelector('#search-results');
+      if (input) input.value = '';
+      if (resultsContainer) resultsContainer.innerHTML = '';
+      
+      window.dispatchEvent(new CustomEvent('global-search', { 
+        detail: { query: '', results: null } 
+      }));
     }
   };
   
@@ -163,46 +251,84 @@ if (headerSearchContainer) {
     }
     .search-overlay-content {
       position: relative;
-      width: 90%;
-      max-width: 600px;
+      width: 95%;
+      max-width: 700px;
       background: var(--bg-primary);
-      border-radius: 8px;
+      border-radius: 12px;
       padding: var(--space-xl);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
       transform: translateY(20px);
-      transition: transform 0.3s ease;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      max-height: 80vh;
     }
-    .search-overlay.active .search-overlay-content {
-      transform: translateY(0);
+    .search-input-wrapper {
+      position: relative;
+      margin-bottom: var(--space-lg);
     }
-    .search-overlay-close {
+    .search-input-wrapper .search-icon {
       position: absolute;
-      top: var(--space-md);
-      right: var(--space-md);
-      background: none;
-      border: none;
-      font-size: 2rem;
+      left: var(--space-md);
+      top: 50%;
+      transform: translateY(-50%);
       color: var(--text-muted);
-      cursor: pointer;
-      line-height: 1;
-      transition: color 0.2s;
-    }
-    .search-overlay-close:hover {
-      color: var(--accent-subtle);
+      pointer-events: none;
     }
     #overlay-search-input {
       width: 100%;
-      padding: var(--space-lg);
-      font-size: 1.5rem;
-      border: none;
-      border-bottom: 2px solid var(--border-strong);
-      background: transparent;
+      padding: var(--space-md) var(--space-md) var(--space-md) 3rem;
+      font-size: 1.25rem;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      background: var(--bg-secondary);
       color: var(--text-primary);
       font-family: var(--font-main);
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
     #overlay-search-input:focus {
       outline: none;
       border-color: var(--accent-subtle);
+      box-shadow: 0 0 0 3px rgba(var(--accent-subtle-rgb), 0.1);
+    }
+    .search-results-container {
+      flex: 1;
+      overflow-y: auto;
+      margin: 0 -var(--space-xl);
+      padding: 0 var(--space-xl);
+    }
+    .search-result-item {
+      padding: var(--space-md);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .search-result-item:hover {
+      background: var(--bg-secondary);
+    }
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+    .search-result-title {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .search-result-excerpt {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .search-no-results {
+      text-align: center;
+      padding: var(--space-xl);
+      color: var(--text-muted);
+      font-style: italic;
     }
     .search-overlay-help {
       margin-top: var(--space-md);

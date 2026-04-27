@@ -153,20 +153,16 @@ export default {
     // Setup Newsletter form logic
     newsletter.init();
 
-    const handleSearch = (e) => {
-      if (e.target.id !== 'overlay-search-input' && e.target.id !== 'header-search-input') return;
-      
-      const searchTerm = e.target.value.toLowerCase().trim();
+    const handleGlobalSearch = (e) => {
+      const { query, results } = e.detail;
+      const searchTerm = query;
       const listContainer = container.querySelector('.list-container');
-      
-      const filteredPoems = remainingPoems.filter(poem => 
-        poem.title.toLowerCase().includes(searchTerm) || 
-        (poem.excerpt && poem.excerpt.toLowerCase().includes(searchTerm)) ||
-        (poem.tags && poem.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
-      );
 
       if (listContainer) {
-        listContainer.innerHTML = renderPoemList(filteredPoems, searchTerm.length > 0, searchTerm);
+        // Se temos resultados pré-filtrados do evento global, usamos eles.
+        // Caso contrário (como ao fechar a busca), voltamos para a lista original.
+        const poemsToShow = results || remainingPoems;
+        listContainer.innerHTML = renderPoemList(poemsToShow, searchTerm.length > 0, searchTerm);
       }
       
       // Hide POD and Hero when searching
@@ -181,10 +177,10 @@ export default {
       }
     };
 
-    document.addEventListener('input', handleSearch);
+    window.addEventListener('global-search', handleGlobalSearch);
     
     this.cleanup = () => {
-      document.removeEventListener('input', handleSearch);
+      window.removeEventListener('global-search', handleGlobalSearch);
     };
 
     // Random Poem logic
