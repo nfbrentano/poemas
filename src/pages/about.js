@@ -41,11 +41,28 @@ export default {
     const fileInput = container.querySelector('#avatar-upload');
     const uploadLabel = container.querySelector('.upload-label');
 
-    // 1) Carregar foto salva (se houver)
-    const savedURL = localStorage.getItem('profilePhotoURL');
-    if (savedURL) {
-      imgEl.src = savedURL;
-    }
+    // 1) Carregar foto salva (Supabase primeiro, fallback localStorage)
+    const loadAvatar = async () => {
+      // Fallback imediato do cache
+      const cachedURL = localStorage.getItem('profilePhotoURL');
+      if (cachedURL) imgEl.src = cachedURL;
+
+      try {
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'avatar_url')
+          .maybeSingle();
+
+        if (data && data.value) {
+          imgEl.src = data.value;
+          localStorage.setItem('profilePhotoURL', data.value);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar avatar no Supabase:', err);
+      }
+    };
+    loadAvatar();
 
     // 2) Ao escolher arquivo, fazer upload para Supabase Storage (somente se admin)
     if (isAdmin && fileInput && uploadLabel) {
@@ -76,18 +93,20 @@ export default {
 
           const publicURL = urlData.publicUrl;
 
+          // Salvar na tabela site_settings
+          await supabase.from('site_settings').upsert({ 
+            key: 'avatar_url', 
+            value: publicURL 
+          });
+
           imgEl.src = publicURL;
           localStorage.setItem('profilePhotoURL', publicURL);
 
           uploadLabel.textContent = 'Foto atualizada!';
-          setTimeout(() => {
-            uploadLabel.textContent = 'Alterar foto';
-            uploadLabel.style.cursor = 'pointer';
-            fileInput.disabled = false;
-          }, 1500);
         } catch (err) {
           console.error('Erro ao upload avatar:', err);
           uploadLabel.textContent = 'Erro ao enviar';
+        } finally {
           setTimeout(() => {
             uploadLabel.textContent = 'Alterar foto';
             uploadLabel.style.cursor = 'pointer';

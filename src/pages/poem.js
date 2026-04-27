@@ -87,29 +87,10 @@ export default {
       return;
     }
 
-    // Fetch prev and next poems titles/slugs
-    const { data: prevPoem } = await supabase
-      .from('poems')
-      .select('title, slug')
-      .lt('published_at', poem.published_at)
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    const { data: nextPoem } = await supabase
-      .from('poems')
-      .select('title, slug')
-      .gt('published_at', poem.published_at)
-      .eq('status', 'published')
-      .order('published_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    const prevSlug = prevPoem?.slug;
-    const nextSlug = nextPoem?.slug;
-    const prevTitle = prevPoem?.title;
-    const nextTitle = nextPoem?.title;
+    const prevSlug = poem.prev_slug;
+    const nextSlug = poem.next_slug;
+    const prevTitle = poem.prev_title;
+    const nextTitle = poem.next_title;
 
     // Tempo Estimado de Leitura
     const plainText = (poem.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -159,11 +140,6 @@ export default {
           
           <div id="poem-text" class="poem-content">${poem.content}</div>
 
-          <nav class="poem-navigation" aria-label="Navegar entre poemas">
-            ${prevSlug ? `<a href="${import.meta.env.BASE_URL}poema/${prevSlug}" data-link class="poem-nav-prev">← ${prevTitle}</a>` : '<span></span>'}
-            ${nextSlug ? `<a href="${import.meta.env.BASE_URL}poema/${nextSlug}" data-link class="poem-nav-next">${nextTitle} →</a>` : '<span></span>'}
-          </nav>
-          
           <div class="share-section">
             <p class="share-label">Compartilhar obra</p>
             <div class="share-buttons">
@@ -211,8 +187,9 @@ export default {
         <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
 
         <div class="poem-nav">
-          <button id="prev-btn" class="nav-btn" style="${!prevSlug ? 'display:none;' : ''}" aria-label="Poema anterior">
-            ← Anterior
+          <button id="prev-btn" class="nav-btn" style="${!prevSlug ? 'display:none;' : ''}" aria-label="Poema anterior" title="${prevTitle || ''}">
+            <span class="nav-btn-label">← Anterior</span>
+            <span class="nav-btn-title">${prevTitle || ''}</span>
           </button>
           
           <div class="nav-center">
@@ -221,8 +198,9 @@ export default {
             </div>
           </div>
           
-          <button id="next-btn" class="nav-btn nav-btn-next" style="${!nextSlug ? 'display:none;' : ''}" aria-label="Próximo poema">
-            Próximo →
+          <button id="next-btn" class="nav-btn nav-btn-next" style="${!nextSlug ? 'display:none;' : ''}" aria-label="Próximo poema" title="${nextTitle || ''}">
+            <span class="nav-btn-label">Próximo →</span>
+            <span class="nav-btn-title">${nextTitle || ''}</span>
           </button>
         </div>
       </div>

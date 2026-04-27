@@ -41,13 +41,17 @@ export async function router() {
   // Manage header search visibility
   const headerSearch = document.getElementById('header-search-container');
   const headerSearchInput = document.getElementById('header-search-input');
-  if (headerSearch) {
-    if (path === '/') {
-      headerSearch.style.display = 'block';
-    } else {
-      headerSearch.style.display = 'none';
-      if (headerSearchInput) headerSearchInput.value = ''; // Reset on page change
-    }
+  const searchToggleBtn = document.getElementById('search-toggle-btn');
+  const mobileSearchInput = document.getElementById('mobile-search-input');
+  
+  if (path === '/') {
+    if (headerSearch) headerSearch.style.display = 'block';
+    if (searchToggleBtn) searchToggleBtn.style.display = 'block';
+  } else {
+    if (headerSearch) headerSearch.style.display = 'none';
+    if (searchToggleBtn) searchToggleBtn.style.display = 'none';
+    if (headerSearchInput) headerSearchInput.value = ''; // Reset on page change
+    if (mobileSearchInput) mobileSearchInput.value = ''; 
   }
 
   // Manage body classes for specific layouts

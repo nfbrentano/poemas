@@ -113,6 +113,89 @@ input, textarea {
   .header-search-container {
     display: none !important;
   }
+  .search-toggle-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: var(--space-xs);
+    cursor: pointer;
+    margin-right: var(--space-sm);
+  }
+}
+
+.search-toggle-btn {
+  display: none;
+}
+
+/* Search Overlay */
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.search-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.search-close-btn {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.search-overlay-content {
+  width: 100%;
+  max-width: 400px;
+  padding: 0 var(--space-lg);
+  text-align: center;
+}
+
+#mobile-search-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border-strong);
+  color: var(--text-primary);
+  font-size: 1.8rem;
+  padding: var(--space-sm) 0;
+  outline: none;
+  font-family: var(--font-display);
+}
+
+#mobile-search-input:focus {
+  border-color: var(--accent-subtle);
+}
+
+.search-overlay-help {
+  margin-top: var(--space-md);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 /* Layout & Sections */
@@ -355,7 +438,7 @@ input, textarea {
 
 .nav-btn {
   opacity: 0.8;
-  padding: 12px 20px;
+  padding: 8px 16px;
   border: 1px solid var(--border-strong);
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -364,6 +447,36 @@ input, textarea {
   transition: all 0.2s;
   font-weight: 500;
   min-width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+}
+
+.nav-btn-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.nav-btn-title {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+@media (max-width: 480px) {
+  .nav-btn-title {
+    display: none;
+  }
+  .nav-btn {
+    padding: 12px 15px;
+  }
 }
 
 .nav-btn:hover {
@@ -373,7 +486,6 @@ input, textarea {
 
 .nav-btn-next {
   background: var(--border-strong);
-  font-weight: 600;
   min-width: 110px;
 }
 

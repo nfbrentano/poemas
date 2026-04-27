@@ -148,5 +148,42 @@ export default {
     
     // Setup Newsletter form logic
     newsletter.init();
+
+    // Search Logic Implementation
+    const headerSearchInput = document.getElementById('header-search-input');
+    const mobileSearchInput = document.getElementById('mobile-search-input');
+    const listContainer = container.querySelector('.list-container');
+
+    const handleSearch = (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      
+      // Update both inputs to stay in sync
+      if (headerSearchInput) headerSearchInput.value = e.target.value;
+      if (mobileSearchInput) mobileSearchInput.value = e.target.value;
+
+      const filteredPoems = remainingPoems.filter(poem => 
+        poem.title.toLowerCase().includes(searchTerm) || 
+        (poem.excerpt && poem.excerpt.toLowerCase().includes(searchTerm)) ||
+        (poem.tags && poem.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+      );
+
+      if (listContainer) {
+        listContainer.innerHTML = renderPoemList(filteredPoems, searchTerm.length > 0, searchTerm);
+      }
+      
+      // Hide POD and Hero when searching
+      const podSection = container.querySelector('.poem-of-day');
+      const heroSection = container.querySelector('.hero-section');
+      if (searchTerm.length > 0) {
+        if (podSection) podSection.style.display = 'none';
+        if (heroSection) heroSection.style.display = 'none';
+      } else {
+        if (podSection) podSection.style.display = 'block';
+        if (heroSection) heroSection.style.display = 'block';
+      }
+    };
+
+    headerSearchInput?.addEventListener('input', handleSearch);
+    mobileSearchInput?.addEventListener('input', handleSearch);
   }
 };

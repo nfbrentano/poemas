@@ -15,6 +15,10 @@ document.querySelector('#app').innerHTML = `
       </div>
 
       <div style="display: flex; align-items: center;">
+        <button id="search-toggle-btn" class="search-toggle-btn" aria-label="Abrir busca" style="display: none;">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+
         <nav class="main-nav">
           <ul>
             <li><a href="${import.meta.env.BASE_URL}" data-link>Poemas</a></li>
@@ -29,6 +33,15 @@ document.querySelector('#app').innerHTML = `
       </div>
     </div>
   </header>
+
+  <div id="search-overlay" class="search-overlay">
+    <button id="search-close-btn" class="search-close-btn" aria-label="Fechar busca">✕</button>
+    <div class="search-overlay-content">
+      <input type="search" id="mobile-search-input" placeholder="Buscar poema..." aria-label="Buscar poema mobile">
+      <p class="search-overlay-help">Digite para filtrar os poemas</p>
+    </div>
+  </div>
+
   <main id="main-content" class="site-content container"></main>
   <footer class="site-footer">
     <div class="container">
@@ -69,13 +82,39 @@ const applyMode = (mode) => {
 };
 
 applyMode(currentMode);
-
 modeToggle.addEventListener('click', () => {
   if (currentMode === 'dark') currentMode = 'light';
   else if (currentMode === 'light') currentMode = 'contrast';
   else currentMode = 'dark';
   
   applyMode(currentMode);
+});
+
+// Search Overlay Logic
+const searchToggleBtn = document.getElementById('search-toggle-btn');
+const searchOverlay = document.getElementById('search-overlay');
+const searchCloseBtn = document.getElementById('search-close-btn');
+const mobileSearchInput = document.getElementById('mobile-search-input');
+
+const openSearch = () => {
+  searchOverlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => mobileSearchInput.focus(), 100);
+};
+
+const closeSearch = () => {
+  searchOverlay.classList.remove('active');
+  document.body.style.overflow = '';
+};
+
+searchToggleBtn?.addEventListener('click', openSearch);
+searchCloseBtn?.addEventListener('click', closeSearch);
+
+// Close on Escape
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeSearch();
+  }
 });
 
 // Add scroll listener for header
