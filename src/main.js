@@ -45,22 +45,15 @@ document.querySelector('#app').innerHTML = `
 `;
 
   const headerControls = document.querySelector('#header-controls');
-  const searchContainer = document.querySelector('#header-search-container');
   
-  if (headerControls && searchContainer) {
-    // Add inline search for desktop
-    searchContainer.innerHTML = `
-      <input type="text" id="header-search-input" placeholder="Buscar poemas..." aria-label="Buscar poemas">
-    `;
-    const desktopInput = searchContainer.querySelector('#header-search-input');
-    
-    // Cria botão de busca para mobile
+  if (headerControls) {
+    // Cria botão de busca (lupa) para todas as telas
     const searchToggleBtn = document.createElement('button');
     searchToggleBtn.id = 'search-toggle-btn';
     searchToggleBtn.className = 'header-search-toggle';
     searchToggleBtn.setAttribute('aria-label', 'Abrir busca');
     searchToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
-    headerControls.insertBefore(searchToggleBtn, searchContainer);
+    headerControls.prepend(searchToggleBtn);
     
     // Cria hambúrguer menu
     const menuToggleBtn = document.createElement('button');
@@ -197,20 +190,6 @@ document.querySelector('#app').innerHTML = `
   };
   
   searchToggleBtn.addEventListener('click', openSearchOverlay);
-  
-  if (desktopInput) {
-    desktopInput.addEventListener('input', (e) => {
-      if (e.target.value.length >= 2) {
-        openSearchOverlay();
-        const overlayInput = document.getElementById('overlay-search-input');
-        if (overlayInput) {
-          overlayInput.value = e.target.value;
-          handleGlobalSearch({ target: overlayInput });
-        }
-        e.target.value = ''; // Reset desktop input as we moved to overlay
-      }
-    });
-  }
   
   document.addEventListener('click', (e) => {
     if (searchOverlay && 

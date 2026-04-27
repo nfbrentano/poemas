@@ -114,7 +114,7 @@ input, textarea {
     display: none !important;
   }
   .header-search-toggle {
-    display: flex !important;
+    display: flex;
     align-items: center;
     justify-content: center;
     background: transparent;
@@ -126,7 +126,14 @@ input, textarea {
 }
 
 .header-search-toggle {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: var(--space-xs);
+  cursor: pointer;
 }
 
 /* Search Overlay */
