@@ -12,7 +12,7 @@ document.querySelector('#app').innerHTML = `
     <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
       <a href="${import.meta.env.BASE_URL}" class="logo" data-link>Natanael Brentano</a>
       
-      <div style="display: flex; align-items: center; gap: var(--space-sm);">
+      <div id="header-controls" style="display: flex; align-items: center; gap: var(--space-sm);">
         <div id="header-search-container" class="header-search-container"></div>
 
         <nav class="main-nav">
@@ -44,24 +44,31 @@ document.querySelector('#app').innerHTML = `
   </footer>
 `;
 
-// Dinamicamente cria os botões do cabeçalho
-const headerSearchContainer = document.querySelector('#header-search-container');
-if (headerSearchContainer) {
-  // Cria botão de busca para mobile
-  const searchToggleBtn = document.createElement('button');
-  searchToggleBtn.id = 'search-toggle-btn';
-  searchToggleBtn.className = 'header-search-toggle';
-  searchToggleBtn.setAttribute('aria-label', 'Abrir busca');
-  searchToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
-  headerSearchContainer.appendChild(searchToggleBtn);
+  const headerControls = document.querySelector('#header-controls');
+  const searchContainer = document.querySelector('#header-search-container');
   
-  // Cria hambúrguer menu
-  const menuToggleBtn = document.createElement('button');
-  menuToggleBtn.id = 'menu-toggle';
-  menuToggleBtn.className = 'menu-toggle';
-  menuToggleBtn.setAttribute('aria-label', 'Menu');
-  menuToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12" class="line-1"></line><line x1="3" y1="6" x2="21" y2="6" class="line-2"></line><line x1="3" y1="18" x2="21" y2="18" class="line-3"></line></svg>';
-  headerSearchContainer.appendChild(menuToggleBtn);
+  if (headerControls && searchContainer) {
+    // Add inline search for desktop
+    searchContainer.innerHTML = `
+      <input type="text" id="header-search-input" placeholder="Buscar poemas..." aria-label="Buscar poemas">
+    `;
+    const desktopInput = searchContainer.querySelector('#header-search-input');
+    
+    // Cria botão de busca para mobile
+    const searchToggleBtn = document.createElement('button');
+    searchToggleBtn.id = 'search-toggle-btn';
+    searchToggleBtn.className = 'header-search-toggle';
+    searchToggleBtn.setAttribute('aria-label', 'Abrir busca');
+    searchToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+    headerControls.insertBefore(searchToggleBtn, searchContainer);
+    
+    // Cria hambúrguer menu
+    const menuToggleBtn = document.createElement('button');
+    menuToggleBtn.id = 'menu-toggle';
+    menuToggleBtn.className = 'menu-toggle';
+    menuToggleBtn.setAttribute('aria-label', 'Menu');
+    menuToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12" class="line-1"></line><line x1="3" y1="6" x2="21" y2="6" class="line-2"></line><line x1="3" y1="18" x2="21" y2="18" class="line-3"></line></svg>';
+    headerControls.appendChild(menuToggleBtn);
   
   // Lógica do overlay de busca
   let searchOverlay = null;
@@ -190,6 +197,20 @@ if (headerSearchContainer) {
   };
   
   searchToggleBtn.addEventListener('click', openSearchOverlay);
+  
+  if (desktopInput) {
+    desktopInput.addEventListener('input', (e) => {
+      if (e.target.value.length >= 2) {
+        openSearchOverlay();
+        const overlayInput = document.getElementById('overlay-search-input');
+        if (overlayInput) {
+          overlayInput.value = e.target.value;
+          handleGlobalSearch({ target: overlayInput });
+        }
+        e.target.value = ''; // Reset desktop input as we moved to overlay
+      }
+    });
+  }
   
   document.addEventListener('click', (e) => {
     if (searchOverlay && 

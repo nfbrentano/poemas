@@ -113,7 +113,7 @@ input, textarea {
   .header-search-container {
     display: none !important;
   }
-  .search-toggle-btn {
+  .header-search-toggle {
     display: flex !important;
     align-items: center;
     justify-content: center;
@@ -122,11 +122,10 @@ input, textarea {
     color: var(--text-primary);
     padding: var(--space-xs);
     cursor: pointer;
-    margin-right: var(--space-sm);
   }
 }
 
-.search-toggle-btn {
+.header-search-toggle {
   display: none;
 }
 

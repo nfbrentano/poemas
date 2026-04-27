@@ -40,13 +40,8 @@ export async function router() {
   view.innerHTML = '<div class="loading-container fade-in">Carregando...</div>';
   
   // Manage header search visibility
-  const searchToggleBtn = document.getElementById('search-toggle-btn');
   const overlaySearchInput = document.getElementById('overlay-search-input');
-  
-  if (path === '/') {
-    if (searchToggleBtn) searchToggleBtn.style.display = 'block';
-  } else {
-    if (searchToggleBtn) searchToggleBtn.style.display = 'none';
+  if (path !== '/') {
     if (overlaySearchInput) overlaySearchInput.value = ''; // Reset on page change
   }
 
