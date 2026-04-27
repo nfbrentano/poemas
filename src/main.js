@@ -53,7 +53,9 @@ document.querySelector('#app').innerHTML = `
     searchToggleBtn.className = 'header-search-toggle';
     searchToggleBtn.setAttribute('aria-label', 'Abrir busca');
     searchToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
-    headerControls.prepend(searchToggleBtn);
+    
+    const modeToggle = document.getElementById('mode-toggle');
+    headerControls.insertBefore(searchToggleBtn, modeToggle);
     
     // Cria hambúrguer menu
     const menuToggleBtn = document.createElement('button');
