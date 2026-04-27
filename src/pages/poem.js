@@ -3,6 +3,7 @@ import { updateSEO } from '../utils/seo.js';
 import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
+import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
 
 function throttle(func, limit) {
   let inThrottle;
@@ -22,6 +23,7 @@ function throttle(func, limit) {
 let handleScroll = null;
 let handleTouchStart = null;
 let handleTouchEnd = null;
+let handleKeydown = null;
 
 export default {
   meta: {
@@ -31,10 +33,13 @@ export default {
     if (handleScroll) window.removeEventListener('scroll', handleScroll);
     if (handleTouchStart) document.removeEventListener('touchstart', handleTouchStart);
     if (handleTouchEnd) document.removeEventListener('touchend', handleTouchEnd);
+    if (handleKeydown) document.removeEventListener('keydown', handleKeydown);
+    document.documentElement.classList.remove('immersive-mode');
     
     handleScroll = null;
     handleTouchStart = null;
     handleTouchEnd = null;
+    handleKeydown = null;
   },
   async render(container, params) {
     const slug = params.slug;
@@ -101,6 +106,12 @@ export default {
     const totalCount = poem.total_count;
     const currentIndex = poem.current_index;
 
+    // Tempo Estimado de Leitura
+    const plainText = (poem.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const wordCount = plainText.split(' ').filter(w => w.length > 0).length;
+    const readingMinutes = Math.ceil(wordCount / 200);
+    const readingLabel = readingMinutes <= 1 ? '1 min de leitura' : `${readingMinutes} min de leitura`;
+
     // Rastrear visualização do poema
     trackPageView('/poema/' + poem.slug, poem.id);
     
@@ -136,6 +147,8 @@ export default {
             <div class="poem-meta">
               <span>${new Date(poem.published_at).toLocaleDateString('pt-BR')}</span>
               ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span>${poem.tags.join(', ')}</span>` : ''}
+              <span>- </span>
+              <span class="reading-time">${readingLabel}</span>
             </div>
           </header>
           
@@ -151,7 +164,22 @@ export default {
             </div>
           </div>
 
+          <div class="reactions-section">
+            <p class="reactions-label">O que este poema desperta?</p>
+            <div class="reactions-bar" id="reactions-bar">
+              ${EMOJIS.map(e => `
+                <button class="reaction-btn" data-emoji="${e}" aria-label="Reagir com ${e}">
+                  <span class="reaction-emoji">${e}</span>
+                  <span class="reaction-count" data-count="${e}">…</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
           <div class="poem-actions">
+            <button id="immersive-btn" class="btn-secondary" aria-label="Modo leitura imersiva">
+              ⬜ Leitura Imersiva
+            </button>
             <button id="copy-poem-btn" class="btn-secondary" aria-label="Copiar texto do poema">Copiar Poema</button>
             
             ${isAdmin ? `
@@ -251,6 +279,58 @@ export default {
         });
       });
     }
+
+    // Reactions Logic
+    const { counts, userReactions } = await loadReactions(poem.id);
+
+    const updateReactionUI = (counts, userReactions) => {
+      EMOJIS.forEach(emoji => {
+        const btn = container.querySelector(`.reaction-btn[data-emoji="${emoji}"]`);
+        const countEl = container.querySelector(`.reaction-count[data-count="${emoji}"]`);
+        if (btn) btn.classList.toggle('reacted', userReactions.has(emoji));
+        if (countEl) countEl.textContent = counts[emoji] || 0;
+      });
+    };
+    updateReactionUI(counts, userReactions);
+
+    container.querySelectorAll('.reaction-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const emoji = btn.dataset.emoji;
+        btn.disabled = true;
+        const action = await toggleReaction(poem.id, emoji);
+        const { counts: newCounts, userReactions: newUR } = await loadReactions(poem.id);
+        updateReactionUI(newCounts, newUR);
+        btn.disabled = false;
+      });
+    });
+
+    // Immersive Mode Logic
+    const immersiveBtn = document.getElementById('immersive-btn');
+    let isImmersive = false;
+
+    const enterImmersive = () => {
+      isImmersive = true;
+      document.documentElement.classList.add('immersive-mode');
+      immersiveBtn.innerHTML = '✕ Sair da Leitura';
+      immersiveBtn.setAttribute('aria-label', 'Sair do modo leitura imersiva');
+    };
+
+    const exitImmersive = () => {
+      isImmersive = false;
+      document.documentElement.classList.remove('immersive-mode');
+      immersiveBtn.innerHTML = '⬜ Leitura Imersiva';
+      immersiveBtn.setAttribute('aria-label', 'Modo leitura imersiva');
+    };
+
+    immersiveBtn?.addEventListener('click', () => {
+      if (isImmersive) exitImmersive(); else enterImmersive();
+    });
+
+    // Esc para sair
+    handleKeydown = (e) => {
+      if (e.key === 'Escape' && isImmersive) exitImmersive();
+    };
+    document.addEventListener('keydown', handleKeydown);
 
     // Scroll logic (Progress bar + Instagram-style nav)
     const scrollBar = document.getElementById('scroll-bar');

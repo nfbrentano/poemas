@@ -66,8 +66,18 @@ export default {
         </div>
       `;
       return;
-    }
     
+    // Poem of the Day Logic
+    const seedStr = new Date().toISOString().slice(0, 10);
+    const seed = seedStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const podIndex = seed % poems.length;
+    const podPoem = poems[podIndex];
+    
+    // Remove POD from the list to avoid repetition
+    const remainingPoems = poems.filter((_, i) => i !== podIndex);
+    
+    const BASE_URL = import.meta.env.BASE_URL;
+
     // Helper to render the poem list
     const renderPoemList = (items, isSearchActive = false, searchTerm = '') => {
       if (items.length === 0) {
@@ -86,7 +96,7 @@ export default {
         if (!isSearchActive && index === 0) {
           return `
           <article class="poem-featured fade-in">
-            <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link>
+            <a href="${BASE_URL}poema/${poem.slug}" data-link>
               <h2 class="featured-title">${poem.title}</h2>
               <div class="featured-excerpt">${poem.excerpt || ''}</div>
               <div class="featured-meta">
@@ -101,7 +111,7 @@ export default {
         
         return `
         <article class="poem-row fade-in">
-          <a href="${import.meta.env.BASE_URL}poema/${poem.slug}" data-link class="poem-row-link">
+          <a href="${BASE_URL}poema/${poem.slug}" data-link class="poem-row-link">
             <h3 class="poem-row-title">${poem.title}</h3>
             <span class="poem-row-year">${year}</span>
           </a>
@@ -112,6 +122,14 @@ export default {
     container.innerHTML = `
       <div class="home-layout">
         
+        <section class="poem-of-day fade-in">
+          <p class="pod-label">— poema do dia —</p>
+          <a href="${BASE_URL}poema/${podPoem.slug}" data-link class="pod-link">
+            <h2 class="pod-title">${podPoem.title}</h2>
+            <p class="pod-excerpt">${podPoem.excerpt || ''}</p>
+          </a>
+        </section>
+
         <section class="hero-section fade-in">
           <h1>
             A poética<br>do silêncio.
@@ -122,7 +140,7 @@ export default {
         </section>
 
         <section class="poems-list fade-in">
-          ${renderPoemList(poems)}
+          ${renderPoemList(remainingPoems)}
         </section>
         
         ${newsletter.render()}
@@ -144,11 +162,11 @@ export default {
         const isSearchActive = term.length > 0;
         
         const filtered = isSearchActive 
-          ? poems.filter(p => 
+          ? remainingPoems.filter(p => 
               p.title.toLowerCase().includes(term) || 
               (p.excerpt && p.excerpt.toLowerCase().includes(term))
             )
-          : poems;
+          : remainingPoems;
 
         poemsList.innerHTML = renderPoemList(filtered, isSearchActive, term);
       };
