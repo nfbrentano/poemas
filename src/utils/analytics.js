@@ -10,12 +10,18 @@ export async function trackPageView(page, poemId = null) {
     // Lightweight IP country lookup (free, no key needed, 45 req/min)
     let country = null;
     try {
-      const geo = await fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(3000) });
-      if (geo.ok) {
-        const g = await geo.json();
+      // Avoid multiple concurrent IP lookups
+      if (!window._ipPromise) {
+        window._ipPromise = fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(3000) })
+          .then(res => res.ok ? res.json() : null)
+          .catch(() => null);
+      }
+      
+      const g = await window._ipPromise;
+      if (g) {
         country = g.countryCode || null;
-        // Also build a privacy-safe IP hash from the IP string
-        if (g.ipAddress) {
+        // Also build a privacy-safe IP hash from the IP string if not already set
+        if (g.ipAddress && !window._ipHash) {
           const encoded = new TextEncoder().encode(g.ipAddress);
           const hashBuf = await crypto.subtle.digest('SHA-256', encoded);
           const hashArr = Array.from(new Uint8Array(hashBuf));

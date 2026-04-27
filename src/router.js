@@ -108,8 +108,8 @@ export async function router() {
         }
       }
 
-      // Rastrear visita (não rastrear /admin e /login)
-      if (path !== '/admin' && path !== '/login') {
+      // Rastrear visita (não rastrear /admin e /login, e poem.js já rastreia poemas)
+      if (path !== '/admin' && path !== '/login' && !path.includes('/poema/')) {
         trackPageView(path);
       }
     } catch (e) {
