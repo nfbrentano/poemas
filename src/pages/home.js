@@ -7,11 +7,6 @@ export default {
     title: 'Natanael Brentano - Poemas'
   },
   cleanup() {
-    const searchInput = document.getElementById('header-search-input');
-    if (searchInput && searchInput._handleSearch) {
-      searchInput.removeEventListener('input', searchInput._handleSearch);
-      searchInput._handleSearch = null;
-    }
   },
   async render(container) {
     updateSEO({
@@ -140,7 +135,6 @@ export default {
         </section>
 
         <section class="poems-list fade-in">
-          <input type="search" id="search-input" placeholder="Buscar poema..." aria-label="Buscar poema">
           <div class="list-container">
             ${renderPoemList(remainingPoems)}
           </div>
@@ -150,25 +144,7 @@ export default {
       </div>
     `;
 
-    // Search logic
-    const searchInput = document.getElementById('search-input');
-    const poemsList = container.querySelector('.list-container');
 
-    if (searchInput && poemsList) {
-      searchInput.addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase().trim();
-        const isSearchActive = term.length > 0;
-        
-        const filtered = isSearchActive 
-          ? remainingPoems.filter(p => 
-              p.title.toLowerCase().includes(term) || 
-              (p.excerpt && p.excerpt.toLowerCase().includes(term))
-            )
-          : remainingPoems;
-
-        poemsList.innerHTML = renderPoemList(filtered, isSearchActive, term);
-      });
-    }
     
     // Setup Newsletter form logic
     newsletter.init();

@@ -159,31 +159,9 @@ input, textarea {
   margin: 0 auto;
 }
 
-.search-empty-msg {
-  color: var(--text-secondary);
-  padding: var(--space-md) 0;
-  font-family: var(--font-ui);
-  font-size: 0.95rem;
-}
 
-/* Client-side Search Input */
-#search-input {
-  width: 100%;
-  border-radius: 2px;
-  border: 1px solid var(--border-strong);
-  background: transparent;
-  color: var(--text-primary);
-  font-family: var(--font-ui);
-  font-size: 1rem;
-  padding: 0.75rem 1rem;
-  margin-bottom: var(--space-xl);
-  transition: border-color var(--transition-fast);
-}
 
-#search-input:focus {
-  border-color: var(--accent-subtle);
-  outline: none;
-}
+
 
 /* Poem Row */
 .poem-row {
