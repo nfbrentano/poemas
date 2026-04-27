@@ -247,7 +247,7 @@ export default {
             url: shareUrl
           });
         } catch (err) {
-          console.log('Share failed:', err);
+          // Share failed
         }
       });
     } else {
