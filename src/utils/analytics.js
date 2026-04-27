@@ -12,17 +12,38 @@ export async function trackPageView(page, poemId = null) {
     try {
       // Avoid multiple concurrent IP lookups
       if (!window._ipPromise) {
-        window._ipPromise = fetch('https://ipwho.is/json', { signal: AbortSignal.timeout(3000) })
-          .then(res => res.ok ? res.json() : null)
-          .catch(() => null);
+        window._ipPromise = (async () => {
+          try {
+            // Try ipapi.co first (usually good for localhost)
+            const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
+            if (res.ok) return await res.json();
+            
+            // Fallback 1: freeipapi.com
+            const res2 = await fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(3000) });
+            if (res2.ok) {
+              const d = await res2.json();
+              return { ip: d.ipAddress, country_code: d.countryCode, success: true };
+            }
+            
+            // Fallback 2: ipwho.is
+            const res3 = await fetch('https://ipwho.is/json', { signal: AbortSignal.timeout(3000) });
+            if (res3.ok) return await res3.json();
+            
+            return null;
+          } catch (e) {
+            return null;
+          }
+        })();
       }
       
       const g = await window._ipPromise;
-      if (g && g.success) {
-        country = g.country_code || null;
+      if (g) {
+        country = g.country_code || g.countryCode || null;
+        const ip = g.ip || g.ipAddress;
+        
         // Also build a privacy-safe IP hash from the IP string if not already set
-        if (g.ip && !window._ipHash) {
-          const encoded = new TextEncoder().encode(g.ip);
+        if (ip && !window._ipHash) {
+          const encoded = new TextEncoder().encode(ip);
           const hashBuf = await crypto.subtle.digest('SHA-256', encoded);
           const hashArr = Array.from(new Uint8Array(hashBuf));
           window._ipHash = hashArr.map(b => b.toString(16).padStart(2, '0')).join('');
