@@ -15,7 +15,7 @@
 }
 
 .poem-title {
-  font-size: 1.8rem;
+  font-size: clamp(1.3rem, 1.1rem + 2vw, 1.8rem);
   margin-bottom: 0.5rem;
   color: var(--text-primary);
   transition: color var(--transition-fast);
@@ -264,7 +264,7 @@ input, textarea {
 }
 
 .poem-row-title {
-  font-size: 1.4rem;
+  font-size: clamp(1.1rem, 1rem + 1.5vw, 1.4rem);
   font-family: var(--font-display);
   letter-spacing: 0.5px;
   margin: 0;
@@ -397,6 +397,9 @@ input, textarea {
 .poem-nav-prev, .poem-nav-next {
   color: var(--accent-subtle);
   transition: color var(--transition-fast);
+  display: inline-block;
+  padding: 0.75rem 1rem;
+  min-height: 44px;
 }
 
 .poem-nav-prev:hover, .poem-nav-next:hover {
@@ -447,6 +450,7 @@ input, textarea {
   transition: all 0.2s;
   font-weight: 500;
   min-width: 90px;
+  min-height: 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -627,7 +631,9 @@ input, textarea {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 2px;
-  padding: 1rem;
+  display: inline-block;
+  padding: 0.75rem 1rem;
+  min-height: 44px;
   transition: color var(--transition-fast);
 }
 
@@ -752,7 +758,8 @@ input, textarea {
   border-radius: 8px;
   cursor: pointer;
   transition: all var(--transition-fast);
-  min-width: 56px;
+  min-width: 60px;
+  min-height: 44px;
 }
 .reaction-btn:hover {
   border-color: var(--accent-subtle);
@@ -820,6 +827,15 @@ html.immersive-mode #immersive-btn {
   padding: var(--space-xs) var(--space-sm);
   background: var(--bg-elevated);
   border-color: var(--border-strong);
+}
+
+@media (max-width: 480px) {
+  html.immersive-mode #immersive-btn {
+    bottom: 12px;
+    right: 12px;
+    font-size: 0.7rem;
+    padding: 6px 10px;
+  }
 }
 
 /* 4. Reading Time (Poem) */
@@ -1004,4 +1020,128 @@ html.immersive-mode #immersive-btn {
   .about-tagline {
     font-size: 1.25rem;
   }
+}
+
+/* Hamburger Menu & Navigation Mobile */
+.menu-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  background: transparent;
+  margin-left: var(--space-sm);
+  position: relative;
+  z-index: 1001;
+}
+
+.menu-toggle .line-1,
+.menu-toggle .line-2,
+.menu-toggle .line-3 {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.menu-toggle.active .line-1 {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-toggle.active .line-2 {
+  opacity: 0;
+}
+
+.menu-toggle.active .line-3 {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+@media (max-width: 640px) {
+  .menu-toggle {
+    display: flex;
+  }
+
+  .site-header .main-nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-subtle);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99;
+  }
+
+  .site-header .main-nav.active {
+    max-height: 200px;
+  }
+
+  .site-header .main-nav ul {
+    flex-direction: column;
+    padding: var(--space-lg);
+    gap: var(--space-md);
+    text-align: center;
+  }
+
+  .site-header .main-nav a {
+    display: block;
+    padding: var(--space-sm);
+    font-size: 1.1rem;
+  }
+}
+
+/* Immersive Gesture Hint Toast */
+.immersive-hint {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  z-index: 3000;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.5s ease;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.immersive-hint.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Typography Controls styles */
+.font-controls {
+  display: flex;
+  gap: 4px;
+  margin-right: var(--space-md);
+  border-right: 1px solid var(--border-subtle);
+  padding-right: var(--space-md);
+}
+
+.font-btn {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.font-btn:hover {
+  color: var(--text-primary);
+}
+
+.font-btn.active {
+  color: var(--accent-subtle);
+  border-color: var(--accent-muted);
+  background: var(--accent-muted);
 }

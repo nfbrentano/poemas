@@ -163,6 +163,11 @@ export default {
           </div>
 
           <div class="poem-actions">
+            <div class="font-controls">
+              <button class="font-btn" data-size="sm" title="Diminuir fonte">A-</button>
+              <button class="font-btn" data-size="md" title="Fonte padrão">A</button>
+              <button class="font-btn" data-size="lg" title="Aumentar fonte">A+</button>
+            </div>
             <button id="immersive-btn" class="btn-secondary" aria-label="Modo leitura imersiva">
               ⬜ Leitura Imersiva
             </button>
@@ -204,6 +209,7 @@ export default {
           </button>
         </div>
       </div>
+      <div id="immersive-hint" class="immersive-hint">Deslize para navegar →</div>
     `;
     
     // Sharing Logic
@@ -290,7 +296,49 @@ export default {
     };
 
     immersiveBtn?.addEventListener('click', () => {
-      if (isImmersive) exitImmersive(); else enterImmersive();
+      if (isImmersive) {
+        exitImmersive();
+      } else {
+        enterImmersive();
+        
+        // Show gesture hint on first time
+        const hintShown = localStorage.getItem('immersive-hint-shown');
+        if (!hintShown) {
+          const hint = document.getElementById('immersive-hint');
+          if (hint) {
+            hint.classList.add('visible');
+            setTimeout(() => {
+              hint.classList.remove('visible');
+              localStorage.setItem('immersive-hint-shown', 'true');
+            }, 3000);
+          }
+        }
+      }
+    });
+
+    // Font Size Controls Logic
+    const fontBtns = container.querySelectorAll('.font-btn');
+    const updateActiveFontBtn = (size) => {
+      fontBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.size === size);
+      });
+    };
+
+    const currentFontSize = localStorage.getItem('reading-font-size') || 'font-reading-md';
+    updateActiveFontBtn(currentFontSize.replace('font-reading-', ''));
+
+    fontBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const size = btn.dataset.size;
+        const newClass = `font-reading-${size}`;
+        
+        // Remove old classes
+        document.documentElement.classList.remove('font-reading-sm', 'font-reading-md', 'font-reading-lg');
+        document.documentElement.classList.add(newClass);
+        
+        localStorage.setItem('reading-font-size', newClass);
+        updateActiveFontBtn(size);
+      });
     });
 
     // Esc para sair

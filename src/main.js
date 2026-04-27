@@ -25,6 +25,13 @@ document.querySelector('#app').innerHTML = `
             <li><a href="${import.meta.env.BASE_URL}sobre" data-link>Sobre</a></li>
           </ul>
         </nav>
+        <button id="menu-toggle" class="menu-toggle" aria-label="Menu" title="Abrir menu">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12" class="line-1"></line>
+            <line x1="3" y1="6" x2="21" y2="6" class="line-2"></line>
+            <line x1="3" y1="18" x2="21" y2="18" class="line-3"></line>
+          </svg>
+        </button>
         <button id="mode-toggle" class="theme-toggle" aria-label="Alternar modo de visualização" title="Alternar entre modo escuro, claro e alto contraste">
           <span class="icon-moon"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>
           <span class="icon-sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>
@@ -116,6 +123,30 @@ window.addEventListener('keydown', (e) => {
     closeSearch();
   }
 });
+
+// Hamburger Menu Logic
+const menuToggle = document.getElementById('menu-toggle');
+const mainNav = document.querySelector('.site-header .main-nav');
+
+menuToggle?.addEventListener('click', () => {
+  const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+  menuToggle.setAttribute('aria-expanded', !isExpanded);
+  mainNav?.classList.toggle('active');
+  menuToggle.classList.toggle('active');
+});
+
+// Close menu on link click
+mainNav?.addEventListener('click', (e) => {
+  if (e.target.tagName === 'A') {
+    mainNav.classList.remove('active');
+    menuToggle?.classList.remove('active');
+    menuToggle?.setAttribute('aria-expanded', 'false');
+  }
+});
+
+// Load reading font size preference
+const savedReadingFont = localStorage.getItem('reading-font-size') || 'font-reading-md';
+document.documentElement.classList.add(savedReadingFont);
 
 // Add scroll listener for header
 window.addEventListener('scroll', () => {

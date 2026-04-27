@@ -80,3 +80,8 @@
   --border-subtle: #ffffff;
   --border-strong: #ffffff;
 }
+
+/* Reading Font Sizes */
+html.font-reading-sm .poem-content { font-size: 1rem; }
+html.font-reading-md .poem-content { font-size: clamp(1.05rem, 0.9rem + 0.6vw, 1.3rem); }
+html.font-reading-lg .poem-content { font-size: 1.5rem; }
