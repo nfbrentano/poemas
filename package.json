@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "sitemap": "node --env-file=.env.local scripts/generate-sitemap.js || node scripts/generate-sitemap.js",
-    "build": "npm run sitemap && vite build && cp dist/index.html dist/404.html && cp .nojekyll dist/",
+    "build": "npm run sitemap && vite build && cp 404.html manifest.json favicon.svg .nojekyll dist/",
     "preview": "vite preview"
   },
   "devDependencies": {

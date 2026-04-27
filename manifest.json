@@ -1,7 +1,6 @@
 {
-  "name": "Poemas Brasileiros - Natanael Brentano",
+  "name": "Poemas",
   "short_name": "Poemas",
-  "description": "Coleção de poemas originais em português por Natanael Fernando Gatti Brentano.",
   "start_url": "/poemas/",
   "display": "standalone",
   "background_color": "#050505",
