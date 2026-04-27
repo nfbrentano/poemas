@@ -7,10 +7,12 @@
     "dev": "vite",
     "sitemap": "node --env-file=.env.local scripts/generate-sitemap.js || node scripts/generate-sitemap.js",
     "build": "npm run sitemap && vite build && cp 404.html manifest.json favicon.svg .nojekyll dist/",
+    "deploy": "npm run build && gh-pages -d dist",
     "preview": "vite preview"
   },
   "devDependencies": {
     "fast-xml-parser": "^5.7.1",
+    "gh-pages": "^6.3.0",
     "vite": "^8.0.10"
   },
   "dependencies": {
