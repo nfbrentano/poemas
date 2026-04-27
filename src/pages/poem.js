@@ -18,9 +18,23 @@ function throttle(func, limit) {
 }
 
 
+// Module-level variables to store removable handlers
+let handleScroll = null;
+let handleTouchStart = null;
+let handleTouchEnd = null;
+
 export default {
   meta: {
     title: 'Poema'
+  },
+  cleanup() {
+    if (handleScroll) window.removeEventListener('scroll', handleScroll);
+    if (handleTouchStart) document.removeEventListener('touchstart', handleTouchStart);
+    if (handleTouchEnd) document.removeEventListener('touchend', handleTouchEnd);
+    
+    handleScroll = null;
+    handleTouchStart = null;
+    handleTouchEnd = null;
   },
   async render(container, params) {
     const slug = params.slug;
@@ -102,7 +116,6 @@ export default {
     trackPageView('/poema/' + poem.slug, poem.id);
     
     // Update SEO dynamically
-
     const poemUrl = window.location.href;
     const cleanExcerpt = (poem.excerpt || poem.content)
       .replace(/<[^>]*>?/gm, '')
@@ -249,13 +262,11 @@ export default {
 
     // Scroll logic (Progress bar + Instagram-style nav)
     const scrollBar = document.getElementById('scroll-bar');
-    const poemContainer = document.querySelector('.poem-container');
     const poemNav = document.querySelector('.poem-nav');
     const nextBtn = document.getElementById('next-btn');
-    const prevBtn = document.getElementById('prev-btn');
-    let showedNext = false, showedPrev = false;
+    let showedNext = false;
 
-    const handleScroll = throttle(() => {
+    handleScroll = throttle(() => {
       // Progress bar
       const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
@@ -268,10 +279,12 @@ export default {
       const clientHeight = document.documentElement.clientHeight;
 
       // Show Nav Container if any scroll happened
-      if (scrollTop > 50) {
-        poemNav.classList.add('visible');
-      } else {
-        poemNav.classList.remove('visible');
+      if (poemNav) {
+        if (scrollTop > 50) {
+          poemNav.classList.add('visible');
+        } else {
+          poemNav.classList.remove('visible');
+        }
       }
 
       // Next (95% scroll)
@@ -280,31 +293,29 @@ export default {
         if (nextBtn) nextBtn.style.transform = 'scale(1.05)';
         setTimeout(() => { if(nextBtn) nextBtn.style.transform = 'scale(1)'; }, 200)
       }
-      
-      // Prev (5% scroll)
-      if (scrollTop < scrollHeight * 0.05 && prevSlug && !showedPrev) {
-        showedPrev = true;
-      }
     }, 100);
 
     window.addEventListener('scroll', handleScroll);
 
     // Touch swipe mobile
     let touchStartX = 0;
-    document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, {passive: true});
-    document.addEventListener('touchend', e => {
+    handleTouchStart = e => touchStartX = e.touches[0].clientX;
+    handleTouchEnd = e => {
       const deltaX = touchStartX - e.changedTouches[0].clientX;
       if (Math.abs(deltaX) > 80) { // Threshold for swipe
         if (deltaX > 0 && nextSlug) navigateTo(`/poema/${nextSlug}`);
         else if (deltaX < 0 && prevSlug) navigateTo(`/poema/${prevSlug}`);
       }
-    }, {passive: true});
+    };
+
+    document.addEventListener('touchstart', handleTouchStart, {passive: true});
+    document.addEventListener('touchend', handleTouchEnd, {passive: true});
 
     // Click handlers
     nextBtn?.addEventListener('click', () => {
       if (nextSlug) navigateTo(`/poema/${nextSlug}`);
     });
-    prevBtn?.addEventListener('click', () => {
+    document.getElementById('prev-btn')?.addEventListener('click', () => {
       if (prevSlug) navigateTo(`/poema/${prevSlug}`);
     });
     

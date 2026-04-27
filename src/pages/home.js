@@ -6,6 +6,13 @@ export default {
   meta: {
     title: 'Natanael Brentano - Poemas'
   },
+  cleanup() {
+    const searchInput = document.getElementById('header-search-input');
+    if (searchInput && searchInput._handleSearch) {
+      searchInput.removeEventListener('input', searchInput._handleSearch);
+      searchInput._handleSearch = null;
+    }
+  },
   async render(container) {
     updateSEO({
       title: 'A poética do silêncio',
