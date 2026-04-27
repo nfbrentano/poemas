@@ -1,4 +1,4 @@
-import{i as e}from"./index-HEwGkHwt.js";var t={meta:{title:`Sobre Natanael Brentano`},async render(t){let{data:{session:n}}=await e.auth.getSession(),r=!!n;t.innerHTML=`
+import{i as e}from"./index-C-Khbs-6.js";var t={meta:{title:`Sobre Natanael Brentano`},async render(t){let{data:{session:n}}=await e.auth.getSession(),r=!!n;t.innerHTML=`
       <section class="about-page fade-in">
         <div class="about-container">
           <div class="about-header">
