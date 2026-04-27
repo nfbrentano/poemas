@@ -16,27 +16,23 @@ export default {
   async render(container) {
     updateSEO({
       title: 'Natanael Brentano — Poemas',
-      description: 'Poesia contemporânea e textos curtos sobre o efêmero.'
+      description: 'Poesia contemporânea e textos curtos sobre o efêmero.',
+      type: 'website'
     });
     
     const skeletonHtml = `
       <div class="home-layout fade-in">
         <section class="hero-section">
-          <div class="skeleton skeleton-title" style="margin: 0 auto 2rem auto; width: 40%; height: 4rem;"></div>
-          <div class="skeleton skeleton-text" style="margin: 0 auto 0.5rem auto; width: 60%;"></div>
-          <div class="skeleton skeleton-text" style="margin: 0 auto; width: 50%;"></div>
+          <div class="skeleton skeleton-title-large"></div>
+          <div class="skeleton skeleton-text-center"></div>
+          <div class="skeleton skeleton-text-center-short"></div>
         </section>
         <section class="poems-list">
-          <div class="skeleton-featured">
-            <div class="skeleton skeleton-title" style="width: 70%; height: 3.5rem;"></div>
-            <div class="skeleton skeleton-text" style="width: 90%;"></div>
-            <div class="skeleton skeleton-text" style="width: 80%;"></div>
-            <div class="skeleton skeleton-text" style="width: 30%; height: 1rem; margin-top: 1.5rem;"></div>
-          </div>
+          <div class="skeleton skeleton-featured"></div>
           ${Array(4).fill(0).map(() => `
             <div class="skeleton-row">
-              <div class="skeleton skeleton-text" style="width: 50%; height: 1.5rem;"></div>
-              <div class="skeleton skeleton-text" style="width: 10%; height: 1rem;"></div>
+              <div class="skeleton skeleton-text" style="width: 50%;"></div>
+              <div class="skeleton skeleton-text" style="width: 10%;"></div>
             </div>
           `).join('')}
         </section>
@@ -54,15 +50,22 @@ export default {
       
     if (error) {
       console.error(error);
-      container.innerHTML = '<div class="error-container">Erro ao carregar os poemas. Tente novamente mais tarde.</div>';
+      container.innerHTML = `
+        <div class="empty-state fade-in">
+          <p class="empty-state-label">!</p>
+          <h2 class="empty-state-title">Algo deu errado.</h2>
+          <p class="empty-state-desc">Não foi possível carregar os poemas. Tente recarregar a página.</p>
+        </div>
+      `;
       return;
     }
     
     if (!poems || poems.length === 0) {
       container.innerHTML = `
         <div class="empty-state fade-in">
-          <h2>O silêncio ainda impera.</h2>
-          <p>Nenhum poema publicado no momento.</p>
+          <p class="empty-state-label">—</p>
+          <h2 class="empty-state-title">O silêncio ainda impera.</h2>
+          <p class="empty-state-desc">Nenhum poema publicado no momento.</p>
         </div>
       `;
       return;
@@ -137,24 +140,22 @@ export default {
         </section>
 
         <section class="poems-list fade-in">
-          ${renderPoemList(remainingPoems)}
+          <input type="search" id="search-input" placeholder="Buscar poema..." aria-label="Buscar poema">
+          <div class="list-container">
+            ${renderPoemList(remainingPoems)}
+          </div>
         </section>
         
         ${newsletter.render()}
       </div>
     `;
 
-    // Search logic (using header search input)
-    const searchInput = document.getElementById('header-search-input');
-    const poemsList = container.querySelector('.poems-list');
+    // Search logic
+    const searchInput = document.getElementById('search-input');
+    const poemsList = container.querySelector('.list-container');
 
     if (searchInput && poemsList) {
-      // Remove previous listener if any (to avoid capturing old poems data)
-      if (searchInput._handleSearch) {
-        searchInput.removeEventListener('input', searchInput._handleSearch);
-      }
-
-      searchInput._handleSearch = (e) => {
+      searchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase().trim();
         const isSearchActive = term.length > 0;
         
@@ -166,9 +167,7 @@ export default {
           : remainingPoems;
 
         poemsList.innerHTML = renderPoemList(filtered, isSearchActive, term);
-      };
-
-      searchInput.addEventListener('input', searchInput._handleSearch);
+      });
     }
     
     // Setup Newsletter form logic

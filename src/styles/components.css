@@ -163,7 +163,26 @@ input, textarea {
   color: var(--text-secondary);
   padding: var(--space-md) 0;
   font-family: var(--font-ui);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+}
+
+/* Client-side Search Input */
+#search-input {
+  width: 100%;
+  border-radius: 2px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: var(--space-xl);
+  transition: border-color var(--transition-fast);
+}
+
+#search-input:focus {
+  border-color: var(--accent-subtle);
+  outline: none;
 }
 
 /* Poem Row */
@@ -297,7 +316,30 @@ input, textarea {
   margin-top: var(--space-lg);
   display: flex;
   gap: var(--space-sm);
+  justify-content: center;
   flex-wrap: wrap;
+}
+
+/* New Poem Navigation */
+.poem-navigation {
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--space-2xl);
+  border-top: 1px solid var(--border-subtle);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: var(--space-4xl);
+}
+
+.poem-nav-prev, .poem-nav-next {
+  color: var(--accent-subtle);
+  transition: color var(--transition-fast);
+}
+
+.poem-nav-prev:hover, .poem-nav-next:hover {
+  color: var(--text-primary);
 }
 
 /* Navigation */
@@ -400,12 +442,71 @@ input, textarea {
 
 .empty-state {
   text-align: center;
-  padding: 4rem;
+  padding: var(--space-4xl) var(--space-lg);
 }
 
-.empty-state h2 {
+.empty-state-label {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 400;
   color: var(--text-secondary);
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-sm);
+}
+
+.empty-state-desc {
+  font-family: var(--font-ui);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* 404 Page Identity */
+.not-found-page {
+  text-align: center;
+  padding: var(--space-4xl) var(--space-lg);
+}
+
+.not-found-label {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.not-found-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 400;
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+}
+
+.not-found-desc {
+  font-family: var(--font-ui);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.7;
+}
+
+.not-found-link {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent-subtle);
+  border-bottom: 1px solid var(--accent-subtle);
+  padding-bottom: 2px;
 }
 
 /* Error Page (404) */
@@ -445,48 +546,44 @@ input, textarea {
 }
 
 /* Skeleton Loading */
-.skeleton {
-  background: var(--bg-elevated);
-  background: linear-gradient(
-    90deg,
-    var(--bg-elevated) 25%,
-    var(--border-subtle) 50%,
-    var(--bg-elevated) 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s infinite linear;
-  border-radius: 2px;
+@keyframes shimmer { 
+  0% { background-position: -200% 0; } 
+  100% { background-position: 200% 0; } 
 }
 
-@keyframes skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.skeleton { 
+  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--border-subtle) 50%, var(--bg-elevated) 75%); 
+  background-size: 200% 100%; 
+  animation: shimmer 1.5s ease-in-out infinite; 
+  border-radius: 2px; 
 }
 
-.skeleton-text {
-  height: 1rem;
-  margin-bottom: 0.5rem;
-  width: 100%;
+.skeleton-list {
+  max-width: var(--container-poetry);
+  margin: 0 auto;
 }
 
-.skeleton-title {
-  height: 2rem;
-  margin-bottom: 1rem;
-  width: 60%;
+.skeleton-featured { 
+  height: 160px; 
+  margin-bottom: var(--space-2xl); 
 }
 
-.skeleton-row {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--space-md) 0;
-  border-bottom: 1px solid var(--border-subtle);
+.skeleton-row { 
+  height: 24px; 
+  margin-bottom: var(--space-md); 
+  width: 100%; 
 }
 
-.skeleton-featured {
-  padding: var(--space-2xl) 0 var(--space-3xl) 0;
-  border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: var(--space-2xl);
+@media (prefers-reduced-motion: reduce) { 
+  .skeleton { 
+    animation: none; 
+    opacity: 0.4; 
+  } 
 }
+
+.skeleton-title-large { height: 4rem; width: 40%; margin: 0 auto var(--space-lg) auto; }
+.skeleton-text-center { height: 1.2rem; width: 60%; margin: 0 auto var(--space-xs) auto; }
+.skeleton-text-center-short { height: 1.2rem; width: 50%; margin: 0 auto; }
 
 /* 1. Poema do Dia (Home) */
 .poem-of-day {

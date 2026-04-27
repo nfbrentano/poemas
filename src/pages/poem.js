@@ -48,37 +48,24 @@ export default {
       <div class="poem-container fade-in">
         <article class="single-poem">
           <header>
-            <div class="skeleton skeleton-title" style="margin: 0 auto 1.5rem auto; width: 60%; height: 3.5rem;"></div>
-            <div class="poem-meta" style="justify-content: center;">
-              <div class="skeleton" style="width: 80px; height: 1rem;"></div>
-              <div class="skeleton" style="width: 100px; height: 1rem;"></div>
-            </div>
+            <div class="skeleton skeleton-title-large" style="width: 70%;"></div>
+            <div class="skeleton-row" style="width: 40%; margin: 0 auto;"></div>
           </header>
           
-          <div class="poem-content" style="display: flex; flex-direction: column; align-items: center; gap: 0.8rem; margin-top: 4rem;">
-            <div class="skeleton skeleton-text" style="width: 40%;"></div>
-            <div class="skeleton skeleton-text" style="width: 35%;"></div>
-            <div class="skeleton skeleton-text" style="width: 45%;"></div>
-            <div class="skeleton skeleton-text" style="width: 30%;"></div>
-            <div class="skeleton skeleton-text" style="width: 0; height: 1rem; margin: 1rem 0;"></div>
-            <div class="skeleton skeleton-text" style="width: 38%;"></div>
-            <div class="skeleton skeleton-text" style="width: 42%;"></div>
-            <div class="skeleton skeleton-text" style="width: 33%;"></div>
+          <div class="poem-content">
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row" style="width: 85%;"></div>
+            <div class="skeleton skeleton-row" style="width: 90%;"></div>
+            <div class="skeleton skeleton-row" style="width: 75%;"></div>
+            <div class="skeleton-row" style="height: 2rem; border: none;"></div>
+            <div class="skeleton skeleton-row" style="width: 80%;"></div>
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row" style="width: 70%;"></div>
           </div>
           
-          <div class="share-section" style="margin-top: 4rem;">
-            <div class="skeleton" style="width: 120px; height: 0.8rem; margin-bottom: 1rem;"></div>
-            <div class="share-buttons">
-              <div class="skeleton" style="width: 80px; height: 2.2rem; border-radius: 4px;"></div>
-              <div class="skeleton" style="width: 80px; height: 2.2rem; border-radius: 4px;"></div>
-              <div class="skeleton" style="width: 80px; height: 2.2rem; border-radius: 4px;"></div>
-              <div class="skeleton" style="width: 120px; height: 2.2rem; border-radius: 4px;"></div>
-            </div>
-          </div>
-
-          <div class="poem-actions" style="margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 2rem; justify-content: center;">
-            <div class="skeleton" style="width: 140px; height: 3rem; border-radius: 4px;"></div>
-            <div class="skeleton" style="width: 140px; height: 3rem; border-radius: 4px;"></div>
+          <div class="poem-actions">
+            <div class="skeleton" style="width: 140px; height: 3rem;"></div>
+            <div class="skeleton" style="width: 140px; height: 3rem;"></div>
           </div>
         </article>
       </div>
@@ -101,10 +88,29 @@ export default {
       return;
     }
 
-    const prevSlug = poem.prev_slug;
-    const nextSlug = poem.next_slug;
-    const totalCount = poem.total_count;
-    const currentIndex = poem.current_index;
+    // Fetch prev and next poems titles/slugs
+    const { data: prevPoem } = await supabase
+      .from('poems')
+      .select('title, slug')
+      .lt('published_at', poem.published_at)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const { data: nextPoem } = await supabase
+      .from('poems')
+      .select('title, slug')
+      .gt('published_at', poem.published_at)
+      .eq('status', 'published')
+      .order('published_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    const prevSlug = prevPoem?.slug;
+    const nextSlug = nextPoem?.slug;
+    const prevTitle = prevPoem?.title;
+    const nextTitle = nextPoem?.title;
 
     // Tempo Estimado de Leitura
     const plainText = (poem.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -153,6 +159,11 @@ export default {
           </header>
           
           <div id="poem-text" class="poem-content">${poem.content}</div>
+
+          <nav class="poem-navigation" aria-label="Navegar entre poemas">
+            ${prevSlug ? `<a href="${import.meta.env.BASE_URL}poema/${prevSlug}" data-link class="poem-nav-prev">← ${prevTitle}</a>` : '<span></span>'}
+            ${nextSlug ? `<a href="${import.meta.env.BASE_URL}poema/${nextSlug}" data-link class="poem-nav-next">${nextTitle} →</a>` : '<span></span>'}
+          </nav>
           
           <div class="share-section">
             <p class="share-label">Compartilhar obra</p>
@@ -207,9 +218,6 @@ export default {
           </button>
           
           <div class="nav-center">
-            <div id="progress" class="nav-progress">
-              Poema ${currentIndex} de ${totalCount}
-            </div>
             <div class="nav-footer-text">
               &copy; ${new Date().getFullYear()} Natanael Brentano. Todos os direitos reservados.
             </div>

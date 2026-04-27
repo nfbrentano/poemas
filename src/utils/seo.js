@@ -34,6 +34,15 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   const finalUrl = url || window.location.href;
   const finalImage = imageUrl || defaultImage;
 
+  // Canonical URL
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
+  }
+  canonical.setAttribute('href', finalUrl);
+
   // Dynamic Meta Description
   setMeta('meta[name="description"]', 'content', finalDesc);
   
@@ -44,13 +53,38 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   setMeta('meta[property="og:type"]', 'content', type);
   setMeta('meta[property="og:image"]', 'content', finalImage);
 
-  // Article Specific
+  // Twitter
+  setMeta('meta[name="twitter:card"]', 'content', 'summary');
+  setMeta('meta[name="twitter:title"]', 'content', finalTitle);
+  setMeta('meta[name="twitter:description"]', 'content', finalDesc);
+  setMeta('meta[name="twitter:image"]', 'content', finalImage);
+
+  // JSON-LD Structured Data
+  let jsonLdScript = document.querySelector('script[type="application/ld+json"]');
   if (type === 'article') {
+    if (!jsonLdScript) {
+      jsonLdScript = document.createElement('script');
+      jsonLdScript.setAttribute('type', 'application/ld+json');
+      document.head.appendChild(jsonLdScript);
+    }
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": title,
+      "description": finalDesc,
+      "author": { "@type": "Person", "name": "Natanael Brentano" },
+      "datePublished": publishedTime ? new Date(publishedTime).toISOString() : undefined,
+      "url": finalUrl,
+      "image": finalImage
+    };
+    jsonLdScript.textContent = JSON.stringify(structuredData);
+
+    // Article Specific Meta
     if (publishedTime) {
       setMeta('meta[property="article:published_time"]', 'content', new Date(publishedTime).toISOString());
     }
     if (tags && Array.isArray(tags)) {
-      // Remove existing tags first to avoid duplicates or stale tags
       document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
       tags.forEach(tag => {
         const meta = document.createElement('meta');
@@ -60,15 +94,10 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
       });
     }
   } else {
-    // Clean up article tags if not an article
+    // Clean up
+    if (jsonLdScript) jsonLdScript.remove();
     document.querySelector('meta[property="article:published_time"]')?.remove();
     document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
   }
-
-  // Twitter
-  setMeta('meta[name="twitter:card"]', 'content', 'summary_large_image');
-  setMeta('meta[name="twitter:title"]', 'content', finalTitle);
-  setMeta('meta[name="twitter:description"]', 'content', finalDesc);
-  setMeta('meta[name="twitter:image"]', 'content', finalImage);
 }
 
