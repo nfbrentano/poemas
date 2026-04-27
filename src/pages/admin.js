@@ -1,6 +1,14 @@
 import { supabase } from '../utils/supabase.js';
 import { navigateTo } from '../router.js';
 
+function debounce(fn, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
 export default {
   meta: { title: 'Dashboard Admin' },
   
@@ -58,7 +66,7 @@ export default {
     
     const { data: poems, error } = await supabase
       .from('poems')
-      .select('id, title, slug, status, published_at')
+      .select('id, title, slug, status, published_at, scheduled_at')
       .order('created_at', { ascending: false });
       
     if (error) {
@@ -76,9 +84,15 @@ export default {
         <td style="padding: var(--space-md) 0; font-family: var(--font-display); font-size: 1.2rem;">${p.title}</td>
         <td style="padding: var(--space-md) 0; font-family: var(--font-ui); color: var(--text-muted); font-size: 0.85rem;">${p.slug}</td>
         <td style="padding: var(--space-md) 0;">
-          <span style="padding: 0.2rem 0.6rem; border-radius: 2px; font-family: var(--font-ui); font-size: 0.75rem; border: 1px solid ${p.status === 'published' ? 'var(--success)' : 'var(--border-strong)'}; color: ${p.status === 'published' ? 'var(--success)' : 'var(--text-muted)'}; text-transform: uppercase; letter-spacing: 1px;">
-            ${p.status === 'published' ? 'Publicado' : 'Rascunho'}
-          </span>
+          ${p.status === 'scheduled' ? `
+            <span style="padding: 0.2rem 0.6rem; border-radius: 2px; font-family: var(--font-ui); font-size: 0.75rem; border: 1px solid var(--accent-subtle); color: var(--accent-subtle); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;">
+              Agendado • ${new Date(p.scheduled_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+            </span>
+          ` : `
+            <span style="padding: 0.2rem 0.6rem; border-radius: 2px; font-family: var(--font-ui); font-size: 0.75rem; border: 1px solid ${p.status === 'published' ? 'var(--success)' : 'var(--border-strong)'}; color: ${p.status === 'published' ? 'var(--success)' : 'var(--text-muted)'}; text-transform: uppercase; letter-spacing: 1px;">
+              ${p.status === 'published' ? 'Publicado' : 'Rascunho'}
+            </span>
+          `}
         </td>
         <td style="padding: var(--space-md) 0; text-align: right; font-family: var(--font-ui);">
           <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${p.id}" data-link style="color: var(--text-primary); margin-right: var(--space-md); font-size: 0.85rem; transition: color var(--transition-fast);">Editar</a>
@@ -171,46 +185,72 @@ export default {
     }
     
     container.innerHTML = `
-      <form id="editor-form" style="display: grid; gap: var(--space-lg); font-family: var(--font-ui);">
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
-          <div>
-            <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Título</label>
-            <input type="text" id="poem-title" value="${poem.title}" required style="width: 100%; font-size: 1.5rem; font-family: var(--font-display); padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
+      <form id="editor-form" style="font-family: var(--font-ui);">
+        <div class="editor-layout">
+          <div class="editor-pane">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
+              <div>
+                <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Título</label>
+                <input type="text" id="poem-title" value="${poem.title}" required style="width: 100%; font-size: 1.5rem; font-family: var(--font-display); padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Link (Slug)</label>
+                <input type="text" id="poem-slug" value="${poem.slug}" required style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0; color: var(--text-muted);">
+              </div>
+            </div>
+            
+            <div style="margin-top: var(--space-md);">
+              <label style="display: block; margin-bottom: var(--space-xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Conteúdo (HTML)</label>
+              <textarea id="poem-content-input" required style="width: 100%; min-height: 500px; font-family: var(--font-body); font-size: 1.1rem; line-height: 1.6; padding: var(--space-md); border: 1px solid var(--border-strong); background: var(--bg-primary); border-radius: 2px; color: var(--text-primary); resize: vertical;">${poem.content}</textarea>
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Resumo / Trecho</label>
+              <textarea id="poem-excerpt" style="width: 100%; min-height: 80px; font-family: var(--font-body); font-size: 1rem; padding: var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); border-radius: 2px; resize: vertical;">${poem.excerpt || ''}</textarea>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+              <div>
+                <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Tags (vírgula)</label>
+                <input type="text" id="poem-tags" value="${poem.tags ? poem.tags.join(', ') : ''}" style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Estado</label>
+                <select id="poem-status" style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0; color: var(--text-primary);">
+                  <option value="draft" ${poem.status === 'draft' ? 'selected' : ''}>Rascunho</option>
+                  <option value="scheduled" ${poem.status === 'scheduled' ? 'selected' : ''}>Agendado</option>
+                  <option value="published" ${poem.status === 'published' ? 'selected' : ''}>Publicado</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="scheduling-fields" style="margin-top: var(--space-md); ${poem.status === 'scheduled' ? '' : 'display: none;'}">
+              <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Data de Publicação</label>
+              <input type="datetime-local" id="scheduled-at" value="${poem.scheduled_at ? new Date(poem.scheduled_at).toISOString().slice(0, 16) : ''}" style="width: 100%; padding: var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 2px;">
+              <p class="field-help">Se definido e o status for "Agendado", o poema será publicado automaticamente.</p>
+              ${poem.status === 'scheduled' ? `<p class="field-help" style="color: var(--accent-subtle); font-style: italic;">Este poema será publicado automaticamente em ${new Date(poem.scheduled_at).toLocaleString('pt-BR')}.</p>` : ''}
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: var(--space-md); margin-top: var(--space-lg); border-top: 1px solid var(--border-subtle); padding-top: var(--space-lg);">
+              <a href="${import.meta.env.BASE_URL}admin" data-link class="btn-secondary" style="padding: 0.75rem 1.5rem; color: var(--text-secondary);">Cancelar</a>
+              <button type="submit" class="btn-primary" id="save-btn" style="padding: 0.75rem 1.5rem; background: var(--border-strong); color: var(--text-primary); border-radius: 2px;">Gravar Alterações</button>
+              ${poem.status === 'draft' ? `<button type="button" class="btn-primary" id="publish-btn" style="padding: 0.75rem 1.5rem; background: var(--success); color: #fff; border-radius: 2px; font-weight: 500;">Publicar Agora</button>` : ''}
+            </div>
           </div>
-          <div>
-            <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Link (Slug)</label>
-            <input type="text" id="poem-slug" value="${poem.slug}" required style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0; color: var(--text-muted);">
+
+          <div class="preview-pane">
+            <div class="preview-header">
+              <span class="preview-label">Preview em tempo real</span>
+            </div>
+            <article class="preview-poem">
+              <h1 id="preview-title">${poem.title || 'Título da Obra'}</h1>
+              <div class="poem-meta preview-meta">
+                <span id="preview-date">${poem.published_at ? new Date(poem.published_at).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')}</span>
+                <span id="preview-tags-container">${poem.tags && poem.tags.length > 0 ? `<span>•</span> <span>${poem.tags.join(', ')}</span>` : ''}</span>
+              </div>
+              <div id="preview-content" class="poem-content">${poem.content || ''}</div>
+            </article>
           </div>
-        </div>
-        
-        <div style="margin-top: var(--space-md);">
-          <label style="display: block; margin-bottom: var(--space-xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Corpo da Obra</label>
-          <textarea id="poem-content" required style="width: 100%; min-height: 500px; font-family: var(--font-body); font-size: 1.2rem; line-height: 2; padding: var(--space-md); border: 1px solid var(--border-strong); background: var(--bg-primary); border-radius: 2px; color: var(--text-primary); resize: vertical;">${poem.content}</textarea>
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Resumo / Trecho (para listagem)</label>
-          <textarea id="poem-excerpt" style="width: 100%; min-height: 80px; font-family: var(--font-body); font-size: 1rem; padding: var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); border-radius: 2px; resize: vertical;">${poem.excerpt || ''}</textarea>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
-          <div>
-            <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Tags (separadas por vírgula)</label>
-            <input type="text" id="poem-tags" value="${poem.tags ? poem.tags.join(', ') : ''}" style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
-          </div>
-          <div>
-            <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Estado da Obra</label>
-            <select id="poem-status" style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0; color: var(--text-primary);">
-              <option value="draft" ${poem.status === 'draft' ? 'selected' : ''}>Rascunho (Privado)</option>
-              <option value="published" ${poem.status === 'published' ? 'selected' : ''}>Publicado (Visível)</option>
-            </select>
-          </div>
-        </div>
-        
-        <div style="display: flex; justify-content: flex-end; gap: var(--space-md); margin-top: var(--space-lg); border-top: 1px solid var(--border-subtle); padding-top: var(--space-lg);">
-          <a href="${import.meta.env.BASE_URL}admin" data-link class="btn-secondary" style="padding: 0.75rem 1.5rem; color: var(--text-secondary);">Cancelar</a>
-          <button type="submit" class="btn-primary" id="save-btn" style="padding: 0.75rem 1.5rem; background: var(--border-strong); color: var(--text-primary); border-radius: 2px;">Gravar Alterações</button>
-          ${poem.status === 'draft' ? `<button type="button" class="btn-primary" id="publish-btn" style="padding: 0.75rem 1.5rem; background: var(--success); color: #fff; border-radius: 2px; font-weight: 500;">Publicar e Notificar Assinantes</button>` : ''}
         </div>
       </form>
     `;
@@ -220,6 +260,9 @@ export default {
     const slugInput = document.getElementById('poem-slug');
     
     titleInput.addEventListener('input', () => {
+      // Sync preview title
+      document.getElementById('preview-title').innerText = titleInput.value || 'Título da Obra';
+
       if (!id || slugInput.value === '') { // Auto-fill for new poems or if slug is empty
         let slug = titleInput.value.toLowerCase().trim()
           .replace(/[áàãâä]/g, 'a')
@@ -236,30 +279,40 @@ export default {
         slugInput.value = slug;
       }
     });
-    
-    titleInput.addEventListener('blur', () => {
-       if (!slugInput.value) {
-         let slug = titleInput.value.toLowerCase().trim()
-          .replace(/[áàãâä]/g, 'a').replace(/[éèêë]/g, 'e').replace(/[íìîï]/g, 'i')
-          .replace(/[óòõôö]/g, 'o').replace(/[úùûü]/g, 'u').replace(/ç/g, 'c')
-          .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
-         slugInput.value = slug;
-       }
+
+    // Preview Sync Logic
+    const contentInput = document.getElementById('poem-content-input');
+    const previewContent = document.getElementById('preview-content');
+    const tagsInput = document.getElementById('poem-tags');
+    const statusSelect = document.getElementById('poem-status');
+    const schedulingFields = document.getElementById('scheduling-fields');
+
+    const updatePreview = () => {
+      previewContent.innerHTML = contentInput.value;
+    };
+
+    contentInput.addEventListener('input', debounce(updatePreview, 250));
+
+    tagsInput.addEventListener('input', debounce(() => {
+      const tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
+      document.getElementById('preview-tags-container').innerHTML = tags.length > 0 ? `<span>•</span> <span>${tags.join(', ')}</span>` : '';
+    }, 250));
+
+    statusSelect.addEventListener('change', () => {
+      schedulingFields.style.display = statusSelect.value === 'scheduled' ? 'block' : 'none';
     });
 
-    const getFormData = () => {
-      const tagsRaw = document.getElementById('poem-tags').value;
-      const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(t => t) : [];
+      const scheduledAtInput = document.getElementById('scheduled-at');
       
       return {
         title: document.getElementById('poem-title').value,
         slug: document.getElementById('poem-slug').value,
-        content: document.getElementById('poem-content').value,
+        content: document.getElementById('poem-content-input').value,
         excerpt: document.getElementById('poem-excerpt').value,
         tags,
-        status: document.getElementById('poem-status').value
+        status: document.getElementById('poem-status').value,
+        scheduled_at: scheduledAtInput.value ? new Date(scheduledAtInput.value).toISOString() : null
       };
-    };
     
     document.getElementById('editor-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -268,6 +321,14 @@ export default {
       btn.disabled = true;
       
       const payload = getFormData();
+      
+      if (payload.status === 'scheduled' && !payload.scheduled_at) {
+        alert('Por favor, defina uma data para o agendamento.');
+        btn.innerText = 'Gravar Alterações';
+        btn.disabled = false;
+        return;
+      }
+
       if (payload.status === 'published' && poem.status !== 'published') {
         payload.published_at = new Date().toISOString();
       }
