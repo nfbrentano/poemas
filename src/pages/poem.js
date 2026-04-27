@@ -126,7 +126,10 @@ export default {
     updateSEO({
       title: poem.title,
       description: cleanExcerpt,
-      url: poemUrl
+      url: poemUrl,
+      type: 'article',
+      publishedTime: poem.published_at,
+      tags: poem.tags
     });
     
     // Check if user is logged in (to show admin buttons)

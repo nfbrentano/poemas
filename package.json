@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp dist/index.html dist/404.html && cp .nojekyll dist/",
+    "sitemap": "node --env-file=.env.local scripts/generate-sitemap.js || node scripts/generate-sitemap.js",
+    "build": "npm run sitemap && vite build && cp dist/index.html dist/404.html && cp .nojekyll dist/",
     "preview": "vite preview"
   },
   "devDependencies": {
