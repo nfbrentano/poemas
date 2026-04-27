@@ -66,6 +66,7 @@ export default {
         </div>
       `;
       return;
+    }
     
     // Poem of the Day Logic
     const seedStr = new Date().toISOString().slice(0, 10);
