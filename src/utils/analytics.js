@@ -4,6 +4,7 @@ import { supabase } from './supabase.js';
 export async function trackPageView(page, poemId = null) {
   try {
     // Bot / crawler guard
+    const CACHE_NAME = 'poemas-cache-v4';
     const ua = navigator.userAgent || '';
     if (/bot|crawler|spider|Googlebot|bingbot|facebookexternalhit/i.test(ua)) return;
 
@@ -12,17 +13,17 @@ export async function trackPageView(page, poemId = null) {
     try {
       // Avoid multiple concurrent IP lookups
       if (!window._ipPromise) {
-        window._ipPromise = fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(3000) })
+        window._ipPromise = fetch('https://ipwho.is/json', { signal: AbortSignal.timeout(3000) })
           .then(res => res.ok ? res.json() : null)
           .catch(() => null);
       }
       
       const g = await window._ipPromise;
-      if (g) {
-        country = g.countryCode || null;
+      if (g && g.success) {
+        country = g.country_code || null;
         // Also build a privacy-safe IP hash from the IP string if not already set
-        if (g.ipAddress && !window._ipHash) {
-          const encoded = new TextEncoder().encode(g.ipAddress);
+        if (g.ip && !window._ipHash) {
+          const encoded = new TextEncoder().encode(g.ip);
           const hashBuf = await crypto.subtle.digest('SHA-256', encoded);
           const hashArr = Array.from(new Uint8Array(hashBuf));
           window._ipHash = hashArr.map(b => b.toString(16).padStart(2, '0')).join('');

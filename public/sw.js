@@ -42,6 +42,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip cross-origin API requests (analytics, supabase, emailjs)
+  // Let the browser handle these directly to avoid CORS/SW interaction issues
+  if (!event.request.url.startsWith(self.location.origin)) {
+    if (event.request.url.includes('supabase.co') || 
+        event.request.url.includes('api.emailjs.com') ||
+        event.request.url.includes('ipwho.is') ||
+        event.request.url.includes('freeipapi.com')) {
+      return;
+    }
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request).then((fetchResponse) => {
@@ -54,9 +65,10 @@ self.addEventListener('fetch', (event) => {
         }
         return fetchResponse;
       }).catch((err) => {
-        // Fail gracefully on network/CORS errors
-        console.warn('[SW] Fetch failed for:', event.request.url, err);
-      });
+      // Fail gracefully on network errors
+      if (event.request.destination !== 'image') {
+        console.warn('[SW] Fetch failed for:', event.request.url);
+      }
     })
   );
 });
