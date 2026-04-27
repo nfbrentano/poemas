@@ -154,6 +154,13 @@ export function initRouter() {
       navigateTo(e.target.href);
     }
   });
+
+  // Handle redirect from 404.html (GitHub Pages SPA fallback)
+  const redirect = sessionStorage.getItem('redirect');
+  if (redirect) {
+    sessionStorage.removeItem('redirect');
+    window.history.replaceState(null, null, redirect);
+  }
   
   router();
 }

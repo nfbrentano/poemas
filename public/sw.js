@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poemas-cache-v7';
+const CACHE_NAME = 'poemas-cache-v8';
 const ASSETS = [
   '/poemas/',
   '/poemas/index.html',
@@ -35,9 +35,21 @@ self.addEventListener('fetch', (event) => {
   // Navigation fallback: serve index.html for all navigation requests (SPA)
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match('/poemas/index.html').then((response) => {
-        return response || fetch(event.request).catch(() => caches.match('/poemas/index.html'));
-      })
+      fetch(event.request)
+        .then((response) => {
+          // If successful, cache the new version of index.html
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put('/poemas/index.html', responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // If network fails, try to serve from cache
+          return caches.match('/poemas/index.html');
+        })
     );
     return;
   }
