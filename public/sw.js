@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poemas-cache-v3';
+const CACHE_NAME = 'poemas-cache-v4';
 const ASSETS = [
   '/poemas/',
   '/poemas/index.html',

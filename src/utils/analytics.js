@@ -4,7 +4,6 @@ import { supabase } from './supabase.js';
 export async function trackPageView(page, poemId = null) {
   try {
     // Bot / crawler guard
-    const CACHE_NAME = 'poemas-cache-v4';
     const ua = navigator.userAgent || '';
     if (/bot|crawler|spider|Googlebot|bingbot|facebookexternalhit/i.test(ua)) return;
 
