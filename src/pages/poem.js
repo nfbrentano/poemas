@@ -25,7 +25,47 @@ export default {
   async render(container, params) {
     const slug = params.slug;
     
-    container.innerHTML = '<div class="loading-container fade-in">Carregando...</div>';
+    const skeletonHtml = `
+      <div class="poem-container fade-in">
+        <article class="single-poem">
+          <header>
+            <div class="skeleton skeleton-title" style="margin: 0 auto 1.5rem auto; width: 60%; height: 3.5rem;"></div>
+            <div class="poem-meta" style="justify-content: center;">
+              <div class="skeleton" style="width: 80px; height: 1rem;"></div>
+              <div class="skeleton" style="width: 100px; height: 1rem;"></div>
+            </div>
+          </header>
+          
+          <div class="poem-content" style="display: flex; flex-direction: column; align-items: center; gap: 0.8rem; margin-top: 4rem;">
+            <div class="skeleton skeleton-text" style="width: 40%;"></div>
+            <div class="skeleton skeleton-text" style="width: 35%;"></div>
+            <div class="skeleton skeleton-text" style="width: 45%;"></div>
+            <div class="skeleton skeleton-text" style="width: 30%;"></div>
+            <div class="skeleton skeleton-text" style="width: 0; height: 1rem; margin: 1rem 0;"></div>
+            <div class="skeleton skeleton-text" style="width: 38%;"></div>
+            <div class="skeleton skeleton-text" style="width: 42%;"></div>
+            <div class="skeleton skeleton-text" style="width: 33%;"></div>
+          </div>
+          
+          <div class="share-section" style="margin-top: 4rem;">
+            <div class="skeleton" style="width: 120px; height: 0.8rem; margin-bottom: 1rem;"></div>
+            <div class="share-buttons">
+              <div class="skeleton" style="width: 80px; height: 2.2rem; border-radius: 4px;"></div>
+              <div class="skeleton" style="width: 80px; height: 2.2rem; border-radius: 4px;"></div>
+              <div class="skeleton" style="width: 80px; height: 2.2rem; border-radius: 4px;"></div>
+              <div class="skeleton" style="width: 120px; height: 2.2rem; border-radius: 4px;"></div>
+            </div>
+          </div>
+
+          <div class="poem-actions" style="margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 2rem; justify-content: center;">
+            <div class="skeleton" style="width: 140px; height: 3rem; border-radius: 4px;"></div>
+            <div class="skeleton" style="width: 140px; height: 3rem; border-radius: 4px;"></div>
+          </div>
+        </article>
+      </div>
+    `;
+
+    container.innerHTML = skeletonHtml;
     
     // Fetch poem
     const { data: poem, error } = await supabase
