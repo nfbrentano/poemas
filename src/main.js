@@ -9,10 +9,10 @@ import { supabase } from './utils/supabase.js';
 // Setup Base Layout
 document.querySelector('#app').innerHTML = `
   <header class="site-header">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+    <div class="header-container">
       <a href="${import.meta.env.BASE_URL}" class="logo" data-link>Natanael Brentano</a>
       
-      <div id="header-controls" style="display: flex; align-items: center; gap: var(--space-sm);">
+      <div id="header-controls" style="display: flex; align-items: center; gap: var(--space-md);">
         <div id="header-search-container" class="header-search-container"></div>
 
         <nav class="main-nav">
