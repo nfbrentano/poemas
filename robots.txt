@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nfbrentano.github.io/poemas/sitemap.xml
