@@ -15,6 +15,13 @@ Site autoral desenvolvido com Vanilla JS (Vite) + Supabase + GitHub Pages.
    VITE_SUPABASE_URL=sua_url_aqui
    VITE_SUPABASE_ANON_KEY=sua_anon_key_aqui
    ```
+
+### 2.1. Arquitetura de Segurança
+Este projeto utiliza **Row Level Security (RLS)** no Supabase para proteger os dados.
+- **Anon Key**: É pública e exposta no cliente por design. Ela permite apenas operações autorizadas (ex: ler poemas publicados, inscrever novos e-mails).
+- **Poemas**: Somente poemas com `status = 'published'` são visíveis ao público. Rascunhos são protegidos.
+- **Assinantes**: O público pode apenas se inscrever (`INSERT`). A lista de e-mails é privada e acessível apenas pelo administrador autenticado.
+- **Admin**: As permissões de gerenciamento são restritas a usuários com o papel `admin` na tabela `public.profiles`.
 2. Para rodar localmente:
    ```bash
    npm install
