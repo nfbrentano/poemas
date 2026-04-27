@@ -81,12 +81,9 @@ export default {
 
     container.innerHTML = skeletonHtml;
     
-    // Fetch poem
+    // Fetch poem with navigation data in a single RPC
     const { data: poem, error } = await supabase
-      .from('poems')
-      .select('*')
-      .eq('slug', slug)
-      .eq('status', 'published')
+      .rpc('get_poem_with_navigation', { target_slug: slug })
       .single();
       
     if (error || !poem) {
@@ -99,18 +96,10 @@ export default {
       return;
     }
 
-    // Fetch navigation data
-    const [prevRes, nextRes, countRes, newerCountRes] = await Promise.all([
-      supabase.from('poems').select('slug, title').eq('status', 'published').lt('published_at', poem.published_at).order('published_at', { ascending: false }).limit(1).maybeSingle(),
-      supabase.from('poems').select('slug, title').eq('status', 'published').gt('published_at', poem.published_at).order('published_at', { ascending: true }).limit(1).maybeSingle(),
-      supabase.from('poems').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-      supabase.from('poems').select('id', { count: 'exact', head: true }).eq('status', 'published').gt('published_at', poem.published_at)
-    ]);
-
-    const prevSlug = prevRes.data?.slug || null;
-    const nextSlug = nextRes.data?.slug || null;
-    const totalCount = countRes.count || 0;
-    const currentIndex = (newerCountRes.count || 0) + 1;
+    const prevSlug = poem.prev_slug;
+    const nextSlug = poem.next_slug;
+    const totalCount = poem.total_count;
+    const currentIndex = poem.current_index;
 
     // Rastrear visualização do poema
     trackPageView('/poema/' + poem.slug, poem.id);
