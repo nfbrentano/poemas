@@ -9,6 +9,8 @@ export const routes = {
   '/login': () => import('./pages/login.js').then(m => m.default)
 };
 
+let currentViewComponent = null;
+
 export async function router() {
   const basePath = import.meta.env.BASE_URL; // e.g. "/" or "/poemas/"
   let path = window.location.pathname;
@@ -27,6 +29,11 @@ export async function router() {
   
   const view = document.getElementById('main-content');
   
+  // Cleanup previous component if it exists
+  if (currentViewComponent && typeof currentViewComponent.cleanup === 'function') {
+    currentViewComponent.cleanup();
+  }
+
   // Clear current view with a minimal skeleton or loading class
   view.innerHTML = '<div class="loading-container fade-in">Carregando...</div>';
   
@@ -85,6 +92,7 @@ export async function router() {
   if (match) {
     try {
       const component = await match();
+      currentViewComponent = component;
       await component.render(view, params);
       
       // Update active nav state
@@ -110,6 +118,7 @@ export async function router() {
       view.innerHTML = '<h2>Erro ao carregar a página.</h2>';
     }
   } else {
+    currentViewComponent = null;
     view.innerHTML = `
       <div style="text-align: center; padding: var(--space-4xl) var(--space-lg);">
         <h2 style="font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 400; color: var(--text-primary); margin-bottom: var(--space-md);">Página não encontrada.</h2>
