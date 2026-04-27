@@ -53,6 +53,9 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return fetchResponse;
+      }).catch((err) => {
+        // Fail gracefully on network/CORS errors
+        console.warn('[SW] Fetch failed for:', event.request.url, err);
       });
     })
   );
