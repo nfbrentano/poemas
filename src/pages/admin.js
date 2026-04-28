@@ -409,77 +409,21 @@ export default {
           return;
         }
         
-        // Trigger EmailJS Newsletter
+        // Trigger Supabase Edge Function Newsletter
         if (poemId) {
           try {
-            // 1. Fetch Subscribers
-            const { data: subscribers, error: subError } = await supabase
-              .from('subscribers')
-              .select('email')
-              .eq('active', true);
+            publishBtn.innerText = 'Enviando newsletter...';
+            
+            const { data, error: fnError } = await supabase.functions.invoke('send-newsletter', {
+              body: { poemId }
+            });
 
-            if (subError) throw subError;
+            if (fnError) throw fnError;
 
-            if (!subscribers || subscribers.length === 0) {
-              alert('Obra publicada, mas não há assinantes ativos para notificar.');
-              navigateTo('/admin');
-              return;
-            }
-
-            // 2. Prepare content
-            const siteUrl = window.location.origin + import.meta.env.BASE_URL.replace(/\/$/, '');
-            const poemUrl = `${siteUrl}/poema/${payload.slug}`;
-            const poemContentHtml = payload.content
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/\n\n/g, '</p><p style="margin: 1.5em 0; line-height: 2;">')
-              .replace(/\n/g, '<br>');
-
-            const fullHtml = `
-              <div style="font-family: Georgia, serif; color: #e2e2e2; background-color: #050505; padding: 40px 20px;">
-                <h1 style="text-align: center; font-size: 32px; font-weight: 400;">${payload.title}</h1>
-                <div style="max-width: 600px; margin: 40px auto; font-size: 18px; line-height: 2;">
-                  ${poemContentHtml}
-                </div>
-                <div style="text-align: center; margin-top: 60px;">
-                  <a href="${poemUrl}" style="padding: 12px 24px; background: #e2e2e2; color: #050505; text-decoration: none; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ler no site</a>
-                </div>
-                <p style="text-align: center; margin-top: 60px; color: #666; font-style: italic;">Natanael Brentano</p>
-              </div>
-            `;
-
-            // 3. Send emails one by one via EmailJS
-            let sentCount = 0;
-            for (const sub of subscribers) {
-              sentCount++;
-              publishBtn.innerText = `Enviando (${sentCount}/${subscribers.length})...`;
-
-              const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  service_id: 'service_i2oc0um',
-                  template_id: 'template_140jswa',
-                  user_id: 'MiJ3eP6LS3i2FSf5k',
-                  template_params: {
-                    title: payload.title,
-                    to_email: sub.email,
-                    message: fullHtml
-                  }
-                })
-              });
-
-              if (!res.ok) {
-                const errText = await res.text();
-                console.error(`Erro ao enviar para ${sub.email}:`, errText);
-              }
-            }
-
-            alert(`Obra publicada e ${sentCount} e-mails processados com sucesso!`);
+            alert(`Obra publicada e newsletter enviada com sucesso para ${data.count} assinantes!`);
           } catch(err) {
             console.error('Newsletter erro:', err);
-            alert(`Obra publicada, mas houve um erro ao processar a newsletter: ${err.message}`);
+            alert(`Obra publicada, mas houve um erro ao enviar a newsletter: ${err.message || 'Erro na Edge Function'}`);
           }
         }
         
