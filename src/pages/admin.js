@@ -34,6 +34,10 @@ export default {
                style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">
               Estatísticas
             </a>
+            <a href="${import.meta.env.BASE_URL}admin?view=emails" data-link 
+               style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">
+              Histórico de Emails
+            </a>
             <a href="${import.meta.env.BASE_URL}admin?view=editor" data-link style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; transition: border-color var(--transition-fast);">Nova Obra</a>
 
             <button id="logout-btn" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--error); border: 1px solid transparent;">Sair</button>
@@ -57,6 +61,8 @@ export default {
     } else if (view === 'analytics') {
       const { default: Analytics } = await import('./analytics.js');
       await Analytics.render(contentDiv);
+    } else if (view === 'emails') {
+      await this.renderEmailHistory(contentDiv);
     }
 
   },
@@ -437,5 +443,57 @@ export default {
         navigateTo('/admin');
       });
     }
+  },
+  
+  async renderEmailHistory(container) {
+    container.innerHTML = '<div class="loading">Carregando histórico...</div>';
+    
+    const { data: logs, error } = await supabase
+      .from('email_campaign_logs')
+      .select('id, sent_at, status, details, poems(title)')
+      .order('sent_at', { ascending: false });
+      
+    if (error) {
+      container.innerHTML = `<div class="error">Erro ao carregar: ${error.message}</div>`;
+      return;
+    }
+    
+    if (!logs || logs.length === 0) {
+      container.innerHTML = '<p>Nenhum envio de email registrado.</p>';
+      return;
+    }
+    
+    const rows = logs.map(log => `
+      <tr style="border-bottom: 1px solid var(--border-subtle); transition: background-color var(--transition-fast);">
+        <td style="padding: var(--space-md) 0; font-family: var(--font-display);">${log.poems?.title || 'Desconhecido'}</td>
+        <td style="padding: var(--space-md) 0; font-family: var(--font-ui); color: var(--text-muted); font-size: 0.85rem;">
+          ${new Date(log.sent_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+        </td>
+        <td style="padding: var(--space-md) 0;">
+          <span style="padding: 0.2rem 0.6rem; border-radius: 2px; font-family: var(--font-ui); font-size: 0.75rem; border: 1px solid ${log.status === 'success' ? 'var(--success)' : 'var(--error)'}; color: ${log.status === 'success' ? 'var(--success)' : 'var(--error)'}; text-transform: uppercase; letter-spacing: 1px;">
+            ${log.status}
+          </span>
+        </td>
+        <td style="padding: var(--space-md) 0; font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted);">
+          ${log.details || '-'}
+        </td>
+      </tr>
+    `).join('');
+    
+    container.innerHTML = \`
+      <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-strong); color: var(--text-secondary); font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Obra</th>
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Data do Envio</th>
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Status</th>
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Detalhes</th>
+          </tr>
+        </thead>
+        <tbody>
+          \${rows}
+        </tbody>
+      </table>
+    \`;
   }
 };

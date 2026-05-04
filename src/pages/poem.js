@@ -180,6 +180,7 @@ export default {
             ${isAdmin ? `
               <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" data-link>Editar Obra</a>
               <button id="export-ig-btn" class="btn-secondary">Gerar Card Instagram</button>
+              <button id="resend-email-btn" class="btn-secondary">Reenviar Email</button>
             ` : ''}
           </div>
         </article>
@@ -454,6 +455,35 @@ export default {
           exportBtn.disabled = false;
         }
       });
+
+      const resendBtn = document.getElementById('resend-email-btn');
+      if (resendBtn) {
+        resendBtn.addEventListener('click', async () => {
+          if (!confirm('Deseja realmente reenviar o email desta obra para todos os assinantes?')) return;
+          resendBtn.innerText = 'Enviando...';
+          resendBtn.disabled = true;
+          try {
+            const { data, error } = await supabase.functions.invoke('send-newsletter', {
+              body: { poemId: poem.id }
+            });
+            if (error) throw error;
+            alert(`Email reenviado com sucesso para ${data?.count || 0} assinantes!`);
+          } catch(err) {
+            console.error('Newsletter erro:', err);
+            let detailedMsg = '';
+            if (err.context && typeof err.context.json === 'function') {
+              try {
+                const errBody = await err.context.json();
+                detailedMsg = errBody.error || errBody.message || '';
+              } catch (e) {}
+            }
+            alert(`Houve um erro ao reenviar a newsletter:\n${detailedMsg || err.message || 'Erro na Edge Function'}`);
+          } finally {
+            resendBtn.innerText = 'Reenviar Email';
+            resendBtn.disabled = false;
+          }
+        });
+      }
     }
   }
 };
