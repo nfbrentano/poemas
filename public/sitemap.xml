@@ -9,6 +9,36 @@
   
   <!-- Poems -->
   <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/penhasco-de-sentimentos</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/entre-linhas-e-abracos</loc>
+    <lastmod>2026-04-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/a-porta-entreaberta</loc>
+    <lastmod>2026-04-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/espelho-da-alma</loc>
+    <lastmod>2026-04-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/ciclos-de-luz</loc>
+    <lastmod>2026-04-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://nfbrentano.github.io/poemas/poema/manifesto-do-agora</loc>
     <lastmod>2026-04-27</lastmod>
     <changefreq>monthly</changefreq>
