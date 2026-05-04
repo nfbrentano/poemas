@@ -113,7 +113,7 @@ serve(async (req: any) => {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/\n\n/g, '</p><p style="margin: 1.5em 0; line-height: 2;">')
+      .replace(/\n\n/g, '</p><p style="margin: 1.5em 0; line-height: 2; color: #e2e2e2;">')
       .replace(/\n/g, '<br>');
 
     const htmlEmail = `<!DOCTYPE html>
