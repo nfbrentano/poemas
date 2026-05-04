@@ -1,9 +1,10 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+// @ts-nocheck
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const LOOPS_API_KEY = Deno.env.get('LOOPS_API_KEY')!
 const LOOPS_MAILING_LIST_ID = Deno.env.get('LOOPS_MAILING_LIST_ID') // opcional
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
   // CORS Handling
   if (req.method === 'OPTIONS') {
     return new Response(null, {

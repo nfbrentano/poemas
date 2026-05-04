@@ -1,7 +1,8 @@
+// @ts-nocheck
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   try {
     // Initialize Supabase client with service role key (from env)
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -34,7 +35,7 @@ Deno.serve(async (req) => {
         status: "published", 
         published_at: now 
       })
-      .in("id", poems.map(p => p.id));
+      .in("id", poems.map((p: any) => p.id));
 
     if (updateError) throw updateError;
 
@@ -43,12 +44,12 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ 
       message: `Successfully published ${poems.length} poems`, 
       published: poems.length,
-      titles: poems.map(p => p.title)
+      titles: poems.map((p: any) => p.title)
     }), {
       headers: { "Content-Type": "application/json" },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
