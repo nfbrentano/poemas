@@ -480,7 +480,7 @@ export default {
       </tr>
     `).join('');
     
-    container.innerHTML = \`
+    container.innerHTML = `
       <table style="width: 100%; border-collapse: collapse; text-align: left;">
         <thead>
           <tr style="border-bottom: 1px solid var(--border-strong); color: var(--text-secondary); font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
@@ -491,9 +491,9 @@ export default {
           </tr>
         </thead>
         <tbody>
-          \${rows}
+          ${rows}
         </tbody>
       </table>
-    \`;
+    `;
   }
 };
