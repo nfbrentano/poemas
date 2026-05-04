@@ -110,9 +110,6 @@ serve(async (req: any) => {
     const poemUrl = `${siteUrl}/poema/${poem.slug}`;
 
     const poemContentHtml = poem.content
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
       .replace(/\n\n/g, '</p><p style="margin: 1.5em 0; font-size: 18px; line-height: 2; color: #e2e2e2;">')
       .replace(/\n/g, '<br>');
 
