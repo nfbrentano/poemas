@@ -423,7 +423,14 @@ export default {
             alert(`Obra publicada e newsletter enviada com sucesso para ${data.count} assinantes!`);
           } catch(err) {
             console.error('Newsletter erro:', err);
-            alert(`Obra publicada, mas houve um erro ao enviar a newsletter: ${err.message || 'Erro na Edge Function'}`);
+            let detailedMsg = '';
+            if (err.context && typeof err.context.json === 'function') {
+              try {
+                const errBody = await err.context.json();
+                detailedMsg = errBody.error || errBody.message || '';
+              } catch (e) {}
+            }
+            alert(`Obra publicada, mas houve um erro ao enviar a newsletter:\n${detailedMsg || err.message || 'Erro na Edge Function'}`);
           }
         }
         
