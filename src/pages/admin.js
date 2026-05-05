@@ -229,8 +229,8 @@ export default {
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
               <div>
-                <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Tags (vírgula)</label>
-                <input type="text" id="poem-tags" value="${poem.tags ? poem.tags.join(', ') : ''}" style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
+                <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Sentimentos (vírgula)</label>
+                <input type="text" id="poem-tags" value="${poem.tags ? poem.tags.join(', ') : ''}" placeholder="Ex: Amor, Saudade, Melancolia" style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
               </div>
               <div>
                 <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Estado</label>
@@ -264,7 +264,7 @@ export default {
               <h1 id="preview-title">${poem.title || 'Título da Obra'}</h1>
               <div class="poem-meta preview-meta">
                 <span id="preview-date">${poem.published_at ? new Date(poem.published_at).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')}</span>
-                <span id="preview-tags-container">${poem.tags && poem.tags.length > 0 ? `<span>•</span> <span>${poem.tags.join(', ')}</span>` : ''}</span>
+                <span id="preview-tags-container">${poem.tags && poem.tags.length > 0 ? `<span>•</span> <span>Sentimentos: ${poem.tags.join(', ')}</span>` : ''}</span>
               </div>
               <div id="preview-content" class="poem-content">${poem.content || ''}</div>
             </article>
@@ -313,7 +313,7 @@ export default {
 
     tagsInput.addEventListener('input', debounce(() => {
       const tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
-      document.getElementById('preview-tags-container').innerHTML = tags.length > 0 ? `<span>•</span> <span>${tags.join(', ')}</span>` : '';
+      document.getElementById('preview-tags-container').innerHTML = tags.length > 0 ? `<span>•</span> <span>Sentimentos: ${tags.join(', ')}</span>` : '';
     }, 250));
 
     statusSelect.addEventListener('change', () => {

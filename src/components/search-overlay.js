@@ -81,7 +81,7 @@ export const searchOverlay = {
           <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
         <div id="search-results" class="search-results-container"></div>
-        <p class="search-overlay-help">Digite título, trecho ou tema do poema</p>
+        <p class="search-overlay-help">Digite título, trecho ou sentimento do poema</p>
       </div>
     `;
     document.body.appendChild(this.overlay);

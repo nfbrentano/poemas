@@ -14,8 +14,8 @@ export default {
 
     if (activeTag) {
       updateSEO({
-        title: `Tag: ${activeTag} — Natanael Brentano`,
-        description: `Poemas marcados com a tag ${activeTag}.`,
+        title: `Sentimento: ${activeTag} — Natanael Brentano`,
+        description: `Poemas que expressam o sentimento "${activeTag}".`,
         type: 'website'
       });
     } else {
@@ -74,11 +74,15 @@ export default {
     
     const BASE_URL = import.meta.env.BASE_URL;
 
-    // Collect and count tags
+    // Collect and count tags (unifying sentiments)
     const tagCounts = {};
     poems.forEach(p => {
       (p.tags || []).forEach(t => {
-        tagCounts[t] = (tagCounts[t] || 0) + 1;
+        // Normalize: remove common prefixes and capitalize
+        let normalized = t.replace(/^(sentimento|sentimentos|tag de sentimento|tags de sentimento):/i, '').trim();
+        normalized = normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
+        
+        tagCounts[normalized] = (tagCounts[normalized] || 0) + 1;
       });
     });
 
@@ -98,7 +102,12 @@ export default {
     // Filter poems if tag is active
     let displayPoems = poems;
     if (activeTag) {
-      displayPoems = poems.filter(p => p.tags && p.tags.includes(activeTag));
+      displayPoems = poems.filter(p => 
+        p.tags && p.tags.some(t => {
+          const normalized = t.replace(/^(sentimento|sentimentos|tag de sentimento|tags de sentimento):/i, '').trim().toLowerCase();
+          return normalized === activeTag.toLowerCase();
+        })
+      );
     }
 
     // Poem of the Day Logic (only show when not filtering by tag)

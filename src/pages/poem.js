@@ -150,8 +150,8 @@ export default {
             <h1>${poem.title}</h1>
             <div class="poem-meta">
               <span>${new Date(poem.published_at).toLocaleDateString('pt-BR')}</span>
-              ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span>${poem.tags.join(', ')}</span>` : ''}
-              <span>- </span>
+              ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span class="sentiments-list">Sentimentos: ${poem.tags.join(', ')}</span>` : ''}
+              <span>•</span>
               <span class="reading-time">${readingLabel}</span>
             </div>
           </header>
