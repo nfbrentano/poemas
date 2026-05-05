@@ -74,12 +74,18 @@ export default {
     container.innerHTML = skeletonHtml;
     
     // Fetch poem with navigation data in a single RPC
+    console.log('[Poem] Fetching slug:', slug);
     const { data: poems, error } = await supabase
       .rpc('get_poem_with_navigation', { target_slug: slug });
       
-    const poem = poems && poems.length > 0 ? poems[0] : null;
+    if (error) {
+      console.error('[Poem] RPC Error:', error);
+    }
+      
+    const poem = poems && Array.isArray(poems) && poems.length > 0 ? poems[0] : null;
       
     if (error || !poem) {
+      console.warn('[Poem] Poem not found or error occurred');
       container.innerHTML = `
         <div class="error-container">
           <h2 style="margin-bottom: 1rem; font-family: var(--font-display);">Obra não encontrada</h2>
