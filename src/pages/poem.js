@@ -74,9 +74,10 @@ export default {
     container.innerHTML = skeletonHtml;
     
     // Fetch poem with navigation data in a single RPC
-    const { data: poem, error } = await supabase
-      .rpc('get_poem_with_navigation', { target_slug: slug })
-      .single();
+    const { data: poems, error } = await supabase
+      .rpc('get_poem_with_navigation', { target_slug: slug });
+      
+    const poem = poems && poems.length > 0 ? poems[0] : null;
       
     if (error || !poem) {
       container.innerHTML = `

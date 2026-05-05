@@ -190,6 +190,8 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
 -- RPC Function for Poem Navigation
+DROP FUNCTION IF EXISTS get_poem_with_navigation(text);
+
 CREATE OR REPLACE FUNCTION get_poem_with_navigation(target_slug text)
 RETURNS TABLE (
   id uuid,
@@ -204,25 +206,28 @@ RETURNS TABLE (
   prev_title text,
   next_slug text,
   next_title text
-) AS $$
+) SECURITY DEFINER AS $$
 BEGIN
   RETURN QUERY
   WITH current_poem AS (
-    SELECT * FROM public.poems WHERE poems.slug = target_slug AND status = 'published'
+    SELECT p.id, p.title, p.slug, p.content, p.excerpt, p.tags, p.audio_url, p.published_at 
+    FROM public.poems p 
+    WHERE p.slug = target_slug AND p.status = 'published'
+    LIMIT 1
   ),
   prev_p AS (
-    SELECT poems.slug, poems.title 
-    FROM public.poems 
-    WHERE poems.published_at < (SELECT published_at FROM current_poem)
-      AND status = 'published'
-    ORDER BY published_at DESC LIMIT 1
+    SELECT p.slug, p.title 
+    FROM public.poems p 
+    WHERE p.published_at < (SELECT cp.published_at FROM current_poem cp)
+      AND p.status = 'published'
+    ORDER BY p.published_at DESC LIMIT 1
   ),
   next_p AS (
-    SELECT poems.slug, poems.title 
-    FROM public.poems 
-    WHERE poems.published_at > (SELECT published_at FROM current_poem)
-      AND status = 'published'
-    ORDER BY published_at ASC LIMIT 1
+    SELECT p.slug, p.title 
+    FROM public.poems p 
+    WHERE p.published_at > (SELECT cp.published_at FROM current_poem cp)
+      AND p.status = 'published'
+    ORDER BY p.published_at ASC LIMIT 1
   )
   SELECT 
     cp.id, cp.title, cp.slug, cp.content, cp.excerpt, cp.tags, cp.audio_url, cp.published_at,
@@ -232,4 +237,7 @@ BEGIN
   LEFT JOIN prev_p pp ON true
   LEFT JOIN next_p np ON true;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
+
+-- Essential: Grant permission to the anon role to allow unauthenticated users to call this
+GRANT EXECUTE ON FUNCTION get_poem_with_navigation(text) TO anon, authenticated, service_role;

@@ -37,17 +37,19 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          // If successful, cache the new version of index.html
+          // If successful (200 OK), cache the new version of index.html
           if (response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put('/poemas/index.html', responseClone);
             });
+            return response;
           }
-          return response;
+          // If 404 or other error on navigation, fallback to cached index.html
+          return caches.match('/poemas/index.html') || response;
         })
         .catch(() => {
-          // If network fails, try to serve from cache
+          // If network fails entirely (offline), serve from cache
           return caches.match('/poemas/index.html');
         })
     );
