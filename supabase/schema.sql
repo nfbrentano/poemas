@@ -16,9 +16,9 @@ CREATE TABLE public.poems (
   excerpt text,
   tags text[],
   status text DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
-  audio_url text,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  published_at timestamp with time zone
+  published_at timestamp with time zone,
+  scheduled_at timestamp with time zone
 );
 
 -- Subscribers Table
@@ -200,7 +200,6 @@ RETURNS TABLE (
   content text,
   excerpt text,
   tags text[],
-  audio_url text,
   published_at timestamp with time zone,
   prev_slug text,
   prev_title text,
@@ -210,7 +209,7 @@ RETURNS TABLE (
 BEGIN
   RETURN QUERY
   WITH current_poem AS (
-    SELECT p.id, p.title, p.slug, p.content, p.excerpt, p.tags, p.audio_url, p.published_at 
+    SELECT p.id, p.title, p.slug, p.content, p.excerpt, p.tags, p.published_at 
     FROM public.poems p 
     WHERE p.slug = target_slug AND p.status = 'published'
     LIMIT 1
@@ -230,7 +229,7 @@ BEGIN
     ORDER BY p.published_at ASC LIMIT 1
   )
   SELECT 
-    cp.id, cp.title, cp.slug, cp.content, cp.excerpt, cp.tags, cp.audio_url, cp.published_at,
+    cp.id, cp.title, cp.slug, cp.content, cp.excerpt, cp.tags, cp.published_at,
     pp.slug as prev_slug, pp.title as prev_title,
     np.slug as next_slug, np.title as next_title
   FROM current_poem cp

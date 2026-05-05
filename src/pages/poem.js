@@ -156,12 +156,7 @@ export default {
             </div>
           </header>
 
-          ${poem.audio_url ? `
-            <div class="poem-audio-player">
-              <p class="audio-label">Ouça o autor recitando:</p>
-              <audio controls src="${poem.audio_url}" class="audio-element"></audio>
-            </div>
-          ` : ''}
+          
           
           <div id="poem-text" class="poem-content">${formattedContent}</div>
 
