@@ -235,7 +235,7 @@ export default {
       if (listContainer) {
         // Se temos resultados pré-filtrados do evento global, usamos eles.
         // Caso contrário (como ao fechar a busca), voltamos para a lista original.
-        const poemsToShow = results || remainingPoems;
+        const poemsToShow = results || displayPoems;
         listContainer.innerHTML = renderPoemList(poemsToShow, searchTerm.length > 0, searchTerm);
       }
       

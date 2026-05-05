@@ -22,7 +22,13 @@ export const collections = {
       .order('created_at', { ascending: false });
 
     if (error || !cols || cols.length === 0) {
-      grid.innerHTML = '<p class="empty-msg">Nenhuma coleção encontrada ainda.</p>';
+      grid.innerHTML = `
+        <div class="empty-state fade-in">
+          <p class="empty-state-label">⬚</p>
+          <h2 class="empty-state-title">Coleções em breve.</h2>
+          <p class="empty-state-desc">Estamos organizando os poemas em séries temáticas.</p>
+        </div>
+      `;
       return;
     }
 

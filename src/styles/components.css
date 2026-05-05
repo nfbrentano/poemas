@@ -1,9 +1,9 @@
 /* components.css */
 
 .poem-card {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 2rem;
-  transition: opacity var(--transition-normal);
+  transition: opacity var(--transition-fade);
 }
 
 .poem-card:last-child {
@@ -22,12 +22,12 @@
 }
 
 .poem-card-link:hover .poem-title {
-  color: var(--accent-color);
+  color: var(--accent-subtle);
 }
 
 .poem-excerpt {
   color: var(--text-secondary);
-  font-family: var(--font-serif-text);
+  font-family: var(--font-poem);
   font-size: 1.1rem;
   margin-bottom: 1rem;
   font-style: italic;
@@ -54,7 +54,7 @@ input, textarea {
 
 .btn-primary {
   background-color: var(--text-primary);
-  color: var(--bg-color);
+  color: var(--bg-primary);
   padding: 0.75rem 1.5rem;
   border-radius: 4px;
   font-weight: 500;
@@ -62,13 +62,13 @@ input, textarea {
 }
 
 .btn-primary:hover {
-  background-color: var(--accent-color);
+  background-color: var(--accent-subtle);
 }
 
 .btn-secondary {
   background-color: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   padding: 0.75rem 1.5rem;
   border-radius: 4px;
   transition: all var(--transition-fast);
@@ -1268,7 +1268,7 @@ html.immersive-mode #immersive-btn {
 }
 
 .favorite-excerpt {
-  font-family: var(--font-serif-text);
+  font-family: var(--font-poem);
   font-size: 1rem;
   color: var(--text-secondary);
   font-style: italic;
@@ -1549,7 +1549,7 @@ html.immersive-mode #immersive-btn {
 }
 
 .bio-text {
-  font-family: var(--font-serif-text);
+  font-family: var(--font-poem);
   font-size: 1.2rem;
   line-height: 1.8;
   color: var(--text-secondary);
