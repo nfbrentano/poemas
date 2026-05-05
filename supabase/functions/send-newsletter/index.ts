@@ -97,7 +97,7 @@ serve(async (req: any) => {
     // Fetch Subscribers
     const { data: subscribers } = await supabaseClient
       .from('subscribers')
-      .select('email')
+      .select('email, unsubscribe_token')
       .eq('active', true);
 
     if (!subscribers || subscribers.length === 0) {
@@ -113,7 +113,7 @@ serve(async (req: any) => {
       .replace(/\n\n/g, '</p><p style="margin: 1.5em 0; font-size: 18px; line-height: 2; color: #e2e2e2;">')
       .replace(/\n/g, '<br>');
 
-    const htmlEmail = `<!DOCTYPE html>
+    const getHtmlEmail = (unsubscribeToken: string) => `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -147,6 +147,9 @@ serve(async (req: any) => {
           <tr>
             <td style="text-align: center; padding: 40px 20px; border-top: 1px solid #1a1a1a;">
               <p style="margin: 0 0 8px; font-size: 16px; font-style: italic; color: #666666;">Natanael Brentano</p>
+              <p style="margin: 20px 0 0; font-size: 12px; color: #444444;">
+                <a href="${siteUrl}/unsubscribe?token=${unsubscribeToken}" style="color: #666666; text-decoration: underline;">Não quer mais receber estes e-mails? Cancelar inscrição</a>
+              </p>
             </td>
           </tr>
         </table>
@@ -156,8 +159,7 @@ serve(async (req: any) => {
 </body>
 </html>`;
 
-    const bccEmails = subscribers.map((s: any) => s.email);
-    console.log(`Iniciando envio SMTP para ${bccEmails.length} assinantes...`);
+    console.log(`Iniciando envio SMTP para ${subscribers.length} assinantes...`);
 
     const client = new SmtpClient();
     
@@ -169,14 +171,15 @@ serve(async (req: any) => {
         password: SMTP_PASS,
       });
 
-      await client.send({
-        from: SMTP_USER,
-        to: SMTP_USER,
-        bcc: bccEmails,
-        subject: `${poem.title} — novo poema`,
-        content: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}`,
-        html: htmlEmail,
-      });
+      for (const sub of subscribers) {
+        await client.send({
+          from: SMTP_USER,
+          to: sub.email,
+          subject: `${poem.title} — novo poema`,
+          content: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${sub.unsubscribe_token}`,
+          html: getHtmlEmail(sub.unsubscribe_token),
+        });
+      }
 
       await client.close();
       console.log('Envio SMTP concluído com sucesso.');
@@ -190,10 +193,10 @@ serve(async (req: any) => {
     await supabaseClient.from('email_campaign_logs').insert([{
       poem_id: poemId,
       status: 'success',
-      details: `Enviado para ${bccEmails.length} assinantes via SMTP (Gmail).`
+      details: `Enviado para ${subscribers.length} assinantes via SMTP (Gmail).`
     }]);
 
-    return new Response(JSON.stringify({ success: true, count: bccEmails.length }), {
+    return new Response(JSON.stringify({ success: true, count: subscribers.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

@@ -8,7 +8,8 @@ export const routes = {
   '/admin': () => import('./pages/admin.js').then(m => m.default),
   '/login': () => import('./pages/login.js').then(m => m.default),
   '/sobre': () => import('./pages/about.js').then(m => m.default),
-  '/favoritos': () => import('./pages/favorites.js').then(m => m.default)
+  '/favoritos': () => import('./pages/favorites.js').then(m => m.default),
+  '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default)
 };
 
 let currentViewComponent = null;

@@ -25,7 +25,9 @@ CREATE TABLE public.subscribers (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   email text UNIQUE NOT NULL,
   active boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  unsubscribe_token uuid DEFAULT gen_random_uuid() UNIQUE,
+  unsubscribed_at timestamp with time zone
 );
 
 -- Email Logs
