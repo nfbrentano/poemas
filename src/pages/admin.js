@@ -38,6 +38,14 @@ export default {
                style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">
               Histórico de Emails
             </a>
+            <a href="${import.meta.env.BASE_URL}admin?view=subscribers" data-link 
+               style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">
+              Assinantes
+            </a>
+            <a href="${import.meta.env.BASE_URL}admin?view=comments" data-link 
+               style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--text-secondary); transition: color var(--transition-fast);">
+              Comentários
+            </a>
             <a href="${import.meta.env.BASE_URL}admin?view=editor" data-link style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; transition: border-color var(--transition-fast);">Nova Obra</a>
 
             <button id="logout-btn" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--error); border: 1px solid transparent;">Sair</button>
@@ -63,6 +71,10 @@ export default {
       await Analytics.render(contentDiv);
     } else if (view === 'emails') {
       await this.renderEmailHistory(contentDiv);
+    } else if (view === 'subscribers') {
+      await this.renderSubscribers(contentDiv);
+    } else if (view === 'comments') {
+      await this.renderComments(contentDiv);
     }
 
   },
@@ -495,5 +507,178 @@ export default {
         </tbody>
       </table>
     `;
+  },
+
+  async renderSubscribers(container) {
+    container.innerHTML = '<div class="loading">Carregando assinantes...</div>';
+    
+    const { data: subs, error } = await supabase
+      .from('subscribers')
+      .select('email, active, created_at, unsubscribed_at')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      container.innerHTML = `<div class="error">Erro ao carregar: ${error.message}</div>`;
+      return;
+    }
+    
+    if (!subs || subs.length === 0) {
+      container.innerHTML = '<p>Nenhum assinante encontrado.</p>';
+      return;
+    }
+
+    // KPIs Logic
+    const activeCount = subs.filter(s => s.active).length;
+    const totalCount = subs.length;
+    const last30Days = new Date();
+    last30Days.setDate(last30Days.getDate() - 30);
+    const newLast30 = subs.filter(s => new Date(s.created_at) > last30Days).length;
+    const churnCount = subs.filter(s => !s.active && s.unsubscribed_at && new Date(s.unsubscribed_at) > last30Days).length;
+    const churnRate = ((churnCount / (activeCount || 1)) * 100).toFixed(1);
+    
+    const rows = subs.map(s => `
+      <tr style="border-bottom: 1px solid var(--border-subtle); transition: background-color var(--transition-fast);">
+        <td style="padding: var(--space-md) 0; font-family: var(--font-ui);">${s.email}</td>
+        <td style="padding: var(--space-md) 0; font-family: var(--font-ui); color: var(--text-muted); font-size: 0.85rem;">
+          ${new Date(s.created_at).toLocaleDateString('pt-BR')}
+        </td>
+        <td style="padding: var(--space-md) 0;">
+          <span style="padding: 0.2rem 0.6rem; border-radius: 2px; font-family: var(--font-ui); font-size: 0.75rem; border: 1px solid ${s.active ? 'var(--success)' : 'var(--error)'}; color: ${s.active ? 'var(--success)' : 'var(--error)'}; text-transform: uppercase; letter-spacing: 1px;">
+            ${s.active ? 'Ativo' : 'Inativo'}
+          </span>
+        </td>
+        <td style="padding: var(--space-md) 0; font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted);">
+          ${s.unsubscribed_at ? new Date(s.unsubscribed_at).toLocaleDateString('pt-BR') : '-'}
+        </td>
+      </tr>
+    `).join('');
+    
+    container.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl);">
+        <div class="kpi-card" style="background: var(--bg-elevated); padding: var(--space-lg); border-radius: 4px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Total de Assinantes</div>
+          <div style="font-size: 2rem; font-family: var(--font-display);">${totalCount}</div>
+          <div style="font-size: 0.8rem; color: var(--success);">${activeCount} ativos</div>
+        </div>
+        <div class="kpi-card" style="background: var(--bg-elevated); padding: var(--space-lg); border-radius: 4px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Novos (30 dias)</div>
+          <div style="font-size: 2rem; font-family: var(--font-display);">+${newLast30}</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">Crescimento constante</div>
+        </div>
+        <div class="kpi-card" style="background: var(--bg-elevated); padding: var(--space-lg); border-radius: 4px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Taxa de Evasão (Churn)</div>
+          <div style="font-size: 2rem; font-family: var(--font-display);">${churnRate}%</div>
+          <div style="font-size: 0.8rem; color: var(--error);">${churnCount} saídas no mês</div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-bottom: var(--space-lg);">
+        <button id="export-csv-btn" class="btn-secondary" style="font-size: 0.8rem;">Exportar CSV</button>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-strong); color: var(--text-secondary); font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">E-mail</th>
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Inscrição</th>
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Status</th>
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Cancelamento</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+
+    container.querySelector('#export-csv-btn')?.addEventListener('click', () => {
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + "Email,Ativo,Data Inscrição,Data Saída\n"
+        + subs.map(s => `${s.email},${s.active},${s.created_at},${s.unsubscribed_at || ''}`).join("\n");
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `assinantes_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  },
+
+  async renderComments(container) {
+    container.innerHTML = '<div class="loading">Carregando comentários...</div>';
+    
+    const { data: comments, error } = await supabase
+      .from('poem_comments')
+      .select('id, author_name, content, approved, created_at, poems(title)')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      container.innerHTML = `<div class="error">Erro ao carregar: ${error.message}</div>`;
+      return;
+    }
+    
+    if (!comments || comments.length === 0) {
+      container.innerHTML = '<p>Nenhum comentário encontrado.</p>';
+      return;
+    }
+    
+    const rows = comments.map(c => `
+      <tr style="border-bottom: 1px solid var(--border-subtle); transition: background-color var(--transition-fast);">
+        <td style="padding: var(--space-md) 0; font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); width: 150px;">
+          ${new Date(c.created_at).toLocaleDateString('pt-BR')}
+        </td>
+        <td style="padding: var(--space-md) 0;">
+          <div style="font-family: var(--font-display); font-size: 1.1rem;">${c.author_name}</div>
+          <div style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Em: ${c.poems?.title || 'Obra removida'}</div>
+          <div style="font-family: var(--font-body); line-height: 1.4; color: var(--text-primary); max-width: 500px;">${c.content}</div>
+        </td>
+        <td style="padding: var(--space-md) 0; vertical-align: middle;">
+          <span style="padding: 0.2rem 0.6rem; border-radius: 2px; font-family: var(--font-ui); font-size: 0.75rem; border: 1px solid ${c.approved ? 'var(--success)' : 'var(--accent-subtle)'}; color: ${c.approved ? 'var(--success)' : 'var(--accent-subtle)'}; text-transform: uppercase; letter-spacing: 1px;">
+            ${c.approved ? 'Aprovado' : 'Pendente'}
+          </span>
+        </td>
+        <td style="padding: var(--space-md) 0; text-align: right; vertical-align: middle;">
+          ${!c.approved ? `<button class="approve-btn" data-id="${c.id}" style="color: var(--success); margin-right: 1rem;">Aprovar</button>` : ''}
+          <button class="delete-comment-btn" data-id="${c.id}" style="color: var(--error);">Excluir</button>
+        </td>
+      </tr>
+    `).join('');
+    
+    container.innerHTML = `
+      <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-strong); color: var(--text-secondary); font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Data</th>
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Autor e Comentário</th>
+            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Status</th>
+            <th style="padding-bottom: var(--space-sm); text-align: right; font-weight: 500;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+
+    container.querySelectorAll('.approve-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const { error } = await supabase.from('poem_comments').update({ approved: true }).eq('id', id);
+        if (error) alert('Erro ao aprovar: ' + error.message);
+        else this.renderComments(container);
+      });
+    });
+
+    container.querySelectorAll('.delete-comment-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Excluir este comentário?')) return;
+        const id = btn.dataset.id;
+        const { error } = await supabase.from('poem_comments').delete().eq('id', id);
+        if (error) alert('Erro ao excluir: ' + error.message);
+        else this.renderComments(container);
+      });
+    });
   }
 };

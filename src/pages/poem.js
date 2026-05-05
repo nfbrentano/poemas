@@ -123,6 +123,16 @@ export default {
     const { data: { session } } = await supabase.auth.getSession();
     const isAdmin = !!session;
     
+    // Formatar poema para animação de estrofes (staggered reveal)
+    const formatPoemForAnimation = (content) => {
+      if (!content) return '';
+      // Divide por quebras de linha duplas (estrofes)
+      const stanzas = content.split(/\n\s*\n/).filter(s => s.trim());
+      return stanzas.map(stanza => `<div class="stanza stagger-reveal">${stanza}</div>`).join('');
+    };
+    
+    const formattedContent = formatPoemForAnimation(poem.content);
+
     // Render
     container.innerHTML = `
       <div class="poem-container">
@@ -138,8 +148,31 @@ export default {
               <span class="reading-time">${readingLabel}</span>
             </div>
           </header>
+
+          ${poem.audio_url ? `
+            <div class="poem-audio-player">
+              <p class="audio-label">Ouça o autor recitando:</p>
+              <audio controls src="${poem.audio_url}" class="audio-element"></audio>
+            </div>
+          ` : ''}
           
-          <div id="poem-text" class="poem-content">${poem.content}</div>
+          <div id="poem-text" class="poem-content">${formattedContent}</div>
+
+          <div class="read-next-section">
+            ${nextSlug ? `
+              <p class="read-next-label">Próxima Obra</p>
+              <a href="${import.meta.env.BASE_URL}poema/${nextSlug}" class="read-next-card" data-link>
+                <h2 class="read-next-title">${nextTitle}</h2>
+                <span class="read-next-btn">Ler Agora →</span>
+              </a>
+            ` : `
+              <p class="read-next-label">Fim da Jornada</p>
+              <a href="${import.meta.env.BASE_URL}" class="read-next-card" data-link>
+                <h2 class="read-next-title">Voltar ao Início</h2>
+                <p class="read-next-excerpt">Há sempre algo novo no silêncio da página inicial.</p>
+              </a>
+            `}
+          </div>
 
           <div class="share-section">
             <p class="share-label">Compartilhar obra</p>
@@ -163,6 +196,25 @@ export default {
             </div>
           </div>
 
+          <div class="comments-section">
+            <p class="comments-label">Notas de quem passou por aqui</p>
+            <div id="comments-list" class="comments-list">
+              <p class="comments-empty">Silêncio... nenhum comentário ainda.</p>
+            </div>
+            
+            <form id="comment-form" class="comment-form">
+              <p class="comment-form-title">Deixe sua nota</p>
+              <div class="comment-form-group">
+                <input type="text" id="comment-author" placeholder="Seu nome" required maxlength="50">
+              </div>
+              <div class="comment-form-group">
+                <textarea id="comment-content" placeholder="Sua percepção sobre esta obra..." required maxlength="500"></textarea>
+              </div>
+              <button type="submit" id="submit-comment-btn" class="btn-primary">Enviar Nota</button>
+              <p id="comment-msg" class="comment-msg"></p>
+            </form>
+          </div>
+
           <div class="poem-actions">
             <div class="font-controls">
               <button class="font-btn" data-size="sm" title="Diminuir fonte">A-</button>
@@ -184,7 +236,6 @@ export default {
             ` : ''}
           </div>
         </article>
-
         
         <!-- Newsletter Section -->
         ${newsletter.render()}
@@ -217,6 +268,35 @@ export default {
       </div>
       <div id="immersive-hint" class="immersive-hint">Deslize para navegar →</div>
     `;
+
+    // Setup Intersection Observer para animação das estrofes
+    const setupStanzaAnimation = () => {
+      // Respeitar preferência de movimento reduzido
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) {
+        container.querySelectorAll('.stagger-reveal').forEach(el => el.classList.add('revealed'));
+        return;
+      }
+
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -10% 0px',
+        threshold: 0.1
+      };
+
+      const stanzaObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      container.querySelectorAll('.stagger-reveal').forEach(el => stanzaObserver.observe(el));
+    };
+
+    setupStanzaAnimation();
     
     // Sharing Logic
     const shareUrl = window.location.href;
@@ -281,6 +361,61 @@ export default {
         updateReactionUI(newCounts, newUR);
         btn.disabled = false;
       });
+    });
+
+    // Comments Logic
+    const loadComments = async () => {
+      const { data: comments, error } = await supabase
+        .from('poem_comments')
+        .select('author_name, content, created_at')
+        .eq('poem_id', poem.id)
+        .eq('approved', true)
+        .order('created_at', { ascending: true });
+      
+      const listEl = document.getElementById('comments-list');
+      if (error || !comments || comments.length === 0) {
+        listEl.innerHTML = '<p class="comments-empty">Silêncio... nenhum comentário ainda.</p>';
+        return;
+      }
+
+      listEl.innerHTML = comments.map(c => `
+        <div class="comment-item fade-in">
+          <div class="comment-meta">
+            <span class="comment-author">${c.author_name}</span>
+            <span class="comment-date">${new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
+          </div>
+          <div class="comment-text">${c.content}</div>
+        </div>
+      `).join('');
+    };
+    loadComments();
+
+    const commentForm = document.getElementById('comment-form');
+    commentForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const author = document.getElementById('comment-author').value;
+      const content = document.getElementById('comment-content').value;
+      const btn = document.getElementById('submit-comment-btn');
+      const msg = document.getElementById('comment-msg');
+
+      btn.disabled = true;
+      btn.innerText = 'Enviando...';
+
+      const { error } = await supabase
+        .from('poem_comments')
+        .insert([{ poem_id: poem.id, author_name: author, content: content }]);
+
+      if (error) {
+        msg.innerText = 'Erro ao enviar comentário.';
+        msg.style.color = 'var(--error)';
+        btn.disabled = false;
+        btn.innerText = 'Enviar Nota';
+      } else {
+        msg.innerText = 'Sua nota foi enviada e aguarda moderação.';
+        msg.style.color = 'var(--success)';
+        commentForm.reset();
+        // Não carregamos o comentário novo pois ele precisa de aprovação
+      }
     });
 
     // Favorites Logic
@@ -371,9 +506,30 @@ export default {
       });
     });
 
-    // Esc para sair
+    // Atalhos de teclado
     handleKeydown = (e) => {
-      if (e.key === 'Escape' && isImmersive) exitImmersive();
+      // Ignorar se estiver digitando num input/textarea
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+      switch(e.key) {
+        case 'Escape':
+          if (isImmersive) exitImmersive();
+          break;
+        case 'ArrowRight':
+          if (nextSlug) navigateTo(`/poema/${nextSlug}`);
+          break;
+        case 'ArrowLeft':
+          if (prevSlug) navigateTo(`/poema/${prevSlug}`);
+          break;
+        case 'f':
+        case 'F':
+          favBtn?.click();
+          break;
+        case 'i':
+        case 'I':
+          immersiveBtn?.click();
+          break;
+      }
     };
     document.addEventListener('keydown', handleKeydown);
 

@@ -95,6 +95,15 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
         document.head.appendChild(meta);
       });
     }
+
+    // Dynamic OG Image for Articles
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (supabaseUrl && url && url.includes('/poema/')) {
+      const slug = url.split('/').pop();
+      const dynamicOgUrl = `${supabaseUrl}/functions/v1/og-image?slug=${slug}`;
+      setMeta('meta[property="og:image"]', 'content', dynamicOgUrl);
+      setMeta('meta[name="twitter:image"]', 'content', dynamicOgUrl);
+    }
   } else {
     // Clean up
     if (jsonLdScript) jsonLdScript.remove();
