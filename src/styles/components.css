@@ -1719,7 +1719,7 @@ html.immersive-mode #immersive-btn {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-  max-width: var(--container-poetry);
+  max-width: 800px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -1743,6 +1743,7 @@ html.immersive-mode #immersive-btn {
   display: flex;
   gap: var(--space-xs);
   width: 100%;
+  flex: 1;
   min-width: 0;
   align-items: center;
 }
@@ -1843,7 +1844,7 @@ html.immersive-mode #immersive-btn {
 
 /* Discovery Page */
 .discovery-section, .discovery-filters {
-  max-width: var(--container-poetry);
+  max-width: 800px;
   margin: 0 auto;
 }
 
