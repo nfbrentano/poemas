@@ -63,13 +63,14 @@ export const collections = {
         } else {
           grid.innerHTML = cols.map(col => `
             <a href="${BASE_URL}colecao/${col.slug}" class="collection-card" data-link>
-              ${col.image_url ? `<img src="${col.image_url}" alt="${col.name}" class="collection-img">` : '<div class="collection-img-placeholder"></div>'}
+              ${col.image_url ? `<img src="${col.image_url}" alt="${col.name}" class="collection-img" loading="lazy" decoding="async">` : '<div class="collection-img-placeholder"></div>'}
               <div class="collection-info">
                 <h2 class="collection-name">${col.name}</h2>
                 <span class="collection-count">${col.collection_poems?.[0]?.count || 0} poemas</span>
               </div>
             </a>
           `).join('');
+
         }
       }
     };

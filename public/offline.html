@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline — Poemas de Natanael</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #e2e2e2;
+            --accent: #c5a880;
+            --muted: #555;
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #fdfdfd;
+                --text: #1a1a1a;
+                --accent: #967d54;
+                --muted: #888;
+            }
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            padding: 20px;
+        }
+        .content {
+            max-width: 400px;
+        }
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+        }
+        p {
+            line-height: 1.6;
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--text);
+            color: var(--bg);
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: 2px;
+            transition: opacity 0.2s;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .retry-btn {
+            margin-top: 1rem;
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>O silêncio do deserto.</h1>
+        <p>Parece que você está sem conexão no momento. As palavras continuam aqui, mas precisamos de rede para buscar as novas.</p>
+        <a href="/poemas/" class="btn">Tentar novamente</a>
+        <br>
+        <button onclick="window.location.reload()" class="btn retry-btn">Recarregar página</button>
+    </div>
+</body>
+</html>

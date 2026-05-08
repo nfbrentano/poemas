@@ -36,10 +36,16 @@ export const searchOverlay = {
       return;
     }
 
+    const highlight = (text, term) => {
+      if (!text) return '';
+      const regex = new RegExp(`(${term})`, 'gi');
+      return text.replace(regex, '<mark>$1</mark>');
+    };
+
     resultsContainer.innerHTML = results.map(poem => `
       <div class="search-result-item" data-slug="${poem.slug}">
-        <div class="search-result-title">${poem.title}</div>
-        <div class="search-result-excerpt">${poem.excerpt || ''}</div>
+        <div class="search-result-title">${highlight(poem.title, query)}</div>
+        <div class="search-result-excerpt">${highlight(poem.excerpt, query)}</div>
       </div>
     `).join('');
 
@@ -54,6 +60,9 @@ export const searchOverlay = {
 
   async handleSearch(e) {
     const query = e.target.value.trim();
+    const clearBtn = document.getElementById('search-clear-btn');
+    if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+
     if (query.length < 2) {
       this.renderSearchResults([], query);
       return;
@@ -66,6 +75,7 @@ export const searchOverlay = {
       detail: { query, results } 
     }));
   },
+
 
   init() {
     if (this.overlay) return;

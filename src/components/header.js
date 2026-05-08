@@ -62,17 +62,50 @@ export const header = {
     };
 
     if (menuToggle && mainNav) {
+      const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      
+      const trapFocus = (e) => {
+        if (e.key !== 'Tab' || !mainNav.classList.contains('active')) return;
+        
+        const focusableContent = mainNav.querySelectorAll(focusableElements);
+        const firstFocusableElement = focusableContent[0];
+        const lastFocusableElement = focusableContent[focusableContent.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstFocusableElement) {
+            lastFocusableElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastFocusableElement) {
+            firstFocusableElement.focus();
+            e.preventDefault();
+          }
+        }
+      };
+
       menuToggle.addEventListener('click', () => {
         const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
         menuToggle.setAttribute('aria-expanded', !isExpanded);
         mainNav.classList.toggle('active');
         menuToggle.classList.toggle('active');
         document.body.style.overflow = isExpanded ? '' : 'hidden';
+        
+        if (!isExpanded) {
+          setTimeout(() => {
+            const firstLink = mainNav.querySelector('a');
+            if (firstLink) firstLink.focus();
+          }, 100);
+          document.addEventListener('keydown', trapFocus);
+        } else {
+          document.removeEventListener('keydown', trapFocus);
+        }
       });
       
       mainNav.addEventListener('click', (e) => {
         if (e.target.tagName === 'A' || e.target.hasAttribute('data-link')) {
           closeMenu();
+          document.removeEventListener('keydown', trapFocus);
         }
       });
 
@@ -81,9 +114,11 @@ export const header = {
         if (e.key === 'Escape' && mainNav.classList.contains('active')) {
           closeMenu();
           menuToggle.focus();
+          document.removeEventListener('keydown', trapFocus);
         }
       });
     }
+
 
     // Header scroll effect
     window.addEventListener('scroll', () => {

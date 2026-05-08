@@ -1,14 +1,15 @@
-const CACHE_NAME = 'poemas-cache-v11';
+const CACHE_NAME = 'poemas-cache-v12';
 const ASSETS = [
   '/poemas/',
   '/poemas/index.html',
+  '/poemas/offline.html',
   '/poemas/manifest.json',
   '/poemas/icons/icon-192x192.png',
   '/poemas/icons/icon-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting(); // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
@@ -27,7 +28,7 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim()) // Become available to all pages immediately
+    }).then(() => self.clients.claim())
   );
 });
 
@@ -37,7 +38,6 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          // If successful (200 OK), cache the new version of index.html
           if (response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -50,11 +50,14 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => {
           // If network fails entirely (offline), serve from cache
-          return caches.match('/poemas/index.html');
+          // If the page was previously cached, use it, otherwise show offline page
+          return caches.match(event.request)
+            .then(response => response || caches.match('/poemas/offline.html'));
         })
     );
     return;
   }
+
 
   // Skip cross-origin API requests (analytics, supabase, emailjs)
   // Let the browser handle these directly to avoid CORS/SW interaction issues

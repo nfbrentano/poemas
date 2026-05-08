@@ -234,6 +234,14 @@ input, textarea {
   letter-spacing: 1px;
 }
 
+.search-results-container mark {
+  background: var(--accent-muted);
+  color: var(--accent-subtle);
+  border-bottom: 1px solid var(--accent-subtle);
+  padding: 0 2px;
+}
+
+
 /* Layout & Sections */
 .home-layout {
   padding-bottom: var(--space-4xl);
