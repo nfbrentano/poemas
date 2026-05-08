@@ -81,10 +81,14 @@ self.addEventListener('fetch', (event) => {
       }).catch((err) => {
         // Fail gracefully on network errors
         if (event.request.destination !== 'image') {
-          console.warn('[SW] Fetch failed for:', event.request.url);
+          console.error('[SW] Fetch failed for:', event.request.url, err);
         }
-        // Return a generic error response to avoid "Failed to convert value to 'Response'"
-        return new Response('Network error occurred', { status: 408, statusText: 'Network Error' });
+        // Return a generic error response only if it's not a navigation request 
+        // (navigation requests are already handled above)
+        return new Response('Network error or connection lost', { 
+          status: 503, 
+          statusText: 'Service Unavailable' 
+        });
       });
     })
   );
