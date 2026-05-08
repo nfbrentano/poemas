@@ -88,13 +88,16 @@ export const collections = {
       let filtered = allPoems || [];
 
       if (activeTags.length > 0) {
+        const normalizedActiveTags = activeTags.map(at => decodeURIComponent(at).trim().toLowerCase());
+        
         filtered = filtered.filter(p => 
           p.tags && p.tags.some(t => {
-            const normalized = t.replace(/^(sentimento|sentimentos|tag de sentimento|tags de sentimento):/i, '').trim().toLowerCase();
-            return activeTags.some(at => at.toLowerCase() === normalized);
+            const normalizedTag = t.replace(/^(sentimento|sentimentos|tag de sentimento|tags de sentimento):/i, '').trim().toLowerCase();
+            return normalizedActiveTags.includes(normalizedTag);
           })
         );
       }
+
 
       if (activeCols.length > 0) {
         filtered = filtered.filter(p => 

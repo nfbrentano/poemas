@@ -152,14 +152,17 @@ export function navigateTo(url) {
   let finalUrl = url;
   
   if (url.startsWith('/') && basePath !== '/') {
-    // Prevent double slashes if basePath ends with /
     const cleanBase = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
-    finalUrl = cleanBase + url;
+    // Only prepend if not already present
+    if (!url.startsWith(cleanBase + '/')) {
+      finalUrl = cleanBase + url;
+    }
   }
   
   history.pushState(null, null, finalUrl);
   router();
 }
+
 
 export function initRouter() {
   window.addEventListener('popstate', router);

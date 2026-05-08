@@ -49,15 +49,15 @@ export const filterChips = {
 
     container.querySelectorAll('.filter-chip').forEach(chip => {
       chip.addEventListener('click', () => {
-        const type = chip.dataset.type;
         const value = chip.dataset.value;
-        
         let newTags = [...activeTags];
 
         if (value === 'all') {
           newTags = [];
         } else {
-          if (newTags.includes(value)) newTags = newTags.filter(t => t !== value);
+          // Toggle tag
+          const index = newTags.indexOf(value);
+          if (index > -1) newTags.splice(index, 1);
           else newTags.push(value);
         }
 
@@ -66,8 +66,10 @@ export const filterChips = {
         else params.delete('tags');
         
         const queryString = params.toString();
+        // Use pathname directly as it already includes the base path
         navigateTo(window.location.pathname + (queryString ? `?${queryString}` : ''));
       });
     });
+
   }
 };
