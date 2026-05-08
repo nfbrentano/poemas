@@ -79,6 +79,7 @@ export const searchOverlay = {
         <div class="search-input-wrapper">
           <input type="search" id="overlay-search-input" placeholder="Buscar poema..." aria-label="Buscar poema" autocomplete="off">
           <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <button id="search-clear-btn" class="search-clear-btn" aria-label="Limpar busca">&times;</button>
         </div>
         <div id="search-results" class="search-results-container"></div>
         <p class="search-overlay-help">Digite título, trecho ou sentimento do poema</p>
@@ -87,8 +88,23 @@ export const searchOverlay = {
     document.body.appendChild(this.overlay);
 
     const input = this.overlay.querySelector('#overlay-search-input');
-    const debouncedSearch = this.debounce((e) => this.handleSearch(e), 300);
+    const clearBtn = this.overlay.querySelector('#search-clear-btn');
+    const debouncedSearch = this.debounce((e) => {
+      this.handleSearch(e);
+      if (clearBtn) clearBtn.style.display = e.target.value ? 'block' : 'none';
+    }, 300);
+
     input.addEventListener('input', debouncedSearch);
+
+    clearBtn?.addEventListener('click', () => {
+      input.value = '';
+      input.focus();
+      clearBtn.style.display = 'none';
+      this.renderSearchResults([], '');
+      window.dispatchEvent(new CustomEvent('global-search', { 
+        detail: { query: '', results: null } 
+      }));
+    });
 
     this.overlay.addEventListener('click', (e) => {
       if (e.target === this.overlay || e.target.id === 'search-close-btn') {
@@ -108,6 +124,7 @@ export const searchOverlay = {
       }
     });
   },
+
 
   open() {
     this.init();

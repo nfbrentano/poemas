@@ -53,19 +53,34 @@ export const header = {
     // Hamburger Menu
     const menuToggle = document.getElementById('menu-toggle');
     const mainNav = document.querySelector('.main-nav');
+    
+    const closeMenu = () => {
+      mainNav.classList.remove('active');
+      menuToggle.classList.remove('active');
+      menuToggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    };
+
     if (menuToggle && mainNav) {
       menuToggle.addEventListener('click', () => {
         const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
         menuToggle.setAttribute('aria-expanded', !isExpanded);
         mainNav.classList.toggle('active');
         menuToggle.classList.toggle('active');
+        document.body.style.overflow = isExpanded ? '' : 'hidden';
       });
       
       mainNav.addEventListener('click', (e) => {
         if (e.target.tagName === 'A' || e.target.hasAttribute('data-link')) {
-          mainNav.classList.remove('active');
-          menuToggle.classList.remove('active');
-          menuToggle.setAttribute('aria-expanded', 'false');
+          closeMenu();
+        }
+      });
+
+      // ESC to close menu
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && mainNav.classList.contains('active')) {
+          closeMenu();
+          menuToggle.focus();
         }
       });
     }
@@ -81,6 +96,7 @@ export const header = {
     this.updateFavorites();
     window.addEventListener('favorites-updated', () => this.updateFavorites());
   },
+
 
   async updateFavorites() {
     const count = await favorites.count();
