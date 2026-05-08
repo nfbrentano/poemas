@@ -93,3 +93,29 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : { 
+    title: 'Natanael Brentano', 
+    body: 'Uma nova obra foi publicada. Venha ler.',
+    url: '/poemas/'
+  };
+  
+  const options = {
+    body: data.body,
+    icon: '/poemas/icons/icon-192x192.png',
+    badge: '/poemas/icons/icon-192x192.png',
+    data: data.url
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data)
+  );
+});

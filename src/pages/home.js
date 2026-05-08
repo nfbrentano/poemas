@@ -2,6 +2,7 @@ import { supabase } from '../utils/supabase.js';
 import { updateSEO } from '../utils/seo.js';
 import { newsletter } from '../components/newsletter.js';
 import { getRandomPoem } from '../utils/navigation.js';
+import { filterChips } from '../components/filter-chips.js';
 
 export default {
   meta: {
@@ -10,21 +11,24 @@ export default {
   cleanup() {
   },
   async render(container, params = {}) {
-    const activeTag = params.tag ? decodeURIComponent(params.tag) : null;
+    const activeTags = params.tags ? params.tags.split(',') : [];
+    const activeCols = params.cols ? params.cols.split(',') : [];
+    const activeTagLegacy = params.tag ? [decodeURIComponent(params.tag)] : []; // Support legacy /tag/:tag
+    const tags = [...new Set([...activeTags, ...activeTagLegacy])];
 
-    if (activeTag) {
-      updateSEO({
-        title: `Sentimento: ${activeTag} — Natanael Brentano`,
-        description: `Poemas que expressam o sentimento "${activeTag}".`,
-        type: 'website'
-      });
-    } else {
-      updateSEO({
-        title: 'Natanael Brentano — Poemas',
-        description: 'Poesia contemporânea e textos curtos sobre o efêmero.',
-        type: 'website'
-      });
+    let seoTitle = 'Natanael Brentano — Poemas';
+    if (tags.length > 0 || activeCols.length > 0) {
+      const parts = [];
+      if (tags.length > 0) parts.push(`Sentimentos: ${tags.join(', ')}`);
+      if (activeCols.length > 0) parts.push(`Coleções: ${activeCols.join(', ')}`);
+      seoTitle = `${parts.join(' | ')} — Natanael Brentano`;
     }
+
+    updateSEO({
+      title: seoTitle,
+      description: 'Poesia contemporânea e textos curtos sobre o efêmero.',
+      type: 'website'
+    });
     
     const skeletonHtml = `
       <div class="home-layout fade-in">
@@ -42,12 +46,14 @@ export default {
     
     container.innerHTML = skeletonHtml;
     
-    // Fetch published poems
-    const { data: poems, error } = await supabase
+    // Fetch published poems with collections
+    let poemsQuery = supabase
       .from('poems')
-      .select('id, title, slug, excerpt, tags, published_at')
+      .select('id, title, slug, excerpt, tags, published_at, collection_poems(collection_id, collections(slug))')
       .eq('status', 'published')
       .order('published_at', { ascending: false });
+      
+    const { data: poems, error } = await poemsQuery;
       
     if (error) {
       console.error(error);
@@ -92,23 +98,31 @@ export default {
       .slice(0, 5)
       .map(entry => entry[0]);
 
-    // If there's an activeTag and it's not in the top 5, add it to the menu
-    if (activeTag && !topTags.includes(activeTag)) {
-      topTags.push(activeTag);
-    }
+    // If there's an active tag and it's not in the top 5, add it to the menu (for legacy support if needed)
+    tags.forEach(tag => {
+      if (!topTags.includes(tag)) topTags.push(tag);
+    });
     
-    topTags.sort(); // Keep alphabetical in UI
+    topTags.sort();
 
-    // Filter poems if tag is active
+    // Filter poems
     let displayPoems = poems;
-    if (activeTag) {
-      displayPoems = poems.filter(p => 
+    if (tags.length > 0) {
+      displayPoems = displayPoems.filter(p => 
         p.tags && p.tags.some(t => {
           const normalized = t.replace(/^(sentimento|sentimentos|tag de sentimento|tags de sentimento):/i, '').trim().toLowerCase();
-          return normalized === activeTag.toLowerCase();
+          return tags.some(at => at.toLowerCase() === normalized);
         })
       );
     }
+
+    if (activeCols.length > 0) {
+      displayPoems = displayPoems.filter(p => 
+        p.collection_poems && p.collection_poems.some(cp => cp.collections && activeCols.includes(cp.collections.slug))
+      );
+    }
+
+    const isFiltering = tags.length > 0 || activeCols.length > 0;
 
     // Poem of the Day Logic (only show when not filtering by tag)
     const seedStr = new Date().toISOString().slice(0, 10);
@@ -117,7 +131,7 @@ export default {
     const podPoem = poems[podIndex];
     
     // Remove POD from the list to avoid repetition if we are showing all
-    if (!activeTag) {
+    if (!isFiltering) {
       displayPoems = displayPoems.filter((_, i) => i !== podIndex);
     }
 
@@ -135,8 +149,8 @@ export default {
         const year = new Date(poem.published_at).getFullYear();
         const dateStr = new Date(poem.published_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
         
-        // Show featured only if NOT searching, NOT filtering by tag, and it's the first one
-        if (!isSearchActive && !activeTag && index === 0) {
+        // Show featured only if NOT searching, NOT filtering, and it's the first one
+        if (!isSearchActive && !isFiltering && index === 0) {
           return `
           <article class="poem-featured fade-in">
             <a href="${BASE_URL}poema/${poem.slug}" data-link>
@@ -166,22 +180,11 @@ export default {
       `}).join('');
     };
     
-    const renderTagsMenu = () => {
-      if (topTags.length === 0) return '';
-      return `
-        <div class="tags-menu fade-in">
-          <a href="${BASE_URL}" data-link class="tag-chip ${!activeTag ? 'active' : ''}">Todos</a>
-          ${topTags.map(tag => `
-            <a href="${BASE_URL}tag/${encodeURIComponent(tag)}" data-link class="tag-chip ${tag === activeTag ? 'active' : ''}">${tag}</a>
-          `).join('')}
-        </div>
-      `;
-    };
 
     container.innerHTML = `
       <div class="home-layout">
         
-        ${!activeTag && podPoem ? `
+        ${!isFiltering && podPoem ? `
         <section class="poem-of-day fade-in">
           <p class="pod-label">— poema do dia —</p>
           <a href="${BASE_URL}poema/${podPoem.slug}" data-link class="pod-link">
@@ -192,9 +195,8 @@ export default {
         ` : ''}
 
         <section class="poems-list fade-in" style="padding-top: var(--space-xl);">
-          ${renderTagsMenu()}
           
-          ${activeTag ? `<h2 style="font-family: var(--font-display); font-size: 2rem; margin-bottom: var(--space-lg); color: var(--text-primary); text-align: center;">Poemas sobre "${activeTag}"</h2>` : ''}
+          ${isFiltering ? `<h2 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: var(--space-lg); color: var(--text-primary); text-align: center; opacity: 0.7;">Resultados filtrados</h2>` : ''}
           
           <div class="list-container">
             ${renderPoemList(displayPoems)}

@@ -1,5 +1,6 @@
 export const themeToggle = {
-  currentMode: localStorage.getItem('site-mode') || 'dark',
+  currentMode: localStorage.getItem('site-mode') || 
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
 
   apply(mode) {
     document.documentElement.removeAttribute('data-theme');

@@ -5,19 +5,21 @@ export const searchOverlay = {
   overlay: null,
   allPoemsCache: null,
 
-  async fetchPoems() {
-    if (this.allPoemsCache) return this.allPoemsCache;
-    const { data, error } = await supabase
-      .from('poems')
-      .select('id, title, slug, excerpt, tags')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false });
-    
-    if (!error && data) {
-      this.allPoemsCache = data;
-      return data;
+  async searchRemote(query) {
+    const { data, error } = await supabase.rpc('search_poems', { search_query: query });
+    if (error) {
+      console.error('Search error:', error);
+      return [];
     }
-    return [];
+    return data || [];
+  },
+
+  debounce(func, wait) {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
   },
 
   renderSearchResults(results, query) {
@@ -51,15 +53,13 @@ export const searchOverlay = {
   },
 
   async handleSearch(e) {
-    const query = e.target.value.toLowerCase().trim();
-    const poems = await this.fetchPoems();
-    
-    const results = poems.filter(poem => 
-      poem.title.toLowerCase().includes(query) || 
-      (poem.excerpt && poem.excerpt.toLowerCase().includes(query)) ||
-      (poem.tags && poem.tags.some(tag => tag.toLowerCase().includes(query)))
-    );
+    const query = e.target.value.trim();
+    if (query.length < 2) {
+      this.renderSearchResults([], query);
+      return;
+    }
 
+    const results = await this.searchRemote(query);
     this.renderSearchResults(results, query);
     
     window.dispatchEvent(new CustomEvent('global-search', { 
@@ -87,7 +87,8 @@ export const searchOverlay = {
     document.body.appendChild(this.overlay);
 
     const input = this.overlay.querySelector('#overlay-search-input');
-    input.addEventListener('input', (e) => this.handleSearch(e));
+    const debouncedSearch = this.debounce((e) => this.handleSearch(e), 300);
+    input.addEventListener('input', debouncedSearch);
 
     this.overlay.addEventListener('click', (e) => {
       if (e.target === this.overlay || e.target.id === 'search-close-btn') {
@@ -113,7 +114,6 @@ export const searchOverlay = {
     this.overlay.classList.add('active');
     this.overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    this.fetchPoems();
 
     setTimeout(() => {
       const input = this.overlay.querySelector('#overlay-search-input');

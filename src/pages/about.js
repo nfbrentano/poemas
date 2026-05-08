@@ -1,4 +1,5 @@
 import { supabase } from '../utils/supabase.js';
+import { pushToggle } from '../components/push-toggle.js';
 
 export default {
   meta: {
@@ -67,6 +68,10 @@ export default {
                 </div>
               </div>
             </div>
+          </div>
+          
+          <div class="about-settings">
+            ${pushToggle.render()}
           </div>
         </div>
 
@@ -200,5 +205,8 @@ export default {
         fileInput.click();
       });
     }
+
+    // Initialize Push Toggle
+    pushToggle.init(container);
   }
 };
