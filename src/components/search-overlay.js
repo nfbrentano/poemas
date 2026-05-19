@@ -38,7 +38,8 @@ export const searchOverlay = {
 
     const highlight = (text, term) => {
       if (!text) return '';
-      const regex = new RegExp(`(${term})`, 'gi');
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escaped})`, 'gi');
       return text.replace(regex, '<mark>$1</mark>');
     };
 

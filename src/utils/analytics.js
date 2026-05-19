@@ -13,12 +13,9 @@ export async function trackPageView(page, poemId = null) {
       if (!window._ipPromise) {
         window._ipPromise = (async () => {
           try {
-            const res = await fetch(
-              'https://ejorjxvjglkkxnusdrzl.supabase.co/functions/v1/geo-ip',
-              { signal: AbortSignal.timeout(5000) }
-            );
-            if (!res.ok) return null;
-            return await res.json();
+            const { data, error } = await supabase.functions.invoke('geo-ip');
+            if (error) return null;
+            return data;
           } catch (e) {
             return null;
           }

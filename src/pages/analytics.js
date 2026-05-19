@@ -61,26 +61,6 @@ function buildChart(data, width = 700, height = 160) {
         padding:4px 10px;font-family:var(--font-ui);font-size:0.78rem;
         color:var(--text-primary);border-radius:2px;"></div>
     </div>
-    <script>
-      (function(){
-        const tt = document.getElementById('chart-tooltip');
-        document.querySelectorAll('.chart-dot').forEach(dot => {
-          dot.addEventListener('mouseenter', e => {
-            dot.style.opacity = '1';
-            tt.style.display = 'block';
-            tt.textContent = dot.dataset.label + ': ' + dot.dataset.count + ' visita(s)';
-          });
-          dot.addEventListener('mousemove', e => {
-            tt.style.left = (e.offsetX + 12) + 'px';
-            tt.style.top  = (e.offsetY - 28) + 'px';
-          });
-          dot.addEventListener('mouseleave', () => {
-            dot.style.opacity = '0';
-            tt.style.display = 'none';
-          });
-        });
-      })();
-    <\/script>
   `;
 }
 
@@ -216,6 +196,26 @@ export default {
       days
     );
     container.querySelector('#chart-area').innerHTML = buildChart(chartData);
+
+    // Setup chart tooltips programmatically
+    const tt = container.querySelector('#chart-tooltip');
+    if (tt) {
+      container.querySelectorAll('.chart-dot').forEach(dot => {
+        dot.addEventListener('mouseenter', e => {
+          dot.style.opacity = '1';
+          tt.style.display = 'block';
+          tt.textContent = dot.dataset.label + ': ' + dot.dataset.count + ' visita(s)';
+        });
+        dot.addEventListener('mousemove', e => {
+          tt.style.left = (e.offsetX + 12) + 'px';
+          tt.style.top  = (e.offsetY - 28) + 'px';
+        });
+        dot.addEventListener('mouseleave', () => {
+          dot.style.opacity = '0';
+          tt.style.display = 'none';
+        });
+      });
+    }
 
     // Top poems
     const poemMap = {};

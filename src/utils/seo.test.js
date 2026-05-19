@@ -9,7 +9,7 @@ describe('updateSEO', () => {
 
   it('updates the page title', () => {
     updateSEO({ title: 'Test Poem' });
-    expect(document.title).toBe('Test Poem | Natanael Brentano');
+    expect(document.title).toBe('Test Poem — Natanael Brentano');
   });
 
   it('sets meta description', () => {
@@ -25,7 +25,7 @@ describe('updateSEO', () => {
       type: 'article' 
     });
     const ogTitle = document.querySelector('meta[property="og:title"]');
-    expect(ogTitle.getAttribute('content')).toBe('Test');
+    expect(ogTitle.getAttribute('content')).toBe('Test — Natanael Brentano');
     
     const ogType = document.querySelector('meta[property="og:type"]');
     expect(ogType.getAttribute('content')).toBe('article');

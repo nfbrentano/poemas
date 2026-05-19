@@ -42,14 +42,8 @@ export const newsletter = {
       if (!error || error.code === '23505') {
         // Chamar a Edge Function para registrar no Loops
         try {
-          const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/loops-subscribe`;
-          await fetch(fnUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify({ email })
+          await supabase.functions.invoke('loops-subscribe', {
+            body: { email }
           });
         } catch (e) {
           // Falha silenciosa no Loops não impede a confirmação ao usuário
