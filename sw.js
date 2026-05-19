@@ -1,14 +1,15 @@
-const CACHE_NAME = 'poemas-cache-v11';
+const CACHE_NAME = 'poemas-cache-v12';
 const ASSETS = [
   '/poemas/',
   '/poemas/index.html',
+  '/poemas/offline.html',
   '/poemas/manifest.json',
   '/poemas/icons/icon-192x192.png',
   '/poemas/icons/icon-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting(); // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
@@ -27,7 +28,7 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim()) // Become available to all pages immediately
+    }).then(() => self.clients.claim())
   );
 });
 
@@ -37,7 +38,6 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          // If successful (200 OK), cache the new version of index.html
           if (response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -50,11 +50,14 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => {
           // If network fails entirely (offline), serve from cache
-          return caches.match('/poemas/index.html');
+          // If the page was previously cached, use it, otherwise show offline page
+          return caches.match(event.request)
+            .then(response => response || caches.match('/poemas/offline.html'));
         })
     );
     return;
   }
+
 
   // Skip cross-origin API requests (analytics, supabase, emailjs)
   // Let the browser handle these directly to avoid CORS/SW interaction issues
@@ -81,11 +84,41 @@ self.addEventListener('fetch', (event) => {
       }).catch((err) => {
         // Fail gracefully on network errors
         if (event.request.destination !== 'image') {
-          console.warn('[SW] Fetch failed for:', event.request.url);
+          console.error('[SW] Fetch failed for:', event.request.url, err);
         }
-        // Return a generic error response to avoid "Failed to convert value to 'Response'"
-        return new Response('Network error occurred', { status: 408, statusText: 'Network Error' });
+        // Return a generic error response only if it's not a navigation request 
+        // (navigation requests are already handled above)
+        return new Response('Network error or connection lost', { 
+          status: 503, 
+          statusText: 'Service Unavailable' 
+        });
       });
     })
+  );
+});
+
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : { 
+    title: 'Natanael Brentano', 
+    body: 'Uma nova obra foi publicada. Venha ler.',
+    url: '/poemas/'
+  };
+  
+  const options = {
+    body: data.body,
+    icon: '/poemas/icons/icon-192x192.png',
+    badge: '/poemas/icons/icon-192x192.png',
+    data: data.url
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data)
   );
 });

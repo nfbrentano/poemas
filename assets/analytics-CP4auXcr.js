@@ -23,26 +23,6 @@ import{t as e}from"./supabase-C7rZ412s.js";function t(e,t=700,n=160){if(!e||e.le
         padding:4px 10px;font-family:var(--font-ui);font-size:0.78rem;
         color:var(--text-primary);border-radius:2px;"></div>
     </div>
-    <script>
-      (function(){
-        const tt = document.getElementById('chart-tooltip');
-        document.querySelectorAll('.chart-dot').forEach(dot => {
-          dot.addEventListener('mouseenter', e => {
-            dot.style.opacity = '1';
-            tt.style.display = 'block';
-            tt.textContent = dot.dataset.label + ': ' + dot.dataset.count + ' visita(s)';
-          });
-          dot.addEventListener('mousemove', e => {
-            tt.style.left = (e.offsetX + 12) + 'px';
-            tt.style.top  = (e.offsetY - 28) + 'px';
-          });
-          dot.addEventListener('mouseleave', () => {
-            dot.style.opacity = '0';
-            tt.style.display = 'none';
-          });
-        });
-      })();
-    <\/script>
   `}function n(e,t){let n={};e.forEach(e=>{n[e.label]=e.count});let r=[],i=new Date;for(let e=t-1;e>=0;e--){let t=new Date(i);t.setDate(t.getDate()-e);let a=t.toISOString().slice(0,10);r.push({label:a,count:n[a]||0})}return r}var r={meta:{title:`Analytics — Admin`},async render(e){e.innerHTML=`
       <div style="font-family:var(--font-ui);max-width:900px;margin:0 auto;padding: 0 0 var(--space-xl);">
 
@@ -93,7 +73,7 @@ import{t as e}from"./supabase-C7rZ412s.js";function t(e,t=700,n=160){if(!e||e.le
         <div style="font-size:2rem;font-family:var(--font-display);color:var(--text-primary);">${t}</div>
         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">${e}</div>
       </div>
-    `;h.innerHTML=g(`Total de visitas`,u)+g(`Visitas hoje`,p)+g(`IPs únicos`,d)+g(`Leituras de poemas`,m);let _={};c.forEach(e=>{let t=e.created_at.slice(0,10);_[t]=(_[t]||0)+1});let v=n(Object.entries(_).map(([e,t])=>({label:e,count:t})),a);r.querySelector(`#chart-area`).innerHTML=t(v);let y={};c.filter(e=>e.poem_id).forEach(e=>{let t=e.page;y[t]=(y[t]||0)+1});let b=Object.entries(y).sort((e,t)=>t[1]-e[1]).slice(0,8),x=r.querySelector(`#top-poems`);if(b.length===0)x.innerHTML=`<p style="color:var(--text-muted);font-size:0.85rem;">Sem leituras registradas.</p>`;else{let e=b[0][1];x.innerHTML=b.map(([t,n])=>`
+    `;h.innerHTML=g(`Total de visitas`,u)+g(`Visitas hoje`,p)+g(`IPs únicos`,d)+g(`Leituras de poemas`,m);let _={};c.forEach(e=>{let t=e.created_at.slice(0,10);_[t]=(_[t]||0)+1});let v=n(Object.entries(_).map(([e,t])=>({label:e,count:t})),a);r.querySelector(`#chart-area`).innerHTML=t(v);let y=r.querySelector(`#chart-tooltip`);y&&r.querySelectorAll(`.chart-dot`).forEach(e=>{e.addEventListener(`mouseenter`,t=>{e.style.opacity=`1`,y.style.display=`block`,y.textContent=e.dataset.label+`: `+e.dataset.count+` visita(s)`}),e.addEventListener(`mousemove`,e=>{y.style.left=e.offsetX+12+`px`,y.style.top=e.offsetY-28+`px`}),e.addEventListener(`mouseleave`,()=>{e.style.opacity=`0`,y.style.display=`none`})});let b={};c.filter(e=>e.poem_id).forEach(e=>{let t=e.page;b[t]=(b[t]||0)+1});let x=Object.entries(b).sort((e,t)=>t[1]-e[1]).slice(0,8),S=r.querySelector(`#top-poems`);if(x.length===0)S.innerHTML=`<p style="color:var(--text-muted);font-size:0.85rem;">Sem leituras registradas.</p>`;else{let e=x[0][1];S.innerHTML=x.map(([t,n])=>`
         <div style="margin-bottom:var(--space-sm);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
             <span style="font-size:0.82rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${t}">${t.replace(`/poema/`,``)}</span>
@@ -103,21 +83,21 @@ import{t as e}from"./supabase-C7rZ412s.js";function t(e,t=700,n=160){if(!e||e.le
             <div style="height:100%;width:${Math.round(n/e*100)}%;background:var(--text-primary);border-radius:2px;"></div>
           </div>
         </div>
-      `).join(``)}let S=new Set,C=[];for(let e of c)if(e.ip_hash&&!S.has(e.ip_hash)&&(S.add(e.ip_hash),C.push({hash:e.ip_hash,when:e.created_at.slice(0,10),country:e.country||`—`})),C.length>=10)break;let w=r.querySelector(`#ip-table`);w.innerHTML=C.length===0?`<p style="color:var(--text-muted);font-size:0.85rem;">Nenhum IP registrado.</p>`:`<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+      `).join(``)}let C=new Set,w=[];for(let e of c)if(e.ip_hash&&!C.has(e.ip_hash)&&(C.add(e.ip_hash),w.push({hash:e.ip_hash,when:e.created_at.slice(0,10),country:e.country||`—`})),w.length>=10)break;let T=r.querySelector(`#ip-table`);T.innerHTML=w.length===0?`<p style="color:var(--text-muted);font-size:0.85rem;">Nenhum IP registrado.</p>`:`<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
            <thead><tr style="color:var(--text-muted);border-bottom:1px solid var(--border-subtle);">
              <th style="text-align:left;padding-bottom:6px;">Hash (IP)</th>
              <th style="text-align:center;">País</th>
              <th style="text-align:right;">Última visita</th>
            </tr></thead>
            <tbody>
-             ${C.map(e=>`
+             ${w.map(e=>`
                <tr style="border-bottom:1px solid var(--border-subtle);">
                  <td style="padding:6px 0;color:var(--text-secondary);font-family:monospace;font-size:0.75rem;">${e.hash.slice(0,16)}…</td>
                  <td style="text-align:center;">${e.country}</td>
                  <td style="text-align:right;color:var(--text-muted);">${e.when}</td>
                </tr>`).join(``)}
            </tbody>
-         </table>`;let T={};c.filter(e=>e.country).forEach(e=>{T[e.country]=(T[e.country]||0)+1});let E=Object.entries(T).sort((e,t)=>t[1]-e[1]).slice(0,6),D=r.querySelector(`#countries`);E.length===0?D.innerHTML=`<p style="color:var(--text-muted);font-size:0.85rem;">Sem dados de país.</p>`:(E[0][1],D.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:var(--space-sm);">`+E.map(([e,t])=>`
+         </table>`;let E={};c.filter(e=>e.country).forEach(e=>{E[e.country]=(E[e.country]||0)+1});let D=Object.entries(E).sort((e,t)=>t[1]-e[1]).slice(0,6),O=r.querySelector(`#countries`);D.length===0?O.innerHTML=`<p style="color:var(--text-muted);font-size:0.85rem;">Sem dados de país.</p>`:(D[0][1],O.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:var(--space-sm);">`+D.map(([e,t])=>`
           <div style="display:flex;flex-direction:column;align-items:center;padding:var(--space-sm) var(--space-md);border:1px solid var(--border-subtle);border-radius:2px;min-width:80px;">
             <span style="font-size:1.4rem;">${i(e)}</span>
             <span style="font-size:0.75rem;color:var(--text-secondary);margin-top:2px;">${e}</span>
