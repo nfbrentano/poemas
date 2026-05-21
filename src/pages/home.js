@@ -195,6 +195,9 @@ export default {
         ` : ''}
 
         <section class="poems-list fade-in" style="padding-top: var(--space-xl);">
+          <div class="discovery-filters" style="margin-bottom: var(--space-xl);">
+            ${filterChips.render(tags)}
+          </div>
           
           ${isFiltering ? `<h2 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: var(--space-lg); color: var(--text-primary); text-align: center; opacity: 0.7;">Resultados filtrados</h2>` : ''}
           
@@ -213,6 +216,7 @@ export default {
 
     
     newsletter.init();
+    await filterChips.init(container, tags);
 
     // Setup Event Listeners for featured share
     container.querySelectorAll('.featured-share-btn').forEach(btn => {

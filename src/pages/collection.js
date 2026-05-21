@@ -1,7 +1,8 @@
 import { supabase } from '../utils/supabase.js';
 
 export const collection = {
-  async render(container, slug) {
+  async render(container, params) {
+    const slug = typeof params === 'object' ? params.slug : params;
     container.innerHTML = '<div class="loading">Carregando coleção...</div>';
 
     const { data: col, error } = await supabase
