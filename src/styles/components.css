@@ -282,8 +282,9 @@ input, textarea {
 }
 
 .poems-list {
-  max-width: var(--container-poetry);
+  max-width: var(--container-main);
   margin: 0 auto;
+  width: 100%;
 }
 
 
@@ -335,7 +336,8 @@ input, textarea {
   border: 1px solid var(--border-subtle);
   border-radius: 2px;
   text-align: center;
-  max-width: var(--container-poetry);
+  max-width: 800px;
+  width: 100%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -716,8 +718,9 @@ input, textarea {
 }
 
 .skeleton-list {
-  max-width: var(--container-poetry);
+  max-width: var(--container-main);
   margin: 0 auto;
+  width: 100%;
 }
 
 .skeleton-featured { 
@@ -744,12 +747,13 @@ input, textarea {
 
 /* 1. Poema do Dia (Home) */
 .poem-of-day {
-  max-width: var(--container-poetry);
+  max-width: var(--container-main);
   margin: 0 auto var(--space-lg) auto;
   padding: var(--space-2xl) 0;
   border-top: 1px solid var(--border-subtle);
   border-bottom: 1px solid var(--border-subtle);
   text-align: center;
+  width: 100%;
 }
 .pod-label {
   font-family: var(--font-ui);
@@ -990,11 +994,12 @@ html.immersive-mode #immersive-btn {
 }
 
 .about-container {
-  max-width: var(--container-poetry);
+  max-width: var(--container-main);
   margin: 0 auto;
   display: grid;
   gap: var(--space-3xl);
   align-items: start;
+  width: 100%;
 }
 
 .about-header h1 {
@@ -1270,9 +1275,10 @@ html.immersive-mode #immersive-btn {
 
 /* Favorites Page */
 .favorites-page {
-  max-width: var(--container-poetry);
+  max-width: var(--container-main);
   margin: 0 auto var(--space-4xl) auto;
   padding-top: var(--space-xl);
+  width: 100%;
 }
 
 .page-header {
@@ -2088,13 +2094,14 @@ html.immersive-mode #immersive-btn {
 
 /* Explore Page (Visual Map) */
 .explore-container {
-  max-width: var(--container-poetry);
+  max-width: var(--container-main);
   margin: 0 auto;
   padding: var(--space-2xl) var(--space-lg);
   min-height: 70vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .explore-map {

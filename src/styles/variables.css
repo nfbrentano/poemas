@@ -38,6 +38,7 @@
   
   /* Layout */
   --container-poetry: 680px; /* Optimal reading width for poetry */
+  --container-main: 1200px; /* Wider and adaptive main page layout container */
   --container-admin: 1000px;
   --header-height: 100px;
 

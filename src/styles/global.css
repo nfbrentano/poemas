@@ -80,9 +80,10 @@ input:focus, textarea:focus, select:focus {
 
 /* Layout Classes */
 .container {
-  max-width: var(--container-poetry);
+  max-width: var(--container-main);
   margin: 0 auto;
   padding: 0 var(--space-lg);
+  width: 100%;
 }
 
 .header-container {
