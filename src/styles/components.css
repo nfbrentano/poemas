@@ -247,6 +247,12 @@ input, textarea {
   padding-bottom: var(--space-4xl);
 }
 
+@media (max-width: 768px) {
+  .home-layout {
+    padding-bottom: var(--space-2xl);
+  }
+}
+
 .hero-section {
   margin-bottom: var(--space-4xl);
   padding-top: 0;
@@ -302,6 +308,12 @@ input, textarea {
   border-radius: 4px;
 }
 
+@media (max-width: 768px) {
+  .poem-row {
+    padding: var(--space-sm) 0;
+  }
+}
+
 .poem-row:hover {
   background-color: var(--bg-secondary);
   transform: translateX(4px);
@@ -342,6 +354,13 @@ input, textarea {
   margin-right: auto;
 }
 
+@media (max-width: 768px) {
+  .newsletter-section {
+    margin-top: var(--space-2xl);
+    padding: var(--space-xl) var(--space-md);
+  }
+}
+
 .newsletter-title {
   margin-bottom: var(--space-sm);
   font-family: var(--font-display);
@@ -365,6 +384,12 @@ input, textarea {
   gap: var(--space-sm);
   max-width: 380px;
   margin: 0 auto;
+}
+
+@media (max-width: 480px) {
+  .subscribe-form {
+    flex-direction: column;
+  }
 }
 
 .subscribe-input {

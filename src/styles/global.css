@@ -96,6 +96,18 @@ input:focus, textarea:focus, select:focus {
   width: 100%;
 }
 
+@media (max-width: 768px) {
+  .container, .header-container {
+    padding: 0 var(--space-xl) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .container, .header-container {
+    padding: 0 var(--space-lg) !important;
+  }
+}
+
 .fade-in {
   animation: fadeIn var(--transition-fade) forwards;
 }
@@ -118,12 +130,21 @@ input:focus, textarea:focus, select:focus {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid transparent;
-  transition: border-color var(--transition-fade), background-color var(--transition-fade);
+  transition: border-color var(--transition-fade), background-color var(--transition-fade), height var(--transition-fast);
   font-family: var(--font-ui);
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(8px);
+}
+
+@media (max-width: 768px) {
+  .site-header {
+    height: auto;
+    min-height: calc(var(--header-height) * 0.7);
+    padding-top: calc(env(safe-area-inset-top, 1rem) + var(--space-md)) !important;
+    padding-bottom: var(--space-sm);
+  }
 }
 
 .site-header.scrolled {
@@ -159,6 +180,13 @@ input:focus, textarea:focus, select:focus {
 .site-content {
   flex: 1;
   padding: var(--space-2xl) 0;
+}
+
+@media (max-width: 768px) {
+  .site-content {
+    padding-top: var(--space-2xl) !important;
+    padding-bottom: var(--space-xl) !important;
+  }
 }
 
 .site-footer {
@@ -208,6 +236,14 @@ body.is-poem-page .site-footer {
   margin-left: auto;
   margin-right: auto;
   letter-spacing: 0.01em;
+}
+
+@media (max-width: 768px) {
+  .poem-content {
+    font-size: clamp(1rem, 0.95rem + 0.5vw, 1.15rem);
+    line-height: 1.9;
+    margin-bottom: var(--space-2xl);
+  }
 }
 
 .poem-meta {
@@ -293,6 +329,13 @@ body.is-poem-page .site-footer {
   border-bottom: 1px solid var(--border-subtle);
   margin-bottom: var(--space-xl);
   display: block !important;
+}
+
+@media (max-width: 768px) {
+  .poem-featured {
+    padding: var(--space-lg) 0 var(--space-xl) 0 !important;
+    margin-bottom: var(--space-lg);
+  }
 }
 
 .poem-featured .featured-title {
