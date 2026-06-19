@@ -219,10 +219,21 @@ export default {
           </div>
 
           <div class="poem-actions">
+            <div class="ambient-audio-controls">
+              <button class="ambient-btn" data-sound="silence" title="Silêncio">Mudo</button>
+              <button class="ambient-btn" data-sound="rain" title="Som de Chuva">Chuva</button>
+              <button class="ambient-btn" data-sound="fire" title="Som de Lareira">Lareira</button>
+            </div>
             <div class="font-controls">
-              <button class="font-btn" data-size="sm" title="Diminuir fonte">A-</button>
-              <button class="font-btn" data-size="md" title="Fonte padrão">A</button>
-              <button class="font-btn" data-size="lg" title="Aumentar fonte">A+</button>
+              <button class="font-btn family-btn" data-family="serif" title="Fonte Clássica">Serif</button>
+              <button class="font-btn family-btn" data-family="sans" title="Fonte Moderna">Sans</button>
+              <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
+              <button class="font-btn height-btn" data-height="normal" title="Espaçamento Normal">≡</button>
+              <button class="font-btn height-btn" data-height="relaxed" title="Espaçamento Maior">↕</button>
+              <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
+              <button class="font-btn size-btn" data-size="sm" title="Diminuir fonte">A-</button>
+              <button class="font-btn size-btn" data-size="md" title="Fonte padrão">A</button>
+              <button class="font-btn size-btn" data-size="lg" title="Aumentar fonte">A+</button>
             </div>
             <button id="fav-btn" class="btn-secondary" aria-label="Salvar poema">
               <span class="fav-icon">♡</span> <span class="fav-text">Salvar</span>
@@ -250,6 +261,12 @@ export default {
         </div>
         
         <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
+
+        <audio id="ambient-audio" loop></audio>
+        <div id="highlight-tooltip" class="highlight-tooltip">
+          <button id="highlight-copy-btn" class="highlight-btn">Copiar</button>
+          <button id="highlight-share-btn" class="highlight-btn">Compartilhar</button>
+        </div>
 
         <div class="poem-nav">
           <button id="prev-btn" class="nav-btn" style="${!prevSlug ? 'display:none;' : ''}" aria-label="Poema anterior" title="${prevTitle || ''}">
@@ -362,6 +379,18 @@ export default {
         const action = await toggleReaction(poem.id, emoji);
         const { counts: newCounts, userReactions: newUR } = await loadReactions(poem.id);
         updateReactionUI(newCounts, newUR);
+        
+        // Add micro-interaction animation class
+        btn.classList.add('reacted');
+        setTimeout(() => {
+          // keep 'reacted' if selected, but re-trigger animation by toggling it?
+          // Actually, we can just remove it and re-add if needed, but CSS handles it via state.
+          // Let's force a reflow to re-trigger animation if already active
+          btn.style.animation = 'none';
+          btn.offsetHeight; /* trigger reflow */
+          btn.style.animation = null; 
+        }, 10);
+        
         btn.disabled = false;
       });
     });
@@ -441,6 +470,13 @@ export default {
         await favorites.save(poem);
       }
       updateFavUI();
+      
+      // Add animation
+      favBtn.classList.remove('animate-fav');
+      void favBtn.offsetWidth; // trigger reflow
+      favBtn.classList.add('animate-fav');
+      setTimeout(() => favBtn.classList.remove('animate-fav'), 800);
+
       // Notify main.js to update header if needed
       window.dispatchEvent(new CustomEvent('favorites-updated'));
     });
@@ -484,29 +520,137 @@ export default {
       }
     });
 
-    // Font Size Controls Logic
-    const fontBtns = container.querySelectorAll('.font-btn');
-    const updateActiveFontBtn = (size) => {
-      fontBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.size === size);
-      });
+    // Typography Controls Logic
+    const sizeBtns = container.querySelectorAll('.size-btn');
+    const familyBtns = container.querySelectorAll('.family-btn');
+    const heightBtns = container.querySelectorAll('.height-btn');
+
+    const updateActiveBtns = (btns, val) => {
+      btns.forEach(btn => btn.classList.toggle('active', btn.dataset.size === val || btn.dataset.family === val || btn.dataset.height === val));
     };
 
-    const currentFontSize = localStorage.getItem('reading-font-size') || 'font-reading-md';
-    updateActiveFontBtn(currentFontSize.replace('font-reading-', ''));
+    // Load preferences
+    const currentFontSize = localStorage.getItem('reading-font-size') || 'md';
+    const currentFontFamily = localStorage.getItem('reading-font-family') || 'serif';
+    const currentLineHeight = localStorage.getItem('reading-line-height') || 'normal';
 
-    fontBtns.forEach(btn => {
+    // Apply initial classes
+    document.documentElement.classList.add(`font-reading-${currentFontSize}`);
+    document.documentElement.classList.add(`font-family-${currentFontFamily}`);
+    document.documentElement.classList.add(`line-height-${currentLineHeight}`);
+    
+    updateActiveBtns(sizeBtns, currentFontSize);
+    updateActiveBtns(familyBtns, currentFontFamily);
+    updateActiveBtns(heightBtns, currentLineHeight);
+
+    sizeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const size = btn.dataset.size;
-        const newClass = `font-reading-${size}`;
-        
-        // Remove old classes
         document.documentElement.classList.remove('font-reading-sm', 'font-reading-md', 'font-reading-lg');
-        document.documentElement.classList.add(newClass);
-        
-        localStorage.setItem('reading-font-size', newClass);
-        updateActiveFontBtn(size);
+        document.documentElement.classList.add(`font-reading-${size}`);
+        localStorage.setItem('reading-font-size', size);
+        updateActiveBtns(sizeBtns, size);
       });
+    });
+
+    familyBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const family = btn.dataset.family;
+        document.documentElement.classList.remove('font-family-serif', 'font-family-sans');
+        document.documentElement.classList.add(`font-family-${family}`);
+        localStorage.setItem('reading-font-family', family);
+        updateActiveBtns(familyBtns, family);
+      });
+    });
+
+    heightBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const height = btn.dataset.height;
+        document.documentElement.classList.remove('line-height-normal', 'line-height-relaxed');
+        document.documentElement.classList.add(`line-height-${height}`);
+        localStorage.setItem('reading-line-height', height);
+        updateActiveBtns(heightBtns, height);
+      });
+    });
+
+    // Ambient Audio Logic
+    const ambientBtns = container.querySelectorAll('.ambient-btn');
+    const ambientAudio = document.getElementById('ambient-audio');
+    
+    const sounds = {
+      rain: 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=heavy-rain-nature-sounds-8186.mp3', // Example rain sound
+      fire: 'https://cdn.pixabay.com/download/audio/2022/02/07/audio_27d8ce6605.mp3?filename=fireplace-sound-21271.mp3' // Example fire sound
+    };
+
+    ambientBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sound = btn.dataset.sound;
+        ambientBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (sound === 'silence') {
+          ambientAudio.pause();
+        } else {
+          ambientAudio.src = sounds[sound];
+          ambientAudio.volume = 0.5;
+          ambientAudio.play().catch(e => console.error('Audio play failed:', e));
+        }
+      });
+    });
+    // Set initial active state for audio
+    container.querySelector('.ambient-btn[data-sound="silence"]').classList.add('active');
+
+    // Highlight Tooltip Logic
+    const poemText = document.getElementById('poem-text');
+    const tooltip = document.getElementById('highlight-tooltip');
+    let selectedText = '';
+
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      if (!selection.rangeCount || selection.isCollapsed) {
+        tooltip.classList.remove('visible');
+        return;
+      }
+      
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      selectedText = selection.toString().trim();
+
+      if (selectedText.length > 0) {
+        tooltip.style.left = `${rect.left + rect.width / 2}px`;
+        tooltip.style.top = `${rect.top + window.scrollY}px`;
+        tooltip.classList.add('visible');
+      } else {
+        tooltip.classList.remove('visible');
+      }
+    };
+
+    poemText?.addEventListener('mouseup', handleSelection);
+    document.addEventListener('selectionchange', () => {
+      const selection = window.getSelection();
+      if (selection.isCollapsed) {
+        tooltip.classList.remove('visible');
+      }
+    });
+
+    document.getElementById('highlight-copy-btn')?.addEventListener('click', () => {
+      navigator.clipboard.writeText(selectedText).then(() => {
+        const btn = document.getElementById('highlight-copy-btn');
+        btn.innerText = 'Copiado!';
+        setTimeout(() => {
+          btn.innerText = 'Copiar';
+          window.getSelection().removeAllRanges();
+          tooltip.classList.remove('visible');
+        }, 1500);
+      });
+    });
+
+    document.getElementById('highlight-share-btn')?.addEventListener('click', () => {
+      const textToShare = `"${selectedText}" — Natanael Brentano\\n${window.location.href}`;
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+      window.getSelection().removeAllRanges();
+      tooltip.classList.remove('visible');
     });
 
     // Atalhos de teclado

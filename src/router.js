@@ -5,6 +5,7 @@ import { trackPageView } from './utils/analytics.js';
 export const routes = {
   '/': () => import('./pages/home.js').then(m => m.default),
   '/tag/:tag': () => import('./pages/home.js').then(m => m.default),
+  '/explore': () => import('./pages/explore.js').then(m => m.default),
   '/poema/:slug': () => import('./pages/poem.js').then(m => m.default),
   '/admin': () => import('./pages/admin.js').then(m => m.default),
   '/login': () => import('./pages/login.js').then(m => m.default),

@@ -281,8 +281,9 @@ body.is-poem-page .site-footer {
   height: 100%;
   background-color: var(--accent-subtle);
   width: 0%;
-  opacity: 0.6;
+  opacity: 0.8;
   transition: width 0.1s ease-out;
+  box-shadow: 0 0 10px var(--accent-subtle), 0 0 5px var(--accent-subtle);
 }
 
 /* Featured Poem */
@@ -334,5 +335,36 @@ body.is-poem-page .site-footer {
   * {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background-color: #fff !important;
+    color: #000 !important;
+  }
+  .site-header, .site-footer, .poem-nav, .poem-actions, .reactions-section, .comments-section, .share-section, .read-next-section, .scroll-progress-container, .newsletter-section {
+    display: none !important;
+  }
+  .single-poem {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  .poem-content {
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 14pt !important;
+    color: #000 !important;
+    line-height: 1.6 !important;
+  }
+  .single-poem h1 {
+    font-size: 24pt !important;
+    color: #000 !important;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .poem-meta {
+    color: #333 !important;
+    margin-bottom: 40px;
   }
 }
