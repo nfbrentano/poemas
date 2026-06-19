@@ -5,9 +5,16 @@
     <link>https://nfbrentano.github.io/poemas/</link>
     <description>Coleção de poemas originais em português por Natanael Fernando Gatti Brentano.</description>
     <language>pt-br</language>
-    <lastBuildDate>Sun, 14 Jun 2026 19:23:01 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 19 Jun 2026 16:32:40 GMT</lastBuildDate>
     <atom:link href="https://nfbrentano.github.io/poemas/feed.xml" rel="self" type="application/rss+xml" />
     
+    <item>
+      <title>O Mago de Si Mesmo</title>
+      <link>https://nfbrentano.github.io/poemas/poema/o-mago-de-si-mesmo</link>
+      <guid>https://nfbrentano.github.io/poemas/poema/o-mago-de-si-mesmo</guid>
+      <description></description>
+      <pubDate>Fri, 19 Jun 2026 16:32:40 GMT</pubDate>
+    </item>
     <item>
       <title>Refúgio</title>
       <link>https://nfbrentano.github.io/poemas/poema/refugio</link>
