@@ -1,4 +1,4 @@
-import{i as e,o as t}from"./index-BOIPSjjC.js";import{t as n}from"./seo-Cx_atl1Z.js";var r={meta:{title:`Explorar`},async render(r){e(`/explore`),n({title:`Explorar Poemas - Natanael Brentano`,description:`Navegue visualmente pelos temas e obras na forma de constelações literárias.`,url:window.location.href,type:`website`}),r.innerHTML=`
+import{i as e,o as t}from"./index-C5sydfk-.js";import{t as n}from"./seo-Cx_atl1Z.js";var r={meta:{title:`Explorar`},async render(r){e(`/explore`),n({title:`Explorar Poemas - Natanael Brentano`,description:`Navegue visualmente pelos temas e obras na forma de constelações literárias.`,url:window.location.href,type:`website`}),r.innerHTML=`
       <div class="explore-container fade-in">
         <header class="page-header" style="text-align: center; margin-bottom: 2rem;">
           <h1 class="page-title">Mapa Literário</h1>

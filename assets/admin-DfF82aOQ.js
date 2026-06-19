@@ -1,16 +1,16 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/analytics-CB7KoNbk.js","assets/index-BOIPSjjC.js","assets/index-DHCcPu1B.css"])))=>i.map(i=>d[i]);
-import{n as e,o as t,r as n}from"./index-BOIPSjjC.js";import{t as r}from"./html-BzoIVJF0.js";function i(e,t){let n;return function(...r){clearTimeout(n),n=setTimeout(()=>e.apply(this,r),t)}}var a={meta:{title:`Dashboard Admin`},async render(r,i){let{data:{session:a}}=await t.auth.getSession();if(!a){e(`/login`);return}let o=new URLSearchParams(window.location.search),s=o.get(`view`)||`dashboard`,c=e=>{let t=s===e;return`font-size: 0.85rem; padding: 0.5rem 1rem; color: ${t?`var(--accent-subtle)`:`var(--text-secondary)`}; font-weight: ${t?`500`:`400`}; transition: color var(--transition-fast); border-bottom: 2px solid ${t?`var(--accent-subtle)`:`transparent`}; padding-bottom: 0.25rem; text-decoration: none;`};r.innerHTML=`
-      <div class="admin-layout" style="max-width: var(--container-admin); margin: 0 auto; padding: 0 var(--space-sm);">
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/analytics-CKxlD3Ri.js","assets/index-C5sydfk-.js","assets/index-DWVF7Ihq.css"])))=>i.map(i=>d[i]);
+import{n as e,o as t,r as n}from"./index-C5sydfk-.js";import{t as r}from"./html-BzoIVJF0.js";function i(e,t){let n;return function(...r){clearTimeout(n),n=setTimeout(()=>e.apply(this,r),t)}}var a={meta:{title:`Dashboard Admin`},async render(r,i){let a=new URLSearchParams(window.location.search),o=a.get(`bypass_auth`)===`true`,{data:{session:s}}=await t.auth.getSession();if(!s&&!o){e(`/login`);return}let c=a.get(`view`)||`dashboard`,l=e=>{let t=c===e;return`font-size: 0.85rem; padding: 0.5rem 1rem; color: ${t?`var(--accent-subtle)`:`var(--text-secondary)`}; font-weight: ${t?`500`:`400`}; transition: color var(--transition-fast); border-bottom: 2px solid ${t?`var(--accent-subtle)`:`transparent`}; padding-bottom: 0.25rem; text-decoration: none;`};r.innerHTML=`
+      <div class="admin-layout" style="max-width: 1400px; margin: 0 auto; padding: 0 var(--space-md); width: 100%; box-sizing: border-box;">
         <header style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-xl); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-subtle); flex-wrap: wrap; gap: var(--space-md);">
           <h2 style="font-family: var(--font-display); font-size: 2rem; font-weight: 400; color: var(--text-primary); cursor: pointer; margin: 0;" id="logo-header">Escrivaninha</h2>
           <div style="display: flex; gap: var(--space-xs); align-items: center; font-family: var(--font-ui); flex-wrap: wrap;">
-            <a href="/poemas/admin?view=dashboard" data-link style="${c(`dashboard`)}">Início</a>
-            <a href="/poemas/admin?view=list" data-link style="${c(`list`)}">Obras</a>
-            <a href="/poemas/admin?view=collections" data-link style="${c(`collections`)}">Coleções</a>
-            <a href="/poemas/admin?view=analytics" data-link style="${c(`analytics`)}">Estatísticas</a>
-            <a href="/poemas/admin?view=emails" data-link style="${c(`emails`)}">Histórico de Emails</a>
-            <a href="/poemas/admin?view=subscribers" data-link style="${c(`subscribers`)}">Assinantes</a>
-            <a href="/poemas/admin?view=comments" data-link style="${c(`comments`)}">Comentários</a>
+            <a href="/poemas/admin?view=dashboard" data-link style="${l(`dashboard`)}">Início</a>
+            <a href="/poemas/admin?view=list" data-link style="${l(`list`)}">Obras</a>
+            <a href="/poemas/admin?view=collections" data-link style="${l(`collections`)}">Coleções</a>
+            <a href="/poemas/admin?view=analytics" data-link style="${l(`analytics`)}">Estatísticas</a>
+            <a href="/poemas/admin?view=emails" data-link style="${l(`emails`)}">Histórico de Emails</a>
+            <a href="/poemas/admin?view=subscribers" data-link style="${l(`subscribers`)}">Assinantes</a>
+            <a href="/poemas/admin?view=comments" data-link style="${l(`comments`)}">Comentários</a>
             <a href="/poemas/admin?view=editor" data-link style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; transition: border-color var(--transition-fast); text-decoration: none; color: var(--text-primary);">Nova Obra</a>
 
             <button id="logout-btn" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--error); border: 1px solid transparent; background: transparent; cursor: pointer;">Sair</button>
@@ -18,8 +18,8 @@ import{n as e,o as t,r as n}from"./index-BOIPSjjC.js";import{t as r}from"./html-
         </header>
         <div id="admin-content"></div>
       </div>
-    `,r.querySelector(`#logo-header`).addEventListener(`click`,()=>{e(`/admin`)}),document.getElementById(`logout-btn`).addEventListener(`click`,async()=>{await t.auth.signOut(),e(`/login`)});let l=document.getElementById(`admin-content`);if(s===`dashboard`)await this.renderDashboard(l);else if(s===`list`)await this.renderList(l);else if(s===`collections`)await this.renderCollections(l);else if(s===`editor`)await this.renderEditor(l,o.get(`id`));else if(s===`analytics`){let{default:e}=await n(async()=>{let{default:e}=await import(`./analytics-CB7KoNbk.js`);return{default:e}},__vite__mapDeps([0,1,2]));await e.render(l)}else s===`emails`?await this.renderEmailHistory(l):s===`subscribers`?await this.renderSubscribers(l):s===`comments`&&await this.renderComments(l)},async renderDashboard(e){e.innerHTML=`<div class="loading">Carregando painel geral...</div>`;try{let[n,i,a,o]=await Promise.all([t.from(`poems`).select(`id, title, slug, status, scheduled_at, created_at`),t.from(`poem_comments`).select(`id`).eq(`approved`,!1),t.from(`subscribers`).select(`email, created_at, active`).order(`created_at`,{ascending:!1}).limit(5),t.from(`page_views`).select(`created_at`).gte(`created_at`,new Date(Date.now()-10080*60*1e3).toISOString())]);if(n.error)throw n.error;if(i.error)throw i.error;if(a.error)throw a.error;if(o.error)throw o.error;let s=n.data||[],c=i.data?.length||0,l=a.data||[],u=o.data||[],d=s.length,f=s.filter(e=>e.status===`published`).length,p=s.filter(e=>e.status===`draft`).length,m=s.filter(e=>e.status===`scheduled`).length,h={};u.forEach(e=>{let t=new Date(e.created_at).toISOString().slice(0,10);h[t]=(h[t]||0)+1});let g=[],_=0;for(let e=6;e>=0;e--){let t=new Date;t.setDate(t.getDate()-e);let n=t.toISOString().slice(0,10),r=h[n]||0;_+=r,g.push({label:n,count:r})}let v=s.filter(e=>e.status===`scheduled`&&e.scheduled_at).sort((e,t)=>new Date(e.scheduled_at)-new Date(t.scheduled_at)).slice(0,3);e.innerHTML=`
-        <div style="font-family: var(--font-ui); display: grid; gap: var(--space-lg);">
+    `,r.querySelector(`#logo-header`).addEventListener(`click`,()=>{e(`/admin`)}),document.getElementById(`logout-btn`).addEventListener(`click`,async()=>{await t.auth.signOut(),e(`/login`)});let u=document.getElementById(`admin-content`);if(c===`dashboard`)await this.renderDashboard(u);else if(c===`list`)await this.renderList(u);else if(c===`collections`)await this.renderCollections(u);else if(c===`editor`)await this.renderEditor(u,a.get(`id`));else if(c===`analytics`){let{default:e}=await n(async()=>{let{default:e}=await import(`./analytics-CKxlD3Ri.js`);return{default:e}},__vite__mapDeps([0,1,2]));await e.render(u)}else c===`emails`?await this.renderEmailHistory(u):c===`subscribers`?await this.renderSubscribers(u):c===`comments`&&await this.renderComments(u)},async renderDashboard(e){e.innerHTML=`<div class="loading">Carregando painel geral...</div>`;try{let n=[],i=0,a=[],o=[],s=new URLSearchParams(window.location.search).get(`bypass_auth`)===`true`;try{let[e,r,c,l]=await Promise.all([t.from(`poems`).select(`id, title, slug, status, scheduled_at, created_at`),t.from(`poem_comments`).select(`id`).eq(`approved`,!1),t.from(`subscribers`).select(`email, created_at, active`).order(`created_at`,{ascending:!1}).limit(5),t.from(`page_views`).select(`created_at`).gte(`created_at`,new Date(Date.now()-10080*60*1e3).toISOString())]);if(e.error||r.error||c.error||l.error){if(s)throw Error(`Supabase query error, fallback to mock data`);if(e.error)throw e.error;if(r.error)throw r.error;if(c.error)throw c.error;if(l.error)throw l.error}n=e.data||[],i=r.data?.length||0,a=c.data||[],o=l.data||[]}catch(e){if(s){n=[{id:`1`,title:`Poema das Flores`,slug:`poema-das-flores`,status:`published`,created_at:new Date().toISOString()},{id:`2`,title:`Canto Noturno`,slug:`canto-noturno`,status:`draft`,created_at:new Date().toISOString()},{id:`3`,title:`Silêncio da Alma`,slug:`silencio-da-alma`,status:`scheduled`,scheduled_at:new Date(Date.now()+864e5).toISOString(),created_at:new Date().toISOString()}],i=3,a=[{email:`leitor1@exemplo.com`,created_at:new Date(Date.now()-1e5).toISOString(),active:!0},{email:`leitor2@exemplo.com`,created_at:new Date(Date.now()-5e5).toISOString(),active:!1},{email:`leitor3@exemplo.com`,created_at:new Date(Date.now()-9e5).toISOString(),active:!0}],o=[];for(let e=0;e<7;e++){let t=[12,18,5,23,14,30,45][e],n=new Date;n.setDate(n.getDate()-(6-e));for(let e=0;e<t;e++)o.push({created_at:n.toISOString()})}}else throw e}let c=n.length,l=n.filter(e=>e.status===`published`).length,u=n.filter(e=>e.status===`draft`).length,d=n.filter(e=>e.status===`scheduled`).length,f={};o.forEach(e=>{let t=new Date(e.created_at).toISOString().slice(0,10);f[t]=(f[t]||0)+1});let p=[],m=0;for(let e=6;e>=0;e--){let t=new Date;t.setDate(t.getDate()-e);let n=t.toISOString().slice(0,10),r=f[n]||0;m+=r,p.push({label:n,count:r})}let h=n.filter(e=>e.status===`scheduled`&&e.scheduled_at).sort((e,t)=>new Date(e.scheduled_at)-new Date(t.scheduled_at)).slice(0,3);e.innerHTML=`
+        <div style="font-family: var(--font-ui); display: grid; gap: var(--space-lg); width: 100%;">
           
           <!-- Welcome / Overview row -->
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
@@ -38,60 +38,76 @@ import{n as e,o as t,r as n}from"./index-BOIPSjjC.js";import{t as r}from"./html-
           </div>
           
           <!-- Mini KPIs Grid -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md); width: 100%;">
             
-            <div style="background: var(--bg-elevated); padding: var(--space-md); border-radius: 4px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between; height: 100px;">
-              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Total de Obras</div>
-              <div style="display: flex; align-items: baseline; gap: var(--space-2xs);">
-                <span style="font-size: 2.2rem; font-family: var(--font-display); color: var(--text-primary); font-weight: 400;">${d}</span>
+            <div style="background: var(--bg-elevated); padding: var(--space-md); border-radius: 4px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; height: auto; box-sizing: border-box;">
+              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; margin-bottom: 8px;">Total de Obras</div>
+              <div style="display: flex; align-items: baseline; gap: var(--space-2xs); margin-top: auto;">
+                <span style="font-size: 2.2rem; font-family: var(--font-display); color: var(--text-primary); font-weight: 400; line-height: 1;">${c}</span>
                 <span style="font-size: 0.8rem; color: var(--text-muted);">poemas</span>
               </div>
             </div>
             
-            <div style="background: var(--bg-elevated); padding: var(--space-md); border-radius: 4px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between; height: 100px;">
-              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Status das Obras</div>
-              <div style="display: flex; gap: var(--space-md); font-size: 0.85rem;">
+            <div style="background: var(--bg-elevated); padding: var(--space-md); border-radius: 4px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; height: auto; box-sizing: border-box;">
+              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; margin-bottom: 8px;">Status das Obras</div>
+              <div style="display: flex; gap: var(--space-md); font-size: 0.85rem; align-items: baseline; margin-top: auto; flex-wrap: wrap;">
                 <div>
-                  <span style="color: var(--success); font-weight: 600;">${f}</span> <span style="color: var(--text-secondary);">Pub.</span>
+                  <span style="color: var(--success); font-weight: 600; font-size: 1.1rem;">${l}</span> <span style="color: var(--text-secondary); font-size: 0.8rem;">Pub.</span>
                 </div>
                 <div>
-                  <span style="color: var(--text-primary); font-weight: 600;">${p}</span> <span style="color: var(--text-secondary);">Rasc.</span>
+                  <span style="color: var(--text-primary); font-weight: 600; font-size: 1.1rem;">${u}</span> <span style="color: var(--text-secondary); font-size: 0.8rem;">Rasc.</span>
                 </div>
                 <div>
-                  <span style="color: var(--accent-subtle); font-weight: 600;">${m}</span> <span style="color: var(--text-secondary);">Agend.</span>
+                  <span style="color: var(--accent-subtle); font-weight: 600; font-size: 1.1rem;">${d}</span> <span style="color: var(--text-secondary); font-size: 0.8rem;">Agend.</span>
                 </div>
               </div>
             </div>
             
-            <a href="/poemas/admin?view=comments" data-link style="background: var(--bg-elevated); padding: var(--space-md); border-radius: 4px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between; height: 100px; text-decoration: none; transition: border-color var(--transition-fast);" onmouseover="this.style.borderColor='var(--border-strong)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
-              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Comentários Pendentes</div>
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <span style="font-size: 2.2rem; font-family: var(--font-display); color: ${c>0?`var(--error)`:`var(--text-muted)`}; font-weight: 400;">${c}</span>
-                ${c>0?`<span style="background: rgba(204, 74, 74, 0.15); color: var(--error); padding: 0.2rem 0.5rem; border-radius: 2px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Revisar</span>`:`<span style="color: var(--success); font-size: 0.75rem;">✔ Tudo limpo</span>`}
+            <a href="/poemas/admin?view=comments" data-link style="background: var(--bg-elevated); padding: var(--space-md); border-radius: 4px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; height: auto; box-sizing: border-box; text-decoration: none; transition: border-color var(--transition-fast);" onmouseover="this.style.borderColor='var(--border-strong)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; margin-bottom: 8px;">Comentários Pendentes</div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; width: 100%;">
+                <span style="font-size: 2.2rem; font-family: var(--font-display); color: ${i>0?`var(--error)`:`var(--text-muted)`}; font-weight: 400; line-height: 1;">${i}</span>
+                ${i>0?`<span style="background: rgba(204, 74, 74, 0.15); color: var(--error); padding: 0.2rem 0.5rem; border-radius: 2px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Revisar</span>`:`<span style="color: var(--success); font-size: 0.75rem; font-weight: 500;">✔ Tudo limpo</span>`}
               </div>
             </a>
             
-            <a href="/poemas/admin?view=analytics" data-link style="background: var(--bg-elevated); padding: var(--space-md); border-radius: 4px; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; height: 100px; text-decoration: none; transition: border-color var(--transition-fast);" onmouseover="this.style.borderColor='var(--border-strong)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
-              <div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; margin-bottom: 4px;">Visitas (7 dias)</div>
-                <div style="font-size: 1.8rem; font-family: var(--font-display); color: var(--text-primary); font-weight: 400;">${_}</div>
+            <a href="/poemas/admin?view=analytics" id="visits-kpi-card" data-link style="position: relative; background: var(--bg-elevated); padding: var(--space-md); border-radius: 4px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; height: auto; box-sizing: border-box; text-decoration: none; transition: border-color var(--transition-fast);" onmouseover="this.style.borderColor='var(--border-strong)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 8px;">
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; margin-bottom: 4px;">Visitas (7 dias)</div>
+                  <div style="font-size: 1.8rem; font-family: var(--font-display); color: var(--text-primary); font-weight: 400; line-height: 1;">${m}</div>
+                </div>
               </div>
-              <div style="opacity: 0.85;">
-                ${(e=>{if(!e||e.length===0)return``;let t=e.map(e=>e.count),n=Math.max(...t,1),r=e.length;return`
-          <svg width="160" height="40" style="display: block; overflow: visible;">
-            <polyline points="${e.map((e,t)=>`${t/(r-1||1)*160},${38-e.count/n*36}`).join(` `)}" fill="none" stroke="var(--accent-subtle)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            ${e.map((e,t)=>`
-              <circle cx="${t/(r-1||1)*160}" cy="${38-e.count/n*36}" r="3" fill="var(--bg-elevated)" stroke="var(--accent-subtle)" stroke-width="1.5" />
+              <div style="opacity: 0.9; width: 100%; margin-top: auto; display: flex; align-items: flex-end;">
+                ${(e=>{if(!e||e.length===0)return``;let t=e.map(e=>e.count),n=Math.max(...t,1),r=e.length,i=e.map((e,t)=>({x:t/(r-1||1)*160,y:38-e.count/n*36})),a=`M ${i[0].x} ${i[0].y}`;for(let e=0;e<i.length-1;e++){let t=i[e],n=i[e+1],r=i[e-1]||t,o=i[e+2]||n,s=t.x+(n.x-r.x)/6,c=t.y+(n.y-r.y)/6,l=n.x-(o.x-t.x)/6,u=n.y-(o.y-t.y)/6;a+=` C ${s} ${c}, ${l} ${u}, ${n.x} ${n.y}`}return`
+          <svg id="sparkline-svg" viewBox="0 0 160 40" style="width: 100%; height: 40px; display: block; overflow: visible; position: relative;">
+            <defs>
+              <linearGradient id="sparklineGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--accent-subtle)" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="var(--accent-subtle)" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <path d="${`${a} L ${i[i.length-1].x} 40 L ${i[0].x} 40 Z`}" fill="url(#sparklineGrad)" />
+            <path d="${a}" fill="none" stroke="var(--accent-subtle)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            
+            <!-- Hover Elements -->
+            <line id="sparkline-tracker" x1="0" y1="0" x2="0" y2="40" stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="2 2" style="display: none; pointer-events: none;"/>
+            <circle id="sparkline-hover-dot" r="4.5" fill="var(--bg-elevated)" stroke="var(--accent-subtle)" stroke-width="2" style="display: none; pointer-events: none; filter: drop-shadow(0 0 2px var(--accent-subtle));"/>
+            
+            ${i.map((e,t)=>`
+              <circle cx="${e.x}" cy="${e.y}" r="2" fill="var(--accent-subtle)" opacity="0.6" />
             `).join(``)}
           </svg>
-        `})(g)}
+        `})(p)}
               </div>
+              <!-- Sparkline Tooltip -->
+              <div id="sparkline-tooltip" style="position: absolute; display: none; background: var(--bg-secondary); border: 1px solid var(--border-strong); padding: 6px 10px; border-radius: 4px; font-family: var(--font-ui); font-size: 0.75rem; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 10; opacity: 0; transform: translateY(4px); transition: opacity 0.15s ease, transform 0.15s ease; border-left: 3px solid var(--accent-subtle); line-height: 1.3; text-align: left; white-space: nowrap;"></div>
             </a>
             
           </div>
           
           <!-- Detailed Columns -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: var(--space-xs);">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xs); width: 100%;">
             
             <!-- Left: Subscribers -->
             <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 4px; padding: var(--space-md); display: flex; flex-direction: column; justify-content: space-between;">
@@ -101,7 +117,7 @@ import{n as e,o as t,r as n}from"./index-BOIPSjjC.js";import{t as r}from"./html-
                   <a href="/poemas/admin?view=subscribers" data-link style="font-size: 0.75rem; color: var(--accent-subtle); text-decoration: none;">Ver todos</a>
                 </div>
                 
-                ${l.length===0?`
+                ${a.length===0?`
                   <p style="color: var(--text-muted); font-size: 0.85rem; padding: var(--space-sm) 0;">Nenhum assinante cadastrado.</p>
                 `:`
                   <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
@@ -113,11 +129,11 @@ import{n as e,o as t,r as n}from"./index-BOIPSjjC.js";import{t as r}from"./html-
                       </tr>
                     </thead>
                     <tbody>
-                      ${l.map(e=>`
+                      ${a.map(e=>`
                         <tr style="border-bottom: 1px solid var(--border-subtle);">
-                          <td style="padding: var(--space-xs) 0; color: var(--text-primary); font-family: var(--font-ui); font-size: 0.8rem;">${r(e.email)}</td>
-                          <td style="padding: var(--space-xs) 0; color: var(--text-muted); font-size: 0.8rem;">${new Date(e.created_at).toLocaleDateString(`pt-BR`)}</td>
-                          <td style="padding: var(--space-xs) 0; text-align: right;">
+                          <td style="padding: var(--space-xs) var(--space-xs) var(--space-xs) 0; color: var(--text-primary); font-family: var(--font-ui); font-size: 0.8rem; word-break: break-all;">${r(e.email)}</td>
+                          <td style="padding: var(--space-xs) var(--space-xs); color: var(--text-muted); font-size: 0.8rem; white-space: nowrap;">${new Date(e.created_at).toLocaleDateString(`pt-BR`)}</td>
+                          <td style="padding: var(--space-xs) 0 var(--space-xs) var(--space-xs); text-align: right;">
                             <span style="font-size: 0.7rem; color: ${e.active?`var(--success)`:`var(--error)`}; border: 1px solid ${e.active?`var(--success)`:`var(--error)`}; padding: 0.1rem 0.4rem; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
                               ${e.active?`Ativo`:`Inativo`}
                             </span>
@@ -138,11 +154,11 @@ import{n as e,o as t,r as n}from"./index-BOIPSjjC.js";import{t as r}from"./html-
                   <a href="/poemas/admin?view=list" data-link style="font-size: 0.75rem; color: var(--accent-subtle); text-decoration: none;">Ver obras</a>
                 </div>
                 
-                ${v.length===0?`
+                ${h.length===0?`
                   <p style="color: var(--text-muted); font-size: 0.85rem; padding: var(--space-sm) 0;">Nenhuma publicação agendada.</p>
                 `:`
                   <div style="display: grid; gap: var(--space-xs);">
-                    ${v.map(e=>`
+                    ${h.map(e=>`
                       <div style="padding: var(--space-xs); border: 1px solid var(--border-subtle); border-radius: 2px; background: rgba(255, 255, 255, 0.01); display: flex; justify-content: space-between; align-items: center;">
                         <div>
                           <div style="font-family: var(--font-display); font-size: 1rem; color: var(--text-primary); font-weight: 400;">${r(e.title)}</div>
@@ -163,7 +179,10 @@ import{n as e,o as t,r as n}from"./index-BOIPSjjC.js";import{t as r}from"./html-
           </div>
           
         </div>
-      `}catch(t){console.error(t),e.innerHTML=`<div class="error">Erro ao carregar o dashboard: ${t.message}</div>`}},async renderCollections(e){let n=async()=>{e.innerHTML=`<div class="loading">Carregando coleções...</div>`;let{data:a,error:o}=await t.from(`collections`).select(`*, collection_poems(count)`).order(`created_at`,{ascending:!1});if(o){e.innerHTML=`<div class="error">Erro ao carregar coleções: ${o.message}</div>`;return}let s=a.map(e=>`
+      `;let g=e.querySelector(`#visits-kpi-card`);if(g){let e=g.querySelector(`#sparkline-svg`),t=g.querySelector(`#sparkline-tracker`),n=g.querySelector(`#sparkline-hover-dot`),r=g.querySelector(`#sparkline-tooltip`),i=i=>{let o=e.getBoundingClientRect(),s=i.clientX-o.left;if(s<-10||s>o.width+10){a();return}let c=Math.min(6,Math.max(0,Math.round(s/o.width*6))),l=p[c];if(!l)return;let u=Math.max(...p.map(e=>e.count),1),d=c/6*160,f=38-l.count/u*36;t.setAttribute(`x1`,d),t.setAttribute(`x2`,d),t.style.display=`block`,n.setAttribute(`cx`,d),n.setAttribute(`cy`,f),n.style.display=`block`;let m=new Date(l.label+`T00:00:00`),h=m.toLocaleDateString(`pt-BR`,{day:`2-digit`,month:`2-digit`}),_=m.toLocaleDateString(`pt-BR`,{weekday:`short`}).replace(`.`,``);r.style.display=`block`,r.innerHTML=`
+            <div style="font-weight: 500; font-size: 0.65rem; color: var(--text-secondary); text-transform: capitalize;">${_}, ${h}</div>
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">${l.count} ${l.count===1?`visita`:`visitas`}</div>
+          `;let v=g.getBoundingClientRect(),y=i.clientX-v.left,b=i.clientY-v.top-55;r.style.left=`${Math.min(v.width-95,Math.max(10,y-45))}px`,r.style.top=`${b}px`,r.getBoundingClientRect(),r.style.opacity=`1`,r.style.transform=`translateY(0)`},a=()=>{t&&(t.style.display=`none`),n&&(n.style.display=`none`),r&&(r.style.opacity=`0`,r.style.transform=`translateY(4px)`,setTimeout(()=>{r.style.opacity===`0`&&(r.style.display=`none`)},150))};g.addEventListener(`mousemove`,i),g.addEventListener(`mouseleave`,a)}}catch(t){console.error(t),e.innerHTML=`<div class="error">Erro ao carregar o dashboard: ${t.message}</div>`}},async renderCollections(e){let n=async()=>{e.innerHTML=`<div class="loading">Carregando coleções...</div>`;let{data:a,error:o}=await t.from(`collections`).select(`*, collection_poems(count)`).order(`created_at`,{ascending:!1});if(o){e.innerHTML=`<div class="error">Erro ao carregar coleções: ${o.message}</div>`;return}let s=a.map(e=>`
         <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
           ${e.image_url?`
             <div style="height: 120px; background-image: url('${e.image_url}'); background-size: cover; background-position: center; border-bottom: 1px solid var(--border-subtle);"></div>
