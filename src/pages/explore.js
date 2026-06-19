@@ -79,6 +79,7 @@ export default {
       a.style.height = size + 'px';
       a.style.top = top + '%';
       a.style.left = left + '%';
+      a.style.zIndex = Math.floor(size);
       a.style.animationDelay = animationDelay;
       a.style.animationDuration = animationDuration;
       
