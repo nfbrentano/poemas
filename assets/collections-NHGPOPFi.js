@@ -1,4 +1,4 @@
-import{o as e}from"./index-DRnHbcne.js";import{r as t,t as n}from"./filter-chips-BI1Y6dFu.js";import{t as r}from"./seo-Cx_atl1Z.js";var i={meta:{title:`Coleções e Sentimentos — Natanael Brentano`},async render(i,a={}){let o=a.tags?a.tags.split(`,`):[],s=a.cols?a.cols.split(`,`):[],c=o.length>0||s.length>0;r({title:`Coleções e Sentimentos — Natanael Brentano`,description:`Explore poemas organizados por séries temáticas e sentimentos.`,type:`website`}),i.innerHTML=`
+import{o as e}from"./index-4B6FpOKk.js";import{r as t,t as n}from"./filter-chips-DIw81z8o.js";import{t as r}from"./seo-Cx_atl1Z.js";var i={meta:{title:`Coleções e Sentimentos — Natanael Brentano`},async render(i,a={}){let o=a.tags?a.tags.split(`,`):[],s=a.cols?a.cols.split(`,`):[],c=o.length>0||s.length>0;r({title:`Coleções e Sentimentos — Natanael Brentano`,description:`Explore poemas organizados por séries temáticas e sentimentos.`,type:`website`}),i.innerHTML=`
       <section class="collections-page fade-in">
         <header class="page-header" style="text-align: center; margin-bottom: var(--space-2xl);">
           <h1 class="page-title">Explorar</h1>

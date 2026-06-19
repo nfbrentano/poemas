@@ -1,4 +1,4 @@
-import{o as e}from"./index-DRnHbcne.js";var t={async render(t,n){let r=typeof n==`object`?n.slug:n;t.innerHTML=`<div class="loading">Carregando coleção...</div>`;let{data:i,error:a}=await e.from(`collections`).select(`*, collection_poems(poems(*))`).eq(`slug`,r).single();if(a||!i){t.innerHTML=`<div class="error">Coleção não encontrada.</div>`;return}let o=i.collection_poems.map(e=>e.poems).filter(e=>e.status===`published`);t.innerHTML=`
+import{o as e}from"./index-4B6FpOKk.js";var t={async render(t,n){let r=typeof n==`object`?n.slug:n;t.innerHTML=`<div class="loading">Carregando coleção...</div>`;let{data:i,error:a}=await e.from(`collections`).select(`*, collection_poems(poems(*))`).eq(`slug`,r).single();if(a||!i){t.innerHTML=`<div class="error">Coleção não encontrada.</div>`;return}let o=i.collection_poems.map(e=>e.poems).filter(e=>e.status===`published`);t.innerHTML=`
       <section class="collection-detail fade-in">
         <header class="collection-header">
           <a href="/poemas/colecoes" class="back-link" data-link>← Voltar para coleções</a>
