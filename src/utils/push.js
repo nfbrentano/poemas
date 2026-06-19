@@ -1,7 +1,5 @@
 import { supabase } from './supabase.js';
 
-const VAPID_PUBLIC_KEY = 'BCX7...'; // This should ideally be a config, but I'll use a placeholder or check site_settings
-
 export const pushManager = {
   isSupported() {
     return ('serviceWorker' in navigator) && ('PushManager' in window);

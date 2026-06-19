@@ -1,6 +1,7 @@
 import { supabase } from '../utils/supabase.js';
 import { filterChips } from '../components/filter-chips.js';
 import { updateSEO } from '../utils/seo.js';
+import { normalizeTag } from '../utils/tags.js';
 
 export const collections = {
   meta: {
@@ -75,6 +76,8 @@ export const collections = {
       }
     };
 
+    let allPoems = [];
+
     // Fetch and Filter Poems
     const fetchPoems = async () => {
       let query = supabase
@@ -83,16 +86,17 @@ export const collections = {
         .eq('status', 'published')
         .order('published_at', { ascending: false });
 
-      const { data: allPoems } = await query;
+      const { data } = await query;
+      allPoems = data || [];
       
-      let filtered = allPoems || [];
+      let filtered = allPoems;
 
       if (activeTags.length > 0) {
         const normalizedActiveTags = activeTags.map(at => decodeURIComponent(at).trim().toLowerCase());
         
         filtered = filtered.filter(p => 
           p.tags && p.tags.some(t => {
-            const normalizedTag = t.replace(/^(sentimento|sentimentos|tag de sentimento|tags de sentimento):/i, '').trim().toLowerCase();
+            const normalizedTag = normalizeTag(t).toLowerCase();
             return normalizedActiveTags.includes(normalizedTag);
           })
         );
@@ -125,7 +129,7 @@ export const collections = {
     };
 
     await Promise.all([fetchCollections(), fetchPoems()]);
-    filterChips.init(container, activeTags);
+    filterChips.init(container, activeTags, allPoems);
   }
 };
 

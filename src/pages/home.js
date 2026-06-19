@@ -3,6 +3,7 @@ import { updateSEO } from '../utils/seo.js';
 import { newsletter } from '../components/newsletter.js';
 import { getRandomPoem } from '../utils/navigation.js';
 import { filterChips } from '../components/filter-chips.js';
+import { normalizeTag, formatTag } from '../utils/tags.js';
 
 export default {
   meta: {
@@ -84,11 +85,10 @@ export default {
     const tagCounts = {};
     poems.forEach(p => {
       (p.tags || []).forEach(t => {
-        // Normalize: remove common prefixes and capitalize
-        let normalized = t.replace(/^(sentimento|sentimentos|tag de sentimento|tags de sentimento):/i, '').trim();
-        normalized = normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
-        
-        tagCounts[normalized] = (tagCounts[normalized] || 0) + 1;
+        const normalized = formatTag(t);
+        if (normalized) {
+          tagCounts[normalized] = (tagCounts[normalized] || 0) + 1;
+        }
       });
     });
 
@@ -110,7 +110,7 @@ export default {
     if (tags.length > 0) {
       displayPoems = displayPoems.filter(p => 
         p.tags && p.tags.some(t => {
-          const normalized = t.replace(/^(sentimento|sentimentos|tag de sentimento|tags de sentimento):/i, '').trim().toLowerCase();
+          const normalized = normalizeTag(t).toLowerCase();
           return tags.some(at => at.toLowerCase() === normalized);
         })
       );
@@ -216,7 +216,7 @@ export default {
 
     
     newsletter.init();
-    await filterChips.init(container, tags);
+    await filterChips.init(container, tags, poems);
 
     // Setup Event Listeners for featured share
     container.querySelectorAll('.featured-share-btn').forEach(btn => {

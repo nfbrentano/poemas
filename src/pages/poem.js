@@ -5,6 +5,7 @@ import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
 import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
 import { favorites } from '../utils/favorites.js';
+import { escapeHtml } from '../utils/html.js';
 
 function throttle(func, limit) {
   let inThrottle;
@@ -383,10 +384,10 @@ export default {
       listEl.innerHTML = comments.map(c => `
         <div class="comment-item fade-in">
           <div class="comment-meta">
-            <span class="comment-author">${c.author_name}</span>
+            <span class="comment-author">${escapeHtml(c.author_name)}</span>
             <span class="comment-date">${new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
           </div>
-          <div class="comment-text">${c.content}</div>
+          <div class="comment-text">${escapeHtml(c.content)}</div>
         </div>
       `).join('');
     };
@@ -574,10 +575,15 @@ export default {
 
     // Touch swipe mobile
     let touchStartX = 0;
-    handleTouchStart = e => touchStartX = e.touches[0].clientX;
+    let touchStartY = 0;
+    handleTouchStart = e => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    };
     handleTouchEnd = e => {
       const deltaX = touchStartX - e.changedTouches[0].clientX;
-      if (Math.abs(deltaX) > 80) { // Threshold for swipe
+      const deltaY = touchStartY - e.changedTouches[0].clientY;
+      if (Math.abs(deltaX) > 80 && Math.abs(deltaX) > Math.abs(deltaY) * 2) { // Threshold for horizontal swipe
         if (deltaX > 0 && nextSlug) navigateTo(`/poema/${nextSlug}`);
         else if (deltaX < 0 && prevSlug) navigateTo(`/poema/${prevSlug}`);
       }

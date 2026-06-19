@@ -36,6 +36,9 @@ export async function router() {
   const view = document.getElementById('main-content');
   
   const updateView = async () => {
+    // Scroll to top on navigation
+    window.scrollTo(0, 0);
+
     // Cleanup previous component if it exists
     if (currentViewComponent && typeof currentViewComponent.cleanup === 'function') {
       currentViewComponent.cleanup();
@@ -153,8 +156,9 @@ export function navigateTo(url) {
   
   if (url.startsWith('/') && basePath !== '/') {
     const cleanBase = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
-    // Only prepend if not already present
-    if (!url.startsWith(cleanBase + '/')) {
+    // Only prepend if not already present (checking for trailing slash, query string, or exact match)
+    const alreadyHasBase = url === cleanBase || url.startsWith(cleanBase + '/') || url.startsWith(cleanBase + '?');
+    if (!alreadyHasBase) {
       finalUrl = cleanBase + url;
     }
   }

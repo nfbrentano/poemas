@@ -457,6 +457,16 @@ input, textarea {
   color: var(--text-primary);
 }
 
+.poem-container {
+  padding-bottom: var(--space-xl);
+}
+
+@media (max-width: 768px) {
+  .poem-container {
+    padding-bottom: 80px;
+  }
+}
+
 /* Navigation */
 .poem-nav {
   position: fixed;

@@ -1,25 +1,41 @@
 import { supabase } from '../utils/supabase.js';
 import { navigateTo } from '../router.js';
+import { formatTag } from '../utils/tags.js';
+
+let cachedTags = null;
 
 export const filterChips = {
-  async fetchMetadata() {
-    const { data: poems } = await supabase
-      .from('poems')
-      .select('tags')
-      .eq('status', 'published');
+  async fetchMetadata(initialPoems = null) {
+    if (cachedTags) {
+      return { tags: cachedTags };
+    }
+
+    let poems = initialPoems;
+    if (!poems) {
+      const { data } = await supabase
+        .from('poems')
+        .select('tags')
+        .eq('status', 'published');
+      poems = data;
+    }
     
     const tagCounts = {};
     poems?.forEach(p => {
       (p.tags || []).forEach(t => {
-        let normalized = t.replace(/^(sentimento|sentimentos|tag de sentimento|tags de sentimento):/i, '').trim();
-        normalized = normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
-        tagCounts[normalized] = (tagCounts[normalized] || 0) + 1;
+        const normalized = formatTag(t);
+        if (normalized) {
+          tagCounts[normalized] = (tagCounts[normalized] || 0) + 1;
+        }
       });
     });
 
-    return { 
-      tags: Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]).slice(0, 20)
-    };
+    const tags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]).slice(0, 20);
+
+    if (tags.length > 0) {
+      cachedTags = tags;
+    }
+
+    return { tags };
   },
 
   render(activeTags = []) {
@@ -36,8 +52,8 @@ export const filterChips = {
     `;
   },
 
-  async init(container, activeTags = []) {
-    const { tags } = await this.fetchMetadata();
+  async init(container, activeTags = [], initialPoems = null) {
+    const { tags } = await this.fetchMetadata(initialPoems);
     
     const tagsContainer = container.querySelector('#dynamic-tags');
 
@@ -66,8 +82,9 @@ export const filterChips = {
         else params.delete('tags');
         
         const queryString = params.toString();
-        // Use pathname directly as it already includes the base path
-        navigateTo(window.location.pathname + (queryString ? `?${queryString}` : ''));
+        const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+        const relativePath = window.location.pathname.replace(basePath, '') || '/';
+        navigateTo(relativePath + (queryString ? `?${queryString}` : ''));
       });
     });
 

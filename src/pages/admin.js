@@ -1,5 +1,6 @@
 import { supabase } from '../utils/supabase.js';
 import { navigateTo } from '../router.js';
+import { escapeHtml } from '../utils/html.js';
 
 function debounce(fn, delay) {
   let timeoutId;
@@ -630,9 +631,9 @@ export default {
           ${new Date(c.created_at).toLocaleDateString('pt-BR')}
         </td>
         <td style="padding: var(--space-md) 0;">
-          <div style="font-family: var(--font-display); font-size: 1.1rem;">${c.author_name}</div>
+          <div style="font-family: var(--font-display); font-size: 1.1rem;">${escapeHtml(c.author_name)}</div>
           <div style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Em: ${c.poems?.title || 'Obra removida'}</div>
-          <div style="font-family: var(--font-body); line-height: 1.4; color: var(--text-primary); max-width: 500px;">${c.content}</div>
+          <div style="font-family: var(--font-body); line-height: 1.4; color: var(--text-primary); max-width: 500px;">${escapeHtml(c.content)}</div>
         </td>
         <td style="padding: var(--space-md) 0; vertical-align: middle;">
           <span style="padding: 0.2rem 0.6rem; border-radius: 2px; font-family: var(--font-ui); font-size: 0.75rem; border: 1px solid ${c.approved ? 'var(--success)' : 'var(--accent-subtle)'}; color: ${c.approved ? 'var(--success)' : 'var(--accent-subtle)'}; text-transform: uppercase; letter-spacing: 1px;">
