@@ -1,4 +1,4 @@
-import{n as e,o as t}from"./index-C5sydfk-.js";var n={meta:{title:`Login Admin`},async render(n){let{data:{session:r}}=await t.auth.getSession();if(r){e(`/admin`);return}n.innerHTML=`
+import{n as e,o as t}from"./index-DRnHbcne.js";var n={meta:{title:`Login Admin`},async render(n){let{data:{session:r}}=await t.auth.getSession();if(r){e(`/admin`);return}n.innerHTML=`
       <div class="login-container fade-in" style="max-width: 400px; margin: 4rem auto; padding: 2rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color-light);">
         <h2 style="text-align: center; margin-bottom: 2rem; font-family: var(--font-sans);">Acesso Admin</h2>
         <form id="login-form" style="display: flex; flex-direction: column; gap: 1rem;">

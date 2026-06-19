@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co https://api.emailjs.com; worker-src 'self' blob:; manifest-src 'self';">
     <title>Poemas Brasileiros - Natanael Brentano | nfbrentano.github.io/poemas/</title>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('site-mode');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var mode = saved || (prefersDark ? 'dark' : 'light');
+          if (mode === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+          } else if (mode === 'contrast') {
+            document.documentElement.setAttribute('data-high-contrast', 'true');
+          }
+        } catch (e) {}
+      })();
+    </script>
     
     <!-- PWA -->
     <link rel="manifest" href="/poemas/manifest.json">
@@ -64,8 +78,8 @@
         z-index: 9999;
       }
     </style>
-    <script type="module" crossorigin src="/poemas/assets/index-C5sydfk-.js"></script>
-    <link rel="stylesheet" crossorigin href="/poemas/assets/index-DWVF7Ihq.css">
+    <script type="module" crossorigin src="/poemas/assets/index-DRnHbcne.js"></script>
+    <link rel="stylesheet" crossorigin href="/poemas/assets/index-fHqOwWN6.css">
   </head>
   <body>
     <a href="#main-content" class="sr-only">Ir para o conteúdo</a>
