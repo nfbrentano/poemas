@@ -47,6 +47,8 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   setMeta('meta[name="description"]', 'content', finalDesc);
   
   // Open Graph
+  setMeta('meta[property="og:locale"]', 'content', 'pt_BR');
+  setMeta('meta[property="og:site_name"]', 'content', 'Poemas — Natanael Brentano');
   setMeta('meta[property="og:title"]', 'content', finalTitle);
   setMeta('meta[property="og:description"]', 'content', finalDesc);
   setMeta('meta[property="og:url"]', 'content', finalUrl);
@@ -72,7 +74,9 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
 
     const structuredData = {
       "@context": "https://schema.org",
-      "@type": "Article",
+      "@type": "CreativeWork",
+      "genre": "Poetry",
+      "inLanguage": "pt-BR",
       "headline": title,
       "description": finalDesc,
       "author": { "@type": "Person", "name": "Natanael Brentano" },

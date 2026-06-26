@@ -137,6 +137,13 @@ input, textarea {
   cursor: pointer;
 }
 
+@media (max-width: 768px) {
+  .header-search-toggle {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
 /* Search Overlay */
 .search-overlay {
   position: fixed;
@@ -1051,6 +1058,12 @@ html.immersive-mode #immersive-btn {
 @media (max-width: 640px) {
   .menu-toggle {
     display: flex;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .random-poem-btn {
+    display: none !important;
   }
 
   .site-header .main-nav {
@@ -1831,6 +1844,8 @@ html.immersive-mode #immersive-btn {
   scrollbar-width: none;
   flex: 1;
   min-width: 0;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 16px, black calc(100% - 30px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 16px, black calc(100% - 30px), transparent 100%);
 }
 
 .filter-chips-scroll::-webkit-scrollbar {

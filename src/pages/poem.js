@@ -118,10 +118,12 @@ export default {
       .trim()
       .slice(0, 160) + '...';
     
+    const fallbackImageUrl = `${window.location.origin}${import.meta.env.BASE_URL}og-cover.jpg`;
     updateSEO({
       title: poem.title,
       description: cleanExcerpt,
       url: poemUrl,
+      imageUrl: fallbackImageUrl,
       type: 'article',
       publishedTime: poem.published_at,
       tags: poem.tags

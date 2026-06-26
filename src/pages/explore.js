@@ -59,6 +59,19 @@ export default {
 
     mapEl.innerHTML = '';
     
+    const isMobile = window.innerWidth < 768;
+    
+    if (isMobile) {
+      mapEl.style.display = 'grid';
+      mapEl.style.gridTemplateColumns = 'repeat(auto-fill, minmax(120px, 1fr))';
+      mapEl.style.gap = 'var(--space-md)';
+      mapEl.style.padding = 'var(--space-md)';
+      mapEl.style.height = 'auto';
+      mapEl.style.minHeight = '0';
+      mapEl.style.background = 'none';
+      mapEl.style.border = 'none';
+    }
+
     // Create nodes with random positions but somewhat dispersed
     tagsArray.forEach((t, i) => {
       // Base size relative to count, min 80, max 160
@@ -75,13 +88,24 @@ export default {
       a.href = `${import.meta.env.BASE_URL}?tag=${encodeURIComponent(t.tag)}`;
       a.className = 'explore-node fade-in';
       a.setAttribute('data-link', '');
-      a.style.width = size + 'px';
-      a.style.height = size + 'px';
-      a.style.top = top + '%';
-      a.style.left = left + '%';
-      a.style.zIndex = Math.floor(size);
-      a.style.animationDelay = animationDelay;
-      a.style.animationDuration = animationDuration;
+      
+      if (!isMobile) {
+        a.style.width = size + 'px';
+        a.style.height = size + 'px';
+        a.style.top = top + '%';
+        a.style.left = left + '%';
+        a.style.zIndex = Math.floor(size);
+        a.style.animationDelay = animationDelay;
+        a.style.animationDuration = animationDuration;
+      } else {
+        a.style.position = 'relative';
+        a.style.width = '100%';
+        a.style.height = 'auto';
+        a.style.aspectRatio = '1 / 1';
+        a.style.animation = 'none';
+        a.style.transform = 'none';
+        a.style.borderRadius = '12px';
+      }
       
       // Some visual variety
       if (i % 3 === 0) {

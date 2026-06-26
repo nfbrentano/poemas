@@ -31,6 +31,25 @@ export default {
       type: 'website'
     });
     
+    let websiteSchema = document.querySelector('script[id="website-schema"]');
+    if (!websiteSchema) {
+      websiteSchema = document.createElement('script');
+      websiteSchema.id = 'website-schema';
+      websiteSchema.type = 'application/ld+json';
+      websiteSchema.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://nfbrentano.github.io/poemas/",
+        "name": "Poemas — Natanael Brentano",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://nfbrentano.github.io/poemas/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      });
+      document.head.appendChild(websiteSchema);
+    }
+    
     const skeletonHtml = `
       <div class="home-layout fade-in">
         <section class="poems-list">

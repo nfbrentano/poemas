@@ -191,7 +191,7 @@ input:focus, textarea:focus, select:focus {
 
 .site-footer {
   text-align: center;
-  padding: var(--space-xl) 0;
+  padding: var(--space-xl) 0 calc(var(--space-xl) + env(safe-area-inset-bottom, 0px));
   color: var(--text-muted);
   font-family: var(--font-ui);
   font-size: 0.8rem;
@@ -263,6 +263,7 @@ body.is-poem-page .site-footer {
   justify-content: center;
   border-top: 1px solid var(--border-subtle);
   padding-top: var(--space-2xl);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   font-family: var(--font-ui);
 }
 
@@ -279,6 +280,13 @@ body.is-poem-page .site-footer {
   background: transparent;
   transition: all var(--transition-fast);
   margin-left: var(--space-md);
+}
+
+@media (max-width: 768px) {
+  .theme-toggle {
+    min-width: 48px;
+    min-height: 48px;
+  }
 }
 
 .theme-toggle:hover {
