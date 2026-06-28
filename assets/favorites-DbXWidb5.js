@@ -1,4 +1,4 @@
-import{t as e}from"./index-BHLKTwRq.js";import{t}from"./seo-CzsjKMAB.js";var n={meta:{title:`Poemas Salvos`},cleanup(){},async render(n){t({title:`Poemas Salvos`,description:`Sua coleção pessoal de poemas favoritos.`,type:`website`}),n.innerHTML=`
+import{t as e}from"./index-j-_iSboO.js";import{t}from"./seo-CzsjKMAB.js";var n={meta:{title:`Poemas Salvos`},cleanup(){},async render(n){t({title:`Poemas Salvos`,description:`Sua coleção pessoal de poemas favoritos.`,type:`website`}),n.innerHTML=`
       <div class="favorites-page fade-in">
         <header class="page-header">
           <h1 class="page-title">Poemas Salvos</h1>
