@@ -63,12 +63,12 @@ export default {
     
     if (isMobile) {
       mapEl.style.display = 'grid';
-      mapEl.style.gridTemplateColumns = 'repeat(auto-fill, minmax(120px, 1fr))';
-      mapEl.style.gap = 'var(--space-md)';
-      mapEl.style.padding = 'var(--space-md)';
+      mapEl.style.gridTemplateColumns = 'repeat(auto-fill, minmax(130px, 1fr))';
+      mapEl.style.gap = 'var(--space-sm)';
+      mapEl.style.padding = 'var(--space-sm)';
       mapEl.style.height = 'auto';
       mapEl.style.minHeight = '0';
-      mapEl.style.background = 'none';
+      mapEl.style.background = 'transparent';
       mapEl.style.border = 'none';
     }
 
@@ -101,10 +101,12 @@ export default {
         a.style.position = 'relative';
         a.style.width = '100%';
         a.style.height = 'auto';
-        a.style.aspectRatio = '1 / 1';
+        a.style.aspectRatio = '1.3 / 1';
         a.style.animation = 'none';
         a.style.transform = 'none';
-        a.style.borderRadius = '12px';
+        a.style.borderRadius = '16px';
+        a.style.padding = 'var(--space-sm)';
+        a.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
       }
       
       // Some visual variety

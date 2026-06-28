@@ -15,7 +15,14 @@ export const header = {
               <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </button>
 
+            <div id="nav-overlay" class="nav-overlay"></div>
             <nav class="main-nav">
+              <div class="nav-drawer-header">
+                <span class="logo">Natanael Brentano</span>
+                <button id="nav-close-btn" class="nav-close-btn" aria-label="Fechar menu">
+                  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
               <ul>
                 <li><a href="${import.meta.env.BASE_URL}" data-link>Poemas</a></li>
                 <li><a href="${import.meta.env.BASE_URL}colecoes" data-link>Coleções</a></li>
@@ -35,7 +42,7 @@ export const header = {
               <span class="icon-contrast" style="display:none;"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8,8,0,0,1,12,20ZM12,6a6,6,0,0,0,0,12V6Z"></path></svg></span>
             </button>
 
-            <button id="menu-toggle" class="menu-toggle" aria-label="Menu">
+            <button id="menu-toggle" class="menu-toggle" aria-label="Menu" aria-expanded="false">
               <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12" class="line-1"></line><line x1="3" y1="6" x2="21" y2="6" class="line-2"></line><line x1="3" y1="18" x2="21" y2="18" class="line-3"></line></svg>
             </button>
           </div>
@@ -54,12 +61,16 @@ export const header = {
     // Hamburger Menu
     const menuToggle = document.getElementById('menu-toggle');
     const mainNav = document.querySelector('.main-nav');
+    const navOverlay = document.getElementById('nav-overlay');
+    const navCloseBtn = document.getElementById('nav-close-btn');
     
     const closeMenu = () => {
       mainNav.classList.remove('active');
       menuToggle.classList.remove('active');
+      if (navOverlay) navOverlay.classList.remove('active');
       menuToggle.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
+      document.body.classList.remove('nav-open');
     };
 
     if (menuToggle && mainNav) {
@@ -90,18 +101,24 @@ export const header = {
         menuToggle.setAttribute('aria-expanded', !isExpanded);
         mainNav.classList.toggle('active');
         menuToggle.classList.toggle('active');
+        if (navOverlay) navOverlay.classList.toggle('active');
         document.body.style.overflow = isExpanded ? '' : 'hidden';
         
         if (!isExpanded) {
+          document.body.classList.add('nav-open');
           setTimeout(() => {
             const firstLink = mainNav.querySelector('a');
             if (firstLink) firstLink.focus();
           }, 100);
           document.addEventListener('keydown', trapFocus);
         } else {
+          document.body.classList.remove('nav-open');
           document.removeEventListener('keydown', trapFocus);
         }
       });
+      
+      if (navCloseBtn) navCloseBtn.addEventListener('click', closeMenu);
+      if (navOverlay) navOverlay.addEventListener('click', closeMenu);
       
       mainNav.addEventListener('click', (e) => {
         if (e.target.tagName === 'A' || e.target.hasAttribute('data-link')) {
