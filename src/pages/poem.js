@@ -6,6 +6,7 @@ import { newsletter } from '../components/newsletter.js';
 import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
 import { favorites } from '../utils/favorites.js';
 import { escapeHtml } from '../utils/html.js';
+import { toast } from '../components/toast.js';
 
 function throttle(func, limit) {
   let inThrottle;
@@ -352,8 +353,7 @@ export default {
       webShareBtn.innerText = 'Copiar Link';
       webShareBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(shareUrl).then(() => {
-          webShareBtn.innerText = 'Copiado!';
-          setTimeout(() => webShareBtn.innerText = 'Copiar Link', 2000);
+          toast.show('Link copiado para a área de transferência!', 'success');
         });
       });
     }
@@ -440,14 +440,14 @@ export default {
         .insert([{ poem_id: poem.id, author_name: author, content: content }]);
 
       if (error) {
-        msg.innerText = 'Erro ao enviar comentário.';
-        msg.style.color = 'var(--error)';
+        toast.show('Erro ao enviar comentário.', 'error');
         btn.disabled = false;
         btn.innerText = 'Enviar Nota';
       } else {
-        msg.innerText = 'Sua nota foi enviada e aguarda moderação.';
-        msg.style.color = 'var(--success)';
+        toast.show('Sua nota foi enviada e aguarda moderação.', 'success');
         commentForm.reset();
+        btn.disabled = false;
+        btn.innerText = 'Enviar Nota';
         // Não carregamos o comentário novo pois ele precisa de aprovação
       }
     });
@@ -468,8 +468,10 @@ export default {
       const isFav = await favorites.has(poem.slug);
       if (isFav) {
         await favorites.remove(poem.slug);
+        toast.show('Obra removida dos itens salvos.', 'info');
       } else {
         await favorites.save(poem);
+        toast.show('Obra salva com sucesso.', 'heart');
       }
       updateFavUI();
       
@@ -637,13 +639,9 @@ export default {
 
     document.getElementById('highlight-copy-btn')?.addEventListener('click', () => {
       navigator.clipboard.writeText(selectedText).then(() => {
-        const btn = document.getElementById('highlight-copy-btn');
-        btn.innerText = 'Copiado!';
-        setTimeout(() => {
-          btn.innerText = 'Copiar';
-          window.getSelection().removeAllRanges();
-          tooltip.classList.remove('visible');
-        }, 1500);
+        toast.show('Trecho copiado para a área de transferência!', 'success');
+        window.getSelection().removeAllRanges();
+        tooltip.classList.remove('visible');
       });
     });
 

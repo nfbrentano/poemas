@@ -2297,3 +2297,143 @@ html.immersive-mode #immersive-btn {
   color: var(--text-muted);
   margin-top: 4px;
 }
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  bottom: var(--space-xl);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast-message {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-icon {
+  color: var(--accent-subtle);
+  font-weight: bold;
+}
+
+/* Back to Top Button */
+.back-to-top-btn {
+  position: fixed;
+  bottom: var(--space-xl);
+  right: var(--space-lg);
+  width: 48px;
+  height: 48px;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 990;
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.back-to-top-btn.visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.back-to-top-btn:hover {
+  background-color: var(--accent-muted);
+  border-color: var(--accent-subtle);
+  color: var(--accent-subtle);
+}
+
+@media (max-width: 768px) {
+  .back-to-top-btn {
+    bottom: calc(var(--space-xl) + 60px); /* Avoid overlapping with poem nav on mobile if needed */
+    right: var(--space-md);
+  }
+}
+
+/* Immersive Mode Hint Improvements */
+.immersive-hint {
+  position: fixed;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  z-index: 2000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.immersive-hint.visible {
+  opacity: 1;
+}
+
+/* Added arrows for immersive mode */
+html.immersive-mode body::before,
+html.immersive-mode body::after {
+  content: '';
+  position: fixed;
+  top: 50%;
+  width: 30px;
+  height: 60px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23c5a880" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>');
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+html.immersive-mode body::after {
+  right: 10px;
+  transform: rotate(180deg) translateY(50%);
+}
+
+html.immersive-mode body::before {
+  left: 10px;
+  transform: translateY(-50%);
+}
+
+@media (hover: hover) {
+  html.immersive-mode body:hover::before,
+  html.immersive-mode body:hover::after {
+    opacity: 0.15;
+  }
+}
+

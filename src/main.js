@@ -3,6 +3,7 @@ import './styles/global.css';
 import './styles/components.css';
 import { initRouter } from './router.js';
 import { header } from './components/header.js';
+import { backToTop } from './components/back-to-top.js';
 
 // Setup Base Layout
 document.querySelector('#app').innerHTML = `
@@ -17,6 +18,7 @@ document.querySelector('#app').innerHTML = `
 
 // Initialize Components
 header.init();
+backToTop.init();
 
 // Initialize Router
 initRouter();
