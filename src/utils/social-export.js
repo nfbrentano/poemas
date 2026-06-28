@@ -1,8 +1,8 @@
 import html2canvas from 'html2canvas';
 import '../styles/social-card.css';
 
-export async function generateSocialCard(poem, container) {
-  let displayContent = poem.excerpt;
+export async function generateSocialCard(poem, container, theme = 'dark', customText = null) {
+  let displayContent = customText || poem.excerpt;
   if (!displayContent) {
     let html = poem.content
       .replace(/<br\s*[\/]?>/gi, '\n')
@@ -23,11 +23,18 @@ export async function generateSocialCard(poem, container) {
     
     displayContent = lines.join('\n').trim();
   }
+
+  // If it's a quote, format the quote styling with quotes around it
+  if (customText) {
+    displayContent = `“ ${displayContent} ”`;
+  }
+  
+  const displayTitle = customText ? `De “${poem.title}”` : poem.title;
   
   container.innerHTML = `
-    <div class="social-card-layout" id="social-card-render">
-      <h1 class="social-card-title">${poem.title}</h1>
-      <div class="social-card-content" id="social-card-text">${displayContent}</div>
+    <div class="social-card-layout theme-${theme}" id="social-card-render">
+      <h1 class="social-card-title">${displayTitle}</h1>
+      <div class="social-card-content" id="social-card-text" style="${customText ? 'font-style: italic;' : ''}">${displayContent}</div>
       <div class="social-card-footer">Natanael Brentano</div>
     </div>
   `;
@@ -45,16 +52,23 @@ export async function generateSocialCard(poem, container) {
     fontSize -= 0.1;
     textEl.style.fontSize = `${fontSize}rem`;
   }
+
+  const bgColors = {
+    dark: '#050505',
+    light: '#fdfdfd',
+    sepia: '#eae0c7'
+  };
   
   const canvas = await html2canvas(renderEl, {
     scale: 2, // High resolution
     useCORS: true,
-    backgroundColor: '#050505'
+    backgroundColor: bgColors[theme] || '#050505'
   });
   
   // Download logic
+  const filename = customText ? `citacao-${poem.slug}-${theme}.png` : `poema-${poem.slug}-${theme}.png`;
   const link = document.createElement('a');
-  link.download = `poema-${poem.slug}-ig.png`;
+  link.download = filename;
   link.href = canvas.toDataURL('image/png');
   link.click();
   

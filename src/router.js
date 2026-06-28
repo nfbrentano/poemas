@@ -13,7 +13,8 @@ export const routes = {
   '/favoritos': () => import('./pages/favorites.js').then(m => m.default),
   '/colecoes': () => import('./pages/collections.js').then(m => m.default),
   '/colecao/:slug': () => import('./pages/collection.js').then(m => m.default),
-  '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default)
+  '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default),
+  '/aleatorio': () => import('./pages/random.js').then(m => m.default)
 };
 
 let currentViewComponent = null;

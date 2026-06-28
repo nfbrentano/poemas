@@ -14,7 +14,7 @@ export function updateActiveNavLink() {
     
     if (link.textContent.trim() === 'Poemas' && (isHome || isPoemPage)) {
       link.classList.add('active');
-    } else if (link.textContent.trim() === 'Salvos' && isFavorites) {
+    } else if (link.textContent.trim() === 'Biblioteca' && isFavorites) {
       link.classList.add('active');
     } else if (link.getAttribute('href') === basePath + 'sobre' && currentPath.includes('/sobre')) {
        link.classList.add('active');

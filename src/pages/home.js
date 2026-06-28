@@ -278,8 +278,31 @@ export default {
 
     window.addEventListener('global-search', handleGlobalSearch);
     
+    // Parallax logic on scroll for POD & Featured title
+    let handleHomeScroll = null;
+    const podTitle = container.querySelector('.pod-title');
+    const featuredTitle = container.querySelector('.featured-title');
+    
+    if (podTitle || featuredTitle) {
+      handleHomeScroll = () => {
+        const scrollTop = window.scrollY;
+        if (podTitle) {
+          const offset = Math.min(20, scrollTop * 0.12);
+          podTitle.style.transform = `translateY(${offset}px)`;
+        }
+        if (featuredTitle) {
+          const offset = Math.min(20, scrollTop * 0.08);
+          featuredTitle.style.transform = `translateY(${offset}px)`;
+        }
+      };
+      window.addEventListener('scroll', handleHomeScroll, { passive: true });
+    }
+
     this.cleanup = () => {
       window.removeEventListener('global-search', handleGlobalSearch);
+      if (handleHomeScroll) {
+        window.removeEventListener('scroll', handleHomeScroll);
+      }
     };
 
     // Random Poem logic

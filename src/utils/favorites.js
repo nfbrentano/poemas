@@ -5,7 +5,7 @@
 
 const DB_NAME = 'poemas_db';
 const STORE_NAME = 'favorites';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbInstance = null;
 
@@ -18,6 +18,12 @@ function openDB() {
       const db = event.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: 'slug' });
+      }
+      if (!db.objectStoreNames.contains('reading_history')) {
+        db.createObjectStore('reading_history', { keyPath: 'slug' });
+      }
+      if (!db.objectStoreNames.contains('poem_notes')) {
+        db.createObjectStore('poem_notes', { keyPath: 'slug' });
       }
     };
 
@@ -101,6 +107,56 @@ export const favorites = {
       const request = store.count();
       
       request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+};
+
+export const history = {
+  async add(poem) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('reading_history', 'readwrite');
+      const store = transaction.objectStore('reading_history');
+      
+      const data = {
+        slug: poem.slug,
+        title: poem.title,
+        excerpt: poem.excerpt,
+        published_at: poem.published_at,
+        read_at: new Date().toISOString()
+      };
+
+      const request = store.put(data);
+      request.onsuccess = () => resolve(true);
+      request.onerror = () => reject(request.error);
+    });
+  },
+
+  async list() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('reading_history', 'readonly');
+      const store = transaction.objectStore('reading_history');
+      const request = store.getAll();
+      
+      request.onsuccess = () => {
+        const results = request.result.sort((a, b) => 
+          new Date(b.read_at) - new Date(a.read_at)
+        );
+        resolve(results);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  },
+
+  async clear() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('reading_history', 'readwrite');
+      const store = transaction.objectStore('reading_history');
+      const request = store.clear();
+      request.onsuccess = () => resolve(true);
       request.onerror = () => reject(request.error);
     });
   }

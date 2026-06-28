@@ -1,40 +1,50 @@
-import { favorites } from '../utils/favorites.js';
+import { favorites, history } from '../utils/favorites.js';
 import { updateSEO } from '../utils/seo.js';
 
 export default {
   meta: {
-    title: 'Poemas Salvos'
+    title: 'Sua Biblioteca'
   },
   cleanup() {
   },
   async render(container) {
     updateSEO({
-      title: 'Poemas Salvos',
-      description: 'Sua coleção pessoal de poemas favoritos.',
+      title: 'Biblioteca Pessoal',
+      description: 'Sua coleção pessoal de poemas favoritos e histórico de leitura.',
       type: 'website'
     });
 
     container.innerHTML = `
       <div class="favorites-page fade-in">
-        <header class="page-header">
-          <h1 class="page-title">Poemas Salvos</h1>
+        <header class="page-header" style="text-align: center; margin-bottom: var(--space-xl);">
+          <h1 class="page-title">Sua Biblioteca</h1>
           <p class="page-subtitle">Sua biblioteca pessoal disponível offline.</p>
         </header>
+
+        <div class="library-tabs">
+          <button id="tab-favorites" class="library-tab-btn active">Salvos</button>
+          <button id="tab-history" class="library-tab-btn">Histórico</button>
+        </div>
         
-        <div id="favorites-list" class="favorites-list">
-          <div class="loading-container">Carregando seus favoritos...</div>
+        <div id="library-content-container">
+          <div id="favorites-list" class="favorites-list">
+            <div class="loading-container">Carregando seus favoritos...</div>
+          </div>
         </div>
       </div>
     `;
 
-    const listContainer = document.getElementById('favorites-list');
+    const libraryContent = document.getElementById('library-content-container');
+    const tabFavorites = document.getElementById('tab-favorites');
+    const tabHistory = document.getElementById('tab-history');
     const BASE_URL = import.meta.env.BASE_URL;
+    let activeTab = 'favorites'; // 'favorites' or 'history'
 
-    const renderList = async () => {
+    const renderFavorites = async () => {
       const items = await favorites.list();
       
       if (items.length === 0) {
-        listContainer.innerHTML = `
+        libraryContent.innerHTML = `
           <div class="empty-state">
             <p class="empty-state-label">♡</p>
             <h2 class="empty-state-title">Nenhum poema salvo ainda.</h2>
@@ -45,36 +55,137 @@ export default {
         return;
       }
 
-      listContainer.innerHTML = items.map(poem => {
-        const year = new Date(poem.published_at).getFullYear();
-        return `
-          <article class="favorite-item">
-            <div class="favorite-content">
-              <a href="${BASE_URL}poema/${poem.slug}" data-link class="favorite-link">
-                <h3 class="favorite-title">${poem.title}</h3>
-                <p class="favorite-excerpt">${poem.excerpt || ''}</p>
-                <span class="favorite-year">${year}</span>
-              </a>
-            </div>
-            <button class="remove-fav-btn" data-slug="${poem.slug}" aria-label="Remover dos favoritos">
-              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            </button>
-          </article>
-        `;
-      }).join('');
+      libraryContent.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md); max-width: var(--container-main); margin-left:auto; margin-right:auto; width: 100%;">
+          <span style="font-size:0.85rem; color:var(--text-secondary); font-family:var(--font-ui);">${items.length} poema${items.length !== 1 ? 's' : ''} salvo${items.length !== 1 ? 's' : ''}</span>
+          <button id="export-pdf-btn" class="btn-secondary" style="font-size:0.75rem; padding: 6px 12px;">📄 Exportar PDF</button>
+        </div>
+        <div id="favorites-list" class="favorites-list">
+          ${items.map(poem => {
+            const year = new Date(poem.published_at).getFullYear();
+            return `
+              <article class="favorite-item">
+                <div class="favorite-content">
+                  <a href="${BASE_URL}poema/${poem.slug}" data-link class="favorite-link">
+                    <h3 class="favorite-title">${poem.title}</h3>
+                    <p class="favorite-excerpt">${poem.excerpt || ''}</p>
+                    <span class="favorite-year">${year}</span>
+                  </a>
+                </div>
+                <button class="remove-fav-btn" data-slug="${poem.slug}" aria-label="Remover dos favoritos">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </article>
+            `;
+          }).join('')}
+        </div>
+      `;
 
       // Add remove listeners
-      listContainer.querySelectorAll('.remove-fav-btn').forEach(btn => {
+      libraryContent.querySelectorAll('.remove-fav-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const slug = btn.dataset.slug;
           await favorites.remove(slug);
-          renderList();
+          renderFavorites();
           // Notify main.js to update header if needed
           window.dispatchEvent(new CustomEvent('favorites-updated'));
         });
       });
+
+      // Add PDF export listener
+      document.getElementById('export-pdf-btn')?.addEventListener('click', () => {
+        const printContainer = document.createElement('div');
+        printContainer.id = 'print-library-container';
+        
+        printContainer.innerHTML = items.map(poem => `
+          <div class="print-poem">
+            <h1 class="print-poem-title">${poem.title}</h1>
+            <div class="print-poem-content">${poem.content}</div>
+          </div>
+        `).join('');
+
+        document.body.appendChild(printContainer);
+        window.print();
+        
+        setTimeout(() => {
+          printContainer.remove();
+        }, 1000);
+      });
     };
 
-    renderList();
+    const renderHistory = async () => {
+      const items = await history.list();
+      
+      if (items.length === 0) {
+        libraryContent.innerHTML = `
+          <div class="empty-state">
+            <p class="empty-state-label">⏳</p>
+            <h2 class="empty-state-title">Nenhum poema lido recentemente.</h2>
+            <p class="empty-state-desc">Os poemas que você ler aparecerão aqui no histórico.</p>
+            <a href="${BASE_URL}" data-link class="btn-secondary" style="margin-top: var(--space-xl); display: inline-block;">Explorar Poemas</a>
+          </div>
+        `;
+        return;
+      }
+
+      libraryContent.innerHTML = `
+        <div class="history-clear-container">
+          <button id="clear-history-btn" class="btn-clear-history">Limpar Histórico</button>
+        </div>
+        <div id="history-list" class="favorites-list">
+          ${items.map(poem => {
+            const dateStr = new Date(poem.read_at).toLocaleString('pt-BR', { 
+              day: '2-digit', 
+              month: '2-digit', 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+            return `
+              <article class="favorite-item">
+                <div class="favorite-content">
+                  <a href="${BASE_URL}poema/${poem.slug}" data-link class="favorite-link">
+                    <h3 class="favorite-title">${poem.title}</h3>
+                    <p class="favorite-excerpt">${poem.excerpt || ''}</p>
+                    <span class="favorite-year">Lido em: ${dateStr}</span>
+                  </a>
+                </div>
+              </article>
+            `;
+          }).join('')}
+        </div>
+      `;
+
+      document.getElementById('clear-history-btn')?.addEventListener('click', async () => {
+        if (confirm('Deseja realmente limpar todo o histórico de leitura?')) {
+          await history.clear();
+          renderHistory();
+        }
+      });
+    };
+
+    const updateTabUI = () => {
+      if (activeTab === 'favorites') {
+        tabFavorites.classList.add('active');
+        tabHistory.classList.remove('active');
+        renderFavorites();
+      } else {
+        tabFavorites.classList.remove('active');
+        tabHistory.classList.add('active');
+        renderHistory();
+      }
+    };
+
+    tabFavorites.addEventListener('click', () => {
+      activeTab = 'favorites';
+      updateTabUI();
+    });
+
+    tabHistory.addEventListener('click', () => {
+      activeTab = 'history';
+      updateTabUI();
+    });
+
+    // Initial render
+    updateTabUI();
   }
 };

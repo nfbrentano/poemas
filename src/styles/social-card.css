@@ -3,8 +3,6 @@
 .social-card-layout {
   width: 1080px;
   height: 1350px; /* Vertical 4:5 format for Instagram */
-  background-color: var(--bg-primary, #050505);
-  color: var(--text-primary, #e2e2e2);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -13,6 +11,50 @@
   position: relative;
   font-family: var(--font-body, 'Lora', Georgia, serif);
   box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+/* Theme Options */
+.social-card-layout.theme-dark {
+  background: radial-gradient(circle, #121212 0%, #050505 100%);
+  color: #e2e2e2;
+}
+.social-card-layout.theme-dark::before {
+  border: 1px solid rgba(197, 168, 128, 0.2);
+}
+.social-card-layout.theme-dark .social-card-title {
+  color: #c5a880; /* Gold */
+}
+.social-card-layout.theme-dark .social-card-footer {
+  color: #8c8c8c;
+}
+
+.social-card-layout.theme-light {
+  background: radial-gradient(circle, #ffffff 0%, #f7f7f7 100%);
+  color: #1a1a1a;
+}
+.social-card-layout.theme-light::before {
+  border: 1px solid rgba(150, 125, 84, 0.15);
+}
+.social-card-layout.theme-light .social-card-title {
+  color: #967d54; /* Dark gold */
+}
+.social-card-layout.theme-light .social-card-footer {
+  color: #767676;
+}
+
+.social-card-layout.theme-sepia {
+  background: radial-gradient(circle, #fbf0d9 0%, #eae0c7 100%);
+  color: #433422;
+}
+.social-card-layout.theme-sepia::before {
+  border: 1px solid rgba(67, 52, 34, 0.12);
+}
+.social-card-layout.theme-sepia .social-card-title {
+  color: #6e502c;
+}
+.social-card-layout.theme-sepia .social-card-footer {
+  color: #8a7355;
 }
 
 .social-card-layout::before {
@@ -28,7 +70,7 @@
 .social-card-title {
   font-family: var(--font-display, 'Cormorant Garamond', Georgia, serif);
   font-size: 3.5rem;
-  color: var(--text-primary, #e2e2e2);
+  color: inherit;
   margin-bottom: 3rem;
   text-align: center;
   word-break: break-word;

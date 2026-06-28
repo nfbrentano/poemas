@@ -4,9 +4,10 @@ import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
 import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
-import { favorites } from '../utils/favorites.js';
+import { favorites, history } from '../utils/favorites.js';
 import { escapeHtml } from '../utils/html.js';
 import { toast } from '../components/toast.js';
+import { notes } from '../utils/notes.js';
 
 function throttle(func, limit) {
   let inThrottle;
@@ -27,6 +28,8 @@ let handleScroll = null;
 let handleTouchStart = null;
 let handleTouchEnd = null;
 let handleKeydown = null;
+let isExportingQuote = false;
+let quoteText = '';
 
 export default {
   meta: {
@@ -43,6 +46,8 @@ export default {
     handleTouchStart = null;
     handleTouchEnd = null;
     handleKeydown = null;
+    isExportingQuote = false;
+    quoteText = '';
   },
   async render(container, params) {
     const slug = params.slug;
@@ -102,6 +107,14 @@ export default {
     const prevTitle = poem.prev_title;
     const nextTitle = poem.next_title;
 
+    // Adicionar ao histórico de leitura
+    try {
+      history.add(poem);
+      window.dispatchEvent(new CustomEvent('history-updated'));
+    } catch (err) {
+      console.error('Erro ao salvar no histórico:', err);
+    }
+
     // Tempo Estimado de Leitura
     const plainText = (poem.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     const wordCount = plainText.split(' ').filter(w => w.length > 0).length;
@@ -133,13 +146,20 @@ export default {
     // Check if user is logged in (to show admin buttons)
     const { data: { session } } = await supabase.auth.getSession();
     const isAdmin = !!session;
-    
-    // Formatar poema para animação de estrofes (staggered reveal)
+     // Formatar poema para animação de linhas (staggered reveal)
     const formatPoemForAnimation = (content) => {
       if (!content) return '';
       // Divide por quebras de linha duplas (estrofes)
       const stanzas = content.split(/\n\s*\n/).filter(s => s.trim());
-      return stanzas.map(stanza => `<div class="stanza stagger-reveal">${stanza}</div>`).join('');
+      let lineIndex = 0;
+      return stanzas.map(stanza => {
+        const lines = stanza.split('\n');
+        const linesHtml = lines.map(line => {
+          lineIndex++;
+          return `<span class="line-reveal" style="transition-delay: ${lineIndex * 0.05}s">${line}</span>`;
+        }).join('');
+        return `<div class="stanza stagger-reveal">${linesHtml}</div>`;
+      }).join('');
     };
     
     const formattedContent = formatPoemForAnimation(poem.content);
@@ -221,6 +241,16 @@ export default {
             </form>
           </div>
 
+          <!-- Painel de Notas Pessoais -->
+          <div id="notes-panel" class="notes-panel" style="display: none;">
+            <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-xs); color: var(--text-secondary);">Minha percepção íntima (salva offline)</p>
+            <textarea id="note-textarea" placeholder="Escreva suas impressões mais íntimas sobre este poema..." style="width: 100%; min-height: 120px; background: transparent; border: none; resize: vertical; outline: none; font-family: var(--font-poem); line-height: 1.6; color: var(--text-primary); margin-bottom: var(--space-xs);"></textarea>
+            <div style="display: flex; gap: var(--space-xs); justify-content: flex-end;">
+              <button id="delete-note-btn" class="btn-secondary" style="font-size: 0.75rem; color: var(--error);">Excluir</button>
+              <button id="save-note-btn" class="btn-primary" style="font-size: 0.75rem;">Salvar Nota</button>
+            </div>
+          </div>
+
           <div class="poem-actions">
             <div class="ambient-audio-controls">
               <button class="ambient-btn" data-sound="silence" title="Silêncio">Mudo</button>
@@ -242,13 +272,20 @@ export default {
               <span class="fav-icon">♡</span> <span class="fav-text">Salvar</span>
             </button>
             
+            <button id="note-btn" class="btn-secondary" aria-label="Anotações pessoais">
+              <span class="note-icon">✏</span> <span class="note-text">Anotar</span>
+            </button>
+            
+            <button id="share-card-btn" class="btn-secondary" aria-label="Gerar card para compartilhar">
+              🖼 Compartilhar Card
+            </button>
+            
             <button id="immersive-btn" class="btn-secondary" aria-label="Modo leitura imersiva">
               ⬜ Leitura Imersiva
             </button>
             
             ${isAdmin ? `
               <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" data-link>Editar Obra</a>
-              <button id="export-ig-btn" class="btn-secondary">Gerar Card Instagram</button>
               <button id="resend-email-btn" class="btn-secondary">Reenviar Email</button>
             ` : ''}
           </div>
@@ -269,6 +306,7 @@ export default {
         <div id="highlight-tooltip" class="highlight-tooltip">
           <button id="highlight-copy-btn" class="highlight-btn">Copiar</button>
           <button id="highlight-share-btn" class="highlight-btn">Compartilhar</button>
+          <button id="highlight-card-btn" class="highlight-btn">Gerar Card</button>
         </div>
 
         <div class="poem-nav">
@@ -287,6 +325,44 @@ export default {
             <span class="nav-btn-label">Próximo →</span>
             <span class="nav-btn-title">${nextTitle || ''}</span>
           </button>
+        </div>
+
+        <!-- Painel de Controle da Leitura Imersiva -->
+        <div id="immersive-control-panel" class="immersive-control-panel">
+          <div class="immersive-panel-row">
+            <label for="immersive-size-slider">Tamanho do texto</label>
+            <div class="slider-wrapper">
+              <input type="range" id="immersive-size-slider" min="16" max="32" value="20" step="1">
+              <span id="immersive-size-value" class="immersive-panel-value">20px</span>
+            </div>
+          </div>
+          <div class="immersive-panel-row">
+            <label for="immersive-height-slider">Espaçamento</label>
+            <div class="slider-wrapper">
+              <input type="range" id="immersive-height-slider" min="15" max="30" value="22" step="1">
+              <span id="immersive-height-value" class="immersive-panel-value">2.2</span>
+            </div>
+          </div>
+          <button id="immersive-exit-btn" class="btn-secondary" style="width: 100%; margin-top: var(--space-xs);">✕ Sair da Leitura</button>
+        </div>
+
+        <!-- Modal de Preview do Card -->
+        <div id="card-preview-modal" class="card-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3000; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+          <div class="card-preview-content" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 8px; padding: var(--space-lg); max-width: 420px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); font-family: var(--font-ui);">
+            <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: var(--space-sm); color: var(--text-primary);">Exportar Card</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: var(--space-md);">Escolha um estilo visual para o card antes do download.</p>
+            
+            <div class="theme-selector" style="display: flex; justify-content: center; gap: var(--space-sm); margin-bottom: var(--space-lg);">
+              <button class="preview-theme-btn active" data-theme="dark" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-strong); background: #050505; color: #e2e2e2; cursor: pointer; font-size: 0.8rem;">Escuro</button>
+              <button class="preview-theme-btn" data-theme="light" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-subtle); background: #fdfdfd; color: #1a1a1a; cursor: pointer; font-size: 0.8rem;">Claro</button>
+              <button class="preview-theme-btn" data-theme="sepia" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-subtle); background: #eae0c7; color: #433422; cursor: pointer; font-size: 0.8rem;">Sépia</button>
+            </div>
+
+            <div style="display: flex; gap: var(--space-xs); justify-content: center;">
+              <button id="close-preview-btn" class="btn-secondary" style="padding: var(--space-xs) var(--space-md); font-size: 0.85rem;">Cancelar</button>
+              <button id="download-card-btn" class="btn-primary" style="padding: var(--space-xs) var(--space-md); font-size: 0.85rem;">Baixar Imagem</button>
+            </div>
+          </div>
         </div>
       </div>
       <div id="immersive-hint" class="immersive-hint">Deslize para navegar →</div>
@@ -472,6 +548,11 @@ export default {
       } else {
         await favorites.save(poem);
         toast.show('Obra salva com sucesso.', 'heart');
+        
+        // Proactively fetch for Service Worker caching
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          fetch(`${import.meta.env.BASE_URL}poema/${poem.slug}`).catch(() => {});
+        }
       }
       updateFavUI();
       
@@ -487,40 +568,129 @@ export default {
 
     // Immersive Mode Logic
     const immersiveBtn = document.getElementById('immersive-btn');
+    const immersiveExitBtn = document.getElementById('immersive-exit-btn');
+    const sizeSlider = document.getElementById('immersive-size-slider');
+    const sizeValue = document.getElementById('immersive-size-value');
+    const heightSlider = document.getElementById('immersive-height-slider');
+    const heightValue = document.getElementById('immersive-height-value');
+    const poemTextEl = document.getElementById('poem-text');
     let isImmersive = false;
+
+    // Load initial values from localStorage or default
+    const savedImmersiveSize = localStorage.getItem('immersive-reading-font-size') || '20';
+    const savedImmersiveHeight = localStorage.getItem('immersive-reading-line-height') || '22';
+
+    // Apply values to css custom properties on the poem text element
+    if (poemTextEl) {
+      poemTextEl.style.setProperty('--immersive-font-size', `${savedImmersiveSize}px`);
+      poemTextEl.style.setProperty('--immersive-line-height', `${parseFloat(savedImmersiveHeight) / 10}`);
+    }
+
+    if (sizeSlider && sizeValue) {
+      sizeSlider.value = savedImmersiveSize;
+      sizeValue.textContent = `${savedImmersiveSize}px`;
+      sizeSlider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        sizeValue.textContent = `${val}px`;
+        poemTextEl?.style.setProperty('--immersive-font-size', `${val}px`);
+        localStorage.setItem('immersive-reading-font-size', val);
+      });
+    }
+
+    if (heightSlider && heightValue) {
+      heightSlider.value = savedImmersiveHeight;
+      heightValue.textContent = `${(parseFloat(savedImmersiveHeight) / 10).toFixed(1)}`;
+      heightSlider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        const lh = (parseFloat(val) / 10).toFixed(1);
+        heightValue.textContent = lh;
+        poemTextEl?.style.setProperty('--immersive-line-height', lh);
+        localStorage.setItem('immersive-reading-line-height', val);
+      });
+    }
 
     const enterImmersive = () => {
       isImmersive = true;
       document.documentElement.classList.add('immersive-mode');
-      immersiveBtn.innerHTML = '✕ Sair da Leitura';
-      immersiveBtn.setAttribute('aria-label', 'Sair do modo leitura imersiva');
+      
+      // Show gesture hint on first time
+      const hintShown = localStorage.getItem('immersive-hint-shown');
+      if (!hintShown) {
+        const hint = document.getElementById('immersive-hint');
+        if (hint) {
+          hint.classList.add('visible');
+          setTimeout(() => {
+            hint.classList.remove('visible');
+            localStorage.setItem('immersive-hint-shown', 'true');
+          }, 3000);
+        }
+      }
     };
 
     const exitImmersive = () => {
       isImmersive = false;
       document.documentElement.classList.remove('immersive-mode');
-      immersiveBtn.innerHTML = '⬜ Leitura Imersiva';
-      immersiveBtn.setAttribute('aria-label', 'Modo leitura imersiva');
     };
 
-    immersiveBtn?.addEventListener('click', () => {
-      if (isImmersive) {
-        exitImmersive();
-      } else {
-        enterImmersive();
+    immersiveBtn?.addEventListener('click', enterImmersive);
+    immersiveExitBtn?.addEventListener('click', exitImmersive);
+
+    // Personal Notes Logic
+    const noteBtn = document.getElementById('note-btn');
+    const notesPanel = document.getElementById('notes-panel');
+    const noteTextarea = document.getElementById('note-textarea');
+    const saveNoteBtn = document.getElementById('save-note-btn');
+    const deleteNoteBtn = document.getElementById('delete-note-btn');
+
+    const updateNotesUI = async () => {
+      try {
+        const savedNote = await notes.get(slug);
+        if (noteTextarea) noteTextarea.value = savedNote || '';
         
-        // Show gesture hint on first time
-        const hintShown = localStorage.getItem('immersive-hint-shown');
-        if (!hintShown) {
-          const hint = document.getElementById('immersive-hint');
-          if (hint) {
-            hint.classList.add('visible');
-            setTimeout(() => {
-              hint.classList.remove('visible');
-              localStorage.setItem('immersive-hint-shown', 'true');
-            }, 3000);
-          }
+        const hasContent = !!savedNote;
+        if (notesPanel) notesPanel.classList.toggle('has-content', hasContent);
+        if (noteBtn) noteBtn.classList.toggle('active', hasContent);
+      } catch (err) {
+        console.error('Erro ao ler notas:', err);
+      }
+    };
+    updateNotesUI();
+
+    noteBtn?.addEventListener('click', () => {
+      if (notesPanel) {
+        const isHidden = notesPanel.style.display === 'none';
+        notesPanel.style.display = isHidden ? 'block' : 'none';
+        if (isHidden && noteTextarea) {
+          noteTextarea.focus();
         }
+      }
+    });
+
+    saveNoteBtn?.addEventListener('click', async () => {
+      const val = noteTextarea.value.trim();
+      if (!val) {
+        toast.show('Escreva algo para salvar ou use Excluir.', 'info');
+        return;
+      }
+      try {
+        await notes.save(slug, val);
+        toast.show('Sua percepção foi salva offline.', 'success');
+        updateNotesUI();
+      } catch (err) {
+        toast.show('Erro ao salvar nota.', 'error');
+      }
+    });
+
+    deleteNoteBtn?.addEventListener('click', async () => {
+      if (!confirm('Deseja excluir sua anotação pessoal?')) return;
+      try {
+        await notes.delete(slug);
+        if (noteTextarea) noteTextarea.value = '';
+        toast.show('Anotação excluída.', 'info');
+        updateNotesUI();
+        if (notesPanel) notesPanel.style.display = 'none';
+      } catch (err) {
+        toast.show('Erro ao excluir nota.', 'error');
       }
     });
 
@@ -646,11 +816,23 @@ export default {
     });
 
     document.getElementById('highlight-share-btn')?.addEventListener('click', () => {
-      const textToShare = `"${selectedText}" — Natanael Brentano\\n${window.location.href}`;
+      const textToShare = `"${selectedText}" — Natanael Brentano\n${window.location.href}`;
       const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}`;
       window.open(url, '_blank', 'noopener,noreferrer');
       window.getSelection().removeAllRanges();
       tooltip.classList.remove('visible');
+    });
+
+    document.getElementById('highlight-card-btn')?.addEventListener('click', () => {
+      window.getSelection().removeAllRanges();
+      tooltip.classList.remove('visible');
+      isExportingQuote = true;
+      quoteText = selectedText;
+      const previewModal = document.getElementById('card-preview-modal');
+      if (previewModal) {
+        previewModal.style.display = 'flex';
+        previewModal.classList.add('active');
+      }
     });
 
     // Atalhos de teclado
@@ -674,7 +856,11 @@ export default {
           break;
         case 'i':
         case 'I':
-          immersiveBtn?.click();
+          if (isImmersive) {
+            exitImmersive();
+          } else {
+            enterImmersive();
+          }
           break;
       }
     };
@@ -747,23 +933,60 @@ export default {
     // Newsletter form logic
     newsletter.init();
 
-    if (isAdmin) {
-      const exportBtn = document.getElementById('export-ig-btn');
-      exportBtn.addEventListener('click', async () => {
-        exportBtn.innerText = 'Gerando...';
-        exportBtn.disabled = true;
-        try {
-          const { generateSocialCard } = await import('../utils/social-export.js');
-          await generateSocialCard(poem, document.getElementById('social-card-container'));
-        } catch (e) {
-          console.error(e);
-          alert('Erro ao gerar imagem.');
-        } finally {
-          exportBtn.innerText = 'Exportar p/ Instagram';
-          exportBtn.disabled = false;
-        }
-      });
+    // Card Export Preview Modal Logic
+    const shareCardBtn = document.getElementById('share-card-btn');
+    const previewModal = document.getElementById('card-preview-modal');
+    const closePreviewBtn = document.getElementById('close-preview-btn');
+    const downloadCardBtn = document.getElementById('download-card-btn');
+    const themeBtns = container.querySelectorAll('.preview-theme-btn');
+    let selectedExportTheme = 'dark';
 
+    shareCardBtn?.addEventListener('click', () => {
+      if (previewModal) {
+        previewModal.style.display = 'flex';
+        previewModal.classList.add('active');
+      }
+    });
+
+    closePreviewBtn?.addEventListener('click', () => {
+      if (previewModal) {
+        previewModal.style.display = 'none';
+        previewModal.classList.remove('active');
+      }
+    });
+
+    themeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        themeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedExportTheme = btn.dataset.theme;
+      });
+    });
+
+    downloadCardBtn?.addEventListener('click', async () => {
+      downloadCardBtn.innerText = 'Gerando...';
+      downloadCardBtn.disabled = true;
+      try {
+        const { generateSocialCard } = await import('../utils/social-export.js');
+        const textToExport = isExportingQuote ? quoteText : null;
+        await generateSocialCard(poem, document.getElementById('social-card-container'), selectedExportTheme, textToExport);
+        toast.show('Card gerado com sucesso!', 'success');
+      } catch (err) {
+        console.error(err);
+        toast.show('Erro ao gerar card.', 'error');
+      } finally {
+        downloadCardBtn.innerText = 'Baixar Imagem';
+        downloadCardBtn.disabled = false;
+        isExportingQuote = false;
+        quoteText = '';
+        if (previewModal) {
+          previewModal.style.display = 'none';
+          previewModal.classList.remove('active');
+        }
+      }
+    });
+
+    if (isAdmin) {
       const resendBtn = document.getElementById('resend-email-btn');
       if (resendBtn) {
         resendBtn.addEventListener('click', async () => {
@@ -793,5 +1016,19 @@ export default {
         });
       }
     }
+
+    // Prefetch adjacent routes
+    const prefetchRoutes = () => {
+      const BASE_URL = import.meta.env.BASE_URL;
+      const slugsToPrefetch = [prevSlug, nextSlug].filter(Boolean);
+      
+      slugsToPrefetch.forEach(s => {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = `${window.location.origin}${BASE_URL}poema/${s}`;
+        document.head.appendChild(link);
+      });
+    };
+    setTimeout(prefetchRoutes, 2000);
   }
 };
