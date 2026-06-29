@@ -9,6 +9,12 @@
   
   <!-- Poems -->
   <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/inerente</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://nfbrentano.github.io/poemas/poema/o-abraco</loc>
     <lastmod>2026-06-26</lastmod>
     <changefreq>monthly</changefreq>

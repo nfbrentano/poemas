@@ -208,6 +208,9 @@ export default {
               <button class="share-btn facebook" aria-label="Compartilhar no Facebook" data-platform="facebook">Facebook</button>
               <button id="web-share-btn" class="share-btn generic" aria-label="Mais opções de compartilhamento">Compartilhar...</button>
             </div>
+            <div class="instagram-cta" style="margin-top: var(--space-md); text-align: center; font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-ui); letter-spacing: 0.5px;">
+              Gostou do poema? Acompanhe também no Instagram: <a href="https://instagram.com/nfgbrentano" target="_blank" rel="noopener" class="instagram-link" style="color: var(--accent-subtle, var(--text-primary)); text-decoration: none; border-bottom: 1px solid currentColor; font-weight: 500; transition: opacity 0.2s;">@nfgbrentano</a>
+            </div>
           </div>
 
           <div class="reactions-section">
@@ -317,7 +320,7 @@ export default {
           
           <div class="nav-center">
             <div class="nav-footer-text">
-              &copy; ${new Date().getFullYear()} Natanael Brentano. Todos os direitos reservados.
+              &copy; ${new Date().getFullYear()} Natanael Brentano <span class="footer-separator">•</span> <a href="https://instagram.com/nfgbrentano" target="_blank" rel="noopener" class="footer-social-link" style="letter-spacing: 0.5px; text-transform: none; display: inline-flex; align-items: center; gap: 4px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align: middle;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> @nfgbrentano</a>
             </div>
           </div>
           
@@ -356,6 +359,12 @@ export default {
               <button class="preview-theme-btn active" data-theme="dark" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-strong); background: #050505; color: #e2e2e2; cursor: pointer; font-size: 0.8rem;">Escuro</button>
               <button class="preview-theme-btn" data-theme="light" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-subtle); background: #fdfdfd; color: #1a1a1a; cursor: pointer; font-size: 0.8rem;">Claro</button>
               <button class="preview-theme-btn" data-theme="sepia" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-subtle); background: #eae0c7; color: #433422; cursor: pointer; font-size: 0.8rem;">Sépia</button>
+            </div>
+
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: var(--space-md) 0 var(--space-xs) 0;">Formato do Card:</p>
+            <div class="ratio-selector" style="display: flex; justify-content: center; gap: var(--space-sm); margin-bottom: var(--space-lg);">
+              <button class="preview-ratio-btn active" data-ratio="feed" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); cursor: pointer; font-size: 0.8rem;">Feed (4:5)</button>
+              <button class="preview-ratio-btn" data-ratio="stories" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-subtle); background: var(--bg-primary); color: var(--text-primary); cursor: pointer; font-size: 0.8rem;">Stories (9:16)</button>
             </div>
 
             <div style="display: flex; gap: var(--space-xs); justify-content: center;">
@@ -939,7 +948,9 @@ export default {
     const closePreviewBtn = document.getElementById('close-preview-btn');
     const downloadCardBtn = document.getElementById('download-card-btn');
     const themeBtns = container.querySelectorAll('.preview-theme-btn');
+    const ratioBtns = container.querySelectorAll('.preview-ratio-btn');
     let selectedExportTheme = 'dark';
+    let selectedExportRatio = 'feed';
 
     shareCardBtn?.addEventListener('click', () => {
       if (previewModal) {
@@ -963,13 +974,25 @@ export default {
       });
     });
 
+    ratioBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        ratioBtns.forEach(b => {
+          b.classList.remove('active');
+          b.style.borderColor = 'var(--border-subtle)';
+        });
+        btn.classList.add('active');
+        btn.style.borderColor = 'var(--border-strong)';
+        selectedExportRatio = btn.dataset.ratio;
+      });
+    });
+
     downloadCardBtn?.addEventListener('click', async () => {
       downloadCardBtn.innerText = 'Gerando...';
       downloadCardBtn.disabled = true;
       try {
         const { generateSocialCard } = await import('../utils/social-export.js');
         const textToExport = isExportingQuote ? quoteText : null;
-        await generateSocialCard(poem, document.getElementById('social-card-container'), selectedExportTheme, textToExport);
+        await generateSocialCard(poem, document.getElementById('social-card-container'), selectedExportTheme, textToExport, selectedExportRatio);
         toast.show('Card gerado com sucesso!', 'success');
       } catch (err) {
         console.error(err);

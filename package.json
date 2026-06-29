@@ -7,7 +7,7 @@
     "dev": "vite",
     "sitemap": "node --env-file=.env.local scripts/generate-sitemap.js || node scripts/generate-sitemap.js",
     "rss": "node --env-file=.env.local scripts/generate-rss.js || node scripts/generate-rss.js",
-    "build": "npm run sitemap && npm run rss && vite build",
+    "build": "npm run sitemap && npm run rss && vite build && (node --env-file=.env.local scripts/prerender.js || node scripts/prerender.js)",
     "deploy": "npm run build && gh-pages -d dist",
     "preview": "vite preview",
     "test": "vitest"

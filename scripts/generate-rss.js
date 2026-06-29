@@ -26,13 +26,32 @@ function escapeXml(unsafe) {
   });
 }
 
+function cleanHtml(html) {
+  if (!html) return '';
+  return html
+    .replace(/<br\s*[\/]?>/gi, '\n')
+    .replace(/<\/p>\s*<p>/gi, '\n\n')
+    .replace(/<\/?p>/gi, '')
+    .replace(/<[^>]*>/g, '')
+    .trim();
+}
+
+function getExcerpt(poem, limit = 160) {
+  if (poem.excerpt && poem.excerpt.trim()) {
+    return poem.excerpt.trim();
+  }
+  const cleanContent = cleanHtml(poem.content);
+  if (cleanContent.length <= limit) return cleanContent;
+  return cleanContent.slice(0, limit - 3) + '...';
+}
+
 async function generateRss() {
   try {
     console.log('Fetching published poems for RSS feed...');
     
     const { data: poems, error } = await supabase
       .from('poems')
-      .select('slug, title, excerpt, published_at')
+      .select('slug, title, excerpt, content, published_at')
       .eq('status', 'published')
       .order('published_at', { ascending: false });
 
@@ -58,7 +77,7 @@ ${poems.map(poem => `    <item>
       <title>${escapeXml(poem.title || '')}</title>
       <link>${baseUrl}poema/${poem.slug}</link>
       <guid>${baseUrl}poema/${poem.slug}</guid>
-      <description>${escapeXml(poem.excerpt || '')}</description>
+      <description>${escapeXml(getExcerpt(poem))}</description>
       <pubDate>${new Date(poem.published_at).toUTCString()}</pubDate>
     </item>`).join('\n')}
   </channel>

@@ -1,8 +1,6 @@
 /* social-card.css - specific for the Instagram export */
 
 .social-card-layout {
-  width: 1080px;
-  height: 1350px; /* Vertical 4:5 format for Instagram */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -12,6 +10,29 @@
   font-family: var(--font-body, 'Lora', Georgia, serif);
   box-sizing: border-box;
   transition: all 0.3s ease;
+}
+
+/* Aspect Ratio Options */
+.social-card-layout.ratio-feed {
+  width: 1080px;
+  height: 1350px; /* Vertical 4:5 format for Instagram */
+}
+
+.social-card-layout.ratio-stories {
+  width: 1080px;
+  height: 1920px; /* Vertical 9:16 format for Stories */
+  padding: 180px 120px;
+}
+
+.social-card-layout.ratio-stories::before {
+  top: 80px;
+  left: 80px;
+  right: 80px;
+  bottom: 80px;
+}
+
+.social-card-layout.ratio-stories .social-card-footer {
+  bottom: 180px;
 }
 
 /* Theme Options */
@@ -98,8 +119,23 @@
   position: absolute;
   bottom: 120px;
   font-family: var(--font-ui, 'Inter', sans-serif);
-  font-size: 1.2rem;
   color: var(--text-muted, #555555);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-author {
+  font-size: 1.3rem;
   text-transform: uppercase;
   letter-spacing: 6px;
+  font-weight: 500;
+}
+
+.card-meta {
+  font-size: 0.95rem;
+  letter-spacing: 2px;
+  opacity: 0.85;
 }

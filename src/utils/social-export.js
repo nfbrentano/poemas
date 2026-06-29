@@ -1,7 +1,7 @@
 import html2canvas from 'html2canvas';
 import '../styles/social-card.css';
 
-export async function generateSocialCard(poem, container, theme = 'dark', customText = null) {
+export async function generateSocialCard(poem, container, theme = 'dark', customText = null, aspectRatio = 'feed') {
   let displayContent = customText || poem.excerpt;
   if (!displayContent) {
     let html = poem.content
@@ -32,10 +32,13 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
   const displayTitle = customText ? `De “${poem.title}”` : poem.title;
   
   container.innerHTML = `
-    <div class="social-card-layout theme-${theme}" id="social-card-render">
+    <div class="social-card-layout theme-${theme} ratio-${aspectRatio}" id="social-card-render">
       <h1 class="social-card-title">${displayTitle}</h1>
       <div class="social-card-content" id="social-card-text" style="${customText ? 'font-style: italic;' : ''}">${displayContent}</div>
-      <div class="social-card-footer">Natanael Brentano</div>
+      <div class="social-card-footer">
+        <div class="card-author">Natanael Brentano</div>
+        <div class="card-meta">@nfgbrentano &nbsp;•&nbsp; nfbrentano.github.io/poemas</div>
+      </div>
     </div>
   `;
   
@@ -45,10 +48,11 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
   // Wait a small tick to ensure fonts are applied
   await new Promise(r => setTimeout(r, 100));
   
-  // Auto-resize font to fit the container (max ~850px height available for text in vertical format)
-  let fontSize = 2.5;
+  // Auto-resize font to fit the container (max height available for text: ~850px for 4:5, ~1350px for 9:16)
+  const maxContentHeight = aspectRatio === 'stories' ? 1300 : 850;
+  let fontSize = aspectRatio === 'stories' ? 2.8 : 2.5;
   textEl.style.fontSize = `${fontSize}rem`;
-  while (textEl.scrollHeight > 850 && fontSize > 0.8) {
+  while (textEl.scrollHeight > maxContentHeight && fontSize > 0.8) {
     fontSize -= 0.1;
     textEl.style.fontSize = `${fontSize}rem`;
   }
@@ -66,7 +70,7 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
   });
   
   // Download logic
-  const filename = customText ? `citacao-${poem.slug}-${theme}.png` : `poema-${poem.slug}-${theme}.png`;
+  const filename = customText ? `citacao-${poem.slug}-${theme}-${aspectRatio}.png` : `poema-${poem.slug}-${theme}-${aspectRatio}.png`;
   const link = document.createElement('a');
   link.download = filename;
   link.href = canvas.toDataURL('image/png');

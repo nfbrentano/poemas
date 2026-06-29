@@ -79,7 +79,11 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
       "inLanguage": "pt-BR",
       "headline": title,
       "description": finalDesc,
-      "author": { "@type": "Person", "name": "Natanael Brentano" },
+      "author": { 
+        "@type": "Person", 
+        "name": "Natanael Brentano",
+        "sameAs": ["https://instagram.com/nfgbrentano"]
+      },
       "datePublished": publishedTime ? new Date(publishedTime).toISOString() : undefined,
       "url": finalUrl,
       "image": finalImage

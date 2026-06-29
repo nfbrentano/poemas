@@ -196,13 +196,61 @@ input:focus, textarea:focus, select:focus {
 }
 
 .site-footer {
-  text-align: center;
   padding: var(--space-xl) 0 calc(var(--space-xl) + env(safe-area-inset-bottom, 0px));
   color: var(--text-muted);
   font-family: var(--font-ui);
   font-size: 0.8rem;
   letter-spacing: 1px;
   border-top: 1px solid var(--border-subtle);
+}
+
+.footer-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.footer-social-link:hover {
+  color: var(--accent-subtle, var(--text-primary));
+  transform: translateY(-1px);
+}
+
+.footer-icon {
+  stroke-width: 1.5px;
+}
+
+.footer-separator {
+  color: var(--border-subtle);
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .footer-grid {
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+  }
+  .footer-social {
+    justify-content: center;
+  }
 }
 
 body.is-poem-page .site-footer {
