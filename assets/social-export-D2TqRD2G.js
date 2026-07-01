@@ -13,11 +13,11 @@ ${d}
 `).map(e=>e.trim());for(;r.length>0&&r[0]===``;)r.shift();a=r.join(`
 `).trim()}r&&(a=`“ ${a} ”`),t.innerHTML=`
     <div class="social-card-layout theme-${n} ratio-${i}" id="social-card-render">
-      <h1 class="social-card-title">${r?`De “${e.title}”`:e.title}</h1>
+      <h1 class="social-card-title" style="color: ${{dark:`#c5a880`,light:`#967d54`,sepia:`#6e502c`}[n]||`#c5a880`};">${(r?`De “${e.title}”`:e.title)||`Poema`}</h1>
       <div class="social-card-content" id="social-card-text" style="${r?`font-style: italic;`:``}">${a}</div>
       <div class="social-card-footer">
         <div class="card-author">Natanael Brentano</div>
         <div class="card-meta">@nfgbrentano &nbsp;•&nbsp; nfbrentano.github.io/poemas</div>
       </div>
     </div>
-  `;let o=document.getElementById(`social-card-render`),s=document.getElementById(`social-card-text`);await new Promise(e=>setTimeout(e,100));let c=i===`stories`?1300:850,l=i===`stories`?2.8:2.5;for(s.style.fontSize=`${l}rem`;s.scrollHeight>c&&l>.8;)l-=.1,s.style.fontSize=`${l}rem`;let u=await $.toBlob(o,{type:`png`,scale:2}),d=r?`citacao-${e.slug}-${n}-${i}.png`:`poema-${e.slug}-${n}-${i}.png`,f=document.createElement(`a`);f.download=d;let p=URL.createObjectURL(u);f.href=p,f.click(),URL.revokeObjectURL(p),t.innerHTML=``}export{fi as generateSocialCard};
+  `;let o=document.getElementById(`social-card-render`),s=document.getElementById(`social-card-text`);await new Promise(e=>setTimeout(e,100));let c=i===`stories`?1300:850,l=i===`stories`?45:40;for(s.style.fontSize=`${l}px`;s.scrollHeight>c&&l>14;)l-=1.5,s.style.fontSize=`${l}px`;let u=await $.toBlob(o,{type:`png`,scale:2}),d=r?`citacao-${e.slug}-${n}-${i}.png`:`poema-${e.slug}-${n}-${i}.png`,f=document.createElement(`a`);f.download=d;let p=URL.createObjectURL(u);f.href=p,f.click(),URL.revokeObjectURL(p),t.innerHTML=``}export{fi as generateSocialCard};
