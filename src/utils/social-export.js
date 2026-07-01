@@ -29,11 +29,17 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
     displayContent = `“ ${displayContent} ”`;
   }
   
-  const displayTitle = customText ? `De “${poem.title}”` : poem.title;
+  const titleColors = {
+    dark: '#c5a880',
+    light: '#967d54',
+    sepia: '#6e502c'
+  };
+  const titleColor = titleColors[theme] || '#c5a880';
+  const displayTitle = (customText ? `De “${poem.title}”` : poem.title) || 'Poema';
   
   container.innerHTML = `
     <div class="social-card-layout theme-${theme} ratio-${aspectRatio}" id="social-card-render">
-      <h1 class="social-card-title">${displayTitle}</h1>
+      <h1 class="social-card-title" style="color: ${titleColor};">${displayTitle}</h1>
       <div class="social-card-content" id="social-card-text" style="${customText ? 'font-style: italic;' : ''}">${displayContent}</div>
       <div class="social-card-footer">
         <div class="card-author">Natanael Brentano</div>
@@ -50,11 +56,11 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
   
   // Auto-resize font to fit the container (max height available for text: ~850px for 4:5, ~1350px for 9:16)
   const maxContentHeight = aspectRatio === 'stories' ? 1300 : 850;
-  let fontSize = aspectRatio === 'stories' ? 2.8 : 2.5;
-  textEl.style.fontSize = `${fontSize}rem`;
-  while (textEl.scrollHeight > maxContentHeight && fontSize > 0.8) {
-    fontSize -= 0.1;
-    textEl.style.fontSize = `${fontSize}rem`;
+  let fontSize = aspectRatio === 'stories' ? 45 : 40; // Use px instead of rem to avoid isolated SVG rendering issues
+  textEl.style.fontSize = `${fontSize}px`;
+  while (textEl.scrollHeight > maxContentHeight && fontSize > 14) {
+    fontSize -= 1.5;
+    textEl.style.fontSize = `${fontSize}px`;
   }
 
   const bgColors = {

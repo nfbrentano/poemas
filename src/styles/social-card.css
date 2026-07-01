@@ -90,21 +90,21 @@
 
 .social-card-title {
   font-family: var(--font-display, 'Cormorant Garamond', Georgia, serif);
-  font-size: 3.5rem;
+  font-size: 56px;
   color: inherit;
-  margin-bottom: 3rem;
+  margin-bottom: 48px;
   text-align: center;
   word-break: break-word;
   overflow-wrap: break-word;
   max-height: 250px;
   overflow: hidden;
-  font-weight: 300;
+  font-weight: 400; /* Regular weight, which is loaded */
   letter-spacing: -1px;
 }
 
 .social-card-content {
   font-family: var(--font-poem, serif);
-  font-size: 2.5rem;
+  font-size: 40px;
   line-height: 1.8;
   text-align: center;
   max-width: 840px;
@@ -128,14 +128,14 @@
 }
 
 .card-author {
-  font-size: 1.3rem;
+  font-size: 21px;
   text-transform: uppercase;
   letter-spacing: 6px;
   font-weight: 500;
 }
 
 .card-meta {
-  font-size: 0.95rem;
+  font-size: 15px;
   letter-spacing: 2px;
   opacity: 0.85;
 }
