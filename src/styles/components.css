@@ -1241,6 +1241,10 @@ html.immersive-mode #immersive-btn {
   color: var(--text-muted);
   border-radius: 4px;
   border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .font-btn:hover {
@@ -1461,15 +1465,15 @@ html.immersive-mode #immersive-btn {
   transform: translateY(0);
 }
 
-/* Drop Cap for first stanza */
-html:not(.font-family-hand) .poem-content .stanza:first-child .line-reveal:first-child::first-letter {
+/* Drop Cap for first stanza - only when left-aligned to preserve verse structure */
+html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child .line-reveal:first-child::first-letter {
   font-family: var(--font-display);
-  font-size: 3.5em;
-  float: left;
-  line-height: 0.8;
-  margin-right: 0.1em;
-  margin-top: 0.05em;
+  font-size: 2.2em;
   color: var(--accent-subtle);
+  margin-right: 0.05em;
+  font-weight: 300;
+  vertical-align: baseline;
+  display: inline;
 }
 
 
@@ -2538,6 +2542,7 @@ html.immersive-mode .immersive-control-panel {
   flex: 1;
   height: 4px;
   -webkit-appearance: none;
+  appearance: none;
   background: var(--border-strong);
   border-radius: 2px;
   outline: none;
@@ -2547,6 +2552,7 @@ html.immersive-mode .immersive-control-panel {
 
 .immersive-panel-row input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
+  appearance: none;
   width: 14px;
   height: 14px;
   background: var(--accent-subtle);

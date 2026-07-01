@@ -265,6 +265,13 @@ export default {
               <button class="font-btn family-btn" data-family="sans" title="Fonte Moderna">Sans</button>
               <button class="font-btn family-btn" data-family="hand" title="Fonte Manuscrita">Manuscrita</button>
               <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
+              <button class="font-btn align-btn" data-align="left" title="Alinhar à Esquerda">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align: middle;"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="17" y1="12" x2="3" y2="12"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
+              </button>
+              <button class="font-btn align-btn" data-align="center" title="Centralizar">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align: middle;"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="17" y1="12" x2="7" y2="12"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
+              </button>
+              <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
               <button class="font-btn height-btn" data-height="normal" title="Espaçamento Normal">≡</button>
               <button class="font-btn height-btn" data-height="relaxed" title="Espaçamento Maior">↕</button>
               <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
@@ -708,15 +715,17 @@ export default {
     const sizeBtns = container.querySelectorAll('.size-btn');
     const familyBtns = container.querySelectorAll('.family-btn');
     const heightBtns = container.querySelectorAll('.height-btn');
+    const alignBtns = container.querySelectorAll('.align-btn');
 
     const updateActiveBtns = (btns, val) => {
-      btns.forEach(btn => btn.classList.toggle('active', btn.dataset.size === val || btn.dataset.family === val || btn.dataset.height === val));
+      btns.forEach(btn => btn.classList.toggle('active', btn.dataset.size === val || btn.dataset.family === val || btn.dataset.height === val || btn.dataset.align === val));
     };
 
     // Load preferences
     const currentFontSize = localStorage.getItem('reading-font-size') || 'md';
     const currentFontFamily = localStorage.getItem('reading-font-family') || 'serif';
     const currentLineHeight = localStorage.getItem('reading-line-height') || 'normal';
+    const currentAlignment = localStorage.getItem('reading-alignment') || 'center';
 
     // Apply initial classes
     document.documentElement.classList.remove('font-reading-sm', 'font-reading-md', 'font-reading-lg');
@@ -725,10 +734,13 @@ export default {
     document.documentElement.classList.add(`font-family-${currentFontFamily}`);
     document.documentElement.classList.remove('line-height-normal', 'line-height-relaxed');
     document.documentElement.classList.add(`line-height-${currentLineHeight}`);
+    document.documentElement.classList.remove('align-reading-left', 'align-reading-center');
+    document.documentElement.classList.add(`align-reading-${currentAlignment}`);
     
     updateActiveBtns(sizeBtns, currentFontSize);
     updateActiveBtns(familyBtns, currentFontFamily);
     updateActiveBtns(heightBtns, currentLineHeight);
+    updateActiveBtns(alignBtns, currentAlignment);
 
     sizeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -757,6 +769,16 @@ export default {
         document.documentElement.classList.add(`line-height-${height}`);
         localStorage.setItem('reading-line-height', height);
         updateActiveBtns(heightBtns, height);
+      });
+    });
+
+    alignBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const align = btn.dataset.align;
+        document.documentElement.classList.remove('align-reading-left', 'align-reading-center');
+        document.documentElement.classList.add(`align-reading-${align}`);
+        localStorage.setItem('reading-alignment', align);
+        updateActiveBtns(alignBtns, align);
       });
     });
 
