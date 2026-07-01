@@ -1,4 +1,4 @@
-import{r as e,s as t}from"./index-DUucm8Xb.js";var n={meta:{title:`Login Admin`},async render(n){let{data:{session:r}}=await t.auth.getSession();if(r){e(`/admin`);return}n.innerHTML=`
+import{o as e,r as t}from"./index-BhTu853E.js";var n={meta:{title:`Login Admin`},async render(n){let{data:{session:r}}=await e.auth.getSession();if(r){t(`/admin`);return}n.innerHTML=`
       <div class="login-container fade-in" style="max-width: 400px; margin: 4rem auto; padding: 2rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color-light);">
         <h2 style="text-align: center; margin-bottom: 2rem; font-family: var(--font-sans);">Acesso Admin</h2>
         <form id="login-form" style="display: flex; flex-direction: column; gap: 1rem;">
@@ -14,4 +14,4 @@ import{r as e,s as t}from"./index-DUucm8Xb.js";var n={meta:{title:`Login Admin`}
         </form>
         <div id="login-error" style="color: var(--error-color); margin-top: 1rem; text-align: center; font-size: 0.9rem;"></div>
       </div>
-    `,document.getElementById(`login-form`).addEventListener(`submit`,async n=>{n.preventDefault();let r=document.getElementById(`login-email`).value,i=document.getElementById(`login-password`).value,a=document.getElementById(`login-error`);a.textContent=`Autenticando...`;let{error:o}=await t.auth.signInWithPassword({email:r,password:i});o?a.textContent=`E-mail ou senha incorretos.`:(a.textContent=``,e(`/admin`))})}};export{n as default};
+    `,document.getElementById(`login-form`).addEventListener(`submit`,async n=>{n.preventDefault();let r=document.getElementById(`login-email`).value,i=document.getElementById(`login-password`).value,a=document.getElementById(`login-error`);a.textContent=`Autenticando...`;let{error:o}=await e.auth.signInWithPassword({email:r,password:i});o?a.textContent=`E-mail ou senha incorretos.`:(a.textContent=``,t(`/admin`))})}};export{n as default};
