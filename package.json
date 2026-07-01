@@ -16,11 +16,11 @@
     "fast-xml-parser": "^5.7.1",
     "gh-pages": "^6.3.0",
     "jsdom": "^29.1.1",
-    "vite": "^8.0.10",
+    "vite": "^8.1.2",
     "vitest": "^4.1.9"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.104.1",
-    "html2canvas": "^1.4.1"
+    "@supabase/supabase-js": "^2.110.0",
+    "@zumer/snapdom": "^2.12.9"
   }
 }

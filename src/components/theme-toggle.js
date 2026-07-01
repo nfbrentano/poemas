@@ -11,14 +11,21 @@ export const themeToggle = {
 
     const moon = btn.querySelector('.icon-moon');
     const sun = btn.querySelector('.icon-sun');
+    const sepia = btn.querySelector('.icon-sepia');
     const contrast = btn.querySelector('.icon-contrast');
     
     if (moon && sun && contrast) {
-      [moon, sun, contrast].forEach(el => el.style.display = 'none');
+      [moon, sun, sepia, contrast].forEach(el => {
+        if (el) el.style.display = 'none';
+      });
 
       if (mode === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
         sun.style.display = 'block';
+        btn.setAttribute('aria-label', 'Mudar para modo sépia');
+      } else if (mode === 'sepia') {
+        document.documentElement.setAttribute('data-theme', 'sepia');
+        if (sepia) sepia.style.display = 'block';
         btn.setAttribute('aria-label', 'Mudar para modo de alto contraste');
       } else if (mode === 'contrast') {
         document.documentElement.setAttribute('data-high-contrast', 'true');
@@ -51,7 +58,8 @@ export const themeToggle = {
     btn.addEventListener('click', () => {
       let nextMode;
       if (this.currentMode === 'dark') nextMode = 'light';
-      else if (this.currentMode === 'light') nextMode = 'contrast';
+      else if (this.currentMode === 'light') nextMode = 'sepia';
+      else if (this.currentMode === 'sepia') nextMode = 'contrast';
       else nextMode = 'dark';
       
       localStorage.setItem('site-mode', nextMode);

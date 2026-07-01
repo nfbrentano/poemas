@@ -263,6 +263,7 @@ export default {
             <div class="font-controls">
               <button class="font-btn family-btn" data-family="serif" title="Fonte Clássica">Serif</button>
               <button class="font-btn family-btn" data-family="sans" title="Fonte Moderna">Sans</button>
+              <button class="font-btn family-btn" data-family="hand" title="Fonte Manuscrita">Manuscrita</button>
               <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
               <button class="font-btn height-btn" data-height="normal" title="Espaçamento Normal">≡</button>
               <button class="font-btn height-btn" data-height="relaxed" title="Espaçamento Maior">↕</button>
@@ -718,8 +719,11 @@ export default {
     const currentLineHeight = localStorage.getItem('reading-line-height') || 'normal';
 
     // Apply initial classes
+    document.documentElement.classList.remove('font-reading-sm', 'font-reading-md', 'font-reading-lg');
     document.documentElement.classList.add(`font-reading-${currentFontSize}`);
+    document.documentElement.classList.remove('font-family-serif', 'font-family-sans', 'font-family-hand');
     document.documentElement.classList.add(`font-family-${currentFontFamily}`);
+    document.documentElement.classList.remove('line-height-normal', 'line-height-relaxed');
     document.documentElement.classList.add(`line-height-${currentLineHeight}`);
     
     updateActiveBtns(sizeBtns, currentFontSize);
@@ -739,7 +743,7 @@ export default {
     familyBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const family = btn.dataset.family;
-        document.documentElement.classList.remove('font-family-serif', 'font-family-sans');
+        document.documentElement.classList.remove('font-family-serif', 'font-family-sans', 'font-family-hand');
         document.documentElement.classList.add(`font-family-${family}`);
         localStorage.setItem('reading-font-family', family);
         updateActiveBtns(familyBtns, family);

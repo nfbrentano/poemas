@@ -82,6 +82,23 @@
   --border-strong: #ffffff;
 }
 
+/* Sepia Theme Overrides */
+:root[data-theme="sepia"] {
+  --bg-primary: #f4ecd8;
+  --bg-secondary: #ede4ce;
+  --bg-elevated: #faf6ec;
+  
+  --text-primary: #433422;
+  --text-secondary: #6b5a45;
+  --text-muted: #8a7a65;
+  
+  --accent-subtle: #8b6914;
+  --accent-muted: rgba(139, 105, 20, 0.12);
+  
+  --border-subtle: #d9cdb3;
+  --border-strong: #c5b899;
+}
+
 /* Reading Font Sizes */
 html.font-reading-sm .poem-content { font-size: 1rem; }
 html.font-reading-md .poem-content { font-size: clamp(1.05rem, 0.9rem + 0.6vw, 1.3rem); }

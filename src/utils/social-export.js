@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+import { snapdom } from '@zumer/snapdom';
 import '../styles/social-card.css';
 
 export async function generateSocialCard(poem, container, theme = 'dark', customText = null, aspectRatio = 'feed') {
@@ -63,18 +63,19 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
     sepia: '#eae0c7'
   };
   
-  const canvas = await html2canvas(renderEl, {
-    scale: 2, // High resolution
-    useCORS: true,
-    backgroundColor: bgColors[theme] || '#050505'
+  const blob = await snapdom.toBlob(renderEl, {
+    type: 'png',
+    scale: 2
   });
   
   // Download logic
   const filename = customText ? `citacao-${poem.slug}-${theme}-${aspectRatio}.png` : `poema-${poem.slug}-${theme}-${aspectRatio}.png`;
   const link = document.createElement('a');
   link.download = filename;
-  link.href = canvas.toDataURL('image/png');
+  const url = URL.createObjectURL(blob);
+  link.href = url;
   link.click();
+  URL.revokeObjectURL(url);
   
   // Clean up
   container.innerHTML = '';

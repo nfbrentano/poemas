@@ -378,10 +378,10 @@ body.is-poem-page .site-footer {
 
 .scroll-progress-bar {
   height: 100%;
-  background-color: var(--accent-subtle);
+  background: linear-gradient(90deg, var(--accent-subtle), var(--accent-subtle) 50%, transparent);
   width: 0%;
   opacity: 0.8;
-  transition: width 0.1s ease-out;
+  transition: width 0.15s ease-out;
   box-shadow: 0 0 10px var(--accent-subtle), 0 0 5px var(--accent-subtle);
 }
 
@@ -480,10 +480,23 @@ body.is-poem-page .site-footer {
   body {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M28 2C22 2 12 10 8 18l-2 4-4 8 8-4 4-2c8-4 18-14 18-20z' fill='%23c5a880'/%3E%3Cpath d='M2 30l8-8' stroke='%238c8c8c' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 2 30, default;
   }
-  a, button, [role="button"], .reaction-btn, .fav-btn, .explore-node, .remove-fav-btn, .font-btn, .ambient-btn, .share-btn, #immersive-btn, #prev-btn, #next-btn, #search-toggle-btn {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M28 2C22 2 12 10 8 18l-2 4-4 8 8-4 4-2c8-4 18-14 18-20z' fill='%23e2e2e2'/%3E%3Cpath d='M2 30l8-8' stroke='%23c5a880' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 2 30, pointer;
+  a, button, select, input, textarea, [role="button"] {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='5' fill='none' stroke='%23c5a880' stroke-width='1.5'/%3E%3C/svg%3E") 12 12, pointer;
   }
-  input, textarea, select, [contenteditable="true"] {
-    cursor: text;
-  }
+}
+
+/* View Transitions */
+::view-transition-old(root) {
+  animation: fade-out 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+::view-transition-new(root) {
+  animation: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
