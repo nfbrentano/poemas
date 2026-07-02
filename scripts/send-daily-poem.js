@@ -36,6 +36,9 @@ async function sendDailyPoem() {
       body: { 
         poemId: randomPoem.id,
         targetEmail: targetEmail
+      },
+      headers: {
+        Authorization: `Bearer ${supabaseKey}`
       }
     });
     
