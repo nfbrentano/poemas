@@ -48,7 +48,7 @@ serve(async (req: any) => {
   }
 
   try {
-    const { poemId } = await req.json();
+    const { poemId, targetEmail } = await req.json();
 
     if (!poemId) throw new Error('poemId is required');
 
@@ -74,15 +74,19 @@ serve(async (req: any) => {
       });
     }
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+    const token = authHeader.replace('Bearer ', '');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized: invalid token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Allow service role key to bypass user auth check
+    if (token !== serviceRoleKey) {
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+
+      if (userError || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized: invalid token' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Fetch Poem
@@ -94,13 +98,22 @@ serve(async (req: any) => {
 
     if (!poem) throw new Error('Poem not found');
 
-    // Fetch Subscribers
-    const { data: subscribers } = await supabaseClient
-      .from('subscribers')
-      .select('email, unsubscribe_token')
-      .eq('active', true);
+    // Fetch Subscribers or use targetEmail
+    let subscribers = [];
+    if (targetEmail) {
+      subscribers = [{ email: targetEmail, unsubscribe_token: 'daily-test-token' }];
+    } else {
+      const { data: fetchedSubscribers } = await supabaseClient
+        .from('subscribers')
+        .select('email, unsubscribe_token')
+        .eq('active', true);
+        
+      if (fetchedSubscribers) {
+        subscribers = fetchedSubscribers;
+      }
+    }
 
-    if (!subscribers || subscribers.length === 0) {
+    if (subscribers.length === 0) {
       return new Response(JSON.stringify({ message: 'No active subscribers' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
