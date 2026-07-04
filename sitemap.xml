@@ -9,6 +9,36 @@
   
   <!-- Poems -->
   <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/caverna-de-sonhos</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/juras</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/ser-porto</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/vazio</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/coracao-emocionado</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://nfbrentano.github.io/poemas/poema/dois-coracoes</loc>
     <lastmod>2026-07-02</lastmod>
     <changefreq>monthly</changefreq>
