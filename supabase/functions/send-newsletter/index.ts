@@ -80,8 +80,8 @@ serve(async (req: any) => {
       });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const token = authHeader.replace('Bearer ', '').trim();
+    const serviceRoleKey = (Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '').trim();
 
     // Allow service role key to bypass user auth check
     if (token !== serviceRoleKey) {

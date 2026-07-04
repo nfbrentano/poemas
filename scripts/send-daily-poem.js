@@ -43,6 +43,14 @@ async function sendDailyPoem() {
     });
     
     if (sendError) {
+      if (sendError.context && !sendError.context.bodyUsed) {
+        try {
+          const bodyText = await sendError.context.clone().text();
+          console.error('Detalhes do Erro da Edge Function (Body):', bodyText);
+        } catch (e) {
+          console.error('Não foi possível extrair o body do erro.');
+        }
+      }
       throw sendError;
     }
     
