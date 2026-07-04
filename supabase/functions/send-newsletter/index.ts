@@ -1,5 +1,10 @@
+// @ts-ignore: Deno URL import
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+// @ts-ignore: Deno URL import
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// Declare Deno global for standard TypeScript compiler
+declare const Deno: any;
 
 // Polyfills for Deno APIs (deprecated/removed in newer Deno versions used by Supabase)
 // @ts-ignore
@@ -35,6 +40,7 @@ if (typeof Deno.readAll !== 'function') {
   };
 }
 
+// @ts-ignore: Deno URL import
 import { SmtpClient } from 'https://deno.land/x/smtp@v0.7.0/mod.ts';
 
 const corsHeaders = {
