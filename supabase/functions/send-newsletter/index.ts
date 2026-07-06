@@ -3,45 +3,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 // @ts-ignore: Deno URL import
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Declare Deno global for standard TypeScript compiler
-declare const Deno: any;
-
-// Polyfills for Deno APIs (deprecated/removed in newer Deno versions used by Supabase)
-// @ts-ignore
-if (typeof Deno.writeAll !== 'function') {
-  // @ts-ignore
-  Deno.writeAll = async function(w: any, data: Uint8Array) {
-    let nwritten = 0;
-    while (nwritten < data.length) {
-      nwritten += await w.write(data.subarray(nwritten));
-    }
-  };
-}
-// @ts-ignore
-if (typeof Deno.readAll !== 'function') {
-  // @ts-ignore
-  Deno.readAll = async function(r: any) {
-    const buf = new Uint8Array(1024);
-    let nread = 0;
-    const chunks = [];
-    while (true) {
-      const n = await r.read(buf);
-      if (n === null) break;
-      chunks.push(buf.slice(0, n));
-      nread += n;
-    }
-    const result = new Uint8Array(nread);
-    let offset = 0;
-    for (const chunk of chunks) {
-      result.set(chunk, offset);
-      offset += chunk.length;
-    }
-    return result;
-  };
-}
-
-// @ts-ignore: Deno URL import
-import { SmtpClient } from 'https://deno.land/x/smtp@v0.7.0/mod.ts';
+// Deno polyfills removidos - API REST não precisa deles.
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -59,11 +21,12 @@ serve(async (req: any) => {
     if (!poemId) throw new Error('poemId is required');
 
     // Secrets
-    const SMTP_USER = Deno.env.get('SMTP_USER');
-    const SMTP_PASS = Deno.env.get('SMTP_PASS');
+    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
+    const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL') || 'contato@nfbrentano.com'; // Configure esta secret no Supabase
+    const SENDER_NAME = Deno.env.get('SENDER_NAME') || 'Natanael Brentano';
 
-    if (!SMTP_USER || !SMTP_PASS) {
-      throw new Error('Configuração de SMTP ausente (SMTP_USER ou SMTP_PASS)');
+    if (!BREVO_API_KEY) {
+      throw new Error('Configuração ausente (BREVO_API_KEY)');
     }
 
     const supabaseClient = createClient(
@@ -178,41 +141,61 @@ serve(async (req: any) => {
 </body>
 </html>`;
 
-    console.log(`Iniciando envio SMTP para ${subscribers.length} assinantes...`);
+    console.log(`Iniciando envio via Brevo API para ${subscribers.length} assinantes...`);
 
-    const client = new SmtpClient();
-    
+    const brevoUrl = 'https://api.brevo.com/v3/smtp/email';
+    let successCount = 0;
+    let failCount = 0;
+
     try {
-      await client.connectTLS({
-        hostname: 'smtp.gmail.com',
-        port: 465,
-        username: SMTP_USER,
-        password: SMTP_PASS,
-      });
-
+      // O Brevo permite enviar para vários destinatários (To/Bcc), 
+      // mas para personalização individual (unsubscribe_token), 
+      // precisaremos fazer um envio por assinante ou usar parâmetros dinâmicos.
+      // Para manter a mesma lógica simples do SMTP, vamos iterar (fetch) para cada um:
       for (const sub of subscribers) {
-        await client.send({
-          from: SMTP_USER,
-          to: sub.email,
+        const payload = {
+          sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+          to: [{ email: sub.email }],
           subject: `${poem.title} — novo poema`,
-          content: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${sub.unsubscribe_token}`,
-          html: getHtmlEmail(sub.unsubscribe_token),
+          htmlContent: getHtmlEmail(sub.unsubscribe_token),
+          textContent: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${sub.unsubscribe_token}`
+        };
+
+        const res = await fetch(brevoUrl, {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'api-key': BREVO_API_KEY,
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify(payload)
         });
+
+        if (res.ok) {
+          successCount++;
+        } else {
+          const errorData = await res.text();
+          console.error(`Falha ao enviar para ${sub.email}:`, res.status, errorData);
+          failCount++;
+        }
       }
 
-      await client.close();
-      console.log('Envio SMTP concluído com sucesso.');
+      console.log(`Envio Brevo concluído. Sucesso: ${successCount}, Falha: ${failCount}`);
 
-    } catch (smtpError: any) {
-      console.error('Erro no SMTP:', smtpError);
-      throw new Error(`Erro ao enviar e-mails via SMTP: ${smtpError.message || String(smtpError)}`);
+      if (successCount === 0 && failCount > 0) {
+        throw new Error('Todos os envios falharam na API do Brevo.');
+      }
+
+    } catch (brevoError: any) {
+      console.error('Erro geral no Brevo:', brevoError);
+      throw new Error(`Erro ao disparar envios via Brevo: ${brevoError.message || String(brevoError)}`);
     }
 
     // Log success
     await supabaseClient.from('email_campaign_logs').insert([{
       poem_id: poemId,
-      status: 'success',
-      details: `Enviado para ${subscribers.length} assinantes via SMTP (Gmail).`
+      status: successCount > 0 ? 'success' : 'failed',
+      details: `Enviado via Brevo. Sucesso: ${successCount}, Falhas: ${failCount}.`
     }]);
 
     return new Response(JSON.stringify({ success: true, count: subscribers.length }), {
