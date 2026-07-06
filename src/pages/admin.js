@@ -1559,14 +1559,21 @@ export default {
           
           if (fnError) throw fnError;
           
-          alert(`Newsletter para "${poemTitle}" reenviada com sucesso para ${data.count} assinantes!`);
+          alert(`Newsletter para "${poemTitle}" reenviada com sucesso para ${data?.count || 0} assinantes!`);
           // Close details modal if open
           detailsModal.style.display = 'none';
           // Reload the view
           this.renderEmailHistory(container);
         } catch (err) {
           console.error('Erro ao reenviar:', err);
-          alert(`Erro ao enviar newsletter:\n${err.message || 'Erro na Edge Function'}`);
+          let detailedMsg = '';
+          if (err.context && typeof err.context.json === 'function') {
+            try {
+              const errBody = await err.context.json();
+              detailedMsg = errBody.error || errBody.message || '';
+            } catch (e) {}
+          }
+          alert(`Erro ao enviar newsletter:\n${detailedMsg || err.message || 'Erro na Edge Function'}`);
           buttonEl.disabled = false;
           buttonEl.innerText = originalText;
           buttonEl.style.opacity = '1';
@@ -1786,7 +1793,7 @@ export default {
           if (targetEmail) {
             alert(`Newsletter para "${poemTitle}" enviada com sucesso para o e-mail: ${targetEmail}!`);
           } else {
-            alert(`Newsletter para "${poemTitle}" enviada com sucesso para ${data.count} assinantes!`);
+            alert(`Newsletter para "${poemTitle}" enviada com sucesso para ${data?.count || 0} assinantes!`);
           }
           dispatchModal.style.display = 'none';
           
@@ -1794,7 +1801,14 @@ export default {
           this.renderEmailHistory(container);
         } catch (err) {
           console.error('Erro na Edge Function:', err);
-          alert(`Erro ao disparar newsletter:\n${err.message || 'Erro inesperado'}`);
+          let detailedMsg = '';
+          if (err.context && typeof err.context.json === 'function') {
+            try {
+              const errBody = await err.context.json();
+              detailedMsg = errBody.error || errBody.message || '';
+            } catch (e) {}
+          }
+          alert(`Erro ao disparar newsletter:\n${detailedMsg || err.message || 'Erro inesperado'}`);
           
           submitBtn.disabled = false;
           submitBtn.innerText = 'Disparar Newsletter';
