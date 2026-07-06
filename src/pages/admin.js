@@ -1447,10 +1447,16 @@ export default {
                 ${publishedPoems.length === 0 ? '<p style="color: var(--error); font-size: 0.8rem; margin: 4px 0 0 0;">Nenhuma obra publicada disponível.</p>' : ''}
               </div>
               
-              <div style="display: flex; align-items: flex-start; gap: var(--space-2xs); margin-top: var(--space-3xs);">
-                <input type="checkbox" id="dispatch-confirm-chk" required style="margin-top: 3px; cursor: pointer;">
+              <div style="display: flex; flex-direction: column; gap: var(--space-3xs); margin-top: var(--space-sm);">
+                <label for="dispatch-target-email" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Destinatário Único (Opcional)</label>
+                <input type="email" id="dispatch-target-email" placeholder="Deixe em branco para enviar a todos os assinantes" style="padding: var(--space-xs); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; font-size: 0.95rem; width: 100%;">
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Se preenchido, envia apenas para este e-mail (ideal para testes).</p>
+              </div>
+
+              <div style="display: flex; align-items: flex-start; gap: var(--space-2xs); margin-top: var(--space-sm);">
+                <input type="checkbox" id="dispatch-confirm-chk" style="margin-top: 3px; cursor: pointer;">
                 <label for="dispatch-confirm-chk" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; cursor: pointer; user-select: none;">
-                  Confirmo que desejo enviar esta obra imediatamente para todos os assinantes ativos cadastrados no site.
+                  Confirmo que desejo enviar esta obra imediatamente (obrigatório se o destinatário não for preenchido).
                 </label>
               </div>
 
@@ -1746,6 +1752,14 @@ export default {
         const poemSelect = container.querySelector('#dispatch-poem-select');
         const poemId = poemSelect.value;
         const poemTitle = poemSelect.options[poemSelect.selectedIndex].text;
+        const targetEmailInput = container.querySelector('#dispatch-target-email');
+        const targetEmail = targetEmailInput ? targetEmailInput.value.trim() : '';
+        const confirmChk = container.querySelector('#dispatch-confirm-chk');
+        
+        if (!targetEmail && !confirmChk.checked) {
+          alert('Você precisa confirmar o envio para todos os assinantes caso não preencha um e-mail de destino.');
+          return;
+        }
         
         const submitBtn = container.querySelector('#submit-dispatch-btn');
         const cancelBtn = container.querySelector('#close-dispatch-modal-btn');
@@ -1753,16 +1767,27 @@ export default {
         submitBtn.disabled = true;
         submitBtn.innerText = 'Enviando...';
         poemSelect.disabled = true;
+        if (targetEmailInput) targetEmailInput.disabled = true;
+        confirmChk.disabled = true;
         cancelBtn.style.display = 'none';
         
         try {
+          const bodyPayload = { poemId };
+          if (targetEmail) {
+            bodyPayload.targetEmail = targetEmail;
+          }
+          
           const { data, error: fnError } = await supabase.functions.invoke('send-newsletter', {
-            body: { poemId }
+            body: bodyPayload
           });
           
           if (fnError) throw fnError;
           
-          alert(`Newsletter para "${poemTitle}" enviada com sucesso para ${data.count} assinantes!`);
+          if (targetEmail) {
+            alert(`Newsletter para "${poemTitle}" enviada com sucesso para o e-mail: ${targetEmail}!`);
+          } else {
+            alert(`Newsletter para "${poemTitle}" enviada com sucesso para ${data.count} assinantes!`);
+          }
           dispatchModal.style.display = 'none';
           
           // Refresh page details
@@ -1774,6 +1799,8 @@ export default {
           submitBtn.disabled = false;
           submitBtn.innerText = 'Disparar Newsletter';
           poemSelect.disabled = false;
+          if (targetEmailInput) targetEmailInput.disabled = false;
+          confirmChk.disabled = false;
           cancelBtn.style.display = 'inline-block';
         }
       });
