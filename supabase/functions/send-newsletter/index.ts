@@ -2,8 +2,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 // @ts-ignore: Deno URL import
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-// Deno polyfills removidos - API REST não precisa deles.
+import nodemailer from 'npm:nodemailer@6.9.13';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,12 +20,12 @@ serve(async (req: any) => {
     if (!poemId) throw new Error('poemId is required');
 
     // Secrets
-    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
-    const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL') || 'contato@nfbrentano.com'; // Configure esta secret no Supabase
+    const GMAIL_USER = Deno.env.get('GMAIL_USER');
+    const GMAIL_APP_PASSWORD = Deno.env.get('GMAIL_APP_PASSWORD');
     const SENDER_NAME = Deno.env.get('SENDER_NAME') || 'Natanael Brentano';
 
-    if (!BREVO_API_KEY) {
-      throw new Error('Configuração ausente (BREVO_API_KEY)');
+    if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+      throw new Error('Configuração ausente (GMAIL_USER ou GMAIL_APP_PASSWORD)');
     }
 
     const supabaseClient = createClient(
@@ -141,61 +140,56 @@ serve(async (req: any) => {
 </body>
 </html>`;
 
-    console.log(`Iniciando envio via Brevo API para ${subscribers.length} assinantes...`);
+    console.log(`Iniciando envio via Gmail SMTP para ${subscribers.length} assinantes...`);
 
-    const brevoUrl = 'https://api.brevo.com/v3/smtp/email';
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: GMAIL_USER,
+        pass: GMAIL_APP_PASSWORD
+      }
+    });
+
     let successCount = 0;
     let failCount = 0;
 
     try {
-      // O Brevo permite enviar para vários destinatários (To/Bcc), 
-      // mas para personalização individual (unsubscribe_token), 
-      // precisaremos fazer um envio por assinante ou usar parâmetros dinâmicos.
-      // Para manter a mesma lógica simples do SMTP, vamos iterar (fetch) para cada um:
       for (const sub of subscribers) {
-        const payload = {
-          sender: { name: SENDER_NAME, email: SENDER_EMAIL },
-          to: [{ email: sub.email }],
+        const mailOptions = {
+          from: `"${SENDER_NAME}" <${GMAIL_USER}>`,
+          to: sub.email,
           subject: `${poem.title} — novo poema`,
-          htmlContent: getHtmlEmail(sub.unsubscribe_token),
-          textContent: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${sub.unsubscribe_token}`
+          html: getHtmlEmail(sub.unsubscribe_token),
+          text: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${sub.unsubscribe_token}`
         };
 
-        const res = await fetch(brevoUrl, {
-          method: 'POST',
-          headers: {
-            'accept': 'application/json',
-            'api-key': BREVO_API_KEY,
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
+        try {
+          await transporter.sendMail(mailOptions);
           successCount++;
-        } else {
-          const errorData = await res.text();
-          console.error(`Falha ao enviar para ${sub.email}:`, res.status, errorData);
+        } catch (err: any) {
+          console.error(`Falha ao enviar para ${sub.email}:`, err);
           failCount++;
         }
       }
 
-      console.log(`Envio Brevo concluído. Sucesso: ${successCount}, Falha: ${failCount}`);
+      console.log(`Envio via Gmail SMTP concluído. Sucesso: ${successCount}, Falha: ${failCount}`);
 
       if (successCount === 0 && failCount > 0) {
-        throw new Error('Todos os envios falharam na API do Brevo.');
+        throw new Error('Todos os envios falharam via Gmail SMTP.');
       }
 
-    } catch (brevoError: any) {
-      console.error('Erro geral no Brevo:', brevoError);
-      throw new Error(`Erro ao disparar envios via Brevo: ${brevoError.message || String(brevoError)}`);
+    } catch (smtpError: any) {
+      console.error('Erro geral SMTP:', smtpError);
+      throw new Error(`Erro ao disparar envios via Gmail SMTP: ${smtpError.message || String(smtpError)}`);
     }
 
     // Log success
     await supabaseClient.from('email_campaign_logs').insert([{
       poem_id: poemId,
       status: successCount > 0 ? 'success' : 'failed',
-      details: `Enviado via Brevo. Sucesso: ${successCount}, Falhas: ${failCount}.`
+      details: `Enviado via Gmail SMTP. Sucesso: ${successCount}, Falhas: ${failCount}.`
     }]);
 
     return new Response(JSON.stringify({ success: true, count: subscribers.length }), {

@@ -40,15 +40,6 @@ export const newsletter = {
       const { error } = await supabase.from('subscribers').insert([{ email }]);
       
       if (!error || error.code === '23505') {
-        // Chamar a Edge Function para registrar no Loops
-        try {
-          await supabase.functions.invoke('loops-subscribe', {
-            body: { email }
-          });
-        } catch (e) {
-          // Falha silenciosa no Loops não impede a confirmação ao usuário
-          console.warn('Loops sync failed:', e);
-        }
 
         msgEl.innerHTML = error?.code === '23505'
           ? 'Este e-mail já está inscrito.'
