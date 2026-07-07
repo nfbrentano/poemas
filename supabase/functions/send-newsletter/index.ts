@@ -186,11 +186,15 @@ serve(async (req: any) => {
     }
 
     // Log success
-    await supabaseClient.from('email_campaign_logs').insert([{
+    const { error: logError } = await supabaseClient.from('email_campaign_logs').insert([{
       poem_id: poemId,
       status: successCount > 0 ? 'success' : 'failed',
       details: `Enviado via Gmail SMTP. Sucesso: ${successCount}, Falhas: ${failCount}.`
     }]);
+
+    if (logError) {
+      console.error('Erro ao salvar no histórico (email_campaign_logs):', logError);
+    }
 
     return new Response(JSON.stringify({ success: true, count: subscribers.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
