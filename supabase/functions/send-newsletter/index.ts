@@ -171,6 +171,17 @@ serve(async (req: any) => {
         } catch (err: any) {
           console.error(`Falha ao enviar para ${sub.email}:`, err);
           failCount++;
+          
+          // Desativar assinante em caso de falha no envio
+          try {
+            await supabaseClient
+              .from('subscribers')
+              .update({ active: false })
+              .eq('email', sub.email);
+            console.log(`Assinante desativado automaticamente devido à falha de envio: ${sub.email}`);
+          } catch (dbErr: any) {
+            console.error(`Falha ao tentar desativar o assinante ${sub.email}:`, dbErr);
+          }
         }
       }
 
@@ -196,7 +207,11 @@ serve(async (req: any) => {
       console.error('Erro ao salvar no histórico (email_campaign_logs):', logError);
     }
 
-    return new Response(JSON.stringify({ success: true, count: subscribers.length }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      count: subscribers.length,
+      logError: logError || null
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

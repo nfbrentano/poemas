@@ -1795,6 +1795,12 @@ export default {
           } else {
             alert(`Newsletter para "${poemTitle}" enviada com sucesso para ${data?.count || 0} assinantes!`);
           }
+
+          if (data?.logError) {
+            console.error('Log error:', data.logError);
+            alert(`ATENÇÃO: Os emails foram enviados, mas houve um erro ao salvar o histórico no banco de dados.\nErro: ${data.logError.message || JSON.stringify(data.logError)}`);
+          }
+
           dispatchModal.style.display = 'none';
           
           // Refresh page details
