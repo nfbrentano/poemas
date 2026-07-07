@@ -9,6 +9,12 @@
   
   <!-- Poems -->
   <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/eu-livro-aberto</loc>
+    <lastmod>2026-07-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://nfbrentano.github.io/poemas/poema/a-vida-e-mais</loc>
     <lastmod>2026-07-06</lastmod>
     <changefreq>monthly</changefreq>
