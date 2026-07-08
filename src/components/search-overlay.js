@@ -91,13 +91,43 @@ export const searchOverlay = {
       return text.replace(regex, '<mark>$1</mark>');
     };
 
-    resultsContainer.innerHTML = results.map(poem => `
-      <div class="search-result-item" data-slug="${poem.slug}">
-        <div class="search-result-title">${highlight(poem.title, query)}</div>
-        <div class="search-result-excerpt">${highlight(poem.excerpt, query)}</div>
-        ${poem.tags && poem.tags.length > 0 ? `<div class="search-result-tags" style="font-size:0.7rem; color:var(--accent-subtle); margin-top:4px;">${poem.tags.join(', ')}</div>` : ''}
-      </div>
-    `).join('');
+    resultsContainer.innerHTML = results.map(poem => {
+      const q = query.toLowerCase();
+      const inTitle = poem.title.toLowerCase().includes(q);
+      const inExcerpt = poem.excerpt && poem.excerpt.toLowerCase().includes(q);
+      const inContent = poem.content && poem.content.toLowerCase().includes(q);
+      
+      let badge = '';
+      let snippetHtml = '';
+
+      if (query.length >= 2) {
+        if (inTitle) {
+          badge = '<span class="search-match-badge badge-title">no título</span>';
+          snippetHtml = `<div class="search-result-excerpt">${highlight(poem.excerpt, query)}</div>`;
+        } else if (inContent) {
+          badge = '<span class="search-match-badge badge-content">no poema</span>';
+          const snippet = this.getSnippet(poem.content, query);
+          snippetHtml = `<div class="search-result-snippet">"${highlight(snippet, query)}"</div>`;
+        } else if (inExcerpt) {
+          snippetHtml = `<div class="search-result-excerpt">${highlight(poem.excerpt, query)}</div>`;
+        } else {
+           snippetHtml = `<div class="search-result-excerpt">${poem.excerpt}</div>`;
+        }
+      } else {
+        snippetHtml = `<div class="search-result-excerpt">${poem.excerpt}</div>`;
+      }
+
+      return `
+        <div class="search-result-item" data-slug="${poem.slug}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+            <div class="search-result-title">${highlight(poem.title, query)}</div>
+            ${badge}
+          </div>
+          ${snippetHtml}
+          ${poem.tags && poem.tags.length > 0 ? `<div class="search-result-tags" style="font-size:0.7rem; color:var(--accent-subtle); margin-top:4px;">${poem.tags.join(', ')}</div>` : ''}
+        </div>
+      `;
+    }).join('');
 
     resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
       item.addEventListener('click', () => {
@@ -145,10 +175,29 @@ export const searchOverlay = {
       if (query.length >= 2) {
         const q = query.toLowerCase();
         filtered.sort((a, b) => {
-          const aTitle = a.title.toLowerCase().includes(q);
-          const bTitle = b.title.toLowerCase().includes(q);
-          if (aTitle && !bTitle) return -1;
-          if (!aTitle && bTitle) return 1;
+          const aTitle = a.title.toLowerCase();
+          const bTitle = b.title.toLowerCase();
+          
+          const aExact = aTitle === q;
+          const bExact = bTitle === q;
+          if (aExact && !bExact) return -1;
+          if (!aExact && bExact) return 1;
+
+          const aTitleStart = aTitle.startsWith(q);
+          const bTitleStart = bTitle.startsWith(q);
+          if (aTitleStart && !bTitleStart) return -1;
+          if (!aTitleStart && bTitleStart) return 1;
+
+          const aTitleIn = aTitle.includes(q);
+          const bTitleIn = bTitle.includes(q);
+          if (aTitleIn && !bTitleIn) return -1;
+          if (!aTitleIn && bTitleIn) return 1;
+          
+          const aExcerptIn = a.excerpt && a.excerpt.toLowerCase().includes(q);
+          const bExcerptIn = b.excerpt && b.excerpt.toLowerCase().includes(q);
+          if (aExcerptIn && !bExcerptIn) return -1;
+          if (!aExcerptIn && bExcerptIn) return 1;
+
           return new Date(b.published_at) - new Date(a.published_at);
         });
       } else {
@@ -161,6 +210,21 @@ export const searchOverlay = {
     window.dispatchEvent(new CustomEvent('global-search', { 
       detail: { query, results: (query.length >= 2 || this.activeTag) ? filtered : null } 
     }));
+  },
+
+  getSnippet(content, query) {
+    if (!content || !query || query.length < 2) return null;
+    const q = query.toLowerCase();
+    const c = content.toLowerCase();
+    const idx = c.indexOf(q);
+    if (idx === -1) return null;
+    
+    const start = Math.max(0, idx - 40);
+    const end = Math.min(content.length, idx + query.length + 40);
+    let snippet = content.substring(start, end).replace(/\n/g, ' ');
+    if (start > 0) snippet = '…' + snippet;
+    if (end < content.length) snippet = snippet + '…';
+    return snippet;
   },
 
   debounce(func, wait) {
