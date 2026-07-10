@@ -100,7 +100,7 @@ export default {
           supabase.from('poems').select('id, title, slug, status, scheduled_at, created_at'),
           supabase.from('poem_comments').select('id').eq('approved', false),
           supabase.from('subscribers').select('email, created_at, active').order('created_at', { ascending: false }).limit(5),
-          supabase.from('page_views').select('created_at').gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          supabase.from('page_views').select('viewed_at').gte('viewed_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
         ]);
         
         if (poemsRes.error || commentsRes.error || subscribersRes.error || viewsRes.error) {
@@ -136,7 +136,7 @@ export default {
             const d = new Date();
             d.setDate(d.getDate() - (6 - i));
             for (let j = 0; j < count; j++) {
-              pageViews.push({ created_at: d.toISOString() });
+              pageViews.push({ viewed_at: d.toISOString() });
             }
           }
         } else {
@@ -152,7 +152,7 @@ export default {
       // Calculate daily views for last 7 days (including today)
       const dayMap = {};
       pageViews.forEach(v => {
-        const dateStr = new Date(v.created_at).toISOString().slice(0, 10);
+        const dateStr = new Date(v.viewed_at).toISOString().slice(0, 10);
         dayMap[dateStr] = (dayMap[dateStr] || 0) + 1;
       });
       

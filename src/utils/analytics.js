@@ -36,7 +36,7 @@ export async function trackPageView(page, poemId = null) {
       }
     } catch (_) { /* non-blocking */ }
 
-    await supabase.from('page_views').insert([{
+    const { error: insertErr } = await supabase.from('page_views').insert([{
       page,
       poem_id: poemId || null,
       ip_hash: window._ipHash || null,
@@ -44,6 +44,10 @@ export async function trackPageView(page, poemId = null) {
       user_agent: ua.substring(0, 300),
       referrer: document.referrer ? document.referrer.substring(0, 300) : null
     }]);
+    
+    if (insertErr) {
+      console.warn('[analytics] insert error:', insertErr);
+    }
   } catch (err) {
     console.warn('[analytics] track error:', err.message);
   }
