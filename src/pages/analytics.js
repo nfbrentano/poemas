@@ -281,9 +281,9 @@ export default {
     // Query data with upper limit to optimize performance
     const { data: views, error } = await supabase
       .from('page_views')
-      .select('viewed_at, page, poem_id, ip_hash, country')
-      .gte('viewed_at', sinceISO)
-      .order('viewed_at', { ascending: false })
+      .select('created_at, page, poem_id, ip_hash, country')
+      .gte('created_at', sinceISO)
+      .order('created_at', { ascending: false })
       .limit(5000);
 
     if (error) {
@@ -305,7 +305,7 @@ export default {
     const returnRate = uniqueIPs > 0 ? Math.round((returningIPs / uniqueIPs) * 100) : 0;
 
     const today      = new Date().toISOString().slice(0, 10);
-    const todayViews = views.filter(v => v.viewed_at.slice(0, 10) === today).length;
+    const todayViews = views.filter(v => v.created_at.slice(0, 10) === today).length;
     const poemViews  = views.filter(v => v.poem_id).length;
     const poemsPerVisit = uniqueIPs > 0 ? (poemViews / uniqueIPs).toFixed(1) : '0.0';
 
@@ -329,7 +329,7 @@ export default {
     // Daily chart data
     const dayMap = {};
     views.forEach(v => {
-      const day = v.viewed_at.slice(0, 10);
+      const day = v.created_at.slice(0, 10);
       dayMap[day] = (dayMap[day] || 0) + 1;
     });
     const chartData = fillDays(
@@ -403,7 +403,7 @@ export default {
     // Hourly Heatmap (visitas por hora do dia, 0h-23h local)
     const hourMap = Array(24).fill(0);
     views.forEach(v => {
-      const date = new Date(v.viewed_at);
+      const date = new Date(v.created_at);
       const hour = date.getHours();
       if (hour >= 0 && hour < 24) {
         hourMap[hour]++;

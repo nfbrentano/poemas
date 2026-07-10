@@ -9,11 +9,11 @@ CREATE TABLE IF NOT EXISTS public.page_views (
   country text,                                -- from CF-IPCountry header or ipapi
   user_agent text,
   referrer text,
-  viewed_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- Index for fast queries on dashboard
-CREATE INDEX IF NOT EXISTS idx_page_views_viewed_at ON public.page_views(viewed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON public.page_views(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_page_views_page      ON public.page_views(page);
 CREATE INDEX IF NOT EXISTS idx_page_views_poem_id   ON public.page_views(poem_id);
 
