@@ -177,7 +177,6 @@ export default {
               <div class="featured-excerpt">${poem.excerpt || ''}</div>
               <div class="featured-meta">
                 <span>${dateStr}</span>
-                ${poem.tags && poem.tags.length > 0 ? `<span>•</span><span>${poem.tags[0]}</span>` : ''}
               </div>
             </a>
             <div class="featured-actions" style="display: flex; gap: 1rem; margin-top: 1rem;">
