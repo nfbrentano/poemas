@@ -14,10 +14,14 @@ serve(async (req: any) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  let supabaseClient: any = null;
+  let currentPoemId: string | null = null;
+
   try {
     const { poemId, targetEmail } = await req.json();
 
     if (!poemId) throw new Error('poemId is required');
+    currentPoemId = poemId;
 
     // Secrets
     const GMAIL_USER = Deno.env.get('GMAIL_USER');
@@ -28,7 +32,7 @@ serve(async (req: any) => {
       throw new Error('Configuração ausente (GMAIL_USER ou GMAIL_APP_PASSWORD)');
     }
 
-    const supabaseClient = createClient(
+    supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
@@ -217,6 +221,16 @@ serve(async (req: any) => {
 
   } catch (error: any) {
     console.error('Erro na função:', error);
+    
+    // Tentativa de logar a falha se já tivermos o poemId e o client
+    if (supabaseClient && currentPoemId) {
+      await supabaseClient.from('email_campaign_logs').insert([{
+        poem_id: currentPoemId,
+        status: 'failed',
+        details: `Erro geral na execução: ${error.message || String(error)}`
+      }]);
+    }
+
     return new Response(JSON.stringify({ 
       error: error.message || String(error),
       details: error.stack || 'No stack trace'
