@@ -1,4 +1,4 @@
-import{n as e,t}from"./index-BWvw2nx1.js";import{t as n}from"./seo-BlITGSmq.js";var r={meta:{title:`Sua Biblioteca`},cleanup(){},async render(r){n({title:`Biblioteca Pessoal`,description:`Sua coleção pessoal de poemas favoritos e histórico de leitura.`,type:`website`}),r.innerHTML=`
+import{n as e,t}from"./index-DTI-Pu-u.js";import{t as n}from"./seo-BlITGSmq.js";var r={meta:{title:`Sua Biblioteca`},cleanup(){},async render(r){n({title:`Biblioteca Pessoal`,description:`Sua coleção pessoal de poemas favoritos e histórico de leitura.`,type:`website`}),r.innerHTML=`
       <div class="favorites-page fade-in">
         <header class="page-header" style="text-align: center; margin-bottom: var(--space-xl);">
           <h1 class="page-title">Sua Biblioteca</h1>
