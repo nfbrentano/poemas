@@ -9,6 +9,12 @@
   
   <!-- Poems -->
   <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/vem-a-vida</loc>
+    <lastmod>2026-07-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://nfbrentano.github.io/poemas/poema/print-de-um-sentimento</loc>
     <lastmod>2026-07-09</lastmod>
     <changefreq>monthly</changefreq>
