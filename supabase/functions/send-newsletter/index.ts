@@ -148,8 +148,11 @@ serve(async (req: any) => {
 
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // true for 465, false for other ports
+      port: 465,
+      secure: true, // true for 465, false for 587
+      connectionTimeout: 5000, // 5 segundos max de conexão
+      greetingTimeout: 5000,   // 5 segundos max de greeting
+      socketTimeout: 10000,    // 10 segundos max de inatividade no socket
       auth: {
         user: GMAIL_USER,
         pass: GMAIL_APP_PASSWORD
@@ -160,33 +163,40 @@ serve(async (req: any) => {
     let failCount = 0;
 
     try {
-      for (const sub of subscribers) {
-        const mailOptions = {
-          from: `"${SENDER_NAME}" <${GMAIL_USER}>`,
-          to: sub.email,
-          subject: `${poem.title} — novo poema`,
-          html: getHtmlEmail(sub.unsubscribe_token),
-          text: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${sub.unsubscribe_token}`
-        };
+      // Processar em lotes paralelos de 5 assinantes por vez
+      const BATCH_SIZE = 5;
+      for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
+        const batch = subscribers.slice(i, i + BATCH_SIZE);
+        await Promise.allSettled(
+          batch.map(async (sub: any) => {
+            const mailOptions = {
+              from: `"${SENDER_NAME}" <${GMAIL_USER}>`,
+              to: sub.email,
+              subject: `${poem.title} — novo poema`,
+              html: getHtmlEmail(sub.unsubscribe_token),
+              text: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${sub.unsubscribe_token}`
+            };
 
-        try {
-          await transporter.sendMail(mailOptions);
-          successCount++;
-        } catch (err: any) {
-          console.error(`Falha ao enviar para ${sub.email}:`, err);
-          failCount++;
-          
-          // Desativar assinante em caso de falha no envio
-          try {
-            await supabaseClient
-              .from('subscribers')
-              .update({ active: false })
-              .eq('email', sub.email);
-            console.log(`Assinante desativado automaticamente devido à falha de envio: ${sub.email}`);
-          } catch (dbErr: any) {
-            console.error(`Falha ao tentar desativar o assinante ${sub.email}:`, dbErr);
-          }
-        }
+            try {
+              await transporter.sendMail(mailOptions);
+              successCount++;
+            } catch (err: any) {
+              console.error(`Falha ao enviar para ${sub.email}:`, err);
+              failCount++;
+              
+              // Desativar assinante em caso de falha no envio
+              try {
+                await supabaseClient
+                  .from('subscribers')
+                  .update({ active: false })
+                  .eq('email', sub.email);
+                console.log(`Assinante desativado automaticamente devido à falha de envio: ${sub.email}`);
+              } catch (dbErr: any) {
+                console.error(`Falha ao tentar desativar o assinante ${sub.email}:`, dbErr);
+              }
+            }
+          })
+        );
       }
 
       console.log(`Envio via Gmail SMTP concluído. Sucesso: ${successCount}, Falha: ${failCount}`);
