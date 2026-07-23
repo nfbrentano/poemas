@@ -4,8 +4,6 @@ import { navigateTo } from '../router.js';
 export const searchOverlay = {
   overlay: null,
   allPoemsCache: null,
-  tagsList: [],
-  activeTag: null,
   sortBy: 'relevance',
 
   async loadAllPoems() {
@@ -20,42 +18,7 @@ export const searchOverlay = {
       return [];
     }
     this.allPoemsCache = data || [];
-    
-    // Extract unique tags
-    const allTags = new Set();
-    this.allPoemsCache.forEach(p => {
-      if (Array.isArray(p.tags)) {
-        p.tags.forEach(t => allTags.add(t));
-      }
-    });
-    this.tagsList = Array.from(allTags).sort();
-    
     return this.allPoemsCache;
-  },
-
-  renderTagChips() {
-    const container = document.getElementById('search-filters');
-    if (!container) return;
-    
-    if (this.tagsList.length === 0) {
-      container.innerHTML = '';
-      return;
-    }
-
-    container.innerHTML = this.tagsList.map(tag => `
-      <button class="search-tag-chip ${this.activeTag === tag ? 'active' : ''}" data-tag="${tag}" style="font-size:0.75rem; padding: 4px 10px; border-radius: 12px; border: 1px solid var(--border-subtle); color: var(--text-secondary); background: transparent; cursor: pointer; transition: all var(--transition-fast);">
-        ${tag}
-      </button>
-    `).join('');
-
-    container.querySelectorAll('.search-tag-chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tag = btn.dataset.tag;
-        this.activeTag = (this.activeTag === tag) ? null : tag;
-        this.renderTagChips();
-        this.triggerSearch();
-      });
-    });
   },
 
   renderSearchResults(results, query) {
@@ -65,7 +28,7 @@ export const searchOverlay = {
     
     if (!resultsContainer) return;
 
-    const hasActiveSearch = query.length >= 2 || this.activeTag;
+    const hasActiveSearch = query.length >= 2;
 
     if (!hasActiveSearch) {
       resultsContainer.innerHTML = '';
@@ -96,6 +59,7 @@ export const searchOverlay = {
       const inTitle = poem.title.toLowerCase().includes(q);
       const inExcerpt = poem.excerpt && poem.excerpt.toLowerCase().includes(q);
       const inContent = poem.content && poem.content.toLowerCase().includes(q);
+      const inTag = poem.tags && poem.tags.some(t => t.toLowerCase().includes(q));
       
       let badge = '';
       let snippetHtml = '';
@@ -108,6 +72,9 @@ export const searchOverlay = {
           badge = '<span class="search-match-badge badge-content">no poema</span>';
           const snippet = this.getSnippet(poem.content, query);
           snippetHtml = `<div class="search-result-snippet">"${highlight(snippet, query)}"</div>`;
+        } else if (inTag) {
+          badge = '<span class="search-match-badge badge-tag">no sentimento</span>';
+          snippetHtml = `<div class="search-result-excerpt">${highlight(poem.excerpt, query)}</div>`;
         } else if (inExcerpt) {
           snippetHtml = `<div class="search-result-excerpt">${highlight(poem.excerpt, query)}</div>`;
         } else {
@@ -146,28 +113,21 @@ export const searchOverlay = {
 
     let filtered = [...this.allPoemsCache];
     
-    // 1. Text Filter
+    // 1. Text & Tag Filter
     if (query.length >= 2) {
       const q = query.toLowerCase();
       filtered = filtered.filter(p => 
         p.title.toLowerCase().includes(q) || 
         (p.excerpt && p.excerpt.toLowerCase().includes(q)) || 
-        (p.content && p.content.toLowerCase().includes(q))
+        (p.content && p.content.toLowerCase().includes(q)) ||
+        (p.tags && p.tags.some(t => t.toLowerCase().includes(q)))
       );
-    } else if (query.length > 0 && !this.activeTag) {
-      // Query entered but too short, and no tag filter active -> render empty
+    } else {
       this.renderSearchResults([], query);
       return;
     }
     
-    // 2. Tag Filter
-    if (this.activeTag) {
-      filtered = filtered.filter(p => 
-        p.tags && p.tags.includes(this.activeTag)
-      );
-    }
-    
-    // 3. Sorting
+    // 2. Sorting
     if (this.sortBy === 'recent') {
       filtered.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
     } else {
@@ -208,7 +168,7 @@ export const searchOverlay = {
     this.renderSearchResults(filtered, query);
     
     window.dispatchEvent(new CustomEvent('global-search', { 
-      detail: { query, results: (query.length >= 2 || this.activeTag) ? filtered : null } 
+      detail: { query, results: query.length >= 2 ? filtered : null } 
     }));
   },
 
@@ -245,12 +205,10 @@ export const searchOverlay = {
       <div class="search-overlay-content">
         <button class="search-overlay-close" id="search-close-btn" aria-label="Fechar busca">&times;</button>
         <div class="search-input-wrapper">
-          <input type="search" id="overlay-search-input" placeholder="Buscar poema..." aria-label="Buscar poema" autocomplete="off">
+          <input type="search" id="overlay-search-input" placeholder="Buscar por título, trecho ou sentimento..." aria-label="Buscar poema" autocomplete="off">
           <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <button id="search-clear-btn" class="search-clear-btn" aria-label="Limpar busca">&times;</button>
         </div>
-        
-        <div id="search-filters" class="search-filters-container" style="display:flex; flex-wrap:wrap; gap:var(--space-2xs); margin: var(--space-sm) 0; min-height: 24px; justify-content: center;"></div>
         
         <div id="search-sorting" class="search-sorting-container" style="display:none; justify-content:space-between; align-items:center; margin: var(--space-sm) 0; font-size:0.75rem; color:var(--text-secondary); font-family:var(--font-ui); border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;">
           <span id="search-results-count"></span>
@@ -289,8 +247,6 @@ export const searchOverlay = {
       input.value = '';
       input.focus();
       clearBtn.style.display = 'none';
-      this.activeTag = null;
-      this.renderTagChips();
       this.triggerSearch();
     });
 
@@ -319,9 +275,8 @@ export const searchOverlay = {
     this.overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 
-    // Lazy load cache & render chips
+    // Lazy load cache
     await this.loadAllPoems();
-    this.renderTagChips();
 
     setTimeout(() => {
       const input = this.overlay.querySelector('#overlay-search-input');
@@ -339,7 +294,6 @@ export const searchOverlay = {
       const resultsContainer = this.overlay.querySelector('#search-results');
       if (input) input.value = '';
       if (resultsContainer) resultsContainer.innerHTML = '';
-      this.activeTag = null;
       
       window.dispatchEvent(new CustomEvent('global-search', { 
         detail: { query: '', results: null } 

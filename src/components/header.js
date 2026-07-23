@@ -11,8 +11,8 @@ export const header = {
           <a href="${import.meta.env.BASE_URL}" class="logo" data-link>Natanael Brentano</a>
           
           <div id="header-controls" style="display: flex; align-items: center; gap: var(--space-md);">
-            <button id="search-toggle-btn" class="header-search-toggle" aria-label="Abrir busca">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <button id="search-toggle-btn" class="header-search-toggle" aria-label="Buscar poemas" title="Buscar poemas (Pressione /)">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </button>
 
             <div id="nav-overlay" class="nav-overlay"></div>
