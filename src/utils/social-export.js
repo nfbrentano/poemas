@@ -43,7 +43,6 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
       <div class="social-card-content" id="social-card-text" style="${customText ? 'font-style: italic;' : ''}">${displayContent}</div>
       <div class="social-card-footer">
         <div class="card-author">Natanael Brentano</div>
-        <div class="card-meta">@nfgbrentano &nbsp;•&nbsp; nfbrentano.github.io/poemas</div>
       </div>
     </div>
   `;
