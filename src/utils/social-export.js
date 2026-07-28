@@ -47,15 +47,15 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
     </div>
   `;
   
-  const renderEl = document.getElementById('social-card-render');
-  const textEl = document.getElementById('social-card-text');
+  const renderEl = container.querySelector('#social-card-render');
+  const textEl = container.querySelector('#social-card-text');
   
   // Wait a small tick to ensure fonts are applied
   await new Promise(r => setTimeout(r, 100));
   
-  // Auto-resize font to fit the container (max height available for text: ~850px for 4:5, ~1350px for 9:16)
-  const maxContentHeight = aspectRatio === 'stories' ? 1300 : 850;
-  let fontSize = aspectRatio === 'stories' ? 45 : 40; // Use px instead of rem to avoid isolated SVG rendering issues
+  // Auto-resize font to fit the container (max height available for text: ~850px for 4:5, ~1000px for 15x21, ~1350px for 9:16)
+  const maxContentHeight = aspectRatio === 'stories' ? 1300 : (aspectRatio === '15x21' ? 1000 : 850);
+  let fontSize = aspectRatio === 'stories' ? 45 : (aspectRatio === '15x21' ? 42 : 40); // Use px instead of rem to avoid isolated SVG rendering issues
   textEl.style.fontSize = `${fontSize}px`;
   while (textEl.scrollHeight > maxContentHeight && fontSize > 14) {
     fontSize -= 1.5;
