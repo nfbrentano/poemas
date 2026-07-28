@@ -17,7 +17,6 @@ ${d}
       <div class="social-card-content" id="social-card-text" style="${r?`font-style: italic;`:``}">${a}</div>
       <div class="social-card-footer">
         <div class="card-author">Natanael Brentano</div>
-        <div class="card-meta">@nfgbrentano &nbsp;•&nbsp; nfbrentano.github.io/poemas</div>
       </div>
     </div>
   `;let o=document.getElementById(`social-card-render`),s=document.getElementById(`social-card-text`);await new Promise(e=>setTimeout(e,100));let c=i===`stories`?1300:850,l=i===`stories`?45:40;for(s.style.fontSize=`${l}px`;s.scrollHeight>c&&l>14;)l-=1.5,s.style.fontSize=`${l}px`;let u=await $.toBlob(o,{type:`png`,scale:2}),d=r?`citacao-${e.slug}-${n}-${i}.png`:`poema-${e.slug}-${n}-${i}.png`,f=document.createElement(`a`);f.download=d;let p=URL.createObjectURL(u);f.href=p,f.click(),URL.revokeObjectURL(p),t.innerHTML=``}export{$i as generateSocialCard};
