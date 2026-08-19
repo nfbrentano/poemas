@@ -46,11 +46,29 @@ serve(async (req: any) => {
       });
     }
 
-    const token = authHeader.replace('Bearer ', '').trim();
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
     const serviceRoleKey = (Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '').trim();
 
-    // Allow service role key to bypass user auth check
-    if (token !== serviceRoleKey) {
+    let isAuthorized = false;
+
+    // Allow service role key to bypass user auth check (direct match or JWT service_role claim)
+    if (serviceRoleKey && token === serviceRoleKey) {
+      isAuthorized = true;
+    } else {
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+          if (payload && payload.role === 'service_role') {
+            isAuthorized = true;
+          }
+        }
+      } catch (_) {
+        // Fallback to auth.getUser
+      }
+    }
+
+    if (!isAuthorized) {
       const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
       if (userError || !user) {
