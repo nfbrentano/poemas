@@ -1,6 +1,6 @@
 import { supabase } from '../utils/supabase.js';
 import { navigateTo } from '../router.js';
-import { escapeHtml } from '../utils/html.js';
+import { escapeHtml, stripHtml } from '../utils/html.js';
 
 function debounce(fn, delay) {
   let timeoutId;
@@ -1042,11 +1042,7 @@ export default {
       if (data) {
         poem = data;
         // Clean imported HTML tags so the editor is always pure natural text
-        poem.content = (poem.content || '')
-          .replace(/<br\s*[\/]?>/gi, '\n')
-          .replace(/<\/p>\s*<p>/gi, '\n\n')
-          .replace(/<\/?(p|pre|div|span|strong|em|b|i)[^>]*>/gi, '')
-          .trim();
+        poem.content = stripHtml(poem.content);
       }
     }
     
@@ -1057,28 +1053,28 @@ export default {
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg);">
               <div>
                 <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Título</label>
-                <input type="text" id="poem-title" value="${poem.title}" required style="width: 100%; font-size: 1.5rem; font-family: var(--font-display); padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
+                <input type="text" id="poem-title" value="${escapeHtml(poem.title)}" required style="width: 100%; font-size: 1.5rem; font-family: var(--font-display); padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
               </div>
               <div>
                 <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Link (Slug)</label>
-                <input type="text" id="poem-slug" value="${poem.slug}" required style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0; color: var(--text-muted);">
+                <input type="text" id="poem-slug" value="${escapeHtml(poem.slug)}" required style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0; color: var(--text-muted);">
               </div>
             </div>
             
             <div style="margin-top: var(--space-md);">
               <label style="display: block; margin-bottom: var(--space-xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Conteúdo (HTML)</label>
-              <textarea id="poem-content-input" required style="width: 100%; min-height: 500px; font-family: var(--font-body); font-size: 1.1rem; line-height: 1.6; padding: var(--space-md); border: 1px solid var(--border-strong); background: var(--bg-primary); border-radius: 2px; color: var(--text-primary); resize: vertical;">${poem.content}</textarea>
+              <textarea id="poem-content-input" required style="width: 100%; min-height: 500px; font-family: var(--font-body); font-size: 1.1rem; line-height: 1.6; padding: var(--space-md); border: 1px solid var(--border-strong); background: var(--bg-primary); border-radius: 2px; color: var(--text-primary); resize: vertical;">${escapeHtml(poem.content)}</textarea>
             </div>
             
             <div>
               <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Resumo / Trecho</label>
-              <textarea id="poem-excerpt" style="width: 100%; min-height: 80px; font-family: var(--font-body); font-size: 1rem; padding: var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); border-radius: 2px; resize: vertical;">${poem.excerpt || ''}</textarea>
+              <textarea id="poem-excerpt" style="width: 100%; min-height: 80px; font-family: var(--font-body); font-size: 1rem; padding: var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); border-radius: 2px; resize: vertical;">${escapeHtml(poem.excerpt || '')}</textarea>
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
               <div>
                 <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Sentimentos (vírgula)</label>
-                <input type="text" id="poem-tags" value="${poem.tags ? poem.tags.join(', ') : ''}" placeholder="Ex: Amor, Saudade, Melancolia" style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
+                <input type="text" id="poem-tags" value="${escapeHtml(poem.tags ? poem.tags.join(', ') : '')}" placeholder="Ex: Amor, Saudade, Melancolia" style="width: 100%; padding: var(--space-xs) 0; border: none; border-bottom: 1px solid var(--border-strong); background: transparent; border-radius: 0;">
               </div>
               <div>
                 <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Estado</label>
