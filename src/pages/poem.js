@@ -5,7 +5,7 @@ import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
 import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
 import { favorites, history } from '../utils/favorites.js';
-import { escapeHtml } from '../utils/html.js';
+import { escapeHtml, stripHtml } from '../utils/html.js';
 import { toast } from '../components/toast.js';
 import { notes } from '../utils/notes.js';
 
@@ -116,7 +116,7 @@ export default {
     }
 
     // Tempo Estimado de Leitura
-    const plainText = (poem.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const plainText = stripHtml(poem.content || '').replace(/\s+/g, ' ').trim();
     const wordCount = plainText.split(' ').filter(w => w.length > 0).length;
     const readingMinutes = Math.ceil(wordCount / 200);
     const readingLabel = readingMinutes <= 1 ? '1 min de leitura' : `${readingMinutes} min de leitura`;
@@ -126,8 +126,7 @@ export default {
     
     // Update SEO dynamically
     const poemUrl = window.location.href;
-    const cleanExcerpt = (poem.excerpt || poem.content)
-      .replace(/<[^>]*>?/gm, '')
+    const cleanExcerpt = stripHtml(poem.excerpt || poem.content || '')
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 160) + '...';
