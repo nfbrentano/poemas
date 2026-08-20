@@ -700,7 +700,7 @@ export default {
           if (safeUrl) {
             const img = document.createElement('img');
             img.id = 'col-img-preview';
-            img.src = safeUrl;
+            img.setAttribute('src', encodeURI(safeUrl));
             img.style.width = '100%';
             img.style.height = '100%';
             img.style.objectFit = 'cover';
