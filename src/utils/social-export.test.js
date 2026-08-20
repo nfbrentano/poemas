@@ -25,4 +25,22 @@ describe('social-export', () => {
     expect(clickSpy).toHaveBeenCalled();
     clickSpy.mockRestore();
   });
+
+  it('handles custom text and fallback HTML content safely', async () => {
+    const poem = {
+      title: '<script>alert(1)</script>Poema Seguro',
+      content: '<p>Linha 1<br>Linha 2</p><p>Linha 3</p>',
+      slug: 'poema-seguro'
+    };
+    const container = document.createElement('div');
+    
+    global.URL.createObjectURL = vi.fn().mockReturnValue('blob:fake');
+    global.URL.revokeObjectURL = vi.fn();
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    await generateSocialCard(poem, container, 'light', 'Citação <img src=x onerror=alert(1)>', 'stories');
+
+    expect(clickSpy).toHaveBeenCalled();
+    clickSpy.mockRestore();
+  });
 });

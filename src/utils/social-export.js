@@ -1,23 +1,17 @@
 import { snapdom } from '@zumer/snapdom';
+import { stripHtml } from './html.js';
 import '../styles/social-card.css';
 
 export async function generateSocialCard(poem, container, theme = 'dark', customText = null, aspectRatio = 'feed') {
   let displayContent = customText || poem.excerpt;
   if (!displayContent) {
-    let html = poem.content
-      .replace(/<br\s*[\/]?>/gi, '\n')
-      .replace(/<\/p>\s*<p>/gi, '\n\n')
-      .replace(/<\/?p>/gi, '\n');
-      
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    const plainText = stripHtml(poem.content || '');
     
-    // Split by newline and take the first 6 lines
+    // Split by newline and take the lines
     const lines = plainText.split('\n').map(l => l.trim());
     
     // Remove leading empty lines
-    while(lines.length > 0 && lines[0] === '') {
+    while (lines.length > 0 && lines[0] === '') {
       lines.shift();
     }
     
@@ -37,18 +31,37 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
   const titleColor = titleColors[theme] || '#c5a880';
   const displayTitle = (customText ? `De “${poem.title}”` : poem.title) || 'Poema';
   
-  container.innerHTML = `
-    <div class="social-card-layout theme-${theme} ratio-${aspectRatio}" id="social-card-render">
-      <h1 class="social-card-title" style="color: ${titleColor};">${displayTitle}</h1>
-      <div class="social-card-content" id="social-card-text" style="${customText ? 'font-style: italic;' : ''}">${displayContent}</div>
-      <div class="social-card-footer">
-        <div class="card-author">Natanael Brentano</div>
-      </div>
-    </div>
-  `;
-  
-  const renderEl = container.querySelector('#social-card-render');
-  const textEl = container.querySelector('#social-card-text');
+  container.replaceChildren();
+
+  const renderEl = document.createElement('div');
+  renderEl.className = `social-card-layout theme-${theme} ratio-${aspectRatio}`;
+  renderEl.id = 'social-card-render';
+
+  const titleEl = document.createElement('h1');
+  titleEl.className = 'social-card-title';
+  titleEl.style.color = titleColor;
+  titleEl.textContent = displayTitle;
+
+  const textEl = document.createElement('div');
+  textEl.className = 'social-card-content';
+  textEl.id = 'social-card-text';
+  if (customText) {
+    textEl.style.fontStyle = 'italic';
+  }
+  textEl.textContent = displayContent;
+
+  const footerEl = document.createElement('div');
+  footerEl.className = 'social-card-footer';
+
+  const authorEl = document.createElement('div');
+  authorEl.className = 'card-author';
+  authorEl.textContent = 'Natanael Brentano';
+
+  footerEl.appendChild(authorEl);
+  renderEl.appendChild(titleEl);
+  renderEl.appendChild(textEl);
+  renderEl.appendChild(footerEl);
+  container.appendChild(renderEl);
   
   // Wait a small tick to ensure fonts are applied
   await new Promise(r => setTimeout(r, 100));
@@ -83,5 +96,5 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
   URL.revokeObjectURL(url);
   
   // Clean up
-  container.innerHTML = '';
+  container.replaceChildren();
 }
