@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, stripHtml } from './html.js';
+import { escapeHtml, stripHtml, sanitizeUrl } from './html.js';
 
 describe('html utils', () => {
   describe('escapeHtml', () => {
@@ -38,4 +38,41 @@ describe('html utils', () => {
       expect(stripHtml(undefined)).toBe('');
     });
   });
+
+  describe('sanitizeUrl', () => {
+    it('allows valid http and https URLs', () => {
+      expect(sanitizeUrl('https://example.com/image.jpg')).toBe('https://example.com/image.jpg');
+      expect(sanitizeUrl('http://example.com/image.png')).toBe('http://example.com/image.png');
+    });
+
+    it('allows valid relative URLs', () => {
+      expect(sanitizeUrl('/images/capa.jpg')).toBe('/images/capa.jpg');
+    });
+
+    it('allows valid base64 image data URIs', () => {
+      const validDataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      expect(sanitizeUrl(validDataUri)).toBe(validDataUri);
+    });
+
+    it('blocks dangerous protocols like javascript: and vbscript:', () => {
+      expect(sanitizeUrl('javascript:alert(1)')).toBe('');
+      expect(sanitizeUrl('JAVASCRIPT:alert(1)')).toBe('');
+      expect(sanitizeUrl('vbscript:msgbox(1)')).toBe('');
+    });
+
+    it('blocks protocol-relative URLs and text/html data URIs', () => {
+      expect(sanitizeUrl('//evil.com/payload.js')).toBe('');
+      expect(sanitizeUrl('/\\evil.com')).toBe('');
+      expect(sanitizeUrl('data:text/html,<script>alert(1)</script>')).toBe('');
+    });
+
+    it('handles non-string and empty inputs', () => {
+      expect(sanitizeUrl('')).toBe('');
+      expect(sanitizeUrl('   ')).toBe('');
+      expect(sanitizeUrl(null)).toBe('');
+      expect(sanitizeUrl(undefined)).toBe('');
+      expect(sanitizeUrl(123)).toBe('');
+    });
+  });
 });
+

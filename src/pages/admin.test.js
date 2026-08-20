@@ -191,5 +191,95 @@ describe('Admin - renderEditor', () => {
     expect(previewTitle.textContent).toBe('<b onmouseover=alert(1)>Título Seguro</b>');
     expect(previewTitle.querySelector('b')).toBeNull();
   });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+});
+
+describe('Admin - renderCollections', () => {
+  let container;
+
+  beforeEach(() => {
+    vi.useRealTimers();
+    document.body.innerHTML = '';
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    vi.clearAllMocks();
+  });
+
+  it('renders collections with safe image URLs and updates collection preview safely', async () => {
+    const mockCollections = [
+      {
+        id: 'col-1',
+        name: 'Coleção Teste',
+        slug: 'colecao-teste',
+        description: 'Descrição',
+        image_url: 'https://example.com/cover.jpg',
+        created_at: new Date().toISOString(),
+        collection_poems: [{ count: 3 }]
+      },
+      {
+        id: 'col-2',
+        name: 'Coleção Insegura',
+        slug: 'colecao-insegura',
+        description: 'Tentativa XSS',
+        image_url: 'javascript:alert(1)',
+        created_at: new Date().toISOString(),
+        collection_poems: [{ count: 0 }]
+      }
+    ];
+
+    supabase.from.mockImplementation((table) => {
+      if (table === 'collections') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({ data: mockCollections, error: null })
+        };
+      }
+      if (table === 'poems') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({ data: [], error: null })
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({ data: [], error: null })
+      };
+    });
+
+    await admin.renderCollections(container);
+
+    expect(container.innerHTML).toContain('https://example.com/cover.jpg');
+    expect(container.innerHTML).not.toContain('javascript:alert(1)');
+    expect(container.innerHTML).toContain('Sem Imagem');
+
+    // Click new collection button
+    const newBtn = container.querySelector('#new-col-btn');
+    expect(newBtn).not.toBeNull();
+    newBtn.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const imgInput = container.querySelector('#col-img-url');
+    const previewContainer = container.querySelector('#col-img-preview-container');
+    expect(imgInput).not.toBeNull();
+    expect(previewContainer).not.toBeNull();
+
+    // Input safe image URL
+    imgInput.value = 'https://example.com/new-cover.jpg';
+    imgInput.dispatchEvent(new Event('input'));
+
+    const previewImg = previewContainer.querySelector('#col-img-preview');
+    expect(previewImg).not.toBeNull();
+    expect(previewImg.src).toBe('https://example.com/new-cover.jpg');
+
+    // Input unsafe image URL
+    imgInput.value = 'javascript:alert(1)';
+    imgInput.dispatchEvent(new Event('input'));
+
+    expect(previewContainer.querySelector('#col-img-preview')).toBeNull();
+    expect(previewContainer.textContent).toContain('Nenhuma imagem');
+  });
 });
 

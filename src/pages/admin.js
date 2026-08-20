@@ -1,6 +1,6 @@
 import { supabase } from '../utils/supabase.js';
 import { navigateTo } from '../router.js';
-import { escapeHtml, stripHtml } from '../utils/html.js';
+import { escapeHtml, stripHtml, sanitizeUrl } from '../utils/html.js';
 
 function debounce(fn, delay) {
   let timeoutId;
@@ -466,10 +466,12 @@ export default {
         return;
       }
       
-      const colCards = cols.map(c => `
+      const colCards = cols.map(c => {
+        const safeImg = sanitizeUrl(c.image_url);
+        return `
         <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-          ${c.image_url ? `
-            <div style="height: 120px; background-image: url('${c.image_url}'); background-size: cover; background-position: center; border-bottom: 1px solid var(--border-subtle);"></div>
+          ${safeImg ? `
+            <div style="height: 120px; background-image: url('${escapeHtml(safeImg)}'); background-size: cover; background-position: center; border-bottom: 1px solid var(--border-subtle);"></div>
           ` : `
             <div style="height: 120px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Sem Imagem</div>
           `}
@@ -490,8 +492,8 @@ export default {
               <button class="delete-col-btn" data-id="${c.id}" style="font-size: 0.85rem; color: var(--error); opacity: 0.7; transition: opacity var(--transition-fast); background: transparent; border: none; cursor: pointer;">Excluir</button>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
       
       container.innerHTML = `
         <div style="font-family: var(--font-ui); display: grid; gap: var(--space-md);">
@@ -617,8 +619,8 @@ export default {
                 <div>
                   <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">Preview da Capa</label>
                   <div id="col-img-preview-container" style="width: 100%; height: 105px; border: 1px solid var(--border-strong); border-radius: 2px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; overflow: hidden; color: var(--text-muted); font-size: 0.8rem;">
-                    ${col.image_url ? `
-                      <img src="${escapeHtml(col.image_url)}" id="col-img-preview" style="width: 100%; height: 100%; object-fit: cover;">
+                    ${sanitizeUrl(col.image_url) ? `
+                      <img src="${escapeHtml(sanitizeUrl(col.image_url))}" id="col-img-preview" style="width: 100%; height: 100%; object-fit: cover;">
                     ` : `
                       <span id="col-preview-placeholder">Nenhuma imagem</span>
                     `}
@@ -694,10 +696,11 @@ export default {
 
         const updateImgPreview = (url) => {
           previewContainer.replaceChildren();
-          if (url) {
+          const safeUrl = sanitizeUrl(url);
+          if (safeUrl) {
             const img = document.createElement('img');
             img.id = 'col-img-preview';
-            img.src = url;
+            img.src = safeUrl;
             img.style.width = '100%';
             img.style.height = '100%';
             img.style.objectFit = 'cover';

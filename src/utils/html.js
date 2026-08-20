@@ -44,3 +44,40 @@ export function stripHtml(html) {
   return result.trim();
 }
 
+/**
+ * Sanitizes a URL, allowing only safe protocols (http, https, safe data:image/, or relative paths).
+ * Returns empty string if the URL is invalid or uses an unsafe protocol (e.g., javascript:).
+ * @param {string} url
+ * @returns {string}
+ */
+export function sanitizeUrl(url) {
+  if (typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+
+  // Block javascript:, vbscript:, and control characters
+  if (/^(?:javascript|vbscript):/i.test(trimmed) || /[\u0000-\u001f\u007f-\u009f]/.test(trimmed)) {
+    return '';
+  }
+
+  // Safe relative URL starting with single slash
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//') && !trimmed.startsWith('/\\')) {
+    return trimmed;
+  }
+
+  // Allow safe base64 data URIs for images
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif|svg\+xml);base64,[a-z0-9+/=]+$/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.href;
+    }
+  } catch {
+    return '';
+  }
+
+  return '';
+}

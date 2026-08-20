@@ -2,6 +2,7 @@ import { supabase } from '../utils/supabase.js';
 import { filterChips } from '../components/filter-chips.js';
 import { updateSEO } from '../utils/seo.js';
 import { normalizeTag } from '../utils/tags.js';
+import { escapeHtml, sanitizeUrl } from '../utils/html.js';
 
 export const collections = {
   meta: {
@@ -62,15 +63,18 @@ export const collections = {
         if (!cols || cols.length === 0) {
           grid.innerHTML = '<p class="empty-msg">Nenhuma coleção encontrada.</p>';
         } else {
-          grid.innerHTML = cols.map(col => `
-            <a href="${BASE_URL}colecao/${col.slug}" class="collection-card" data-link>
-              ${col.image_url ? `<img src="${col.image_url}" alt="${col.name}" class="collection-img" loading="lazy" decoding="async">` : '<div class="collection-img-placeholder"></div>'}
+          grid.innerHTML = cols.map(col => {
+            const safeImg = sanitizeUrl(col.image_url);
+            return `
+            <a href="${BASE_URL}colecao/${escapeHtml(col.slug)}" class="collection-card" data-link>
+              ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="${escapeHtml(col.name)}" class="collection-img" loading="lazy" decoding="async">` : '<div class="collection-img-placeholder"></div>'}
               <div class="collection-info">
-                <h2 class="collection-name">${col.name}</h2>
+                <h2 class="collection-name">${escapeHtml(col.name)}</h2>
                 <span class="collection-count">${col.collection_poems?.[0]?.count || 0} poemas</span>
               </div>
             </a>
-          `).join('');
+          `;
+          }).join('');
 
         }
       }
@@ -117,8 +121,8 @@ export const collections = {
             const year = new Date(poem.published_at).getFullYear();
             return `
               <article class="poem-row fade-in">
-                <a href="${BASE_URL}poema/${poem.slug}" data-link class="poem-row-link">
-                  <h3 class="poem-row-title">${poem.title}</h3>
+                <a href="${BASE_URL}poema/${escapeHtml(poem.slug)}" data-link class="poem-row-link">
+                  <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
                   <span class="poem-row-year">${year}</span>
                 </a>
               </article>
