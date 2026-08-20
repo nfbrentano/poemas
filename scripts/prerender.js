@@ -16,12 +16,16 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 function cleanHtml(html) {
   if (!html) return '';
-  return html
+  let result = html
     .replace(/<br\s*[\/]?>/gi, '\n')
     .replace(/<\/p>\s*<p>/gi, '\n\n')
-    .replace(/<\/?p>/gi, '')
-    .replace(/<[^>]*>/g, '') // remove any other html tags
-    .trim();
+    .replace(/<\/?p>/gi, '');
+  let prev;
+  do {
+    prev = result;
+    result = result.replace(/<[^>]*>/g, '');
+  } while (result !== prev);
+  return result.trim();
 }
 
 function getExcerpt(poem, limit = 160) {
