@@ -259,9 +259,9 @@ serve(async (req: any) => {
       }]);
     }
 
-    return new Response(JSON.stringify({ 
-      error: error.message || String(error),
-      details: error.stack || 'No stack trace'
+    return new Response(JSON.stringify({
+      error: 'Falha ao enviar newsletter.',
+      code: 'SEND_NEWSLETTER_ERROR'
     }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
