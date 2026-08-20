@@ -6,6 +6,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+function stripHtml(input: string): string {
+  if (!input) return ''
+  let sanitized = input
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/p\s*>/gi, ' ')
+    .replace(/<\/div\s*>/gi, ' ')
+  let prev: string
+  do {
+    prev = sanitized
+    sanitized = sanitized.replace(/<[^>]*>/g, '')
+  } while (sanitized !== prev)
+  return sanitized.trim()
+}
+
+function escapeXml(input: string): string {
+  if (!input) return ''
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -33,8 +57,12 @@ serve(async (req) => {
       return new Response('Poem not found', { status: 404 })
     }
 
-    const title = poem.title
-    const text = (poem.excerpt || poem.content).replace(/<[^>]*>/g, '').slice(0, 150) + '...'
+    const title = escapeXml(poem.title || '')
+    const rawText = stripHtml(poem.excerpt || poem.content || '')
+    const truncatedText = rawText.length > 150 ? rawText.slice(0, 150) + '...' : rawText
+    const lines = (truncatedText.match(/.{1,60}(\s|$)/g) || [truncatedText])
+      .map((line) => line.trim())
+      .filter(Boolean)
 
     // Simplest way: Return an SVG that browser can render as image
     // For a real production, use Satori or a Puppeteer-based service
@@ -58,7 +86,7 @@ serve(async (req) => {
         
         <!-- Excerpt -->
         <text x="100" y="350" font-family="sans-serif" font-size="32" fill="#a0a0a0" font-style="italic">
-          ${text.match(/.{1,60}(\s|$)/g)?.map((line, i) => `<tspan x="100" dy="${i === 0 ? 0 : 45}">${line.trim()}</tspan>`).join('') || ''}
+          ${lines.map((line, i) => `<tspan x="100" dy="${i === 0 ? 0 : 45}">${escapeXml(line)}</tspan>`).join('')}
         </text>
 
         <!-- Brand -->
