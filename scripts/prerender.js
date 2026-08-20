@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
+import { stripHtml, escapeHtml } from '../src/utils/html.js';
+
 // Note: Run this with node --env-file=.env.local scripts/prerender.js
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
@@ -14,37 +16,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-function cleanHtml(html) {
-  if (!html) return '';
-  let result = html
-    .replace(/<br\s*[\/]?>/gi, '\n')
-    .replace(/<\/p>\s*<p>/gi, '\n\n')
-    .replace(/<\/?p>/gi, '');
-  let prev;
-  do {
-    prev = result;
-    result = result.replace(/<[^>]*>/g, '');
-  } while (result !== prev);
-  return result.trim();
-}
-
 function getExcerpt(poem, limit = 160) {
   if (poem.excerpt && poem.excerpt.trim()) {
     return poem.excerpt.trim();
   }
-  const cleanContent = cleanHtml(poem.content);
+  const cleanContent = stripHtml(poem.content);
   if (cleanContent.length <= limit) return cleanContent;
   return cleanContent.slice(0, limit - 3) + '...';
-}
-
-function escapeHtml(unsafe) {
-  if (!unsafe) return '';
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
 
 async function prerender() {
