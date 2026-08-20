@@ -22,6 +22,17 @@ if (!xmlPath || !fs.existsSync(xmlPath)) {
   process.exit(1);
 }
 
+function removeHtmlComments(input) {
+  if (typeof input !== 'string') return '';
+  let prev;
+  let result = input;
+  do {
+    prev = result;
+    result = result.replace(/<!--[\s\S]*?-->/g, '');
+  } while (result !== prev);
+  return result.trim();
+}
+
 async function run() {
   console.log(`Reading ${xmlPath}...`);
   const xmlData = fs.readFileSync(xmlPath, 'utf8');
@@ -65,7 +76,7 @@ async function run() {
     // Convert WP HTML content to basic text or keep HTML. Our frontend handles basic newlines, 
     // so we strip some HTML or just keep it since white-space: pre-wrap handles basic text nicely.
     // For poetry, usually we want to keep it simple.
-    const cleanContent = content.replace(/<!--[\s\S]*?-->/g, '').trim();
+    const cleanContent = removeHtmlComments(content);
     
     // Tags
     let tags = [];

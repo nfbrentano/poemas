@@ -618,7 +618,7 @@ export default {
                   <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">Preview da Capa</label>
                   <div id="col-img-preview-container" style="width: 100%; height: 105px; border: 1px solid var(--border-strong); border-radius: 2px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; overflow: hidden; color: var(--text-muted); font-size: 0.8rem;">
                     ${col.image_url ? `
-                      <img src="${col.image_url}" id="col-img-preview" style="width: 100%; height: 100%; object-fit: cover;">
+                      <img src="${escapeHtml(col.image_url)}" id="col-img-preview" style="width: 100%; height: 100%; object-fit: cover;">
                     ` : `
                       <span id="col-preview-placeholder">Nenhuma imagem</span>
                     `}
@@ -691,13 +691,27 @@ export default {
         
         const imgUrlInput = container.querySelector('#col-img-url');
         const previewContainer = container.querySelector('#col-img-preview-container');
-        imgUrlInput.addEventListener('input', () => {
-          const val = imgUrlInput.value.trim();
-          if (val) {
-            previewContainer.innerHTML = `<img src="${val}" id="col-img-preview" style="width: 100%; height: 100%; object-fit: cover;">`;
+
+        const updateImgPreview = (url) => {
+          previewContainer.replaceChildren();
+          if (url) {
+            const img = document.createElement('img');
+            img.id = 'col-img-preview';
+            img.src = url;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            previewContainer.appendChild(img);
           } else {
-            previewContainer.innerHTML = `<span id="col-preview-placeholder">Nenhuma imagem</span>`;
+            const placeholder = document.createElement('span');
+            placeholder.id = 'col-preview-placeholder';
+            placeholder.textContent = 'Nenhuma imagem';
+            previewContainer.appendChild(placeholder);
           }
+        };
+
+        imgUrlInput.addEventListener('input', () => {
+          updateImgPreview(imgUrlInput.value.trim());
         });
         
         const fileInput = container.querySelector('#col-img-upload');
@@ -726,7 +740,7 @@ export default {
               
             const publicUrl = urlData.publicUrl;
             imgUrlInput.value = publicUrl;
-            previewContainer.innerHTML = `<img src="${publicUrl}" id="col-img-preview" style="width: 100%; height: 100%; object-fit: cover;">`;
+            updateImgPreview(publicUrl);
             statusSpan.textContent = 'Sucesso!';
             statusSpan.style.color = 'var(--success)';
           } catch (err) {
