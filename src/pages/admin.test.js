@@ -131,6 +131,7 @@ describe('Admin - renderEditor', () => {
   let container;
 
   beforeEach(() => {
+    document.body.innerHTML = '';
     container = document.createElement('div');
     document.body.appendChild(container);
     vi.clearAllMocks();
@@ -155,6 +156,40 @@ describe('Admin - renderEditor', () => {
 
     expect(previewContainer.textContent).toContain('Sentimentos: Amor, <script>alert(1)</script>, Saudade');
     expect(previewContainer.querySelector('script')).toBeNull();
+  });
+
+  it('updates preview content safely on user input without interpreting HTML', async () => {
+    await admin.renderEditor(container);
+
+    const contentInput = container.querySelector('#poem-content-input');
+    const previewContent = container.querySelector('#preview-content');
+
+    expect(contentInput).not.toBeNull();
+    expect(previewContent).not.toBeNull();
+
+    contentInput.value = '<img src=x onerror=alert(1)>Verso seguro\nOutro verso';
+    contentInput.dispatchEvent(new Event('input'));
+
+    vi.advanceTimersByTime(300);
+
+    expect(previewContent.textContent).toBe('<img src=x onerror=alert(1)>Verso seguro\nOutro verso');
+    expect(previewContent.querySelector('img')).toBeNull();
+  });
+
+  it('updates preview title safely on user input without interpreting HTML', async () => {
+    await admin.renderEditor(container);
+
+    const titleInput = container.querySelector('#poem-title');
+    const previewTitle = container.querySelector('#preview-title');
+
+    expect(titleInput).not.toBeNull();
+    expect(previewTitle).not.toBeNull();
+
+    titleInput.value = '<b onmouseover=alert(1)>Título Seguro</b>';
+    titleInput.dispatchEvent(new Event('input'));
+
+    expect(previewTitle.textContent).toBe('<b onmouseover=alert(1)>Título Seguro</b>');
+    expect(previewTitle.querySelector('b')).toBeNull();
   });
 });
 

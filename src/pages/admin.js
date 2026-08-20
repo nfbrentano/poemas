@@ -1119,12 +1119,12 @@ export default {
               <span class="preview-label">Preview em tempo real</span>
             </div>
             <article class="preview-poem">
-              <h1 id="preview-title">${poem.title || 'Título da Obra'}</h1>
+              <h1 id="preview-title">${escapeHtml(poem.title || 'Título da Obra')}</h1>
               <div class="poem-meta preview-meta">
                 <span id="preview-date">${poem.published_at ? new Date(poem.published_at).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')}</span>
                 <span id="preview-tags-container">${poem.tags && poem.tags.length > 0 ? `<span>•</span> <span>Sentimentos: ${escapeHtml(poem.tags.join(', '))}</span>` : ''}</span>
               </div>
-              <div id="preview-content" class="poem-content">${poem.content || ''}</div>
+              <div id="preview-content" class="poem-content">${escapeHtml(poem.content || '')}</div>
             </article>
           </div>
         </div>
@@ -1137,7 +1137,7 @@ export default {
     
     titleInput.addEventListener('input', () => {
       // Sync preview title
-      document.getElementById('preview-title').innerText = titleInput.value || 'Título da Obra';
+      document.getElementById('preview-title').textContent = titleInput.value || 'Título da Obra';
 
       if (!id || slugInput.value === '') { // Auto-fill for new poems or if slug is empty
         let slug = titleInput.value.toLowerCase().trim()
@@ -1164,7 +1164,7 @@ export default {
     const schedulingFields = document.getElementById('scheduling-fields');
 
     const updatePreview = () => {
-      previewContent.innerHTML = contentInput.value;
+      previewContent.textContent = contentInput.value;
     };
 
     contentInput.addEventListener('input', debounce(updatePreview, 250));
