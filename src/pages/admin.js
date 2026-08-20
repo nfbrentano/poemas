@@ -1108,7 +1108,7 @@ export default {
               <h1 id="preview-title">${poem.title || 'Título da Obra'}</h1>
               <div class="poem-meta preview-meta">
                 <span id="preview-date">${poem.published_at ? new Date(poem.published_at).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')}</span>
-                <span id="preview-tags-container">${poem.tags && poem.tags.length > 0 ? `<span>•</span> <span>Sentimentos: ${poem.tags.join(', ')}</span>` : ''}</span>
+                <span id="preview-tags-container">${poem.tags && poem.tags.length > 0 ? `<span>•</span> <span>Sentimentos: ${escapeHtml(poem.tags.join(', '))}</span>` : ''}</span>
               </div>
               <div id="preview-content" class="poem-content">${poem.content || ''}</div>
             </article>
@@ -1157,7 +1157,17 @@ export default {
 
     tagsInput.addEventListener('input', debounce(() => {
       const tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
-      document.getElementById('preview-tags-container').innerHTML = tags.length > 0 ? `<span>•</span> <span>Sentimentos: ${tags.join(', ')}</span>` : '';
+      const container = document.getElementById('preview-tags-container');
+      if (container) {
+        container.replaceChildren();
+        if (tags.length > 0) {
+          const bulletSpan = document.createElement('span');
+          bulletSpan.textContent = '•';
+          const textSpan = document.createElement('span');
+          textSpan.textContent = `Sentimentos: ${tags.join(', ')}`;
+          container.append(bulletSpan, ' ', textSpan);
+        }
+      }
     }, 250));
 
     statusSelect.addEventListener('change', () => {

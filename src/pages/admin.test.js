@@ -126,3 +126,35 @@ describe('Admin - renderEmailHistory', () => {
     expect(container.innerHTML).toContain('Nenhum registro de envio encontrado');
   });
 });
+
+describe('Admin - renderEditor', () => {
+  let container;
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  it('updates preview tags safely on user input without DOM XSS', async () => {
+    await admin.renderEditor(container);
+
+    const tagsInput = container.querySelector('#poem-tags');
+    const previewContainer = container.querySelector('#preview-tags-container');
+
+    expect(tagsInput).not.toBeNull();
+    expect(previewContainer).not.toBeNull();
+
+    // Type tags containing potential HTML
+    tagsInput.value = 'Amor, <script>alert(1)</script>, Saudade';
+    tagsInput.dispatchEvent(new Event('input'));
+
+    // Advance timers past debounce (250ms)
+    vi.advanceTimersByTime(300);
+
+    expect(previewContainer.textContent).toContain('Sentimentos: Amor, <script>alert(1)</script>, Saudade');
+    expect(previewContainer.querySelector('script')).toBeNull();
+  });
+});
+
