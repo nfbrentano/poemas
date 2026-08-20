@@ -58,12 +58,20 @@ export default {
                 <h2 class="section-title">Marcos Literários</h2>
                 <div class="timeline">
                   <div class="timeline-item">
-                    <span class="year">2024</span>
-                    <span class="event">Início da publicação sistemática no site.</span>
+                    <span class="year">2015</span>
+                    <span class="event">Início das publicações e primeiros versos (dezembro de 2015, com obras como <em>Como falar</em> e <em>Carinho</em>).</span>
+                  </div>
+                  <div class="timeline-item">
+                    <span class="year">2016 – 2024</span>
+                    <span class="event">Fase de maturação poética e escrita contínua sobre o tempo, os afetos e a efemeridade cotidiana.</span>
+                  </div>
+                  <div class="timeline-item">
+                    <span class="year">2025</span>
+                    <span class="event">Intensa produção criativa (100 poemas no ano) e alcance do marco de 100 poemas catalogados em setembro com <em>Melodia do Coração</em>.</span>
                   </div>
                   <div class="timeline-item">
                     <span class="year">2026</span>
-                    <span class="event">Marca de 500 poemas catalogados.</span>
+                    <span class="event">Consolidação do acervo digital e superação da marca de 200 poemas em julho com <em>Trilha Sonora do Agora</em>, reunindo atualmente <strong id="total-poems-count">222</strong> poemas publicados.</span>
                   </div>
                 </div>
               </div>
@@ -93,7 +101,7 @@ export default {
     const imgEl = container.querySelector('#profile-img');
     const bioContent = container.querySelector('#bio-content');
     
-    // Carregar configurações do site
+    // Carregar configurações do site e contagem atualizada de poemas
     const loadSettings = async () => {
       try {
         const { data: settings } = await supabase
@@ -116,6 +124,23 @@ export default {
         }
       } catch (err) {
         console.error('Erro ao buscar configurações:', err);
+      }
+
+      // Buscar total de poemas publicados para manter o marco dinâmico
+      try {
+        const { count, error } = await supabase
+          .from('poems')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'published');
+
+        if (!error && count !== null) {
+          const countEl = container.querySelector('#total-poems-count');
+          if (countEl) {
+            countEl.textContent = `${count}`;
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao buscar contagem de poemas:', err);
       }
     };
     loadSettings();
