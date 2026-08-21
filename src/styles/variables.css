@@ -23,6 +23,8 @@
   --font-body: var(--font-ui);
   --font-poem: 'Merriweather', serif;
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --btn-font-size: 0.85rem;
+  --btn-font-size-sm: 0.75rem;
   
   /* Spacing (Editorial scale) */
   --space-3xs: 0.25rem;  /* 4px */
