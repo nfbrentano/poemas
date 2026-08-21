@@ -7,7 +7,6 @@ export function updateActiveNavLink() {
   
   const isPoemOrHome = currentPath === basePath || currentPath === cleanBase || currentPath === '/' || currentPath.includes('/poema/');
   const isCollections = currentPath.includes('/colecoe') || currentPath.includes('/colecao/');
-  const isFavorites = currentPath.includes('/favoritos');
   const isAbout = currentPath.includes('/sobre');
 
   const allNavLinks = document.querySelectorAll('.main-nav a, .bottom-nav-item[href]');
@@ -17,11 +16,9 @@ export function updateActiveNavLink() {
     let isActive = false;
 
     if (link.textContent.includes('Poemas') || href === basePath || href === cleanBase || href === '/') {
-      isActive = isPoemOrHome && !isCollections && !isFavorites && !isAbout;
+      isActive = isPoemOrHome && !isCollections && !isAbout;
     } else if (link.textContent.includes('Coleções') || href.includes('/colecoes')) {
       isActive = isCollections;
-    } else if (link.textContent.includes('Biblioteca') || href.includes('/favoritos')) {
-      isActive = isFavorites;
     } else if (link.textContent.includes('Sobre') || href.includes('/sobre')) {
       isActive = isAbout;
     }

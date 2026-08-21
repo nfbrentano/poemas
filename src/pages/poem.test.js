@@ -21,18 +21,6 @@ vi.mock('../utils/supabase.js', () => {
   };
 });
 
-vi.mock('../utils/favorites.js', () => ({
-  favorites: {
-    has: vi.fn().mockResolvedValue(false),
-    isFavorite: vi.fn().mockResolvedValue(false),
-    add: vi.fn().mockResolvedValue(true),
-    remove: vi.fn().mockResolvedValue(true)
-  },
-  history: {
-    add: vi.fn().mockResolvedValue(true)
-  }
-}));
-
 vi.mock('../utils/analytics.js', () => ({
   trackPageView: vi.fn()
 }));

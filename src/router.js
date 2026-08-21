@@ -6,7 +6,6 @@ export const routes = {
   '/admin': () => import('./pages/admin.js').then(m => m.default),
   '/login': () => import('./pages/login.js').then(m => m.default),
   '/sobre': () => import('./pages/about.js').then(m => m.default),
-  '/favoritos': () => import('./pages/favorites.js').then(m => m.default),
   '/colecoes': () => import('./pages/collections.js').then(m => m.default),
   '/colecao/:slug': () => import('./pages/collection.js').then(m => m.default),
   '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default)

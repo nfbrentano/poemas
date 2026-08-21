@@ -4,7 +4,6 @@ import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
 import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
-import { favorites, history } from '../utils/favorites.js';
 import { escapeHtml, stripHtml, sanitizeUrl } from '../utils/html.js';
 import { toast } from '../components/toast.js';
 
@@ -131,14 +130,6 @@ export default {
     const nextSlug = poem.next_slug;
     const prevTitle = poem.prev_title;
     const nextTitle = poem.next_title;
-
-    // Adicionar ao histórico de leitura
-    try {
-      history.add(poem);
-      window.dispatchEvent(new CustomEvent('history-updated'));
-    } catch (err) {
-      console.error('Erro ao salvar no histórico:', err);
-    }
 
     // Tempo Estimado de Leitura
     const plainText = stripHtml(poem.content || '').replace(/\s+/g, ' ').trim();
@@ -315,9 +306,6 @@ export default {
                 <button class="font-btn size-btn" data-size="lg" title="Aumentar fonte">A+</button>
               </div>
             </div>
-            <button id="fav-btn" class="btn-secondary" aria-label="Salvar poema">
-              <span class="fav-icon">♡</span> <span class="fav-text">Salvar</span>
-            </button>
             
             <button id="share-card-btn" class="btn-secondary" aria-label="Gerar card para compartilhar">
               🖼 Compartilhar Card
@@ -581,66 +569,6 @@ export default {
         // Não carregamos o comentário novo pois ele precisa de aprovação
       }
     });
-
-    // Favorites Logic
-    const favBtn = document.getElementById('fav-btn');
-    const updateFavUI = async () => {
-      const isFav = await favorites.has(poem.slug);
-      if (favBtn) {
-        favBtn.querySelector('.fav-icon').textContent = isFav ? '♥' : '♡';
-        favBtn.querySelector('.fav-text').textContent = isFav ? 'Salvo' : 'Salvar';
-        favBtn.classList.toggle('active', isFav);
-      }
-    };
-    updateFavUI();
-
-    const showFloatingHeart = (x, y) => {
-      const heart = document.createElement('span');
-      heart.textContent = '♥';
-      heart.className = 'floating-heart-particle';
-      heart.style.left = `${x}px`;
-      heart.style.top = `${y}px`;
-      document.body.appendChild(heart);
-      setTimeout(() => heart.remove(), 800);
-    };
-
-    favBtn?.addEventListener('click', async () => {
-      const isFav = await favorites.has(poem.slug);
-      if (isFav) {
-        await favorites.remove(poem.slug);
-        toast.show('Obra removida dos itens salvos.', 'info');
-      } else {
-        await favorites.save(poem);
-        toast.show('Obra salva com sucesso.', 'heart');
-      }
-      updateFavUI();
-      
-      // Add animation
-      favBtn.classList.remove('animate-fav');
-      void favBtn.offsetWidth; // trigger reflow
-      favBtn.classList.add('animate-fav');
-      setTimeout(() => favBtn.classList.remove('animate-fav'), 800);
-
-      // Notify main.js to update header if needed
-      window.dispatchEvent(new CustomEvent('favorites-updated'));
-    });
-
-    // Double-tap no texto do poema para favoritar
-    let lastDoubleTapTime = 0;
-    const poemContentForTap = document.getElementById('poem-text');
-    poemContentForTap?.addEventListener('touchend', (e) => {
-      const now = Date.now();
-      if (now - lastDoubleTapTime < 300 && now - lastDoubleTapTime > 0) {
-        favBtn?.click();
-        if (e.changedTouches && e.changedTouches[0]) {
-          showFloatingHeart(
-            e.changedTouches[0].clientX,
-            e.changedTouches[0].clientY
-          );
-        }
-      }
-      lastDoubleTapTime = now;
-    }, { passive: true });
 
     // Immersive Mode Logic
     const immersiveBtn = document.getElementById('immersive-btn');
@@ -1044,10 +972,6 @@ export default {
           break;
         case 'ArrowLeft':
           if (prevSlug) navigateTo(`/poema/${prevSlug}`);
-          break;
-        case 'f':
-        case 'F':
-          favBtn?.click();
           break;
         case 'i':
         case 'I':

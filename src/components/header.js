@@ -1,6 +1,5 @@
 import { themeToggle } from './theme-toggle.js';
 import { getRandomPoem } from '../utils/navigation.js';
-import { favorites } from '../utils/favorites.js';
 
 export const header = {
   render() {
@@ -25,7 +24,6 @@ export const header = {
               <ul>
                 <li><a href="${import.meta.env.BASE_URL}" data-link>Poemas</a></li>
                 <li><a href="${import.meta.env.BASE_URL}colecoes" data-link>Coleções</a></li>
-                <li id="nav-favorites" style="display: none;"><a href="${import.meta.env.BASE_URL}favoritos" data-link>Biblioteca</a></li>
                 <li><a href="${import.meta.env.BASE_URL}sobre" data-link>Sobre</a></li>
               </ul>
             </nav>
@@ -197,17 +195,5 @@ export const header = {
         headerEl.classList.toggle('scrolled', window.scrollY > 10);
       }
     });
-
-    this.updateFavorites();
-    window.addEventListener('favorites-updated', () => this.updateFavorites());
-  },
-
-
-  async updateFavorites() {
-    const count = await favorites.count();
-    const navFav = document.getElementById('nav-favorites');
-    if (navFav) {
-      navFav.style.display = count > 0 ? 'block' : 'none';
-    }
   }
 };
