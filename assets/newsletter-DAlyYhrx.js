@@ -1,4 +1,4 @@
-import{s as e}from"./index-5mTqkrhR.js";var t={render(){return`
+import{supabase as e}from"./supabase-Cmo813Sf.js";var t={render(){return`
       <section class="newsletter-section fade-in">
         <h2 class="newsletter-title">O Eco das Palavras</h2>
         <p class="newsletter-description">
