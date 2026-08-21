@@ -3,9 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.clarity.ms https://scripts.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co https://*.clarity.ms https://c.clarity.ms; connect-src 'self' https://*.supabase.co https://api.emailjs.com https://*.clarity.ms https://c.clarity.ms; worker-src 'self' blob:; manifest-src 'self'; require-trusted-types-for 'script'; trusted-types default 'allow-duplicates';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.clarity.ms https://scripts.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co https://*.clarity.ms https://c.clarity.ms; connect-src 'self' https://*.supabase.co https://api.emailjs.com https://*.clarity.ms https://c.clarity.ms; worker-src 'self' blob:; manifest-src 'self';">
     <title>Poemas Brasileiros - Natanael Brentano | nfbrentano.github.io/poemas/</title>
-    <script src="/poemas/theme-init.js"></script>
+    <script>
+      (function () {
+        try {
+          if (window.top !== window.self) {
+            window.top.location = window.self.location;
+          }
+        } catch (e) {
+          try { window.location.replace(window.location.href); } catch (_) {}
+        }
+        try {
+          var saved = localStorage.getItem('site-mode');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var mode = saved || (prefersDark ? 'dark' : 'light');
+          if (mode === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+          } else if (mode === 'contrast') {
+            document.documentElement.setAttribute('data-high-contrast', 'true');
+          }
+        } catch (e) {}
+      })();
+    </script>
     
     <!-- PWA -->
     <link rel="manifest" href="/poemas/manifest.json">
