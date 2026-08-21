@@ -118,6 +118,16 @@ export async function router() {
           }
         }
 
+        // Anunciar para tecnologias assistivas (leitores de tela)
+        const pageTitle = component.meta?.title || 'Página';
+        const announcer = document.getElementById('route-announcer');
+        if (announcer) {
+          announcer.textContent = '';
+          setTimeout(() => {
+            announcer.textContent = `Navegando para: ${pageTitle}`;
+          }, 50);
+        }
+
         // Rastrear visita
         if (path !== '/admin' && path !== '/login' && !path.includes('/poema/')) {
           const runTracking = () => {

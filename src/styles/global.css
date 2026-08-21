@@ -109,6 +109,12 @@ input:focus, textarea:focus, select:focus {
   }
 }
 
+@media (max-width: 390px) {
+  body {
+    font-size: 16px;
+  }
+}
+
 .fade-in {
   animation: fadeIn var(--transition-fade) forwards;
 }

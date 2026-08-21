@@ -3,22 +3,34 @@ import { navigateTo } from '../router.js';
 export function updateActiveNavLink() {
   const currentPath = window.location.pathname;
   const basePath = import.meta.env.BASE_URL;
-  const navLinks = document.querySelectorAll('.main-nav a');
+  const cleanBase = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
   
-  navLinks.forEach(link => {
-    // If we are at home or on a poem page, "Poemas" should be active
-    const isPoemPage = currentPath.includes('/poema/');
-    const isHome = currentPath === basePath || currentPath === basePath.slice(0, -1) || currentPath === '/';
-    const isFavorites = currentPath.includes('/favoritos');
-    
-    if (link.textContent.trim() === 'Poemas' && (isHome || isPoemPage)) {
-      link.classList.add('active');
-    } else if (link.textContent.trim() === 'Biblioteca' && isFavorites) {
-      link.classList.add('active');
-    } else if (link.getAttribute('href') === basePath + 'sobre' && currentPath.includes('/sobre')) {
-       link.classList.add('active');
+  const isPoemOrHome = currentPath === basePath || currentPath === cleanBase || currentPath === '/' || currentPath.includes('/poema/');
+  const isCollections = currentPath.includes('/colecoe') || currentPath.includes('/colecao/');
+  const isFavorites = currentPath.includes('/favoritos');
+  const isAbout = currentPath.includes('/sobre');
+
+  const allNavLinks = document.querySelectorAll('.main-nav a, .bottom-nav-item[href]');
+  
+  allNavLinks.forEach(link => {
+    const href = link.getAttribute('href') || '';
+    let isActive = false;
+
+    if (link.textContent.includes('Poemas') || href === basePath || href === cleanBase || href === '/') {
+      isActive = isPoemOrHome && !isCollections && !isFavorites && !isAbout;
+    } else if (link.textContent.includes('Coleções') || href.includes('/colecoes')) {
+      isActive = isCollections;
+    } else if (link.textContent.includes('Biblioteca') || href.includes('/favoritos')) {
+      isActive = isFavorites;
+    } else if (link.textContent.includes('Sobre') || href.includes('/sobre')) {
+      isActive = isAbout;
+    }
+
+    link.classList.toggle('active', isActive);
+    if (isActive) {
+      link.setAttribute('aria-current', 'page');
     } else {
-      link.classList.remove('active');
+      link.removeAttribute('aria-current');
     }
   });
 }

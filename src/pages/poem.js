@@ -533,6 +533,16 @@ export default {
     };
     updateFavUI();
 
+    const showFloatingHeart = (x, y) => {
+      const heart = document.createElement('span');
+      heart.textContent = '♥';
+      heart.className = 'floating-heart-particle';
+      heart.style.left = `${x}px`;
+      heart.style.top = `${y}px`;
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 800);
+    };
+
     favBtn?.addEventListener('click', async () => {
       const isFav = await favorites.has(poem.slug);
       if (isFav) {
@@ -553,6 +563,23 @@ export default {
       // Notify main.js to update header if needed
       window.dispatchEvent(new CustomEvent('favorites-updated'));
     });
+
+    // Double-tap no texto do poema para favoritar
+    let lastDoubleTapTime = 0;
+    const poemContentForTap = document.getElementById('poem-text');
+    poemContentForTap?.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastDoubleTapTime < 300 && now - lastDoubleTapTime > 0) {
+        favBtn?.click();
+        if (e.changedTouches && e.changedTouches[0]) {
+          showFloatingHeart(
+            e.changedTouches[0].clientX,
+            e.changedTouches[0].clientY
+          );
+        }
+      }
+      lastDoubleTapTime = now;
+    }, { passive: true });
 
     // Immersive Mode Logic
     const immersiveBtn = document.getElementById('immersive-btn');

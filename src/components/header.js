@@ -58,8 +58,9 @@ export const header = {
       searchOverlay.open();
     };
 
-    document.getElementById('search-toggle-btn').addEventListener('click', openSearch);
-    document.getElementById('random-poem-btn').addEventListener('click', () => getRandomPoem());
+    document.getElementById('search-toggle-btn')?.addEventListener('click', openSearch);
+    document.getElementById('bottom-search-btn')?.addEventListener('click', openSearch);
+    document.getElementById('random-poem-btn')?.addEventListener('click', () => getRandomPoem());
 
     document.addEventListener('keydown', (e) => {
       if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
@@ -76,8 +77,13 @@ export const header = {
     
     const closeMenu = () => {
       mainNav.classList.remove('active');
+      mainNav.style.transform = '';
+      mainNav.style.transition = '';
       menuToggle.classList.remove('active');
-      if (navOverlay) navOverlay.classList.remove('active');
+      if (navOverlay) {
+        navOverlay.classList.remove('active');
+        navOverlay.style.opacity = '';
+      }
       menuToggle.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
       document.body.classList.remove('nav-open');
@@ -136,6 +142,42 @@ export const header = {
           document.removeEventListener('keydown', trapFocus);
         }
       });
+
+      // Swipe to close drawer gesture
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      mainNav.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      mainNav.addEventListener('touchmove', (e) => {
+        if (!mainNav.classList.contains('active')) return;
+        const deltaX = e.touches[0].clientX - touchStartX;
+        const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
+        
+        if (deltaX > 0 && deltaY < 60) {
+          const progress = Math.min(deltaX / 320, 1);
+          mainNav.style.transition = 'none';
+          mainNav.style.transform = `translateX(${deltaX}px)`;
+          if (navOverlay) navOverlay.style.opacity = String(1 - progress);
+        }
+      }, { passive: true });
+
+      mainNav.addEventListener('touchend', (e) => {
+        if (!mainNav.classList.contains('active')) return;
+        const deltaX = e.changedTouches[0].clientX - touchStartX;
+        mainNav.style.transition = '';
+        
+        if (deltaX > 80) {
+          closeMenu();
+          document.removeEventListener('keydown', trapFocus);
+        } else {
+          mainNav.style.transform = '';
+          if (navOverlay) navOverlay.style.opacity = '';
+        }
+      }, { passive: true });
 
       // ESC to close menu
       document.addEventListener('keydown', (e) => {

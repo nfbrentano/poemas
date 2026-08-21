@@ -1,6 +1,91 @@
 /* components.css */
 
+/* Bottom Navigation Bar */
+.bottom-nav {
+  display: none;
+}
 
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 500;
+    background: var(--bg-elevated);
+    border-top: 1px solid var(--border-subtle);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 8px 4px;
+    transition: color var(--transition-fast), transform var(--transition-fast);
+    min-height: 44px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .bottom-nav-item svg {
+    transition: transform var(--transition-fast), stroke var(--transition-fast);
+  }
+
+  .bottom-nav-item.active,
+  .bottom-nav-item:focus-visible {
+    color: var(--accent-subtle);
+  }
+
+  .bottom-nav-item.active svg {
+    stroke: var(--accent-subtle);
+    transform: scale(1.1);
+  }
+
+  /* Ajustar site-content para não sobrepor a bottom nav */
+  .site-content {
+    padding-bottom: calc(var(--space-xl) + 56px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* Floating Heart Particle (Double-tap to save) */
+.floating-heart-particle {
+  position: fixed;
+  font-size: 2.2rem;
+  color: var(--accent-subtle);
+  pointer-events: none;
+  z-index: 9999;
+  animation: heartFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes heartFloat {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translate(-50%, -100%) scale(1.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -160%) scale(1.6);
+  }
+}
 
 .poem-meta {
   font-size: 0.85rem;
@@ -154,16 +239,33 @@ input, textarea {
 
 .search-overlay-close {
   position: absolute;
-  top: var(--space-lg);
-  right: var(--space-lg);
+  top: calc(var(--space-lg) + env(safe-area-inset-top, 0px));
+  right: calc(var(--space-lg) + env(safe-area-inset-right, 0px));
   background: transparent;
   border: none;
   color: var(--text-primary);
   font-size: 2rem;
   cursor: pointer;
   z-index: 2001;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+@media (max-width: 768px) {
+  .search-overlay {
+    height: 100dvh;
+    justify-content: flex-start;
+    padding-top: calc(15vh + env(safe-area-inset-top, 0px));
+  }
+  
+  .search-overlay-content {
+    padding: 0 var(--space-md);
+    max-width: 100%;
+  }
+}
 
 .search-overlay-content {
   width: 100%;
@@ -172,19 +274,21 @@ input, textarea {
   text-align: center;
 }
 
-#mobile-search-input {
+#mobile-search-input,
+#overlay-search-input {
   width: 100%;
   background: transparent;
   border: none;
   border-bottom: 2px solid var(--border-strong);
   color: var(--text-primary);
-  font-size: 1.8rem;
+  font-size: max(16px, 1.8rem);
   padding: var(--space-sm) 0;
   outline: none;
   font-family: var(--font-display);
 }
 
-#mobile-search-input:focus {
+#mobile-search-input:focus,
+#overlay-search-input:focus {
   border-color: var(--accent-subtle);
 }
 
@@ -305,6 +409,8 @@ input, textarea {
   border-bottom: 1px solid var(--border-subtle);
   transition: all var(--transition-fast);
   border-radius: 4px;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 60px;
 }
 
 @media (max-width: 768px) {
@@ -446,17 +552,25 @@ input, textarea {
 .share-btn {
   font-family: var(--font-ui);
   border: none;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1rem;
   border-radius: 4px;
   font-size: var(--btn-font-size);
   cursor: pointer;
   color: white;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .share-btn.whatsapp { background: #25D366; }
 .share-btn.twitter { background: #000000; }
 .share-btn.facebook { background: #1877F2; }
 .share-btn.generic { background: var(--accent-subtle); color: var(--bg-primary); }
+
+.poem-content {
+  touch-action: pan-y;
+}
 
 .poem-actions {
   margin-top: var(--space-lg);
@@ -565,7 +679,7 @@ input, textarea {
 
 @media (max-width: 768px) {
   .poem-nav {
-    padding: 10px 15px;
+    padding: 10px 15px calc(10px + env(safe-area-inset-bottom, 0px)) 15px;
   }
 }
 
@@ -1191,6 +1305,7 @@ html.immersive-mode #immersive-btn {
 
   .site-header .main-nav.active {
     transform: translateX(0);
+    will-change: transform;
   }
 
   .site-header .main-nav ul {
@@ -1218,6 +1333,7 @@ html.immersive-mode #immersive-btn {
     color: var(--text-secondary);
     transition: all var(--transition-fast);
     text-transform: uppercase;
+    min-height: 44px;
   }
 
   .site-header .main-nav a:hover,
@@ -1225,6 +1341,7 @@ html.immersive-mode #immersive-btn {
     color: var(--accent-subtle);
     padding-left: var(--space-md);
     background-color: var(--accent-muted);
+    border-left: 2px solid var(--accent-subtle);
   }
 }
 
@@ -1275,6 +1392,14 @@ html.immersive-mode #immersive-btn {
   align-items: center;
   justify-content: center;
   gap: 4px;
+}
+
+@media (max-width: 768px) {
+  .font-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
 }
 
 .font-btn:hover {
@@ -2021,6 +2146,8 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
   scrollbar-width: none;
   flex: 1;
   min-width: 0;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 16px, black calc(100% - 30px), transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 16px, black calc(100% - 30px), transparent 100%);
 }
@@ -2040,12 +2167,18 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  scroll-snap-align: start;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
   .filter-chip {
     padding: 0.6rem 1.25rem;
     font-size: var(--btn-font-size);
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -2370,58 +2503,6 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
   100% { transform: translateY(-10px) translateX(5px); }
 }
 
-.explore-node-tag {
-  font-size: 1rem;
-  font-weight: 500;
-  text-transform: lowercase;
-}
-
-.explore-node-count {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-/* Toast Notifications */
-.toast-container {
-  position: fixed;
-  bottom: var(--space-xl);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  z-index: 9999;
-  pointer-events: none;
-}
-
-.toast-message {
-  background-color: var(--bg-elevated);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  padding: 12px 24px;
-  font-family: var(--font-ui);
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.toast-message.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.toast-icon {
-  color: var(--accent-subtle);
-  font-weight: bold;
-}
-
 /* Back to Top Button */
 .back-to-top-btn {
   position: fixed;
@@ -2459,7 +2540,7 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
 
 @media (max-width: 768px) {
   .back-to-top-btn {
-    bottom: calc(var(--space-xl) + 60px); /* Avoid overlapping with poem nav on mobile if needed */
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px) + var(--space-md));
     right: var(--space-md);
   }
 }
