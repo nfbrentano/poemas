@@ -182,21 +182,7 @@ export default {
           
           <div id="poem-text" class="poem-content">${formattedContent}</div>
 
-          <div class="read-next-section">
-            ${nextSlug ? `
-              <p class="read-next-label">Próxima Obra</p>
-              <a href="${import.meta.env.BASE_URL}poema/${nextSlug}" class="read-next-card" data-link>
-                <h2 class="read-next-title">${nextTitle}</h2>
-                <span class="read-next-btn">Ler Agora →</span>
-              </a>
-            ` : `
-              <p class="read-next-label">Fim da Jornada</p>
-              <a href="${import.meta.env.BASE_URL}" class="read-next-card" data-link>
-                <h2 class="read-next-title">Voltar ao Início</h2>
-                <p class="read-next-excerpt">Há sempre algo novo no silêncio da página inicial.</p>
-              </a>
-            `}
-          </div>
+
 
           <div class="share-section">
             <p class="share-label">Compartilhar obra</p>
@@ -206,9 +192,7 @@ export default {
               <button class="share-btn facebook" aria-label="Compartilhar no Facebook" data-platform="facebook">Facebook</button>
               <button id="web-share-btn" class="share-btn generic" aria-label="Mais opções de compartilhamento">Compartilhar...</button>
             </div>
-            <div class="instagram-cta" style="margin-top: var(--space-md); text-align: center; font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-ui); letter-spacing: 0.5px;">
-              Gostou do poema? Acompanhe também no Instagram: <a href="https://instagram.com/nfgbrentano" target="_blank" rel="noopener" class="instagram-link" style="color: var(--accent-subtle, var(--text-primary)); text-decoration: none; border-bottom: 1px solid currentColor; font-weight: 500; transition: opacity 0.2s;">@nfgbrentano</a>
-            </div>
+
           </div>
 
           <div class="reactions-section">
@@ -229,7 +213,8 @@ export default {
               <p class="comments-empty">Silêncio... nenhum comentário ainda.</p>
             </div>
             
-            <form id="comment-form" class="comment-form">
+            <button id="toggle-comment-btn" class="btn-secondary" style="margin-top: var(--space-sm); width: 100%;">+ Deixar uma nota</button>
+            <form id="comment-form" class="comment-form" style="display: none; margin-top: var(--space-md);">
               <p class="comment-form-title">Deixe sua nota</p>
               <div class="comment-form-group">
                 <input type="text" id="comment-author" placeholder="Seu nome" required maxlength="50">
@@ -253,29 +238,32 @@ export default {
           </div>
 
           <div class="poem-actions">
-            <div class="ambient-audio-controls">
-              <button class="ambient-btn" data-sound="silence" title="Silêncio">Mudo</button>
-              <button class="ambient-btn" data-sound="rain" title="Som de Chuva">Chuva</button>
-              <button class="ambient-btn" data-sound="fire" title="Som de Lareira">Lareira</button>
-            </div>
-            <div class="font-controls">
-              <button class="font-btn family-btn" data-family="serif" title="Fonte Clássica">Serif</button>
-              <button class="font-btn family-btn" data-family="sans" title="Fonte Moderna">Sans</button>
-              <button class="font-btn family-btn" data-family="hand" title="Fonte Manuscrita">Manuscrita</button>
-              <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
-              <button class="font-btn align-btn" data-align="left" title="Alinhar à Esquerda">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align: middle;"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="17" y1="12" x2="3" y2="12"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
-              </button>
-              <button class="font-btn align-btn" data-align="center" title="Centralizar">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align: middle;"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="17" y1="12" x2="7" y2="12"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
-              </button>
-              <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
-              <button class="font-btn height-btn" data-height="normal" title="Espaçamento Normal">≡</button>
-              <button class="font-btn height-btn" data-height="relaxed" title="Espaçamento Maior">↕</button>
-              <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
-              <button class="font-btn size-btn" data-size="sm" title="Diminuir fonte">A-</button>
-              <button class="font-btn size-btn" data-size="md" title="Fonte padrão">A</button>
-              <button class="font-btn size-btn" data-size="lg" title="Aumentar fonte">A+</button>
+            <button id="toggle-settings-btn" class="btn-secondary mobile-only" aria-label="Configurações de leitura" style="display: none;">⚙️ Layout</button>
+            <div id="poem-settings-panel" class="poem-settings-panel">
+              <div class="ambient-audio-controls">
+                <button class="ambient-btn" data-sound="silence" title="Silêncio">Mudo</button>
+                <button class="ambient-btn" data-sound="rain" title="Som de Chuva">Chuva</button>
+                <button class="ambient-btn" data-sound="fire" title="Som de Lareira">Lareira</button>
+              </div>
+              <div class="font-controls">
+                <button class="font-btn family-btn" data-family="serif" title="Fonte Clássica">Serif</button>
+                <button class="font-btn family-btn" data-family="sans" title="Fonte Moderna">Sans</button>
+                <button class="font-btn family-btn" data-family="hand" title="Fonte Manuscrita">Manuscrita</button>
+                <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
+                <button class="font-btn align-btn" data-align="left" title="Alinhar à Esquerda">
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align: middle;"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="17" y1="12" x2="3" y2="12"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
+                </button>
+                <button class="font-btn align-btn" data-align="center" title="Centralizar">
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align: middle;"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="17" y1="12" x2="7" y2="12"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
+                </button>
+                <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
+                <button class="font-btn height-btn" data-height="normal" title="Espaçamento Normal">≡</button>
+                <button class="font-btn height-btn" data-height="relaxed" title="Espaçamento Maior">↕</button>
+                <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
+                <button class="font-btn size-btn" data-size="sm" title="Diminuir fonte">A-</button>
+                <button class="font-btn size-btn" data-size="md" title="Fonte padrão">A</button>
+                <button class="font-btn size-btn" data-size="lg" title="Aumentar fonte">A+</button>
+              </div>
             </div>
             <button id="fav-btn" class="btn-secondary" aria-label="Salvar poema">
               <span class="fav-icon">♡</span> <span class="fav-text">Salvar</span>
@@ -325,9 +313,6 @@ export default {
           </button>
           
           <div class="nav-center">
-            <div class="nav-footer-text">
-              &copy; ${new Date().getFullYear()} Natanael Brentano <span class="footer-separator">•</span> <a href="https://instagram.com/nfgbrentano" target="_blank" rel="noopener" class="footer-social-link" style="letter-spacing: 0.5px; text-transform: none; display: inline-flex; align-items: center; gap: 4px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align: middle;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> @nfgbrentano</a>
-            </div>
           </div>
           
           <button id="next-btn" class="nav-btn nav-btn-next" style="${!nextSlug ? 'display:none;' : ''}" aria-label="Próximo poema" title="${nextTitle || ''}">
@@ -412,6 +397,20 @@ export default {
     };
 
     setupStanzaAnimation();
+    
+    // Toggle Logic for Settings and Comments
+    const toggleSettingsBtn = document.getElementById('toggle-settings-btn');
+    const settingsPanel = document.getElementById('poem-settings-panel');
+    toggleSettingsBtn?.addEventListener('click', () => {
+      settingsPanel.classList.toggle('active');
+    });
+
+    const toggleCommentBtn = document.getElementById('toggle-comment-btn');
+    const commentForm = document.getElementById('comment-form');
+    toggleCommentBtn?.addEventListener('click', () => {
+      commentForm.style.display = commentForm.style.display === 'none' ? 'block' : 'none';
+      toggleCommentBtn.style.display = 'none';
+    });
     
     // Sharing Logic
     const shareUrl = window.location.href;
@@ -786,8 +785,8 @@ export default {
     const ambientAudio = document.getElementById('ambient-audio');
     
     const sounds = {
-      rain: 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=heavy-rain-nature-sounds-8186.mp3', // Example rain sound
-      fire: 'https://cdn.pixabay.com/download/audio/2022/02/07/audio_27d8ce6605.mp3?filename=fireplace-sound-21271.mp3' // Example fire sound
+      rain: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Rain_on_a_Tin_Roof.ogg',
+      fire: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Crackling_fireplace.ogg'
     };
 
     ambientBtns.forEach(btn => {

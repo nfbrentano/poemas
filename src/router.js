@@ -4,8 +4,6 @@ import { trackPageView } from './utils/analytics.js';
 
 export const routes = {
   '/': () => import('./pages/home.js').then(m => m.default),
-  '/tag/:tag': () => import('./pages/home.js').then(m => m.default),
-  '/explore': () => import('./pages/explore.js').then(m => m.default),
   '/poema/:slug': () => import('./pages/poem.js').then(m => m.default),
   '/admin': () => import('./pages/admin.js').then(m => m.default),
   '/login': () => import('./pages/login.js').then(m => m.default),
@@ -13,8 +11,7 @@ export const routes = {
   '/favoritos': () => import('./pages/favorites.js').then(m => m.default),
   '/colecoes': () => import('./pages/collections.js').then(m => m.default),
   '/colecao/:slug': () => import('./pages/collection.js').then(m => m.default),
-  '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default),
-  '/aleatorio': () => import('./pages/random.js').then(m => m.default)
+  '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default)
 };
 
 let currentViewComponent = null;
@@ -34,6 +31,16 @@ export async function router() {
   
   // Ensure path starts with / and remove duplicate slashes
   path = '/' + path.replace(/\/+/g, '/').replace(/^\//, '');
+
+  if (path === '/explore') {
+    navigateTo('/colecoes');
+    return;
+  }
+  
+  if (path === '/aleatorio') {
+    import('./utils/navigation.js').then(m => m.getRandomPoem());
+    return;
+  }
   
   const view = document.getElementById('main-content');
   
