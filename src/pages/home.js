@@ -203,7 +203,7 @@ export default {
               </div>
             </a>
             <div class="featured-actions" style="display: flex; gap: 1rem; margin-top: 1rem;">
-              <button class="featured-share-btn" data-platform="whatsapp" data-slug="${poem.slug}" data-title="${poem.title}" style="background: transparent; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">Partilhar no Zap</button>
+              <button class="featured-share-btn" data-platform="whatsapp" data-slug="${poem.slug}" data-title="${poem.title}" style="background: transparent; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">Compartilhar no WhatsApp</button>
               <button class="featured-share-btn" data-platform="twitter" data-slug="${poem.slug}" data-title="${poem.title}" style="background: transparent; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">Tweetar</button>
             </div>
             <div class="featured-separator"></div>
