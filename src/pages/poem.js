@@ -196,7 +196,9 @@ export default {
 
           ${poem.audio_url ? `
             <section class="poem-narration-player" aria-label="Player de áudio da poesia: Ouvir narração do autor" role="region">
-              <audio id="narration-audio" preload="metadata" src="${sanitizeUrl(poem.audio_url)}"></audio>
+              <audio id="narration-audio" preload="metadata" playsinline webkit-playsinline src="${sanitizeUrl(poem.audio_url)}">
+                <source src="${sanitizeUrl(poem.audio_url)}" type="${poem.audio_url.toLowerCase().includes('.m4a') ? 'audio/mp4' : poem.audio_url.toLowerCase().includes('.wav') ? 'audio/wav' : 'audio/mpeg'}">
+              </audio>
               <div class="narration-header">
                 <div class="narration-badge">
                   <span class="narration-badge-dot"></span>
@@ -800,11 +802,17 @@ export default {
         }
       };
 
-      narrationPlayBtn.addEventListener('click', () => {
-        if (narrationAudio.paused) {
-          narrationAudio.play().catch(e => console.error('Erro ao reproduzir narração:', e));
-        } else {
-          narrationAudio.pause();
+      narrationPlayBtn.addEventListener('click', async () => {
+        try {
+          if (narrationAudio.paused) {
+            await narrationAudio.play();
+          } else {
+            narrationAudio.pause();
+          }
+        } catch (e) {
+          console.error('Erro ao reproduzir narração:', e);
+          updatePlayState(false);
+          toast.show('Não foi possível iniciar o áudio.', 'error');
         }
       });
 
@@ -837,8 +845,9 @@ export default {
       });
 
       narrationAudio.addEventListener('error', (e) => {
-        console.error('Erro no áudio de narração:', e);
+        console.error('Erro no áudio de narração:', e, narrationAudio.error);
         if (narrationDuration) narrationDuration.textContent = 'Erro';
+        updatePlayState(false);
       });
 
       if (narrationProgress) {

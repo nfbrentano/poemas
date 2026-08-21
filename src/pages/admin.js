@@ -1241,13 +1241,22 @@ export default {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const validExts = ['.mp3', '.wav', '.m4a'];
+        const validExts = ['.mp3', '.wav', '.m4a', '.aac', '.ogg'];
         const ext = '.' + file.name.split('.').pop().toLowerCase();
         if (!validExts.includes(ext) && !file.type.startsWith('audio/')) {
-          alert('Formato de áudio inválido. Por favor selecione um arquivo .mp3, .wav ou .m4a.');
+          alert('Formato de áudio inválido. Por favor selecione um arquivo .mp3, .wav, .m4a ou .aac.');
           audioFileInput.value = '';
           return;
         }
+
+        const mimeMap = {
+          '.m4a': 'audio/mp4',
+          '.mp3': 'audio/mpeg',
+          '.wav': 'audio/wav',
+          '.aac': 'audio/aac',
+          '.ogg': 'audio/ogg'
+        };
+        const detectedContentType = mimeMap[ext] || file.type || 'audio/mpeg';
 
         const maxSize = 10 * 1024 * 1024; // 10MB
         if (file.size > maxSize) {
@@ -1263,11 +1272,17 @@ export default {
         try {
           const fileName = `narration_${Date.now()}${ext}`;
           
-          let upRes = await supabase.storage.from('audios').upload(fileName, file);
+          let upRes = await supabase.storage.from('audios').upload(fileName, file, {
+            contentType: detectedContentType,
+            upsert: true
+          });
           let bucketName = 'audios';
           if (upRes.error) {
             console.warn('Bucket audios retornou erro, tentando fallback para avatars:', upRes.error);
-            upRes = await supabase.storage.from('avatars').upload(fileName, file);
+            upRes = await supabase.storage.from('avatars').upload(fileName, file, {
+              contentType: detectedContentType,
+              upsert: true
+            });
             bucketName = 'avatars';
           }
 
