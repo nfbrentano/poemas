@@ -54,7 +54,10 @@ initRouter();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`)
-      .then(reg => console.log('SW registered:', reg))
+      .then(reg => {
+        // Automatically check for SW updates
+        reg.update().catch(() => {});
+      })
       .catch(err => console.log('SW registration failed:', err));
   });
 }

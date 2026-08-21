@@ -22,9 +22,6 @@ function openDB() {
       if (!db.objectStoreNames.contains('reading_history')) {
         db.createObjectStore('reading_history', { keyPath: 'slug' });
       }
-      if (!db.objectStoreNames.contains('poem_notes')) {
-        db.createObjectStore('poem_notes', { keyPath: 'slug' });
-      }
     };
 
     request.onsuccess = (event) => {

@@ -2663,25 +2663,6 @@ html.immersive-mode .immersive-control-panel {
   color: var(--error);
 }
 
-/* Personal Notes Panel Styling */
-.notes-panel {
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  background: var(--bg-elevated);
-  padding: var(--space-md);
-  margin-top: var(--space-xl);
-  transition: all var(--transition-fast);
-}
-
-.notes-panel.has-content {
-  border-color: var(--accent-subtle);
-}
-
-#note-btn.active {
-  color: var(--accent-subtle);
-  border-color: var(--accent-subtle);
-}
-
 /* Search Overlay Filter Chips */
 .search-tag-chip.active {
   color: var(--text-primary) !important;

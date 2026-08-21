@@ -7,7 +7,6 @@ import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
 import { favorites, history } from '../utils/favorites.js';
 import { escapeHtml, stripHtml } from '../utils/html.js';
 import { toast } from '../components/toast.js';
-import { notes } from '../utils/notes.js';
 
 function throttle(func, limit) {
   let inThrottle;
@@ -227,16 +226,6 @@ export default {
             </form>
           </div>
 
-          <!-- Painel de Notas Pessoais -->
-          <div id="notes-panel" class="notes-panel" style="display: none;">
-            <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-xs); color: var(--text-secondary);">Minha percepção íntima (salva offline)</p>
-            <textarea id="note-textarea" placeholder="Escreva suas impressões mais íntimas sobre este poema..." style="width: 100%; min-height: 120px; background: transparent; border: none; resize: vertical; outline: none; font-family: var(--font-poem); line-height: 1.6; color: var(--text-primary); margin-bottom: var(--space-xs);"></textarea>
-            <div style="display: flex; gap: var(--space-xs); justify-content: flex-end;">
-              <button id="delete-note-btn" class="btn-secondary" style="font-size: 0.75rem; color: var(--error);">Excluir</button>
-              <button id="save-note-btn" class="btn-primary" style="font-size: 0.75rem;">Salvar Nota</button>
-            </div>
-          </div>
-
           <div class="poem-actions">
             <button id="toggle-settings-btn" class="btn-secondary mobile-only" aria-label="Configurações de leitura" style="display: none;">⚙️ Layout</button>
             <div id="poem-settings-panel" class="poem-settings-panel">
@@ -267,10 +256,6 @@ export default {
             </div>
             <button id="fav-btn" class="btn-secondary" aria-label="Salvar poema">
               <span class="fav-icon">♡</span> <span class="fav-text">Salvar</span>
-            </button>
-            
-            <button id="note-btn" class="btn-secondary" aria-label="Anotações pessoais">
-              <span class="note-icon">✏</span> <span class="note-text">Anotar</span>
             </button>
             
             <button id="share-card-btn" class="btn-secondary" aria-label="Gerar card para compartilhar">
@@ -556,11 +541,6 @@ export default {
       } else {
         await favorites.save(poem);
         toast.show('Obra salva com sucesso.', 'heart');
-        
-        // Proactively fetch for Service Worker caching
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          fetch(`${import.meta.env.BASE_URL}poema/${poem.slug}`).catch(() => {});
-        }
       }
       updateFavUI();
       
@@ -642,65 +622,6 @@ export default {
 
     immersiveBtn?.addEventListener('click', enterImmersive);
     immersiveExitBtn?.addEventListener('click', exitImmersive);
-
-    // Personal Notes Logic
-    const noteBtn = document.getElementById('note-btn');
-    const notesPanel = document.getElementById('notes-panel');
-    const noteTextarea = document.getElementById('note-textarea');
-    const saveNoteBtn = document.getElementById('save-note-btn');
-    const deleteNoteBtn = document.getElementById('delete-note-btn');
-
-    const updateNotesUI = async () => {
-      try {
-        const savedNote = await notes.get(slug);
-        if (noteTextarea) noteTextarea.value = savedNote || '';
-        
-        const hasContent = !!savedNote;
-        if (notesPanel) notesPanel.classList.toggle('has-content', hasContent);
-        if (noteBtn) noteBtn.classList.toggle('active', hasContent);
-      } catch (err) {
-        console.error('Erro ao ler notas:', err);
-      }
-    };
-    updateNotesUI();
-
-    noteBtn?.addEventListener('click', () => {
-      if (notesPanel) {
-        const isHidden = notesPanel.style.display === 'none';
-        notesPanel.style.display = isHidden ? 'block' : 'none';
-        if (isHidden && noteTextarea) {
-          noteTextarea.focus();
-        }
-      }
-    });
-
-    saveNoteBtn?.addEventListener('click', async () => {
-      const val = noteTextarea.value.trim();
-      if (!val) {
-        toast.show('Escreva algo para salvar ou use Excluir.', 'info');
-        return;
-      }
-      try {
-        await notes.save(slug, val);
-        toast.show('Sua percepção foi salva offline.', 'success');
-        updateNotesUI();
-      } catch (err) {
-        toast.show('Erro ao salvar nota.', 'error');
-      }
-    });
-
-    deleteNoteBtn?.addEventListener('click', async () => {
-      if (!confirm('Deseja excluir sua anotação pessoal?')) return;
-      try {
-        await notes.delete(slug);
-        if (noteTextarea) noteTextarea.value = '';
-        toast.show('Anotação excluída.', 'info');
-        updateNotesUI();
-        if (notesPanel) notesPanel.style.display = 'none';
-      } catch (err) {
-        toast.show('Erro ao excluir nota.', 'error');
-      }
-    });
 
     // Typography Controls Logic
     const sizeBtns = container.querySelectorAll('.size-btn');
