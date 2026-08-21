@@ -1,9 +1,13 @@
 import './styles/variables.css';
 import './styles/global.css';
 import './styles/components.css';
+import Clarity from '@microsoft/clarity';
 import { initRouter } from './router.js';
 import { header } from './components/header.js';
 import { backToTop } from './components/back-to-top.js';
+
+// Initialize Microsoft Clarity
+Clarity.init('y5mmw0thvu');
 
 // Setup Initial Page Classes
 if (window.location.pathname.includes('/poema/')) {
