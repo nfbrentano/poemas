@@ -1,4 +1,3 @@
-import { searchOverlay } from './search-overlay.js';
 import { themeToggle } from './theme-toggle.js';
 import { getRandomPoem } from '../utils/navigation.js';
 import { favorites } from '../utils/favorites.js';
@@ -53,11 +52,22 @@ export const header = {
   },
 
   init() {
-    searchOverlay.init();
     themeToggle.init();
 
-    document.getElementById('search-toggle-btn').addEventListener('click', () => searchOverlay.open());
+    const openSearch = async () => {
+      const { searchOverlay } = await import('./search-overlay.js');
+      searchOverlay.open();
+    };
+
+    document.getElementById('search-toggle-btn').addEventListener('click', openSearch);
     document.getElementById('random-poem-btn').addEventListener('click', () => getRandomPoem());
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+        e.preventDefault();
+        openSearch();
+      }
+    });
 
     // Hamburger Menu
     const menuToggle = document.getElementById('menu-toggle');

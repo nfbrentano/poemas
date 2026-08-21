@@ -1,4 +1,3 @@
-import { supabase } from './supabase.js';
 import { navigateTo } from '../router.js';
 
 export function updateActiveNavLink() {
@@ -26,6 +25,7 @@ export function updateActiveNavLink() {
 
 export async function getRandomPoem() {
   try {
+    const { supabase } = await import('./supabase.js');
     const { data, error } = await supabase
       .rpc('get_random_poem');
       

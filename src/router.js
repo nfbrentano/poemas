@@ -1,6 +1,4 @@
 import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
-import { trackPageView } from './utils/analytics.js';
-
 
 export const routes = {
   '/': () => import('./pages/home.js').then(m => m.default),
@@ -122,7 +120,16 @@ export async function router() {
 
         // Rastrear visita
         if (path !== '/admin' && path !== '/login' && !path.includes('/poema/')) {
-          trackPageView(path);
+          const runTracking = () => {
+            import('./utils/analytics.js')
+              .then(m => m.trackPageView(path))
+              .catch(err => console.debug?.('[analytics]', err));
+          };
+          if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(runTracking);
+          } else {
+            setTimeout(runTracking, 200);
+          }
         }
       } catch (e) {
         if (import.meta.env.DEV) console.error(e);
@@ -150,7 +157,14 @@ export async function router() {
   };
 
   if (document.startViewTransition) {
-    document.startViewTransition(() => updateView());
+    try {
+      const transition = document.startViewTransition(() => updateView());
+      if (transition && transition.finished) {
+        transition.finished.catch(() => {});
+      }
+    } catch {
+      updateView();
+    }
   } else {
     updateView();
   }
