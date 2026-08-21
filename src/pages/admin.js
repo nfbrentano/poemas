@@ -1051,7 +1051,7 @@ export default {
   },
   
   async renderEditor(container, id) {
-    let poem = { title: '', slug: '', content: '', excerpt: '', tags: [], status: 'draft' };
+    let poem = { title: '', slug: '', content: '', excerpt: '', tags: [], status: 'draft', audio_url: '' };
     
     if (id) {
       container.innerHTML = '<div class="loading">Carregando poema...</div>';
@@ -1100,6 +1100,42 @@ export default {
                   <option value="scheduled" ${poem.status === 'scheduled' ? 'selected' : ''}>Agendado</option>
                   <option value="published" ${poem.status === 'published' ? 'selected' : ''}>Publicado</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Audio Upload Section -->
+            <div class="admin-audio-card">
+              <div class="admin-audio-header">
+                <label style="display: flex; align-items: center; gap: 6px; margin: 0; color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">
+                  <span>📎</span> Áudio da Narração (Opcional)
+                </label>
+                <span id="audio-upload-status" style="font-size: 0.8rem; font-family: var(--font-ui);"></span>
+              </div>
+              
+              <input type="hidden" id="poem-audio-url" value="${escapeHtml(poem.audio_url || '')}">
+              
+              <div style="display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap; margin-top: var(--space-2xs);">
+                <label class="btn-secondary" style="cursor: pointer; padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border-strong); border-radius: 2px;">
+                  <span>📁 Escolher Arquivo</span>
+                  <input type="file" id="poem-audio-file" accept=".mp3,.wav,.m4a,audio/mpeg,audio/wav,audio/x-m4a,audio/mp4,audio/aac" style="display: none;">
+                </label>
+                <button type="button" id="remove-audio-btn" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; color: var(--error); border-color: var(--error); display: ${poem.audio_url ? 'inline-block' : 'none'};">
+                  Remover Áudio
+                </button>
+              </div>
+              
+              <p class="field-help" style="font-size: 0.78rem; color: var(--text-muted); margin-top: var(--space-2xs);">
+                Formatos aceitos: MP3, WAV, M4A — Máx 10MB.
+              </p>
+
+              <div id="audio-preview-container" class="admin-audio-preview" style="display: ${poem.audio_url ? 'flex' : 'none'};">
+                <div style="display: flex; align-items: center; gap: var(--space-xs); flex: 1; min-width: 200px;">
+                  <span style="font-size: 0.85rem; color: var(--accent-subtle);">▶</span>
+                  <audio id="audio-preview-player" controls src="${sanitizeUrl(poem.audio_url || '')}" style="height: 32px; width: 100%; max-width: 400px;"></audio>
+                </div>
+                <span id="audio-file-name" style="font-size: 0.75rem; color: var(--text-muted); word-break: break-all;">
+                  ${poem.audio_url ? 'Áudio vinculado' : ''}
+                </span>
               </div>
             </div>
 
@@ -1190,6 +1226,99 @@ export default {
     statusSelect.addEventListener('change', () => {
       schedulingFields.style.display = statusSelect.value === 'scheduled' ? 'block' : 'none';
     });
+
+    // Audio upload & management handlers
+    const audioFileInput = document.getElementById('poem-audio-file');
+    const audioUrlInput = document.getElementById('poem-audio-url');
+    const audioStatus = document.getElementById('audio-upload-status');
+    const audioPreviewContainer = document.getElementById('audio-preview-container');
+    const audioPreviewPlayer = document.getElementById('audio-preview-player');
+    const audioFileName = document.getElementById('audio-file-name');
+    const removeAudioBtn = document.getElementById('remove-audio-btn');
+
+    if (audioFileInput) {
+      audioFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const validExts = ['.mp3', '.wav', '.m4a'];
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (!validExts.includes(ext) && !file.type.startsWith('audio/')) {
+          alert('Formato de áudio inválido. Por favor selecione um arquivo .mp3, .wav ou .m4a.');
+          audioFileInput.value = '';
+          return;
+        }
+
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+          alert('O arquivo de áudio excede o tamanho máximo de 10MB.');
+          audioFileInput.value = '';
+          return;
+        }
+
+        audioStatus.textContent = 'Enviando áudio...';
+        audioStatus.style.color = 'var(--accent-subtle)';
+        audioFileInput.disabled = true;
+
+        try {
+          const fileName = `narration_${Date.now()}${ext}`;
+          
+          let upRes = await supabase.storage.from('audios').upload(fileName, file);
+          let bucketName = 'audios';
+          if (upRes.error) {
+            console.warn('Bucket audios retornou erro, tentando fallback para avatars:', upRes.error);
+            upRes = await supabase.storage.from('avatars').upload(fileName, file);
+            bucketName = 'avatars';
+          }
+
+          if (upRes.error) throw upRes.error;
+
+          const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(fileName);
+          const publicUrl = urlData.publicUrl;
+
+          audioUrlInput.value = publicUrl;
+          audioPreviewPlayer.src = sanitizeUrl(publicUrl);
+          audioPreviewPlayer.load();
+          audioFileName.textContent = file.name;
+          audioPreviewContainer.style.display = 'flex';
+          removeAudioBtn.style.display = 'inline-block';
+
+          audioStatus.textContent = 'Áudio carregado!';
+          audioStatus.style.color = 'var(--success)';
+        } catch (err) {
+          console.error('Erro no upload de áudio:', err);
+          audioStatus.textContent = 'Erro no envio';
+          audioStatus.style.color = 'var(--error)';
+          alert('Erro ao enviar áudio: ' + (err.message || 'Falha de conexão'));
+        } finally {
+          audioFileInput.disabled = false;
+          audioFileInput.value = '';
+          setTimeout(() => {
+            if (audioStatus) audioStatus.textContent = '';
+          }, 3500);
+        }
+      });
+    }
+
+    if (removeAudioBtn) {
+      removeAudioBtn.addEventListener('click', () => {
+        if (confirm('Deseja realmente remover o áudio desta poesia?')) {
+          audioUrlInput.value = '';
+          audioPreviewPlayer.pause();
+          audioPreviewPlayer.removeAttribute('src');
+          audioPreviewPlayer.load();
+          audioPreviewContainer.style.display = 'none';
+          removeAudioBtn.style.display = 'none';
+          audioFileName.textContent = '';
+          audioStatus.textContent = 'Áudio removido.';
+          audioStatus.style.color = 'var(--text-muted)';
+          setTimeout(() => {
+            if (audioStatus) audioStatus.textContent = '';
+          }, 2500);
+        }
+      });
+    }
+
     const getFormData = () => {
       const tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
       const scheduledAtInput = document.getElementById('scheduled-at');
@@ -1200,6 +1329,7 @@ export default {
         content: document.getElementById('poem-content-input').value,
         excerpt: document.getElementById('poem-excerpt').value,
         tags,
+        audio_url: audioUrlInput ? (audioUrlInput.value.trim() || null) : null,
         status: document.getElementById('poem-status').value,
         scheduled_at: scheduledAtInput.value ? new Date(scheduledAtInput.value).toISOString() : null
       };

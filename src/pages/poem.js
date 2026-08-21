@@ -5,7 +5,7 @@ import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
 import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
 import { favorites, history } from '../utils/favorites.js';
-import { escapeHtml, stripHtml } from '../utils/html.js';
+import { escapeHtml, stripHtml, sanitizeUrl } from '../utils/html.js';
 import { toast } from '../components/toast.js';
 
 function throttle(func, limit) {
@@ -46,6 +46,13 @@ export default {
       ambientAudio.pause();
       ambientAudio.removeAttribute('src');
       ambientAudio.load();
+    }
+
+    const narrationAudio = document.getElementById('narration-audio');
+    if (narrationAudio) {
+      narrationAudio.pause();
+      narrationAudio.removeAttribute('src');
+      narrationAudio.load();
     }
 
     handleScroll = null;
@@ -106,6 +113,18 @@ export default {
         </div>
       `;
       return;
+    }
+
+    // Fallback for audio_url if RPC does not return it in unmigrated environment
+    if (poem && poem.audio_url === undefined) {
+      try {
+        const { data: audioData } = await supabase.from('poems').select('audio_url').eq('id', poem.id).single();
+        if (audioData && audioData.audio_url) {
+          poem.audio_url = audioData.audio_url;
+        }
+      } catch (e) {
+        console.warn('Fallback query for audio_url failed:', e);
+      }
     }
 
     const prevSlug = poem.prev_slug;
@@ -184,8 +203,43 @@ export default {
             </div>
           </header>
 
-          
-          
+          ${poem.audio_url ? `
+            <section class="poem-narration-player" aria-label="Player de áudio da poesia: Ouvir narração do autor" role="region">
+              <audio id="narration-audio" preload="metadata" src="${sanitizeUrl(poem.audio_url)}"></audio>
+              <div class="narration-header">
+                <div class="narration-badge">
+                  <span class="narration-badge-dot"></span>
+                  <span>Ouvir narração do autor</span>
+                </div>
+                <div class="narration-actions">
+                  <button id="narration-speed-btn" class="narration-speed-btn" aria-label="Velocidade de reprodução" title="Velocidade de reprodução">1x</button>
+                  <div class="narration-volume-container">
+                    <button id="narration-mute-btn" class="narration-volume-btn" aria-label="Mutar áudio" title="Mutar / Ativar som">
+                      <svg id="narration-vol-icon-on" viewBox="0 0 24 24" width="16" height="16"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                      <svg id="narration-vol-icon-off" style="display:none;" viewBox="0 0 24 24" width="16" height="16"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                    </button>
+                    <input type="range" id="narration-vol-slider" class="narration-volume-slider" min="0" max="1" step="0.05" value="1" aria-label="Controle de volume da narração">
+                  </div>
+                </div>
+              </div>
+
+              <div class="narration-controls">
+                <button id="narration-play-btn" class="narration-play-btn" aria-label="Reproduzir narração">
+                  <svg id="narration-play-icon" viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="currentColor"/></svg>
+                  <svg id="narration-pause-icon" style="display: none;" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" fill="currentColor"/><rect x="14" y="5" width="4" height="14" fill="currentColor"/></svg>
+                </button>
+
+                <div class="narration-timeline">
+                  <span id="narration-current-time" class="narration-time">00:00</span>
+                  <div class="narration-slider-container">
+                    <input type="range" id="narration-progress" class="narration-slider" min="0" max="100" value="0" step="0.1" aria-label="Progresso da narração">
+                  </div>
+                  <span id="narration-duration" class="narration-time">--:--</span>
+                </div>
+              </div>
+            </section>
+          ` : ''}
+
           <div id="poem-text" class="poem-content">${formattedContent}</div>
 
 
@@ -358,8 +412,8 @@ export default {
     // Setup Intersection Observer para animação das estrofes
     const setupStanzaAnimation = () => {
       // Respeitar preferência de movimento reduzido
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReducedMotion) {
+      const prefersReducedMotion = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+      if (prefersReducedMotion || typeof IntersectionObserver === 'undefined') {
         container.querySelectorAll('.stagger-reveal').forEach(el => el.classList.add('revealed'));
         return;
       }
@@ -775,6 +829,145 @@ export default {
     // Set initial active state for audio
     const initialSilenceBtn = container.querySelector('.ambient-btn[data-sound="silence"]');
     if (initialSilenceBtn) initialSilenceBtn.classList.add('active');
+
+    // Narration Audio Player Logic
+    const narrationAudio = document.getElementById('narration-audio');
+    const narrationPlayBtn = document.getElementById('narration-play-btn');
+    const narrationPlayIcon = document.getElementById('narration-play-icon');
+    const narrationPauseIcon = document.getElementById('narration-pause-icon');
+    const narrationCurrentTime = document.getElementById('narration-current-time');
+    const narrationDuration = document.getElementById('narration-duration');
+    const narrationProgress = document.getElementById('narration-progress');
+    const narrationSpeedBtn = document.getElementById('narration-speed-btn');
+    const narrationMuteBtn = document.getElementById('narration-mute-btn');
+    const narrationVolIconOn = document.getElementById('narration-vol-icon-on');
+    const narrationVolIconOff = document.getElementById('narration-vol-icon-off');
+    const narrationVolSlider = document.getElementById('narration-vol-slider');
+
+    if (narrationAudio && narrationPlayBtn) {
+      const formatTime = (secs) => {
+        if (!secs || isNaN(secs) || !isFinite(secs)) return '00:00';
+        const m = Math.floor(secs / 60);
+        const s = Math.floor(secs % 60);
+        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+      };
+
+      const updateProgressVisual = (pct) => {
+        if (narrationProgress) {
+          const clamped = Math.max(0, Math.min(100, pct));
+          narrationProgress.value = clamped;
+          narrationProgress.style.background = `linear-gradient(to right, var(--accent-subtle) ${clamped}%, var(--border-strong) ${clamped}%)`;
+        }
+      };
+
+      const updatePlayState = (isPlaying) => {
+        if (isPlaying) {
+          if (narrationPlayIcon) narrationPlayIcon.style.display = 'none';
+          if (narrationPauseIcon) narrationPauseIcon.style.display = 'block';
+          narrationPlayBtn.setAttribute('aria-label', 'Pausar narração');
+        } else {
+          if (narrationPlayIcon) narrationPlayIcon.style.display = 'block';
+          if (narrationPauseIcon) narrationPauseIcon.style.display = 'none';
+          narrationPlayBtn.setAttribute('aria-label', 'Reproduzir narração');
+        }
+      };
+
+      narrationPlayBtn.addEventListener('click', () => {
+        if (narrationAudio.paused) {
+          narrationAudio.play().catch(e => console.error('Erro ao reproduzir narração:', e));
+        } else {
+          narrationAudio.pause();
+        }
+      });
+
+      narrationAudio.addEventListener('play', () => updatePlayState(true));
+      narrationAudio.addEventListener('pause', () => updatePlayState(false));
+
+      narrationAudio.addEventListener('timeupdate', () => {
+        if (narrationCurrentTime) {
+          narrationCurrentTime.textContent = formatTime(narrationAudio.currentTime);
+        }
+        if (narrationAudio.duration && isFinite(narrationAudio.duration)) {
+          const pct = (narrationAudio.currentTime / narrationAudio.duration) * 100;
+          updateProgressVisual(pct);
+        }
+      });
+
+      const updateDuration = () => {
+        if (narrationDuration && narrationAudio.duration && isFinite(narrationAudio.duration)) {
+          narrationDuration.textContent = formatTime(narrationAudio.duration);
+        }
+      };
+
+      narrationAudio.addEventListener('loadedmetadata', updateDuration);
+      narrationAudio.addEventListener('durationchange', updateDuration);
+
+      narrationAudio.addEventListener('ended', () => {
+        updatePlayState(false);
+        updateProgressVisual(0);
+        if (narrationCurrentTime) narrationCurrentTime.textContent = '00:00';
+      });
+
+      narrationAudio.addEventListener('error', (e) => {
+        console.error('Erro no áudio de narração:', e);
+        if (narrationDuration) narrationDuration.textContent = 'Erro';
+      });
+
+      if (narrationProgress) {
+        narrationProgress.addEventListener('input', (e) => {
+          const val = parseFloat(e.target.value);
+          if (narrationAudio.duration && isFinite(narrationAudio.duration)) {
+            const targetTime = (val / 100) * narrationAudio.duration;
+            if (narrationCurrentTime) narrationCurrentTime.textContent = formatTime(targetTime);
+          }
+          narrationProgress.style.background = `linear-gradient(to right, var(--accent-subtle) ${val}%, var(--border-strong) ${val}%)`;
+        });
+
+        narrationProgress.addEventListener('change', (e) => {
+          const val = parseFloat(e.target.value);
+          if (narrationAudio.duration && isFinite(narrationAudio.duration)) {
+            narrationAudio.currentTime = (val / 100) * narrationAudio.duration;
+          }
+        });
+      }
+
+      // Speed control
+      const speeds = [1, 1.25, 1.5];
+      let speedIdx = 0;
+      if (narrationSpeedBtn) {
+        narrationSpeedBtn.addEventListener('click', () => {
+          speedIdx = (speedIdx + 1) % speeds.length;
+          const newSpeed = speeds[speedIdx];
+          narrationAudio.playbackRate = newSpeed;
+          narrationSpeedBtn.textContent = `${newSpeed}x`;
+        });
+      }
+
+      // Volume & Mute control
+      const updateVolumeIcon = () => {
+        const isMuted = narrationAudio.muted || narrationAudio.volume === 0;
+        if (narrationVolIconOn && narrationVolIconOff) {
+          narrationVolIconOn.style.display = isMuted ? 'none' : 'block';
+          narrationVolIconOff.style.display = isMuted ? 'block' : 'none';
+        }
+      };
+
+      if (narrationMuteBtn) {
+        narrationMuteBtn.addEventListener('click', () => {
+          narrationAudio.muted = !narrationAudio.muted;
+          updateVolumeIcon();
+        });
+      }
+
+      if (narrationVolSlider) {
+        narrationVolSlider.addEventListener('input', (e) => {
+          const vol = parseFloat(e.target.value);
+          narrationAudio.volume = vol;
+          narrationAudio.muted = vol === 0;
+          updateVolumeIcon();
+        });
+      }
+    }
 
     // Highlight Tooltip Logic
     const poemText = document.getElementById('poem-text');

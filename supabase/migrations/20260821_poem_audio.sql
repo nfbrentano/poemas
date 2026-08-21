@@ -1,4 +1,9 @@
--- Updated RPC function with audio_url support
+-- Migration: Add audio_url column to poems and update get_poem_with_navigation RPC
+
+-- 1. Add audio_url column if it doesn't already exist
+ALTER TABLE public.poems ADD COLUMN IF NOT EXISTS audio_url text;
+
+-- 2. Update the RPC function get_poem_with_navigation to return audio_url
 DROP FUNCTION IF EXISTS get_poem_with_navigation(text);
 
 CREATE OR REPLACE FUNCTION get_poem_with_navigation(target_slug text)
@@ -48,5 +53,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Grant permissions
+-- 3. Grant execute permissions
 GRANT EXECUTE ON FUNCTION get_poem_with_navigation(text) TO anon, authenticated, service_role;

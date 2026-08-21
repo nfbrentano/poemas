@@ -192,6 +192,47 @@ describe('Admin - renderEditor', () => {
     expect(previewTitle.querySelector('b')).toBeNull();
   });
 
+  it('renders audio upload section and handles audio removal', async () => {
+    const mockPoemWithAudio = {
+      id: 'poem-audio-1',
+      title: 'Poema com Áudio',
+      slug: 'poema-com-audio',
+      content: 'Versos ouvidos',
+      excerpt: 'Resumo',
+      tags: ['Amor'],
+      status: 'draft',
+      audio_url: 'https://example.com/narration.mp3'
+    };
+
+    supabase.from.mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: mockPoemWithAudio, error: null })
+    }));
+
+    await admin.renderEditor(container, 'poem-audio-1');
+
+    const audioUrlInput = container.querySelector('#poem-audio-url');
+    const previewPlayer = container.querySelector('#audio-preview-player');
+    const removeBtn = container.querySelector('#remove-audio-btn');
+    const previewContainer = container.querySelector('#audio-preview-container');
+
+    expect(audioUrlInput).not.toBeNull();
+    expect(audioUrlInput.value).toBe('https://example.com/narration.mp3');
+    expect(previewPlayer).not.toBeNull();
+    expect(previewPlayer.src).toBe('https://example.com/narration.mp3');
+    expect(removeBtn).not.toBeNull();
+    expect(removeBtn.style.display).not.toBe('none');
+
+    // Test audio removal confirmation
+    window.confirm = vi.fn().mockReturnValue(true);
+    removeBtn.click();
+
+    expect(audioUrlInput.value).toBe('');
+    expect(previewContainer.style.display).toBe('none');
+    expect(removeBtn.style.display).toBe('none');
+  });
+
   afterEach(() => {
     vi.useRealTimers();
   });
