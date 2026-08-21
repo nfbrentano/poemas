@@ -1,4 +1,4 @@
-import{o as e}from"./index-9pmtF_30.js";var t={meta:{title:`Cancelar Inscrição`},async render(t){t.innerHTML=`
+import{s as e}from"./index-BWGE2Wiv.js";var t={meta:{title:`Cancelar Inscrição`},async render(t){t.innerHTML=`
       <div class="unsubscribe-page fade-in" style="max-width: 600px; margin: 6rem auto; text-align: center; padding: 0 2rem;">
         <h2 style="font-size: 24px; font-weight: 400; margin-bottom: 1rem; color: var(--text-color, #e2e2e2);">Cancelando inscrição...</h2>
         <p style="color: var(--text-muted, #888);">Aguarde um instante.</p>

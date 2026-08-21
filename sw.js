@@ -61,13 +61,22 @@ self.addEventListener('fetch', (event) => {
 
   // Skip cross-origin API requests (analytics, supabase, emailjs)
   // Let the browser handle these directly to avoid CORS/SW interaction issues
-  if (!event.request.url.startsWith(self.location.origin)) {
-    if (event.request.url.includes('supabase.co') || 
-        event.request.url.includes('api.emailjs.com') ||
-        event.request.url.includes('ipwho.is') ||
-        event.request.url.includes('freeipapi.com')) {
-      return;
+  try {
+    const requestUrl = new URL(event.request.url);
+    if (requestUrl.origin !== self.location.origin) {
+      const hostname = requestUrl.hostname;
+      if (
+        hostname === 'supabase.co' ||
+        hostname.endsWith('.supabase.co') ||
+        hostname === 'api.emailjs.com' ||
+        hostname === 'ipwho.is' ||
+        hostname === 'freeipapi.com'
+      ) {
+        return;
+      }
     }
+  } catch {
+    // If URL parsing fails, continue to normal handling
   }
 
   event.respondWith(

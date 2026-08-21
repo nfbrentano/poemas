@@ -1,4 +1,4 @@
-import{o as e}from"./index-9pmtF_30.js";var t={isSupported(){return`serviceWorker`in navigator&&`PushManager`in window},async getSubscription(){if(!this.isSupported())return null;try{let e=await navigator.serviceWorker.ready;return e.pushManager?await e.pushManager.getSubscription():null}catch(e){return console.warn(`Erro ao obter assinatura de push:`,e),null}},async subscribe(){throw this.isSupported()?Error(`Chave pública VAPID não está configurada no ambiente.`):Error(`Notificações Push não são suportadas neste navegador.`)},async unsubscribe(){if(!this.isSupported())return;let t=await this.getSubscription();if(t){await t.unsubscribe();let n=t.toJSON();await e.from(`push_subscriptions`).delete().match({"subscription->endpoint":n.endpoint})}},urlBase64ToUint8Array(e){if(!e)return new Uint8Array;let t=(e+`=`.repeat((4-e.length%4)%4)).replace(/-/g,`+`).replace(/_/g,`/`),n=window.atob(t),r=new Uint8Array(n.length);for(let e=0;e<n.length;++e)r[e]=n.charCodeAt(e);return r}},n={render(){return`
+import{s as e}from"./index-BWGE2Wiv.js";var t={isSupported(){return`serviceWorker`in navigator&&`PushManager`in window},async getSubscription(){if(!this.isSupported())return null;try{let e=await navigator.serviceWorker.ready;return e.pushManager?await e.pushManager.getSubscription():null}catch(e){return console.warn(`Erro ao obter assinatura de push:`,e),null}},async subscribe(){throw this.isSupported()?Error(`Chave pública VAPID não está configurada no ambiente.`):Error(`Notificações Push não são suportadas neste navegador.`)},async unsubscribe(){if(!this.isSupported())return;let t=await this.getSubscription();if(t){await t.unsubscribe();let n=t.toJSON();await e.from(`push_subscriptions`).delete().match({"subscription->endpoint":n.endpoint})}},urlBase64ToUint8Array(e){if(!e)return new Uint8Array;let t=(e+`=`.repeat((4-e.length%4)%4)).replace(/-/g,`+`).replace(/_/g,`/`),n=window.atob(t),r=new Uint8Array(n.length);for(let e=0;e<n.length;++e)r[e]=n.charCodeAt(e);return r}},n={render(){return`
       <div class="push-toggle-container fade-in">
         <p class="push-toggle-label">Deseja receber avisos de novos poemas?</p>
         <button id="push-toggle-btn" class="push-toggle-btn">
@@ -56,12 +56,20 @@ import{o as e}from"./index-9pmtF_30.js";var t={isSupported(){return`serviceWorke
                 <h2 class="section-title">Marcos Literários</h2>
                 <div class="timeline">
                   <div class="timeline-item">
-                    <span class="year">2024</span>
-                    <span class="event">Início da publicação sistemática no site.</span>
+                    <span class="year">2015</span>
+                    <span class="event">Início das publicações e primeiros versos (dezembro de 2015, com obras como <em>Como falar</em> e <em>Carinho</em>).</span>
+                  </div>
+                  <div class="timeline-item">
+                    <span class="year">2016 – 2024</span>
+                    <span class="event">Fase de maturação poética e escrita contínua sobre o tempo, os afetos e a efemeridade cotidiana.</span>
+                  </div>
+                  <div class="timeline-item">
+                    <span class="year">2025</span>
+                    <span class="event">Intensa produção criativa (100 poemas no ano) e alcance do marco de 100 poemas catalogados em setembro com <em>Melodia do Coração</em>.</span>
                   </div>
                   <div class="timeline-item">
                     <span class="year">2026</span>
-                    <span class="event">Marca de 500 poemas catalogados.</span>
+                    <span class="event">Consolidação do acervo digital e superação da marca de 200 poemas em julho com <em>Trilha Sonora do Agora</em>, reunindo atualmente <strong id="total-poems-count">222</strong> poemas publicados.</span>
                   </div>
                 </div>
               </div>
@@ -86,5 +94,5 @@ import{o as e}from"./index-9pmtF_30.js";var t={isSupported(){return`serviceWorke
           </div>
         `:``}
       </section>
-    `;let a=t.querySelector(`#profile-img`),o=t.querySelector(`#bio-content`);if((async()=>{try{let{data:t}=await e.from(`site_settings`).select(`key, value`);if(t){let e=t.find(e=>e.key===`avatar_url`),n=t.find(e=>e.key===`author_bio`);e&&(a.src=e.value,localStorage.setItem(`profilePhotoURL`,e.value)),n?o.innerHTML=n.value.replace(/\n/g,`<br>`):o.innerText=`Natanael Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.`}}catch(e){console.error(`Erro ao buscar configurações:`,e)}})(),i){let n=t.querySelector(`#edit-bio-btn`),r=t.querySelector(`#bio-modal`),i=t.querySelector(`#bio-textarea`),a=t.querySelector(`#save-bio-btn`),s=t.querySelector(`#cancel-bio-btn`);n.addEventListener(`click`,()=>{i.value=o.innerHTML.replace(/<br>/g,`
+    `;let a=t.querySelector(`#profile-img`),o=t.querySelector(`#bio-content`);if((async()=>{try{let{data:t}=await e.from(`site_settings`).select(`key, value`);if(t){let e=t.find(e=>e.key===`avatar_url`),n=t.find(e=>e.key===`author_bio`);e&&(a.src=e.value,localStorage.setItem(`profilePhotoURL`,e.value)),n?o.innerHTML=n.value.replace(/\n/g,`<br>`):o.innerText=`Natanael Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.`}}catch(e){console.error(`Erro ao buscar configurações:`,e)}try{let{count:n,error:r}=await e.from(`poems`).select(`*`,{count:`exact`,head:!0}).eq(`status`,`published`);if(!r&&n!==null){let e=t.querySelector(`#total-poems-count`);e&&(e.textContent=`${n}`)}}catch(e){console.error(`Erro ao buscar contagem de poemas:`,e)}})(),i){let n=t.querySelector(`#edit-bio-btn`),r=t.querySelector(`#bio-modal`),i=t.querySelector(`#bio-textarea`),a=t.querySelector(`#save-bio-btn`),s=t.querySelector(`#cancel-bio-btn`);n.addEventListener(`click`,()=>{i.value=o.innerHTML.replace(/<br>/g,`
 `),r.style.display=`flex`}),s.addEventListener(`click`,()=>r.style.display=`none`),a.addEventListener(`click`,async()=>{a.innerText=`Salvando...`;let t=i.value,{error:n}=await e.from(`site_settings`).upsert({key:`author_bio`,value:t});n?alert(`Erro ao salvar bio`):(o.innerHTML=t.replace(/\n/g,`<br>`),r.style.display=`none`),a.innerText=`Salvar`})}let s=t.querySelector(`#avatar-upload`),c=t.querySelector(`.upload-label`);i&&s&&c&&(s.addEventListener(`change`,async t=>{let n=t.target.files[0];if(n){c.textContent=`Enviando…`,s.disabled=!0;try{let t=n.name.split(`.`).pop().toLowerCase(),r=`avatar_${Date.now()}.${t}`,{data:i,error:o}=await e.storage.from(`avatars`).upload(r,n);if(o)throw o;let{data:s}=e.storage.from(`avatars`).getPublicUrl(r),l=s.publicUrl;await e.from(`site_settings`).upsert({key:`avatar_url`,value:l}),a.src=l,localStorage.setItem(`profilePhotoURL`,l),c.textContent=`Foto atualizada!`}catch(e){console.error(`Erro ao upload avatar:`,e),c.textContent=`Erro ao enviar`}finally{setTimeout(()=>{c.textContent=`Alterar foto`,s.disabled=!1},1500)}}}),c.addEventListener(`click`,e=>{e.preventDefault(),s.click()})),n.init(t)}};export{r as default};
