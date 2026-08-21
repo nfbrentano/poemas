@@ -186,12 +186,16 @@ input:focus, textarea:focus, select:focus {
 .site-content {
   flex: 1;
   padding: var(--space-2xl) 0;
+  min-height: calc(100vh - var(--header-height));
+  min-height: calc(100dvh - var(--header-height));
 }
 
 @media (max-width: 768px) {
   .site-content {
     padding-top: var(--space-2xl) !important;
     padding-bottom: var(--space-xl) !important;
+    min-height: calc(100vh - calc(var(--header-height) * 0.7));
+    min-height: calc(100dvh - calc(var(--header-height) * 0.7));
   }
 }
 
@@ -202,6 +206,7 @@ input:focus, textarea:focus, select:focus {
   font-size: 0.8rem;
   letter-spacing: 1px;
   border-top: 1px solid var(--border-subtle);
+  contain: layout style;
 }
 
 .footer-grid {

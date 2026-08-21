@@ -5,6 +5,11 @@ import { initRouter } from './router.js';
 import { header } from './components/header.js';
 import { backToTop } from './components/back-to-top.js';
 
+// Setup Initial Page Classes
+if (window.location.pathname.includes('/poema/')) {
+  document.body.classList.add('is-poem-page');
+}
+
 // Setup Base Layout
 document.querySelector('#app').innerHTML = `
   ${header.render()}

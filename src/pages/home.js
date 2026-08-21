@@ -78,7 +78,7 @@ export default {
 
           <div class="list-container">
             <div class="skeleton skeleton-featured"></div>
-            ${Array(4).fill(0).map(() => `
+            ${Array(8).fill(0).map(() => `
               <div class="skeleton-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
                 <div class="skeleton" style="width: 45%; height: 22px; border-radius: 3px;"></div>
                 <div class="skeleton" style="width: 45px; height: 22px; border-radius: 3px;"></div>
