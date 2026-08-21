@@ -1,4 +1,4 @@
-import{n as e,t}from"./index-BFUDU4I6.js";import{t as n}from"./seo-BlITGSmq.js";var r={meta:{title:`Sua Biblioteca`},cleanup(){},async render(r){n({title:`Biblioteca Pessoal`,description:`Sua coleção pessoal de poemas favoritos e histórico de leitura.`,type:`website`}),r.innerHTML=`
+import{n as e,t}from"./index-Cv2mpsBb.js";import{t as n}from"./seo-BlITGSmq.js";var r={meta:{title:`Sua Biblioteca`},cleanup(){},async render(r){n({title:`Biblioteca Pessoal`,description:`Sua coleção pessoal de poemas favoritos e histórico de leitura.`,type:`website`}),r.innerHTML=`
       <div class="favorites-page fade-in">
         <header class="page-header" style="text-align: center; margin-bottom: var(--space-xl);">
           <h1 class="page-title">Sua Biblioteca</h1>
@@ -26,7 +26,7 @@ import{n as e,t}from"./index-BFUDU4I6.js";import{t as n}from"./seo-BlITGSmq.js";
         `;return}i.innerHTML=`
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md); max-width: var(--container-main); margin-left:auto; margin-right:auto; width: 100%;">
           <span style="font-size:0.85rem; color:var(--text-secondary); font-family:var(--font-ui);">${e.length} poema${e.length===1?``:`s`} salvo${e.length===1?``:`s`}</span>
-          <button id="export-pdf-btn" class="btn-secondary" style="font-size:0.75rem; padding: 6px 12px;">📄 Exportar PDF</button>
+          <button id="export-pdf-btn" class="btn-secondary btn-sm">📄 Exportar PDF</button>
         </div>
         <div id="favorites-list" class="favorites-list">
           ${e.map(e=>{let t=new Date(e.published_at).getFullYear();return`
