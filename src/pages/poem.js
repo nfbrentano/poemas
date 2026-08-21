@@ -515,7 +515,6 @@ export default {
     };
     loadComments();
 
-    const commentForm = document.getElementById('comment-form');
     commentForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const author = document.getElementById('comment-author').value;
