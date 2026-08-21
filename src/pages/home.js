@@ -50,16 +50,41 @@ export default {
       document.head.appendChild(websiteSchema);
     }
     
+    const isFiltering = tags.length > 0 || activeCols.length > 0;
+    
     const skeletonHtml = `
-      <div class="home-layout fade-in">
-        <section class="poems-list">
-          <div class="skeleton skeleton-featured"></div>
-          ${Array(4).fill(0).map(() => `
-            <div class="skeleton-row">
-              <div class="skeleton skeleton-text" style="width: 50%;"></div>
-              <div class="skeleton skeleton-text" style="width: 10%;"></div>
+      <div class="home-layout">
+        ${!isFiltering ? `
+        <section class="poem-of-day" aria-hidden="true" style="min-height: 180px;">
+          <div class="skeleton" style="width: 140px; height: 14px; margin: 0 auto var(--space-sm) auto; border-radius: 4px;"></div>
+          <div class="skeleton" style="width: 50%; max-width: 320px; height: 28px; margin: 0 auto var(--space-sm) auto; border-radius: 4px;"></div>
+          <div class="skeleton" style="width: 75%; max-width: 480px; height: 20px; margin: 0 auto; border-radius: 4px;"></div>
+        </section>
+        ` : ''}
+
+        <section class="poems-list" style="padding-top: var(--space-xl);">
+          <div class="discovery-filters" style="margin-bottom: var(--space-xl);">
+            <div class="filter-section">
+              <div class="filter-group">
+                <span class="filter-label">Sentimentos:</span>
+                <div class="filter-chips">
+                  <div class="skeleton" style="width: 65px; height: 32px; border-radius: 20px; display: inline-block;"></div>
+                  <div class="skeleton" style="width: 80px; height: 32px; border-radius: 20px; display: inline-block;"></div>
+                  <div class="skeleton" style="width: 70px; height: 32px; border-radius: 20px; display: inline-block;"></div>
+                </div>
+              </div>
             </div>
-          `).join('')}
+          </div>
+
+          <div class="list-container">
+            <div class="skeleton skeleton-featured"></div>
+            ${Array(4).fill(0).map(() => `
+              <div class="skeleton-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+                <div class="skeleton" style="width: 45%; height: 22px; border-radius: 3px;"></div>
+                <div class="skeleton" style="width: 45px; height: 22px; border-radius: 3px;"></div>
+              </div>
+            `).join('')}
+          </div>
         </section>
       </div>
     `;
@@ -140,8 +165,6 @@ export default {
         p.collection_poems && p.collection_poems.some(cp => cp.collections && activeCols.includes(cp.collections.slug))
       );
     }
-
-    const isFiltering = tags.length > 0 || activeCols.length > 0;
 
     // Poem of the Day Logic (only show when not filtering by tag)
     const seedStr = new Date().toISOString().slice(0, 10);

@@ -1,6 +1,5 @@
-// @ts-ignore: Deno URL import
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-// @ts-ignore: Deno URL import
+// @ts-nocheck
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import nodemailer from 'npm:nodemailer@6.9.13';
 
@@ -9,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req: any) => {
+Deno.serve(async (req: any) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }

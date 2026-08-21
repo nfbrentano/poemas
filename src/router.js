@@ -46,9 +46,6 @@ export async function router() {
       currentViewComponent.cleanup();
     }
 
-    // Clear current view with a minimal skeleton or loading class
-    view.innerHTML = '<div class="loading-container fade-in">Carregando...</div>';
-  
     // Manage header search visibility
     const overlaySearchInput = document.getElementById('overlay-search-input');
     if (path !== '/') {

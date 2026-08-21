@@ -1,5 +1,6 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// @ts-nocheck
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,7 +31,7 @@ function escapeXml(input: string): string {
     .replace(/'/g, '&apos;')
 }
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -102,8 +103,8 @@ serve(async (req) => {
         'Cache-Control': 'public, max-age=31536000, immutable'
       }
     })
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err?.message || String(err) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })
