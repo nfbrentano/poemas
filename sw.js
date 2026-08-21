@@ -1,9 +1,10 @@
-const CACHE_NAME = 'poemas-cache-v13';
-const ASSETS = [
+const CACHE_NAME = 'poemas-cache-v14';
+const STATIC_ASSETS = [
   '/poemas/',
   '/poemas/index.html',
   '/poemas/offline.html',
   '/poemas/manifest.json',
+  '/poemas/favicon.svg',
   '/poemas/icons/icon-192x192.png',
   '/poemas/icons/icon-512x512.png'
 ];
@@ -12,7 +13,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+      return cache.addAll(STATIC_ASSETS);
     })
   );
 });
@@ -33,7 +34,24 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Navigation fallback: serve index.html for all navigation requests (SPA)
+  // Only handle GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  let requestUrl;
+  try {
+    requestUrl = new URL(event.request.url);
+  } catch {
+    return;
+  }
+
+  // Skip cross-origin API requests (supabase, clarity, emailjs, etc.)
+  if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  // 1. Navigation requests (HTML pages) - Network First strategy
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
@@ -41,67 +59,69 @@ self.addEventListener('fetch', (event) => {
           if (response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put('/poemas/index.html', responseClone);
+              cache.put(event.request, responseClone);
             });
             return response;
           }
           // If 404 or other error on navigation, fallback to cached index.html
-          return caches.match('/poemas/index.html') || response;
+          return caches.match('/poemas/index.html').then((cachedIndex) => {
+            return cachedIndex || response;
+          });
         })
         .catch(() => {
-          // If network fails entirely (offline), serve from cache
-          // If the page was previously cached, use it, otherwise show offline page
-          return caches.match(event.request)
-            .then(response => response || caches.match('/poemas/offline.html'));
+          // If network fails (offline), try the exact requested URL from cache,
+          // then fallback to cached index.html for SPA, or offline.html
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+            return caches.match('/poemas/index.html').then((cachedIndex) => {
+              return cachedIndex || caches.match('/poemas/offline.html');
+            });
+          });
         })
     );
     return;
   }
 
-
-  // Skip cross-origin API requests (analytics, supabase, emailjs)
-  // Let the browser handle these directly to avoid CORS/SW interaction issues
-  try {
-    const requestUrl = new URL(event.request.url);
-    if (requestUrl.origin !== self.location.origin) {
-      const hostname = requestUrl.hostname;
-      if (
-        hostname === 'supabase.co' ||
-        hostname.endsWith('.supabase.co') ||
-        hostname === 'api.emailjs.com' ||
-        hostname === 'ipwho.is' ||
-        hostname === 'freeipapi.com'
-      ) {
-        return;
-      }
-    }
-  } catch {
-    // If URL parsing fails, continue to normal handling
+  // 2. Static Assets (/poemas/assets/*) - Cache First strategy (Vite content-hashed files)
+  if (requestUrl.pathname.startsWith('/poemas/assets/')) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        });
+      })
+    );
+    return;
   }
 
+  // 3. Other same-origin resources (images, icons, theme-init.js, manifest.json, etc.)
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request).then((fetchResponse) => {
-        // Cache new poems dynamically only if successful (200 OK)
-        if (fetchResponse.status === 200 && event.request.url.includes('/poema/')) {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, fetchResponse.clone());
-            return fetchResponse;
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
           });
         }
-        return fetchResponse;
+        return networkResponse;
       }).catch((err) => {
-        // Fail gracefully on network errors
-        if (event.request.destination !== 'image') {
-          console.error('[SW] Fetch failed for:', event.request.url, err);
+        if (cachedResponse) {
+          return cachedResponse;
         }
-        // Return a generic error response only if it's not a navigation request 
-        // (navigation requests are already handled above)
-        return new Response('Network error or connection lost', { 
-          status: 503, 
-          statusText: 'Service Unavailable' 
-        });
+        throw err;
       });
+
+      return cachedResponse || fetchPromise;
     })
   );
 });
