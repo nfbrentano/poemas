@@ -3,22 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co https://api.emailjs.com; worker-src 'self' blob:; manifest-src 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co https://api.emailjs.com; worker-src 'self' blob:; manifest-src 'self';">
     <title>Poemas Brasileiros - Natanael Brentano | nfbrentano.github.io/poemas/</title>
-    <script>
-      (function() {
-        try {
-          var saved = localStorage.getItem('site-mode');
-          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var mode = saved || (prefersDark ? 'dark' : 'light');
-          if (mode === 'light') {
-            document.documentElement.setAttribute('data-theme', 'light');
-          } else if (mode === 'contrast') {
-            document.documentElement.setAttribute('data-high-contrast', 'true');
-          }
-        } catch (e) {}
-      })();
-    </script>
+    <script src="/poemas/theme-init.js"></script>
     
     <!-- PWA -->
     <link rel="manifest" href="/poemas/manifest.json">
@@ -50,11 +37,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300..500&family=Merriweather:ital,wght@0,400;1,400&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300..500&family=Merriweather:ital,wght@0,400;1,400&display=swap" media="print" onload="this.media='all'">
-    <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300..500&family=Merriweather:ital,wght@0,400;1,400&display=swap">
-    </noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300..500&family=Merriweather:ital,wght@0,400;1,400&display=swap">
     
     <style>
       .sr-only {
