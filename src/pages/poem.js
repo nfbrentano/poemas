@@ -41,6 +41,13 @@ export default {
     if (handleKeydown) document.removeEventListener('keydown', handleKeydown);
     document.documentElement.classList.remove('immersive-mode');
     
+    const ambientAudio = document.getElementById('ambient-audio');
+    if (ambientAudio) {
+      ambientAudio.pause();
+      ambientAudio.removeAttribute('src');
+      ambientAudio.load();
+    }
+
     handleScroll = null;
     handleTouchStart = null;
     handleTouchEnd = null;
@@ -726,27 +733,48 @@ export default {
     const ambientAudio = document.getElementById('ambient-audio');
     
     const sounds = {
-      rain: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Rain_on_a_Tin_Roof.ogg',
-      fire: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Crackling_fireplace.ogg'
+      rain: `${import.meta.env.BASE_URL}sounds/rain.mp3`,
+      fire: `${import.meta.env.BASE_URL}sounds/fire.mp3`
     };
 
     ambientBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const sound = btn.dataset.sound;
+        const isCurrentlyActive = btn.classList.contains('active');
+
+        // If clicking already active sound (rain/fire), switch back to silence
+        if (isCurrentlyActive && sound !== 'silence') {
+          ambientBtns.forEach(b => b.classList.remove('active'));
+          const silenceBtn = container.querySelector('.ambient-btn[data-sound="silence"]');
+          if (silenceBtn) silenceBtn.classList.add('active');
+          if (ambientAudio) {
+            ambientAudio.pause();
+            ambientAudio.currentTime = 0;
+          }
+          return;
+        }
+
         ambientBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
+        if (!ambientAudio) return;
+
         if (sound === 'silence') {
           ambientAudio.pause();
-        } else {
-          ambientAudio.src = sounds[sound];
+          ambientAudio.currentTime = 0;
+        } else if (sounds[sound]) {
+          const soundSrc = sounds[sound];
+          if (!ambientAudio.src.endsWith(soundSrc)) {
+            ambientAudio.src = soundSrc;
+          }
           ambientAudio.volume = 0.5;
           ambientAudio.play().catch(e => console.error('Audio play failed:', e));
         }
       });
     });
     // Set initial active state for audio
-    container.querySelector('.ambient-btn[data-sound="silence"]').classList.add('active');
+    const initialSilenceBtn = container.querySelector('.ambient-btn[data-sound="silence"]');
+    if (initialSilenceBtn) initialSilenceBtn.classList.add('active');
 
     // Highlight Tooltip Logic
     const poemText = document.getElementById('poem-text');
