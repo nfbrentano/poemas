@@ -1,4 +1,4 @@
-import{s as e}from"./index-BQys2vO4.js";var t={render(){return`
+import{s as e}from"./index-5mTqkrhR.js";var t={render(){return`
       <section class="newsletter-section fade-in">
         <h2 class="newsletter-title">O Eco das Palavras</h2>
         <p class="newsletter-description">
