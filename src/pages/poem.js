@@ -290,12 +290,6 @@ export default {
         
         <!-- Newsletter Section -->
         ${newsletter.render()}
-
-        <div style="text-align: center; margin-top: var(--space-3xl); margin-bottom: var(--space-xl);">
-          <a href="${import.meta.env.BASE_URL}" data-link class="back-link">
-            ← Voltar para o início
-          </a>
-        </div>
         
         <div id="social-card-container" style="position: absolute; left: -9999px; top: 0;"></div>
 

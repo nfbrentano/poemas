@@ -1,4 +1,4 @@
-import { updateActiveNavLink } from './utils/navigation.js';
+import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
 import { trackPageView } from './utils/analytics.js';
 
 
@@ -38,7 +38,7 @@ export async function router() {
   }
   
   if (path === '/aleatorio') {
-    import('./utils/navigation.js').then(m => m.getRandomPoem());
+    getRandomPoem();
     return;
   }
   
