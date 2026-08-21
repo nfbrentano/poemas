@@ -104,7 +104,8 @@ Deno.serve(async (req: Request) => {
       }
     })
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err?.message || String(err) }), {
+    console.error('Error generating og-image:', err)
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })
