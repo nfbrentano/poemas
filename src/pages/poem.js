@@ -932,14 +932,19 @@ export default {
     // Touch swipe mobile
     let touchStartX = 0;
     let touchStartY = 0;
+    let touchStartTime = 0;
     handleTouchStart = e => {
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
     };
     handleTouchEnd = e => {
       const deltaX = touchStartX - e.changedTouches[0].clientX;
       const deltaY = touchStartY - e.changedTouches[0].clientY;
-      if (Math.abs(deltaX) > 80 && Math.abs(deltaX) > Math.abs(deltaY) * 2) { // Threshold for horizontal swipe
+      const elapsedTime = Date.now() - touchStartTime;
+      
+      // Maximum 500ms duration, min 100px distance, much wider than tall (ratio > 3) to prevent accidental swipes while scrolling
+      if (elapsedTime <= 500 && Math.abs(deltaX) > 100 && Math.abs(deltaX) > Math.abs(deltaY) * 3) {
         if (deltaX > 0 && nextSlug) navigateTo(`/poema/${nextSlug}`);
         else if (deltaX < 0 && prevSlug) navigateTo(`/poema/${prevSlug}`);
       }
