@@ -6,6 +6,10 @@ import { newsletter } from '../components/newsletter.js';
 import { loadReactions, toggleReaction, EMOJIS } from '../utils/reactions.js';
 import { escapeHtml, stripHtml, sanitizeUrl } from '../utils/html.js';
 import { toast } from '../components/toast.js';
+import { formatPoemForAnimation } from '../utils/text-format.js';
+import { AudioPlayer } from '../components/audio-player.js';
+import { ImmersiveReader } from '../components/immersive-reader.js';
+import { PoemComments } from '../components/poem-comments.js';
 
 function throttle(func, limit) {
   let inThrottle;
@@ -38,21 +42,9 @@ export default {
     if (handleTouchStart) document.removeEventListener('touchstart', handleTouchStart);
     if (handleTouchEnd) document.removeEventListener('touchend', handleTouchEnd);
     if (handleKeydown) document.removeEventListener('keydown', handleKeydown);
-    document.documentElement.classList.remove('immersive-mode');
     
-    const ambientAudio = document.getElementById('ambient-audio');
-    if (ambientAudio) {
-      ambientAudio.pause();
-      ambientAudio.removeAttribute('src');
-      ambientAudio.load();
-    }
-
-    const narrationAudio = document.getElementById('narration-audio');
-    if (narrationAudio) {
-      narrationAudio.pause();
-      narrationAudio.removeAttribute('src');
-      narrationAudio.load();
-    }
+    ImmersiveReader.cleanup();
+    AudioPlayer.cleanup();
 
     handleScroll = null;
     handleTouchStart = null;
@@ -161,21 +153,6 @@ export default {
     // Check if user is logged in (to show admin buttons)
     const { data: { session } } = await supabase.auth.getSession();
     const isAdmin = !!session;
-     // Formatar poema para animação de linhas (staggered reveal)
-    const formatPoemForAnimation = (content) => {
-      if (!content) return '';
-      // Divide por quebras de linha duplas (estrofes)
-      const stanzas = content.split(/\n\s*\n/).filter(s => s.trim());
-      let lineIndex = 0;
-      return stanzas.map(stanza => {
-        const lines = stanza.split('\n');
-        const linesHtml = lines.map(line => {
-          lineIndex++;
-          return `<span class="line-reveal" style="transition-delay: ${lineIndex * 0.05}s">${line}</span>`;
-        }).join('');
-        return `<div class="stanza stagger-reveal">${linesHtml}</div>`;
-      }).join('');
-    };
     
     const formattedContent = formatPoemForAnimation(poem.content);
 
@@ -520,127 +497,10 @@ export default {
     });
 
     // Comments Logic
-    const loadComments = async () => {
-      const { data: comments, error } = await supabase
-        .from('poem_comments')
-        .select('author_name, content, created_at')
-        .eq('poem_id', poem.id)
-        .eq('approved', true)
-        .order('created_at', { ascending: true });
-      
-      const listEl = document.getElementById('comments-list');
-      if (error || !comments || comments.length === 0) {
-        listEl.innerHTML = '<p class="comments-empty">Silêncio... nenhum comentário ainda.</p>';
-        return;
-      }
-
-      listEl.innerHTML = comments.map(c => `
-        <div class="comment-item fade-in">
-          <div class="comment-meta">
-            <span class="comment-author">${escapeHtml(c.author_name)}</span>
-            <span class="comment-date">${new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
-          </div>
-          <div class="comment-text">${escapeHtml(c.content)}</div>
-        </div>
-      `).join('');
-    };
-    loadComments();
-
-    commentForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const author = document.getElementById('comment-author').value;
-      const content = document.getElementById('comment-content').value;
-      const btn = document.getElementById('submit-comment-btn');
-      const msg = document.getElementById('comment-msg');
-
-      btn.disabled = true;
-      btn.innerText = 'Enviando...';
-
-      const { error } = await supabase
-        .from('poem_comments')
-        .insert([{ poem_id: poem.id, author_name: author, content: content }]);
-
-      if (error) {
-        toast.show('Erro ao enviar comentário.', 'error');
-        btn.disabled = false;
-        btn.innerText = 'Enviar Nota';
-      } else {
-        toast.show('Sua nota foi enviada e aguarda moderação.', 'success');
-        commentForm.reset();
-        btn.disabled = false;
-        btn.innerText = 'Enviar Nota';
-        // Não carregamos o comentário novo pois ele precisa de aprovação
-      }
-    });
+    PoemComments.init(container, poem.id);
 
     // Immersive Mode Logic
-    const immersiveBtn = document.getElementById('immersive-btn');
-    const immersiveExitBtn = document.getElementById('immersive-exit-btn');
-    const sizeSlider = document.getElementById('immersive-size-slider');
-    const sizeValue = document.getElementById('immersive-size-value');
-    const heightSlider = document.getElementById('immersive-height-slider');
-    const heightValue = document.getElementById('immersive-height-value');
-    const poemTextEl = document.getElementById('poem-text');
-    let isImmersive = false;
-
-    // Load initial values from localStorage or default
-    const savedImmersiveSize = localStorage.getItem('immersive-reading-font-size') || '20';
-    const savedImmersiveHeight = localStorage.getItem('immersive-reading-line-height') || '22';
-
-    // Apply values to css custom properties on the poem text element
-    if (poemTextEl) {
-      poemTextEl.style.setProperty('--immersive-font-size', `${savedImmersiveSize}px`);
-      poemTextEl.style.setProperty('--immersive-line-height', `${parseFloat(savedImmersiveHeight) / 10}`);
-    }
-
-    if (sizeSlider && sizeValue) {
-      sizeSlider.value = savedImmersiveSize;
-      sizeValue.textContent = `${savedImmersiveSize}px`;
-      sizeSlider.addEventListener('input', (e) => {
-        const val = e.target.value;
-        sizeValue.textContent = `${val}px`;
-        poemTextEl?.style.setProperty('--immersive-font-size', `${val}px`);
-        localStorage.setItem('immersive-reading-font-size', val);
-      });
-    }
-
-    if (heightSlider && heightValue) {
-      heightSlider.value = savedImmersiveHeight;
-      heightValue.textContent = `${(parseFloat(savedImmersiveHeight) / 10).toFixed(1)}`;
-      heightSlider.addEventListener('input', (e) => {
-        const val = e.target.value;
-        const lh = (parseFloat(val) / 10).toFixed(1);
-        heightValue.textContent = lh;
-        poemTextEl?.style.setProperty('--immersive-line-height', lh);
-        localStorage.setItem('immersive-reading-line-height', val);
-      });
-    }
-
-    const enterImmersive = () => {
-      isImmersive = true;
-      document.documentElement.classList.add('immersive-mode');
-      
-      // Show gesture hint on first time
-      const hintShown = localStorage.getItem('immersive-hint-shown');
-      if (!hintShown) {
-        const hint = document.getElementById('immersive-hint');
-        if (hint) {
-          hint.classList.add('visible');
-          setTimeout(() => {
-            hint.classList.remove('visible');
-            localStorage.setItem('immersive-hint-shown', 'true');
-          }, 3000);
-        }
-      }
-    };
-
-    const exitImmersive = () => {
-      isImmersive = false;
-      document.documentElement.classList.remove('immersive-mode');
-    };
-
-    immersiveBtn?.addEventListener('click', enterImmersive);
-    immersiveExitBtn?.addEventListener('click', exitImmersive);
+    ImmersiveReader.init(container);
 
     // Typography Controls Logic
     const sizeBtns = container.querySelectorAll('.size-btn');
@@ -713,199 +573,8 @@ export default {
       });
     });
 
-    // Ambient Audio Logic
-    const ambientBtns = container.querySelectorAll('.ambient-btn');
-    const ambientAudio = document.getElementById('ambient-audio');
-    
-    const sounds = {
-      rain: `${import.meta.env.BASE_URL}sounds/rain.mp3`,
-      fire: `${import.meta.env.BASE_URL}sounds/fire.mp3`
-    };
-
-    ambientBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const sound = btn.dataset.sound;
-        const isCurrentlyActive = btn.classList.contains('active');
-
-        // If clicking already active sound (rain/fire), switch back to silence
-        if (isCurrentlyActive && sound !== 'silence') {
-          ambientBtns.forEach(b => b.classList.remove('active'));
-          const silenceBtn = container.querySelector('.ambient-btn[data-sound="silence"]');
-          if (silenceBtn) silenceBtn.classList.add('active');
-          if (ambientAudio) {
-            ambientAudio.pause();
-            ambientAudio.currentTime = 0;
-          }
-          return;
-        }
-
-        ambientBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        if (!ambientAudio) return;
-
-        if (sound === 'silence') {
-          ambientAudio.pause();
-          ambientAudio.currentTime = 0;
-        } else if (sounds[sound]) {
-          const soundSrc = sounds[sound];
-          if (!ambientAudio.src.endsWith(soundSrc)) {
-            ambientAudio.src = soundSrc;
-          }
-          ambientAudio.volume = 0.5;
-          ambientAudio.play().catch(e => console.error('Audio play failed:', e));
-        }
-      });
-    });
-    // Set initial active state for audio
-    const initialSilenceBtn = container.querySelector('.ambient-btn[data-sound="silence"]');
-    if (initialSilenceBtn) initialSilenceBtn.classList.add('active');
-
-    // Narration Audio Player Logic
-    const narrationAudio = document.getElementById('narration-audio');
-    const narrationPlayBtn = document.getElementById('narration-play-btn');
-    const narrationPlayIcon = document.getElementById('narration-play-icon');
-    const narrationPauseIcon = document.getElementById('narration-pause-icon');
-    const narrationCurrentTime = document.getElementById('narration-current-time');
-    const narrationDuration = document.getElementById('narration-duration');
-    const narrationProgress = document.getElementById('narration-progress');
-    const narrationSpeedBtn = document.getElementById('narration-speed-btn');
-    const narrationMuteBtn = document.getElementById('narration-mute-btn');
-    const narrationVolIconOn = document.getElementById('narration-vol-icon-on');
-    const narrationVolIconOff = document.getElementById('narration-vol-icon-off');
-    const narrationVolSlider = document.getElementById('narration-vol-slider');
-
-    if (narrationAudio && narrationPlayBtn) {
-      const formatTime = (secs) => {
-        if (!secs || isNaN(secs) || !isFinite(secs)) return '00:00';
-        const m = Math.floor(secs / 60);
-        const s = Math.floor(secs % 60);
-        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-      };
-
-      const updateProgressVisual = (pct) => {
-        if (narrationProgress) {
-          const clamped = Math.max(0, Math.min(100, pct));
-          narrationProgress.value = clamped;
-          narrationProgress.style.background = `linear-gradient(to right, var(--accent-subtle) ${clamped}%, var(--border-strong) ${clamped}%)`;
-        }
-      };
-
-      const updatePlayState = (isPlaying) => {
-        if (isPlaying) {
-          if (narrationPlayIcon) narrationPlayIcon.style.display = 'none';
-          if (narrationPauseIcon) narrationPauseIcon.style.display = 'block';
-          narrationPlayBtn.setAttribute('aria-label', 'Pausar narração');
-        } else {
-          if (narrationPlayIcon) narrationPlayIcon.style.display = 'block';
-          if (narrationPauseIcon) narrationPauseIcon.style.display = 'none';
-          narrationPlayBtn.setAttribute('aria-label', 'Reproduzir narração');
-        }
-      };
-
-      narrationPlayBtn.addEventListener('click', async () => {
-        try {
-          if (narrationAudio.paused) {
-            await narrationAudio.play();
-          } else {
-            narrationAudio.pause();
-          }
-        } catch (e) {
-          console.error('Erro ao reproduzir narração:', e);
-          updatePlayState(false);
-          toast.show('Não foi possível iniciar o áudio.', 'error');
-        }
-      });
-
-      narrationAudio.addEventListener('play', () => updatePlayState(true));
-      narrationAudio.addEventListener('pause', () => updatePlayState(false));
-
-      narrationAudio.addEventListener('timeupdate', () => {
-        if (narrationCurrentTime) {
-          narrationCurrentTime.textContent = formatTime(narrationAudio.currentTime);
-        }
-        if (narrationAudio.duration && isFinite(narrationAudio.duration)) {
-          const pct = (narrationAudio.currentTime / narrationAudio.duration) * 100;
-          updateProgressVisual(pct);
-        }
-      });
-
-      const updateDuration = () => {
-        if (narrationDuration && narrationAudio.duration && isFinite(narrationAudio.duration)) {
-          narrationDuration.textContent = formatTime(narrationAudio.duration);
-        }
-      };
-
-      narrationAudio.addEventListener('loadedmetadata', updateDuration);
-      narrationAudio.addEventListener('durationchange', updateDuration);
-
-      narrationAudio.addEventListener('ended', () => {
-        updatePlayState(false);
-        updateProgressVisual(0);
-        if (narrationCurrentTime) narrationCurrentTime.textContent = '00:00';
-      });
-
-      narrationAudio.addEventListener('error', (e) => {
-        console.error('Erro no áudio de narração:', e, narrationAudio.error);
-        if (narrationDuration) narrationDuration.textContent = 'Erro';
-        updatePlayState(false);
-      });
-
-      if (narrationProgress) {
-        narrationProgress.addEventListener('input', (e) => {
-          const val = parseFloat(e.target.value);
-          if (narrationAudio.duration && isFinite(narrationAudio.duration)) {
-            const targetTime = (val / 100) * narrationAudio.duration;
-            if (narrationCurrentTime) narrationCurrentTime.textContent = formatTime(targetTime);
-          }
-          narrationProgress.style.background = `linear-gradient(to right, var(--accent-subtle) ${val}%, var(--border-strong) ${val}%)`;
-        });
-
-        narrationProgress.addEventListener('change', (e) => {
-          const val = parseFloat(e.target.value);
-          if (narrationAudio.duration && isFinite(narrationAudio.duration)) {
-            narrationAudio.currentTime = (val / 100) * narrationAudio.duration;
-          }
-        });
-      }
-
-      // Speed control
-      const speeds = [1, 1.25, 1.5];
-      let speedIdx = 0;
-      if (narrationSpeedBtn) {
-        narrationSpeedBtn.addEventListener('click', () => {
-          speedIdx = (speedIdx + 1) % speeds.length;
-          const newSpeed = speeds[speedIdx];
-          narrationAudio.playbackRate = newSpeed;
-          narrationSpeedBtn.textContent = `${newSpeed}x`;
-        });
-      }
-
-      // Volume & Mute control
-      const updateVolumeIcon = () => {
-        const isMuted = narrationAudio.muted || narrationAudio.volume === 0;
-        if (narrationVolIconOn && narrationVolIconOff) {
-          narrationVolIconOn.style.display = isMuted ? 'none' : 'block';
-          narrationVolIconOff.style.display = isMuted ? 'block' : 'none';
-        }
-      };
-
-      if (narrationMuteBtn) {
-        narrationMuteBtn.addEventListener('click', () => {
-          narrationAudio.muted = !narrationAudio.muted;
-          updateVolumeIcon();
-        });
-      }
-
-      if (narrationVolSlider) {
-        narrationVolSlider.addEventListener('input', (e) => {
-          const vol = parseFloat(e.target.value);
-          narrationAudio.volume = vol;
-          narrationAudio.muted = vol === 0;
-          updateVolumeIcon();
-        });
-      }
-    }
+    // Audio Player Logic
+    AudioPlayer.init(container, import.meta.env.BASE_URL);
 
     // Highlight Tooltip Logic
     const poemText = document.getElementById('poem-text');
@@ -985,10 +654,10 @@ export default {
           break;
         case 'i':
         case 'I':
-          if (isImmersive) {
-            exitImmersive();
+          if (document.documentElement.classList.contains('immersive-mode')) {
+            document.getElementById('immersive-exit-btn')?.click();
           } else {
-            enterImmersive();
+            document.getElementById('immersive-btn')?.click();
           }
           break;
       }
