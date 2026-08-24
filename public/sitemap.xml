@@ -9,6 +9,12 @@
   
   <!-- Poems -->
   <url>
+    <loc>https://nfbrentano.github.io/poemas/poema/amor-e-poesia</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://nfbrentano.github.io/poemas/poema/o-amor-ainda-e-tudo</loc>
     <lastmod>2026-08-20</lastmod>
     <changefreq>monthly</changefreq>

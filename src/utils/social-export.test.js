@@ -26,6 +26,21 @@ describe('social-export', () => {
     clickSpy.mockRestore();
   });
 
+  it('generates social card with 10x15 ratio', async () => {
+    const poem = { title: 'Poema Teste 10x15', excerpt: 'Conteúdo de teste 10x15', slug: 'poema-teste-10x15' };
+    const container = document.createElement('div');
+    
+    global.URL.createObjectURL = vi.fn().mockReturnValue('blob:fake');
+    global.URL.revokeObjectURL = vi.fn();
+    
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    await generateSocialCard(poem, container, 'sepia', null, '10x15');
+
+    expect(clickSpy).toHaveBeenCalled();
+    clickSpy.mockRestore();
+  });
+
   it('handles custom text and fallback HTML content safely', async () => {
     const poem = {
       title: '<script>alert(1)</script>Poema Seguro',

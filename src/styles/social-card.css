@@ -18,6 +18,23 @@
   height: 1350px; /* Vertical 4:5 format for Instagram */
 }
 
+.social-card-layout.ratio-10x15 {
+  width: 1080px;
+  height: 1620px; /* 10x15 format (2:3 ratio) for photos/print */
+  padding: 150px 120px;
+}
+
+.social-card-layout.ratio-10x15::before {
+  top: 75px;
+  left: 75px;
+  right: 75px;
+  bottom: 75px;
+}
+
+.social-card-layout.ratio-10x15 .social-card-footer {
+  bottom: 150px;
+}
+
 .social-card-layout.ratio-15x21 {
   width: 1080px;
   height: 1512px; /* 15x21 format (5:7 ratio) for photos/print */

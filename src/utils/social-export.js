@@ -66,9 +66,9 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
   // Wait a small tick to ensure fonts are applied
   await new Promise(r => setTimeout(r, 100));
   
-  // Auto-resize font to fit the container (max height available for text: ~850px for 4:5, ~1000px for 15x21, ~1350px for 9:16)
-  const maxContentHeight = aspectRatio === 'stories' ? 1300 : (aspectRatio === '15x21' ? 1000 : 850);
-  let fontSize = aspectRatio === 'stories' ? 45 : (aspectRatio === '15x21' ? 42 : 40); // Use px instead of rem to avoid isolated SVG rendering issues
+  // Auto-resize font to fit the container (max height available for text: ~850px for 4:5, ~1000px for 15x21, ~1100px for 10x15, ~1300px for 9:16)
+  const maxContentHeight = aspectRatio === 'stories' ? 1300 : (aspectRatio === '10x15' ? 1100 : (aspectRatio === '15x21' ? 1000 : 850));
+  let fontSize = aspectRatio === 'stories' ? 45 : (aspectRatio === '10x15' ? 42 : (aspectRatio === '15x21' ? 42 : 40)); // Use px instead of rem to avoid isolated SVG rendering issues
   textEl.style.fontSize = `${fontSize}px`;
   while (textEl.scrollHeight > maxContentHeight && fontSize > 14) {
     fontSize -= 1.5;
