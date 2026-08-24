@@ -20,14 +20,12 @@ export async function router() {
   // Normalize paths for matching
   const cleanBasePath = basePath.replace(/\/$/, ''); // Remove trailing slash if exists
   
-  if (path.startsWith(cleanBasePath + '/')) {
+  if (cleanBasePath && (path.startsWith(cleanBasePath + '/') || path === cleanBasePath)) {
     path = path.slice(cleanBasePath.length) || '/';
-  } else if (path === cleanBasePath) {
-    path = '/';
   }
   
-  // Ensure path starts with / and remove duplicate slashes
-  path = '/' + path.replace(/\/+/g, '/').replace(/^\//, '');
+  // Ensure path starts with / and remove duplicate and trailing slashes (except root)
+  path = '/' + path.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
 
   if (path === '/explore') {
     navigateTo('/colecoes');
@@ -67,22 +65,24 @@ export async function router() {
     let params = {};
     
     for (const [routePattern, componentFn] of Object.entries(routes)) {
-      if (routePattern === path) {
+      const cleanPattern = '/' + routePattern.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+
+      if (cleanPattern === path) {
         match = componentFn;
         break;
       }
       
       // Check for params like :slug
-      if (routePattern.includes(':')) {
-        const patternParts = routePattern.split('/');
-        const pathParts = path.split('/');
+      if (cleanPattern.includes(':')) {
+        const patternParts = cleanPattern.split('/').filter(Boolean);
+        const pathParts = path.split('/').filter(Boolean);
         
         if (patternParts.length === pathParts.length) {
           let isMatch = true;
           for (let i = 0; i < patternParts.length; i++) {
             if (patternParts[i].startsWith(':')) {
               const paramName = patternParts[i].substring(1);
-              params[paramName] = pathParts[i];
+              params[paramName] = decodeURIComponent(pathParts[i]);
             } else if (patternParts[i] !== pathParts[i]) {
               isMatch = false;
               break;
