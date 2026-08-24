@@ -5,9 +5,16 @@
     <link>https://nfbrentano.github.io/poemas/</link>
     <description>Coleção de poemas originais em português por Natanael Fernando Gatti Brentano.</description>
     <language>pt-br</language>
-    <lastBuildDate>Sat, 22 Aug 2026 03:06:24 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 24 Aug 2026 16:50:35 GMT</lastBuildDate>
     <atom:link href="https://nfbrentano.github.io/poemas/feed.xml" rel="self" type="application/rss+xml" />
     
+    <item>
+      <title>Raro e Surreal</title>
+      <link>https://nfbrentano.github.io/poemas/poema/raro-e-surreal</link>
+      <guid>https://nfbrentano.github.io/poemas/poema/raro-e-surreal</guid>
+      <description>amor, Dani</description>
+      <pubDate>Mon, 24 Aug 2026 16:50:35 GMT</pubDate>
+    </item>
     <item>
       <title>Amor e Poesia</title>
       <link>https://nfbrentano.github.io/poemas/poema/amor-e-poesia</link>

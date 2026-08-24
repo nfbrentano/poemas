@@ -3,7 +3,7 @@ import { stripHtml } from './html.js';
 import '../styles/social-card.css';
 
 export async function generateSocialCard(poem, container, theme = 'dark', customText = null, aspectRatio = 'feed') {
-  let displayContent = customText || poem.excerpt;
+  let displayContent = customText;
   if (!displayContent) {
     const plainText = stripHtml(poem.content || '');
     

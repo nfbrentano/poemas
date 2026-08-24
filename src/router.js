@@ -141,7 +141,7 @@ export async function router() {
           }
         }
       } catch (e) {
-        if (import.meta.env.DEV) console.error(e);
+        console.error('[Router Error]', e);
         
         if (e.message?.includes('Failed to fetch dynamically imported module') || 
             e.name === 'ChunkLoadError' ||
@@ -150,7 +150,7 @@ export async function router() {
           return;
         }
 
-        view.innerHTML = '<h2>Erro ao carregar a página.</h2>';
+        view.innerHTML = `<h2>Erro ao carregar a página.</h2><pre style="color: red; text-align: left; padding: 1rem; background: #222; overflow-x: auto; font-size: 12px;">${e.stack || e.message}</pre>`;
       }
     } else {
       currentViewComponent = null;
