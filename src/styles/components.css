@@ -2975,10 +2975,37 @@ html.immersive-mode .immersive-control-panel {
   max-width: 100%;
 }
 
+/* Gestures & Animations */
+@keyframes heartFloat {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -150%) scale(1.5); }
+}
 
+@media (max-width: 768px) {
+  .poem-content {
+    touch-action: pan-y; /* permite scroll vertical, mas captura horizontal para swipe */
+  }
+}
 
+@media (max-width: 768px) {
+  .font-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+  
+  .share-btn {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+  
+  .filter-chip {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
 
-
-
-
+  .back-to-top-btn {
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px) + var(--space-sm));
+  }
+}
 

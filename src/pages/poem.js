@@ -576,8 +576,41 @@ export default {
     // Audio Player Logic
     AudioPlayer.init(container, import.meta.env.BASE_URL);
 
-    // Highlight Tooltip Logic
+    // Highlight Tooltip & Gestures Logic
     const poemText = document.getElementById('poem-text');
+    let lastTap = 0;
+
+    poemText?.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTap < 300 && now - lastTap > 0) {
+        // Find reaction button (heart)
+        const reactionBtn = document.querySelector('.reaction-btn[data-type="love"]');
+        if (reactionBtn && !reactionBtn.classList.contains('active')) {
+           reactionBtn.click();
+        }
+        showHeartAnimation(
+          e.changedTouches[0].clientX,
+          e.changedTouches[0].clientY
+        );
+      }
+      lastTap = now;
+    }, { passive: true });
+
+    function showHeartAnimation(x, y) {
+      const heart = document.createElement('span');
+      heart.textContent = '♥';
+      heart.style.cssText = `
+        position:fixed; left:${x}px; top:${y}px;
+        font-size:3rem; color:var(--accent-subtle);
+        pointer-events:none; z-index:9999;
+        animation: heartFloat 0.8s ease forwards;
+        transform: translate(-50%,-50%);
+        text-shadow: 0 0 10px rgba(0,0,0,0.2);
+      `;
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 800);
+    }
+
     const tooltip = document.getElementById('highlight-tooltip');
     let selectedText = '';
 
