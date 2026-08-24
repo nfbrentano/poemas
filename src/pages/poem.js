@@ -584,7 +584,7 @@ export default {
       const now = Date.now();
       if (now - lastTap < 300 && now - lastTap > 0) {
         // Find reaction button (heart)
-        const reactionBtn = document.querySelector('.reaction-btn[data-type="love"]');
+        const reactionBtn = document.querySelector('.reaction-btn[data-emoji="❤️"]');
         if (reactionBtn && !reactionBtn.classList.contains('active')) {
            reactionBtn.click();
         }

@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js';
 
-const EMOJIS = ['🕯️', '💧', '🌿', '🌙', '✨'];
+const EMOJIS = ['🕯️', '💧', '🌿', '🌙', '✨', '❤️'];
 
 function getSessionId() {
   let id = localStorage.getItem('reaction_session_id');
