@@ -105,10 +105,10 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
     }
 
     // Dynamic OG Image for Articles
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (supabaseUrl && url && url.includes('/poema/')) {
+    const firebaseUrl = import.meta.env.VITE_FIREBASE_OG_URL; // Add this to your env if you have a Firebase OG generator function
+    if (firebaseUrl && url && url.includes('/poema/')) {
       const slug = url.split('/').pop();
-      const dynamicOgUrl = `${supabaseUrl}/functions/v1/og-image?slug=${slug}`;
+      const dynamicOgUrl = `${firebaseUrl}?slug=${slug}`;
       setMeta('meta[property="og:image"]', 'content', dynamicOgUrl);
       setMeta('meta[name="twitter:image"]', 'content', dynamicOgUrl);
     }

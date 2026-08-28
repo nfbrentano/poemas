@@ -1,4 +1,5 @@
-import { supabase } from '../utils/supabase.js';
+import { db } from '../utils/firebase.js';
+import { collection, query, orderBy, getDocs, where } from 'firebase/firestore';
 import { filterChips } from '../components/filter-chips.js';
 import { updateSEO } from '../utils/seo.js';
 import { normalizeTag } from '../utils/tags.js';
@@ -55,10 +56,24 @@ export const collections = {
 
       // Fetch Collections
       const fetchCollections = async () => {
-        const { data: cols, error } = await supabase
-          .from('collections')
-          .select('*, collection_poems(count)')
-          .order('created_at', { ascending: false });
+        let cols = [];
+        let error = null;
+        try {
+          const q = query(collection(db, 'collections'), orderBy('created_at', 'desc'));
+          const snapshot = await getDocs(q);
+          
+          const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
+          const cpData = [];
+          cpSnapshot.forEach(d => cpData.push(d.data()));
+
+          snapshot.forEach(doc => {
+            const colData = doc.data();
+            const count = cpData.filter(cp => cp.collection_id === doc.id).length;
+            cols.push({ id: doc.id, ...colData, collection_poems: [{ count }] });
+          });
+        } catch (err) {
+          error = err;
+        }
 
         if (grid) {
           if (error) {
@@ -87,15 +102,32 @@ export const collections = {
 
       // Fetch and Filter Poems
       const fetchPoems = async () => {
-        let query = supabase
-          .from('poems')
-          .select('id, title, slug, published_at, tags, collection_poems(collection_id, collections(slug))')
-          .eq('status', 'published')
-          .order('published_at', { ascending: false });
-
-        const { data, error } = await query;
-        if (error) {
-          console.error('Supabase error fetching poems:', error);
+        let data = [];
+        let error = null;
+        try {
+          const q = query(collection(db, 'poems'), where('status', '==', 'published'), orderBy('published_at', 'desc'));
+          const snapshot = await getDocs(q);
+          
+          const colsSnapshot = await getDocs(collection(db, 'collections'));
+          const colsMap = {};
+          colsSnapshot.forEach(d => { colsMap[d.id] = d.data(); });
+          
+          const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
+          const cpData = [];
+          cpSnapshot.forEach(d => cpData.push(d.data()));
+          
+          snapshot.forEach(doc => {
+            const poemData = doc.data();
+            const poemRelations = cpData
+               .filter(cp => cp.poem_id === doc.id)
+               .map(cp => ({
+                 collection_id: cp.collection_id,
+                 collections: colsMap[cp.collection_id] ? { slug: colsMap[cp.collection_id].slug } : null
+               }));
+            data.push({ id: doc.id, ...poemData, collection_poems: poemRelations });
+          });
+        } catch (err) {
+          error = err;
         }
         allPoems = data || [];
         

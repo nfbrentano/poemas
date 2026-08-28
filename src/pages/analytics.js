@@ -1,4 +1,5 @@
-import { supabase } from '../utils/supabase.js';
+import { db } from '../utils/firebase.js';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 
 // Minimal SVG line chart — no external deps
 function buildChart(data, width = 700, height = 160) {
@@ -279,12 +280,20 @@ export default {
     const sinceISO = since.toISOString();
 
     // Query data with upper limit to optimize performance
-    const { data: views, error } = await supabase
-      .from('page_views')
-      .select('created_at, page, poem_id, ip_hash, country')
-      .gte('created_at', sinceISO)
-      .order('created_at', { ascending: false })
-      .limit(5000);
+    let views = [];
+    let error = null;
+    try {
+      const q = query(
+        collection(db, 'page_views'),
+        where('created_at', '>=', sinceISO),
+        orderBy('created_at', 'desc'),
+        limit(5000)
+      );
+      const snapshot = await getDocs(q);
+      snapshot.forEach(doc => views.push(doc.data()));
+    } catch(err) {
+      error = err;
+    }
 
     if (error) {
       container.querySelector('#chart-area').innerHTML = `<p style="color:var(--error)">${error.message}</p>`;

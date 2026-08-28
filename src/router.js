@@ -150,7 +150,14 @@ export async function router() {
           return;
         }
 
-        view.innerHTML = `<h2>Erro ao carregar a página.</h2><pre style="color: red; text-align: left; padding: 1rem; background: #222; overflow-x: auto; font-size: 12px;">${e.stack || e.message}</pre>`;
+        const errorText = String(e.stack || e.message || e);
+        const safeErrorText = errorText
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+        view.innerHTML = `<h2>Erro ao carregar a página.</h2><pre style="color: red; text-align: left; padding: 1rem; background: #222; overflow-x: auto; font-size: 12px;">${safeErrorText}</pre>`;
       }
     } else {
       currentViewComponent = null;

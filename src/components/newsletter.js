@@ -1,4 +1,5 @@
-import { supabase } from '../utils/supabase.js';
+import { db } from '../utils/firebase.js';
+import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 
 export const newsletter = {
   render() {
@@ -37,18 +38,20 @@ export const newsletter = {
       msgEl.innerHTML = 'Enviando...';
       msgEl.style.color = 'var(--text-secondary)';
       
-      const { error } = await supabase.from('subscribers').insert([{ email }]);
-      
-      if (!error || error.code === '23505') {
-
-        msgEl.innerHTML = error?.code === '23505'
-          ? 'Este e-mail já está inscrito.'
-          : 'Obrigado por assinar.';
-        msgEl.style.color = error?.code === '23505'
-          ? 'var(--text-secondary)'
-          : 'var(--success)';
-        if (!error) subForm.reset();
-      } else {
+      try {
+        const q = query(collection(db, 'subscribers'), where('email', '==', email));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          msgEl.innerHTML = 'Este e-mail já está inscrito.';
+          msgEl.style.color = 'var(--text-secondary)';
+        } else {
+          await addDoc(collection(db, 'subscribers'), { email, created_at: new Date().toISOString() });
+          msgEl.innerHTML = 'Obrigado por assinar.';
+          msgEl.style.color = 'var(--success)';
+          subForm.reset();
+        }
+      } catch (err) {
         msgEl.innerHTML = 'Erro ao inscrever. Tente novamente.';
         msgEl.style.color = 'var(--error)';
       }

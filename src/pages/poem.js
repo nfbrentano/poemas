@@ -1,4 +1,5 @@
-import { supabase } from '../utils/supabase.js';
+import { db, auth } from '../utils/firebase.js';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { updateSEO } from '../utils/seo.js';
 import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
@@ -84,16 +85,32 @@ export default {
 
     container.innerHTML = skeletonHtml;
     
-    // Fetch poem with navigation data in a single RPC
+    // Fetch poem with navigation data
     console.log('[Poem] Fetching slug:', slug);
-    const { data: poems, error } = await supabase
-      .rpc('get_poem_with_navigation', { target_slug: slug });
+    let poem = null;
+    let error = null;
+    
+    try {
+      const q = query(collection(db, 'poems'), where('status', '==', 'published'));
+      const snapshot = await getDocs(q);
+      const allPoems = [];
+      snapshot.forEach(doc => allPoems.push({ id: doc.id, ...doc.data() }));
+      allPoems.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
       
-    if (error) {
-      console.error('[Poem] RPC Error:', error);
+      const pIndex = allPoems.findIndex(p => p.slug === slug);
+      if (pIndex !== -1) {
+         poem = allPoems[pIndex];
+         const prev = allPoems[pIndex + 1]; 
+         const next = allPoems[pIndex - 1]; 
+         poem.prev_slug = prev ? prev.slug : null;
+         poem.prev_title = prev ? prev.title : null;
+         poem.next_slug = next ? next.slug : null;
+         poem.next_title = next ? next.title : null;
+      }
+    } catch(err) {
+      error = err;
+      console.error('[Poem] Error:', error);
     }
-      
-    const poem = poems && Array.isArray(poems) && poems.length > 0 ? poems[0] : null;
       
     if (error || !poem) {
       console.warn('[Poem] Poem not found or error occurred');
@@ -106,17 +123,7 @@ export default {
       return;
     }
 
-    // Fallback for audio_url if RPC does not return it in unmigrated environment
-    if (poem && poem.audio_url === undefined) {
-      try {
-        const { data: audioData } = await supabase.from('poems').select('audio_url').eq('id', poem.id).single();
-        if (audioData && audioData.audio_url) {
-          poem.audio_url = audioData.audio_url;
-        }
-      } catch (e) {
-        console.warn('Fallback query for audio_url failed:', e);
-      }
-    }
+    // Fallback not needed for Firestore since we fetched everything
 
     const prevSlug = poem.prev_slug;
     const nextSlug = poem.next_slug;
@@ -151,8 +158,7 @@ export default {
     });
     
     // Check if user is logged in (to show admin buttons)
-    const { data: { session } } = await supabase.auth.getSession();
-    const isAdmin = !!session;
+    const isAdmin = !!auth.currentUser;
     
     const formattedContent = formatPoemForAnimation(poem.content);
 

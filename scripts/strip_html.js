@@ -12,15 +12,19 @@ function cleanHtml(content) {
   cleaned = cleaned.replace(/<\/p>/gi, '\n\n');
   
   // Remove all other HTML tags
-  cleaned = cleaned.replace(/<[^>]+>/g, '');
+  let prevCleaned;
+  do {
+    prevCleaned = cleaned;
+    cleaned = cleaned.replace(/<[^>]+>/g, '');
+  } while (cleaned !== prevCleaned);
   
   // Decode basic HTML entities
   cleaned = cleaned.replace(/&nbsp;/g, ' ')
-                   .replace(/&amp;/g, '&')
                    .replace(/&lt;/g, '<')
                    .replace(/&gt;/g, '>')
                    .replace(/&quot;/g, '"')
-                   .replace(/&#039;/g, "'");
+                   .replace(/&#039;/g, "'")
+                   .replace(/&amp;/g, '&');
 
   // Collapse 3 or more newlines into 2
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');

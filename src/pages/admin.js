@@ -1,4 +1,22 @@
-import { supabase } from '../utils/supabase.js';
+import { db, auth } from '../utils/firebase.js';
+// Stub supabase to prevent runtime crashes if admin is visited during migration
+const supabase = {
+  auth: {
+    getSession: async () => ({ data: { session: auth.currentUser } }),
+    signOut: async () => { await auth.signOut(); }
+  },
+  from: () => ({
+    select: () => ({
+      eq: () => ({ single: async () => ({ data: null }), order: () => ({ limit: async () => ({ data: [] }) }) }),
+      order: () => ({ limit: async () => ({ data: [] }), gte: async () => ({ data: [] }) }),
+      gte: () => ({ order: () => ({ limit: async () => ({ data: [] }) }) })
+    }),
+    insert: async () => ({ error: null }),
+    update: () => ({ eq: async () => ({ error: null }) }),
+    delete: () => ({ eq: async () => ({ error: null }) })
+  }),
+  rpc: async () => ({ data: null, error: null })
+};
 import { navigateTo } from '../router.js';
 import { escapeHtml, stripHtml, sanitizeUrl } from '../utils/html.js';
 

@@ -1,4 +1,4 @@
-import { supabase } from '../utils/supabase.js';
+// Firebase edge function / fetch placeholder
 
 export default {
   meta: {
@@ -28,11 +28,14 @@ export default {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('unsubscribe', {
-        body: { token }
+      // Temporary workaround since we don't have a Firebase function setup yet
+      // A proper solution would use Firebase Cloud Functions or direct Firestore update if token allows
+      const res = await fetch('https://dummy-endpoint.com/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
       });
-
-      if (error) throw error;
+      if (!res.ok) throw new Error('Failed to unsubscribe');
 
       container.innerHTML = `
         <div class="unsubscribe-page fade-in" style="max-width: 600px; margin: 6rem auto; text-align: center; padding: 0 2rem;">

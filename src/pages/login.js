@@ -1,11 +1,11 @@
-import { supabase } from '../utils/supabase.js';
+import { auth } from '../utils/firebase.js';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { navigateTo } from '../router.js';
 
 export default {
   meta: { title: 'Login Admin' },
   async render(container) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
+    if (auth.currentUser) {
       navigateTo('/admin');
       return;
     }
@@ -36,13 +36,12 @@ export default {
       
       errorEl.textContent = 'Autenticando...';
       
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-        errorEl.textContent = 'E-mail ou senha incorretos.';
-      } else {
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
         errorEl.textContent = '';
         navigateTo('/admin');
+      } catch (error) {
+        errorEl.textContent = 'E-mail ou senha incorretos.';
       }
     });
   }

@@ -1,4 +1,5 @@
-import { supabase } from '../utils/supabase.js';
+import { db } from '../utils/firebase.js';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { navigateTo } from '../router.js';
 
 export const searchOverlay = {
@@ -8,17 +9,23 @@ export const searchOverlay = {
 
   async loadAllPoems() {
     if (this.allPoemsCache) return this.allPoemsCache;
-    const { data, error } = await supabase
-      .from('poems')
-      .select('id, title, slug, excerpt, tags, published_at, content')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false });
-    if (error) {
+    try {
+      const q = query(
+        collection(db, 'poems'),
+        where('status', '==', 'published'),
+        orderBy('published_at', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      const data = [];
+      querySnapshot.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() });
+      });
+      this.allPoemsCache = data;
+      return this.allPoemsCache;
+    } catch (error) {
       console.error('Error fetching all poems for search cache:', error);
       return [];
     }
-    this.allPoemsCache = data || [];
-    return this.allPoemsCache;
   },
 
   renderSearchResults(results, query) {

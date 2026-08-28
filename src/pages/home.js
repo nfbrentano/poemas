@@ -1,4 +1,5 @@
-import { supabase } from '../utils/supabase.js';
+import { db } from '../utils/firebase.js';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { updateSEO } from '../utils/seo.js';
 import { newsletter } from '../components/newsletter.js';
 import { getRandomPoem } from '../utils/navigation.js';
@@ -92,13 +93,19 @@ export default {
     container.innerHTML = skeletonHtml;
     
     // Fetch published poems with collections
-    let poemsQuery = supabase
-      .from('poems')
-      .select('id, title, slug, excerpt, tags, published_at, collection_poems(collection_id, collections(slug))')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false });
-      
-    const { data: poems, error } = await poemsQuery;
+    let poems = [];
+    let error = null;
+    try {
+      const q = query(
+        collection(db, 'poems'),
+        where('status', '==', 'published'),
+        orderBy('published_at', 'desc')
+      );
+      const snapshot = await getDocs(q);
+      poems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (err) {
+      error = err;
+    }
       
     if (error) {
       console.error(error);
@@ -162,7 +169,7 @@ export default {
 
     if (activeCols.length > 0) {
       displayPoems = displayPoems.filter(p => 
-        p.collection_poems && p.collection_poems.some(cp => cp.collections && activeCols.includes(cp.collections.slug))
+        p.collection_slugs && p.collection_slugs.some(slug => activeCols.includes(slug))
       );
     }
 

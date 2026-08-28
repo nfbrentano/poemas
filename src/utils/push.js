@@ -1,4 +1,5 @@
-import { supabase } from './supabase.js';
+import { db, auth } from './firebase.js';
+import { collection, addDoc, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 export const pushManager = {
   isSupported() {
@@ -47,10 +48,10 @@ export const pushManager = {
       applicationServerKey: this.urlBase64ToUint8Array(vapidKey)
     });
 
-    // Save to Supabase
-    const { data: { session } } = await supabase.auth.getSession();
-    await supabase.from('push_subscriptions').insert({
-      user_id: session?.user?.id || null,
+    // Save to Firebase
+    const user = auth.currentUser;
+    await addDoc(collection(db, 'push_subscriptions'), {
+      user_id: user?.uid || null,
       subscription: subscription.toJSON()
     });
 
@@ -63,10 +64,14 @@ export const pushManager = {
     if (subscription) {
       await subscription.unsubscribe();
       
-      // Remove from Supabase
+      // Remove from Firebase
       const subJson = subscription.toJSON();
-      await supabase.from('push_subscriptions').delete().match({
-        'subscription->endpoint': subJson.endpoint
+      const endpoint = subJson.endpoint;
+      
+      const q = query(collection(db, 'push_subscriptions'), where('subscription.endpoint', '==', endpoint));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (d) => {
+        await deleteDoc(doc(db, 'push_subscriptions', d.id));
       });
     }
   },

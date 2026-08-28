@@ -1,4 +1,5 @@
-import { supabase } from './supabase.js';
+import { db } from './firebase.js';
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 
 const EMOJIS = ['🕯️', '💧', '🌿', '🌙', '✨', '❤️'];
 
@@ -23,11 +24,16 @@ function getSessionId() {
 }
 
 export async function loadReactions(poemId) {
-  const { data, error } = await supabase
-    .from('poem_reactions')
-    .select('emoji, session_id')
-    .eq('poem_id', poemId);
-  if (error) return { counts: {}, userReactions: new Set() };
+  let data = [];
+  try {
+    const q = query(collection(db, 'poem_reactions'), where('poem_id', '==', poemId));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      data.push(doc.data());
+    });
+  } catch (error) {
+    return { counts: {}, userReactions: new Set() };
+  }
 
   const sessionId = getSessionId();
   const counts = {};
@@ -42,20 +48,26 @@ export async function loadReactions(poemId) {
 
 export async function toggleReaction(poemId, emoji) {
   const sessionId = getSessionId();
-  const { data: existing } = await supabase
-    .from('poem_reactions')
-    .select('id')
-    .eq('poem_id', poemId)
-    .eq('session_id', sessionId)
-    .eq('emoji', emoji)
-    .maybeSingle();
+  try {
+    const q = query(
+      collection(db, 'poem_reactions'),
+      where('poem_id', '==', poemId),
+      where('session_id', '==', sessionId),
+      where('emoji', '==', emoji)
+    );
+    const querySnapshot = await getDocs(q);
 
-  if (existing) {
-    await supabase.from('poem_reactions').delete().eq('id', existing.id);
-    return 'removed';
-  } else {
-    await supabase.from('poem_reactions').insert({ poem_id: poemId, emoji, session_id: sessionId });
-    return 'added';
+    if (!querySnapshot.empty) {
+      const existingDoc = querySnapshot.docs[0];
+      await deleteDoc(doc(db, 'poem_reactions', existingDoc.id));
+      return 'removed';
+    } else {
+      await addDoc(collection(db, 'poem_reactions'), { poem_id: poemId, emoji, session_id: sessionId });
+      return 'added';
+    }
+  } catch (error) {
+    console.error('Error toggling reaction:', error);
+    return null;
   }
 }
 

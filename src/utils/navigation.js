@@ -34,14 +34,19 @@ export function updateActiveNavLink() {
 
 export async function getRandomPoem() {
   try {
-    const { supabase } = await import('./supabase.js');
-    const { data, error } = await supabase
-      .rpc('get_random_poem');
-      
-    if (error) throw error;
+    const { db } = await import('./firebase.js');
+    const { collection, getDocs } = await import('firebase/firestore');
     
-    if (data && data.length > 0) {
-      navigateTo('/poema/' + data[0].slug);
+    const querySnapshot = await getDocs(collection(db, 'poems'));
+    const poems = [];
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.slug) poems.push(data.slug);
+    });
+    
+    if (poems.length > 0) {
+      const randomSlug = poems[Math.floor(Math.random() * poems.length)];
+      navigateTo('/poema/' + randomSlug);
     }
   } catch (err) {
     console.error('Error fetching random poem:', err);

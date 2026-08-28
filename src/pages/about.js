@@ -1,4 +1,6 @@
-import { supabase } from '../utils/supabase.js';
+import { auth, db, storage } from '../utils/firebase.js';
+import { collection, getDocs, doc, setDoc, getCountFromServer, query, where } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { pushToggle } from '../components/push-toggle.js';
 
 export default {
@@ -6,8 +8,8 @@ export default {
     title: 'Sobre Natanael Brentano'
   },
   async render(container) {
-    const { data: { session } } = await supabase.auth.getSession();
-    const isAdmin = !!session;
+    await auth.authStateReady();
+    const isAdmin = !!auth.currentUser;
 
     container.innerHTML = `
       <section class="about-page fade-in">
@@ -104,11 +106,11 @@ export default {
     // Carregar configurações do site e contagem atualizada de poemas
     const loadSettings = async () => {
       try {
-        const { data: settings } = await supabase
-          .from('site_settings')
-          .select('key, value');
+        const settingsRef = collection(db, 'site_settings');
+        const settingsSnap = await getDocs(settingsRef);
+        const settings = settingsSnap.docs.map(doc => ({ key: doc.id, value: doc.data().value }));
 
-        if (settings) {
+        if (settings.length > 0) {
           const avatar = settings.find(s => s.key === 'avatar_url');
           const bio = settings.find(s => s.key === 'author_bio');
 
@@ -128,12 +130,12 @@ export default {
 
       // Buscar total de poemas publicados para manter o marco dinâmico
       try {
-        const { count, error } = await supabase
-          .from('poems')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'published');
+        const poemsRef = collection(db, 'poems');
+        const q = query(poemsRef, where('status', '==', 'published'));
+        const snapshot = await getCountFromServer(q);
+        const count = snapshot.data().count;
 
-        if (!error && count !== null) {
+        if (count !== null) {
           const countEl = container.querySelector('#total-poems-count');
           if (countEl) {
             countEl.textContent = `${count}`;
@@ -164,9 +166,12 @@ export default {
         saveBtn.innerText = 'Salvando...';
         const newValue = textarea.value;
         
-        const { error } = await supabase
-          .from('site_settings')
-          .upsert({ key: 'author_bio', value: newValue });
+        let error = null;
+        try {
+          await setDoc(doc(db, 'site_settings', 'author_bio'), { value: newValue });
+        } catch (err) {
+          error = err;
+        }
 
         if (error) {
           alert('Erro ao salvar bio');
@@ -194,22 +199,11 @@ export default {
           const fileExt = file.name.split('.').pop().toLowerCase();
           const fileName = `avatar_${Date.now()}.${fileExt}`;
 
-          const { data, error } = await supabase.storage
-            .from('avatars')
-            .upload(fileName, file);
+          const storageRef = ref(storage, `avatars/${fileName}`);
+          await uploadBytes(storageRef, file);
+          const publicURL = await getDownloadURL(storageRef);
 
-          if (error) throw error;
-
-          const { data: urlData } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(fileName);
-
-          const publicURL = urlData.publicUrl;
-
-          await supabase.from('site_settings').upsert({ 
-            key: 'avatar_url', 
-            value: publicURL 
-          });
+          await setDoc(doc(db, 'site_settings', 'avatar_url'), { value: publicURL });
 
           imgEl.src = publicURL;
           localStorage.setItem('profilePhotoURL', publicURL);

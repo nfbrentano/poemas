@@ -5,13 +5,17 @@ function cleanHtml(content) {
   if (!content) return content;
   let cleaned = content.replace(/<br\s*\/?>/gi, '\n');
   cleaned = cleaned.replace(/<\/p>/gi, '\n\n');
-  cleaned = cleaned.replace(/<[^>]+>/g, '');
+  let prevCleaned;
+  do {
+    prevCleaned = cleaned;
+    cleaned = cleaned.replace(/<[^>]+>/g, '');
+  } while (cleaned !== prevCleaned);
   cleaned = cleaned.replace(/&nbsp;/g, ' ')
-                   .replace(/&amp;/g, '&')
                    .replace(/&lt;/g, '<')
                    .replace(/&gt;/g, '>')
                    .replace(/&quot;/g, '"')
-                   .replace(/&#039;/g, "'");
+                   .replace(/&#039;/g, "'")
+                   .replace(/&amp;/g, '&');
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
   return cleaned.trim();
 }

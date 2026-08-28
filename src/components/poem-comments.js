@@ -1,4 +1,5 @@
-import { supabase } from '../utils/supabase.js';
+import { db } from '../utils/firebase.js';
+import { collection, query, where, orderBy, getDocs, addDoc } from 'firebase/firestore';
 import { escapeHtml } from '../utils/html.js';
 import { toast } from './toast.js';
 
@@ -14,15 +15,26 @@ export const PoemComments = {
 
     // Load Comments
     const loadComments = async () => {
-      const { data: comments, error } = await supabase
-        .from('poem_comments')
-        .select('author_name, content, created_at')
-        .eq('poem_id', poemId)
-        .eq('approved', true)
-        .order('created_at', { ascending: true });
+      let comments = [];
+      let error = null;
+      try {
+        const q = query(
+          collection(db, 'poem_comments'),
+          where('poem_id', '==', poemId),
+          where('approved', '==', true),
+          orderBy('created_at', 'asc')
+        );
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          comments.push(doc.data());
+        });
+      } catch (err) {
+        error = err;
+        console.error('Error loading comments:', err);
+      }
       
       const listEl = document.getElementById('comments-list');
-      if (error || !comments || comments.length === 0) {
+      if (error || comments.length === 0) {
         if (listEl) listEl.innerHTML = '<p class="comments-empty">Silêncio... nenhum comentário ainda.</p>';
         return;
       }
@@ -51,9 +63,19 @@ export const PoemComments = {
       btn.disabled = true;
       btn.innerText = 'Enviando...';
 
-      const { error } = await supabase
-        .from('poem_comments')
-        .insert([{ poem_id: poemId, author_name: author, content: content }]);
+      let error = null;
+      try {
+        await addDoc(collection(db, 'poem_comments'), {
+          poem_id: poemId,
+          author_name: author,
+          content: content,
+          approved: false,
+          created_at: new Date().toISOString()
+        });
+      } catch (err) {
+        error = err;
+        console.error('Error adding comment:', err);
+      }
 
       if (error) {
         toast.show('Erro ao enviar comentário.', 'error');
