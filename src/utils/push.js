@@ -1,4 +1,4 @@
-import { db, auth } from './firebase.js';
+import { db, getFirebaseAuth } from './firebase.js';
 import { collection, addDoc, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 export const pushManager = {
@@ -49,6 +49,7 @@ export const pushManager = {
     });
 
     // Save to Firebase
+    const auth = await getFirebaseAuth();
     const user = auth.currentUser;
     await addDoc(collection(db, 'push_subscriptions'), {
       user_id: user?.uid || null,

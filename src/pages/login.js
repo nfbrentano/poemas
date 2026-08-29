@@ -1,10 +1,11 @@
-import { auth } from '../utils/firebase.js';
+import { getFirebaseAuth } from '../utils/firebase.js';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { navigateTo } from '../router.js';
 
 export default {
   meta: { title: 'Login Admin' },
   async render(container) {
+    const auth = await getFirebaseAuth();
     if (auth.currentUser) {
       navigateTo('/admin');
       return;

@@ -1,4 +1,4 @@
-import { db, auth } from '../utils/firebase.js';
+import { db, getFirebaseAuth } from '../utils/firebase.js';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { updateSEO } from '../utils/seo.js';
 import { trackPageView } from '../utils/analytics.js';
@@ -158,7 +158,11 @@ export default {
     });
     
     // Check if user is logged in (to show admin buttons)
-    const isAdmin = !!auth.currentUser;
+    let isAdmin = false;
+    try {
+      const auth = await getFirebaseAuth();
+      isAdmin = !!auth.currentUser;
+    } catch (e) {}
     
     const formattedContent = formatPoemForAnimation(poem.content);
 

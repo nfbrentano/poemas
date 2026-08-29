@@ -1,9 +1,15 @@
-import { db, auth } from '../utils/firebase.js';
+import { db, getFirebaseAuth } from '../utils/firebase.js';
 // Stub supabase to prevent runtime crashes if admin is visited during migration
 const supabase = {
   auth: {
-    getSession: async () => ({ data: { session: auth.currentUser } }),
-    signOut: async () => { await auth.signOut(); }
+    getSession: async () => {
+      const auth = await getFirebaseAuth();
+      return { data: { session: auth.currentUser } };
+    },
+    signOut: async () => {
+      const auth = await getFirebaseAuth();
+      await auth.signOut();
+    }
   },
   from: () => ({
     select: () => ({

@@ -1,4 +1,4 @@
-import { auth, db, storage } from '../utils/firebase.js';
+import { db, getFirebaseAuth, getFirebaseStorage } from '../utils/firebase.js';
 import { collection, getDocs, doc, setDoc, getCountFromServer, query, where } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { pushToggle } from '../components/push-toggle.js';
@@ -8,6 +8,7 @@ export default {
     title: 'Sobre Natanael Brentano'
   },
   async render(container) {
+    const auth = await getFirebaseAuth();
     await auth.authStateReady();
     const isAdmin = !!auth.currentUser;
 
@@ -199,6 +200,7 @@ export default {
           const fileExt = file.name.split('.').pop().toLowerCase();
           const fileName = `avatar_${Date.now()}.${fileExt}`;
 
+          const storage = await getFirebaseStorage();
           const storageRef = ref(storage, `avatars/${fileName}`);
           await uploadBytes(storageRef, file);
           const publicURL = await getDownloadURL(storageRef);
