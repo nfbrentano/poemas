@@ -1,20 +1,29 @@
-import { createClient } from '@supabase/supabase-js';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 
 import { stripHtml, escapeHtml } from '../src/utils/html.js';
 
 // Note: Run this with node --env-file=.env.local scripts/prerender.js
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const firebaseConfig = {
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID
+};
+
 const baseUrl = 'https://nfbrentano.github.io/poemas/'; 
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Environment variables VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required.');
+if (!firebaseConfig.apiKey) {
+  console.error('Environment variables for Firebase are required.');
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 function getExcerpt(poem, limit = 160) {
   if (poem.excerpt && poem.excerpt.trim()) {
@@ -37,14 +46,15 @@ async function prerender() {
     }
 
     console.log('Fetching published poems for pre-rendering...');
-    const { data: poems, error } = await supabase
-      .from('poems')
-      .select('id, title, slug, content, excerpt, tags, published_at')
-      .eq('status', 'published');
-
-    if (error) {
-      throw error;
-    }
+    const q = query(
+      collection(db, 'poems'),
+      where('status', '==', 'published')
+    );
+    const snapshot = await getDocs(q);
+    const poems = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return { id: doc.id, ...data };
+    });
 
     console.log(`Found ${poems.length} poems to pre-render.`);
     let originalHtml = fs.readFileSync(templatePath, 'utf-8');
@@ -76,7 +86,7 @@ async function prerender() {
       const excerpt = getExcerpt(poem);
       const title = `${poem.title} — Natanael Brentano`;
       const url = `${baseUrl}poema/${poem.slug}`;
-      const ogImage = `${supabaseUrl}/functions/v1/og-image?slug=${poem.slug}`;
+      const ogImage = `https://${firebaseConfig.projectId}.web.app/og-image?slug=${poem.slug}`; // Fallback if no specific OG image service
       const publishedIso = new Date(poem.published_at).toISOString();
 
       // JSON-LD Structured Data
