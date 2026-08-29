@@ -175,8 +175,10 @@ export async function router() {
   if (document.startViewTransition) {
     try {
       const transition = document.startViewTransition(() => updateView());
-      if (transition && transition.finished) {
-        transition.finished.catch(() => {});
+      if (transition) {
+        if (transition.finished) transition.finished.catch(() => {});
+        if (transition.ready) transition.ready.catch(() => {});
+        if (transition.updateCallbackDone) transition.updateCallbackDone.catch(() => {});
       }
     } catch {
       updateView();

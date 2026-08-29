@@ -59,7 +59,7 @@ export const collections = {
         let cols = [];
         let error = null;
         try {
-          const q = query(collection(db, 'collections'), orderBy('created_at', 'desc'));
+          const q = query(collection(db, 'collections'));
           const snapshot = await getDocs(q);
           
           const cpSnapshot = await getDocs(collection(db, 'collection_poems'));

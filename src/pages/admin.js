@@ -611,8 +611,7 @@ export default {
       
       const { data: cols, error } = await supabase
         .from('collections')
-        .select('*, collection_poems(count)')
-        .order('created_at', { ascending: false });
+        .select('*, collection_poems(count)');
         
       if (error) {
         container.innerHTML = `<div class="error">Erro ao carregar coleções: ${error.message}</div>`;
@@ -933,6 +932,7 @@ export default {
             const res = await supabase.from('collections').update(payload).eq('id', colId);
             colError = res.error;
           } else {
+            payload.created_at = new Date().toISOString();
             const res = await supabase.from('collections').insert(payload);
             colError = res.error;
             if (res.data) colIdToUse = res.data.id;
@@ -978,7 +978,7 @@ export default {
     
     try {
       const [poemsRes, viewsRes] = await Promise.all([
-        supabase.from('poems').select('id, title, slug, status, published_at, scheduled_at, tags, created_at').order('created_at', { ascending: false }),
+        supabase.from('poems').select('id, title, slug, status, published_at, scheduled_at, tags, created_at'),
         supabase.from('page_views').select('poem_id')
       ]);
       
@@ -1527,6 +1527,7 @@ export default {
         const res = await supabase.from('poems').update(payload).eq('id', id);
         error = res.error;
       } else {
+        payload.created_at = new Date().toISOString();
         const res = await supabase.from('poems').insert([payload]);
         error = res.error;
       }
@@ -1583,6 +1584,7 @@ export default {
           const res = await supabase.from('poems').update(payload).eq('id', id);
           error = res.error;
         } else {
+          payload.created_at = new Date().toISOString();
           const res = await supabase.from('poems').insert(payload);
           error = res.error;
           if (res.data) poemId = res.data.id;
@@ -1639,7 +1641,6 @@ export default {
           .from('poems')
           .select('id, title')
           .eq('status', 'published')
-          .order('created_at', { ascending: false })
       ]);
       
       if (logsRes.error) throw logsRes.error;
@@ -1647,6 +1648,7 @@ export default {
       
       const logs = logsRes.data || [];
       const publishedPoems = poemsRes.data || [];
+      publishedPoems.sort((a, b) => a.title.localeCompare(b.title));
       
       // Calculate KPIs
       const totalCount = logs.length;
