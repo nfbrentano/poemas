@@ -34,7 +34,7 @@
     color: var(--text-muted);
     text-decoration: none;
     padding: 8px 4px;
-    transition: color var(--transition-fast), transform var(--transition-fast);
+    transition: transform var(--transition-fast);
     min-height: 44px;
     background: none;
     border: none;
@@ -42,7 +42,7 @@
   }
 
   .bottom-nav-item svg {
-    transition: transform var(--transition-fast), stroke var(--transition-fast);
+    transition: transform var(--transition-fast);
   }
 
   .bottom-nav-item.active,
@@ -1330,17 +1330,18 @@ html.immersive-mode #immersive-btn {
     font-weight: 400;
     letter-spacing: 1px;
     color: var(--text-secondary);
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), background-color var(--transition-fast);
     text-transform: uppercase;
     min-height: 44px;
+    border-left: 2px solid transparent;
   }
 
   .site-header .main-nav a:hover,
   .site-header .main-nav a.active {
     color: var(--accent-subtle);
-    padding-left: var(--space-md);
+    transform: translateX(8px);
     background-color: var(--accent-muted);
-    border-left: 2px solid var(--accent-subtle);
+    border-left-color: var(--accent-subtle);
   }
 }
 
