@@ -64,6 +64,7 @@ ${poems.map(poem => `  <url>
     fs.writeFileSync(outputPath, sitemap);
     
     console.log(`Successfully generated sitemap with ${poems.length + 1} URLs at: ${outputPath}`);
+    process.exit(0);
   } catch (err) {
     console.error('Failed to generate sitemap:', err.message);
     process.exit(1);

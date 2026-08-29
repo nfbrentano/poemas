@@ -91,6 +91,7 @@ ${poems.map(poem => `    <item>
     fs.writeFileSync(outputPath, rss);
     
     console.log(`Successfully generated RSS feed with ${poems.length} items at: ${outputPath}`);
+    process.exit(0);
   } catch (err) {
     console.error('Failed to generate RSS feed:', err.message);
     process.exit(1);

@@ -194,6 +194,7 @@ async function prerender() {
     }
 
     console.log(`Pre-rendering completed! Successfully generated ${count} static HTML files.`);
+    process.exit(0);
   } catch (err) {
     console.error('Failed to pre-render:', err);
     process.exit(1);
