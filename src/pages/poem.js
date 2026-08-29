@@ -854,11 +854,12 @@ export default {
           resendBtn.innerText = 'Enviando...';
           resendBtn.disabled = true;
           try {
-            const { data, error } = await supabase.functions.invoke('send-newsletter', {
-              body: { poemId: poem.id }
-            });
-            if (error) throw error;
-            alert(`Email reenviado com sucesso para ${data?.count || 0} assinantes!`);
+            const { getFirebaseFunctions } = await import('../utils/firebase.js');
+            const { httpsCallable } = await import('firebase/functions');
+            const functions = await getFirebaseFunctions();
+            const callable = httpsCallable(functions, 'send-newsletter');
+            const result = await callable({ poemId: poem.id });
+            alert(`Email reenviado com sucesso para ${result.data?.count || 0} assinantes!`);
           } catch(err) {
             console.error('Newsletter erro:', err);
             let detailedMsg = '';

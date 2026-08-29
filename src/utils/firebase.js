@@ -30,3 +30,12 @@ export const getFirebaseStorage = async () => {
   }
   return storageInstance;
 };
+
+let functionsInstance = null;
+export const getFirebaseFunctions = async () => {
+  if (!functionsInstance) {
+    const { getFunctions } = await import('firebase/functions');
+    functionsInstance = getFunctions(app, 'southamerica-east1'); // Standard region for Brazil, update if needed
+  }
+  return functionsInstance;
+};
