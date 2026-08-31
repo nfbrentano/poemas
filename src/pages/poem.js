@@ -114,10 +114,13 @@ export default {
       
     if (error || !poem) {
       console.warn('[Poem] Poem not found or error occurred');
+      document.title = 'Obra não encontrada — Natanael Brentano';
       container.innerHTML = `
-        <div class="error-container">
-          <h2 style="margin-bottom: 1rem; font-family: var(--font-display);">Obra não encontrada</h2>
-          <p><a href="${import.meta.env.BASE_URL}" data-link style="color: var(--accent-subtle); border-bottom: 1px solid var(--accent-subtle);">Voltar ao sumário</a></p>
+        <div class="not-found-page fade-in">
+          <p class="not-found-label">404</p>
+          <h2 class="not-found-title">Obra não encontrada</h2>
+          <p class="not-found-desc">O poema que você procura pode ter mudado de endereço ou ainda não foi publicado.</p>
+          <a href="${import.meta.env.BASE_URL}" data-link class="not-found-link">← Voltar ao sumário</a>
         </div>
       `;
       return;
