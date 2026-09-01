@@ -168,6 +168,7 @@ export default {
     } catch (e) {}
     
     const formattedContent = formatPoemForAnimation(poem.content);
+    const safeAudioUrl = poem.audio_url ? sanitizeUrl(poem.audio_url) : '';
 
     // Render
     container.innerHTML = `
@@ -184,10 +185,10 @@ export default {
             </div>
           </header>
 
-          ${poem.audio_url ? `
+          ${safeAudioUrl ? `
             <section class="poem-narration-player" aria-label="Player de áudio da poesia: Ouvir narração do autor" role="region">
-              <audio id="narration-audio" preload="metadata" playsinline webkit-playsinline src="${sanitizeUrl(poem.audio_url)}">
-                <source src="${sanitizeUrl(poem.audio_url)}" type="${poem.audio_url.toLowerCase().includes('.m4a') ? 'audio/mp4' : poem.audio_url.toLowerCase().includes('.wav') ? 'audio/wav' : 'audio/mpeg'}">
+              <audio id="narration-audio" preload="metadata" playsinline webkit-playsinline src="${safeAudioUrl}">
+                <source src="${safeAudioUrl}" type="${poem.audio_url.toLowerCase().includes('.m4a') ? 'audio/mp4' : poem.audio_url.toLowerCase().includes('.wav') ? 'audio/wav' : 'audio/mpeg'}">
               </audio>
               <div class="narration-header">
                 <div class="narration-badge">
