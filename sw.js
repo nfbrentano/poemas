@@ -97,6 +97,9 @@ self.addEventListener('fetch', (event) => {
             });
           }
           return networkResponse;
+        }).catch((err) => {
+          console.warn('[SW] Fetch failed for asset:', event.request.url, err);
+          return new Response('', { status: 408, statusText: 'Request Timeout' });
         });
       })
     );

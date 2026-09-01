@@ -5,9 +5,9 @@
   <title>Poemas</title>
   <script type="text/javascript">
     // Preserve the original path for the SPA router
-    var path = window.location.pathname;
-    if (path !== '/poemas/' && path !== '/poemas/index.html') {
-      sessionStorage.setItem('redirect', path);
+    var fullPath = window.location.pathname + window.location.search + window.location.hash;
+    if (window.location.pathname !== '/poemas/' && window.location.pathname !== '/poemas/index.html') {
+      sessionStorage.setItem('redirect', fullPath);
     }
     window.location.replace('/poemas/');
   </script>
