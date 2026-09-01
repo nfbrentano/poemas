@@ -14,7 +14,7 @@ const senderName = defineSecret("SENDER_NAME");
 
 const siteUrl = "https://nfbrentano.github.io/poemas";
 
-exports["send-newsletter"] = onCall(
+exports.sendNewsletter = onCall(
   {
     region: "southamerica-east1",
     secrets: [gmailUser, gmailAppPassword, senderName],

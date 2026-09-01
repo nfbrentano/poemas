@@ -1603,7 +1603,7 @@ export default {
           try {
             publishBtn.innerText = 'Enviando newsletter...';
             
-            const { data, error: fnError } = await supabase.functions.invoke('send-newsletter', {
+            const { data, error: fnError } = await supabase.functions.invoke('sendNewsletter', {
               body: { poemId }
             });
 
@@ -1876,7 +1876,7 @@ export default {
         buttonEl.style.opacity = '0.5';
         
         try {
-          const { data, error: fnError } = await supabase.functions.invoke('send-newsletter', {
+          const { data, error: fnError } = await supabase.functions.invoke('sendNewsletter', {
             body: { poemId }
           });
           
@@ -2107,7 +2107,7 @@ export default {
             bodyPayload.targetEmail = targetEmail;
           }
           
-          const { data, error: fnError } = await supabase.functions.invoke('send-newsletter', {
+          const { data, error: fnError } = await supabase.functions.invoke('sendNewsletter', {
             body: bodyPayload
           });
           

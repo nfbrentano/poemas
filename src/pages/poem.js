@@ -861,7 +861,7 @@ export default {
             const { getFirebaseFunctions } = await import('../utils/firebase.js');
             const { httpsCallable } = await import('firebase/functions');
             const functions = await getFirebaseFunctions();
-            const callable = httpsCallable(functions, 'send-newsletter');
+            const callable = httpsCallable(functions, 'sendNewsletter');
             const result = await callable({ poemId: poem.id });
             alert(`Email reenviado com sucesso para ${result.data?.count || 0} assinantes!`);
           } catch(err) {
