@@ -160,12 +160,8 @@ export default {
       tags: poem.tags
     });
     
-    // Check if user is logged in (to show admin buttons)
+    // Check if user is logged in (to show admin buttons - handled async below)
     let isAdmin = false;
-    try {
-      const auth = await getFirebaseAuth();
-      isAdmin = !!auth.currentUser;
-    } catch (e) {}
     
     const formattedContent = formatPoemForAnimation(poem.content);
     const safeAudioUrl = poem.audio_url ? sanitizeUrl(poem.audio_url) : '';
@@ -308,10 +304,7 @@ export default {
               ⬜ Leitura Imersiva
             </button>
             
-            ${isAdmin ? `
-              <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" data-link>Editar Obra</a>
-              <button id="resend-email-btn" class="btn-secondary">Reenviar Email</button>
-            ` : ''}
+            <div id="poem-admin-actions" style="display: contents;"></div>
           </div>
         </article>
         
@@ -850,37 +843,53 @@ export default {
       }
     });
 
-    if (isAdmin) {
-      const resendBtn = document.getElementById('resend-email-btn');
-      if (resendBtn) {
-        resendBtn.addEventListener('click', async () => {
-          if (!confirm('Deseja realmente reenviar o email desta obra para todos os assinantes?')) return;
-          resendBtn.innerText = 'Enviando...';
-          resendBtn.disabled = true;
-          try {
-            const { getFirebaseFunctions } = await import('../utils/firebase.js');
-            const { httpsCallable } = await import('firebase/functions');
-            const functions = await getFirebaseFunctions();
-            const callable = httpsCallable(functions, 'sendNewsletter');
-            const result = await callable({ poemId: poem.id });
-            alert(`Email reenviado com sucesso para ${result.data?.count || 0} assinantes!`);
-          } catch(err) {
-            console.error('Newsletter erro:', err);
-            let detailedMsg = '';
-            if (err.context && typeof err.context.json === 'function') {
-              try {
-                const errBody = await err.context.json();
-                detailedMsg = errBody.error || errBody.message || '';
-              } catch (e) {}
+    // Setup Admin async if logged in
+    const setupAdmin = async () => {
+      try {
+        const { getFirebaseAuth } = await import('../utils/firebase.js');
+        const auth = await getFirebaseAuth();
+        const initUI = () => {
+          if (!auth.currentUser) return;
+          isAdmin = true;
+          const adminSlot = document.getElementById('poem-admin-actions');
+          if (adminSlot) {
+            adminSlot.innerHTML = `
+              <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" data-link>Editar Obra</a>
+              <button id="resend-email-btn" class="btn-secondary">Reenviar Email</button>
+            `;
+            const resendBtn = document.getElementById('resend-email-btn');
+            if (resendBtn) {
+              resendBtn.addEventListener('click', async () => {
+                if (!confirm('Deseja realmente reenviar o email desta obra para todos os assinantes?')) return;
+                resendBtn.innerText = 'Enviando...';
+                resendBtn.disabled = true;
+                try {
+                  const { getFirebaseFunctions } = await import('../utils/firebase.js');
+                  const { httpsCallable } = await import('firebase/functions');
+                  const functions = await getFirebaseFunctions();
+                  const callable = httpsCallable(functions, 'sendNewsletter');
+                  const result = await callable({ poemId: poem.id });
+                  alert(`Email reenviado com sucesso para ${result.data?.count || 0} assinantes!`);
+                } catch(err) {
+                  console.error('Newsletter erro:', err);
+                  alert(`Houve um erro ao reenviar a newsletter: ${err.message || 'Erro'}`);
+                } finally {
+                  resendBtn.innerText = 'Reenviar Email';
+                  resendBtn.disabled = false;
+                }
+              });
             }
-            alert(`Houve um erro ao reenviar a newsletter:\n${detailedMsg || err.message || 'Erro na Edge Function'}`);
-          } finally {
-            resendBtn.innerText = 'Reenviar Email';
-            resendBtn.disabled = false;
           }
-        });
-      }
-    }
+        };
+
+        if (auth.currentUser) {
+          initUI();
+        } else {
+          auth.authStateReady().then(() => initUI()).catch(() => {});
+        }
+      } catch (_) {}
+    };
+    setupAdmin();
 
     // Prefetch adjacent routes
     const prefetchRoutes = () => {

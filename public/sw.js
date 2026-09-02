@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poemas-cache-v16';
+const CACHE_NAME = 'poemas-cache-v17';
 const STATIC_ASSETS = [
   '/poemas/',
   '/poemas/index.html',
@@ -61,16 +61,11 @@ self.addEventListener('fetch', (event) => {
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseClone);
             });
-            return response;
           }
-          // If 404 or other error on navigation, fallback to cached index.html
-          return caches.match('/poemas/index.html').then((cachedIndex) => {
-            return cachedIndex || response;
-          });
+          return response;
         })
         .catch(() => {
-          // If network fails (offline), try the exact requested URL from cache,
-          // then fallback to cached index.html for SPA, or offline.html
+          // Only fallback to cache if offline/network failure
           return caches.match(event.request).then((cachedResponse) => {
             if (cachedResponse) return cachedResponse;
             return caches.match('/poemas/index.html').then((cachedIndex) => {

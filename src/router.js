@@ -6,6 +6,7 @@ export const routes = {
   '/admin': () => import('./pages/admin.js').then(m => m.default),
   '/login': () => import('./pages/login.js').then(m => m.default),
   '/sobre': () => import('./pages/about.js').then(m => m.default),
+  '/info': () => import('./pages/about.js').then(m => m.default),
   '/colecoes': () => import('./pages/collections.js').then(m => m.default),
   '/colecao/:slug': () => import('./pages/collection.js').then(m => m.default),
   '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default),
@@ -83,7 +84,11 @@ export async function router() {
           for (let i = 0; i < patternParts.length; i++) {
             if (patternParts[i].startsWith(':')) {
               const paramName = patternParts[i].substring(1);
-              params[paramName] = decodeURIComponent(pathParts[i]);
+              try {
+                params[paramName] = decodeURIComponent(pathParts[i]);
+              } catch (_) {
+                params[paramName] = pathParts[i];
+              }
             } else if (patternParts[i] !== pathParts[i]) {
               isMatch = false;
               break;
@@ -106,6 +111,7 @@ export async function router() {
         const combinedParams = { ...params, ...searchParams };
         
         await component.render(view, combinedParams);
+        try { sessionStorage.removeItem('chunk_retry'); } catch (_) {}
         
         // Update active nav state
         updateActiveNavLink();
@@ -144,11 +150,31 @@ export async function router() {
       } catch (e) {
         console.error('[Router Error]', e);
         
-        if (e.message?.includes('Failed to fetch dynamically imported module') || 
-            e.name === 'ChunkLoadError' ||
-            e.message?.includes('error loading dynamically imported module')) {
-          window.location.reload();
-          return;
+        const errStr = String(e?.message || e || '');
+        const isChunkError = 
+          errStr.includes('Failed to fetch dynamically imported module') || 
+          errStr.includes('Importing a module script failed') ||
+          errStr.includes('error loading dynamically imported module') ||
+          errStr.includes('failed to load module script') ||
+          e?.name === 'ChunkLoadError';
+
+        if (isChunkError) {
+          let hasRetried = false;
+          try {
+            hasRetried = sessionStorage.getItem('chunk_retry') === 'true';
+            if (!hasRetried) sessionStorage.setItem('chunk_retry', 'true');
+          } catch (_) {}
+
+          if (!hasRetried) {
+            if ('caches' in window) {
+              caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).finally(() => {
+                window.location.reload();
+              });
+              return;
+            }
+            window.location.reload();
+            return;
+          }
         }
 
         const errorText = String(e.stack || e.message || e);
@@ -158,7 +184,14 @@ export async function router() {
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#039;');
-        view.innerHTML = `<h2>Erro ao carregar a página.</h2><pre style="color: red; text-align: left; padding: 1rem; background: #222; overflow-x: auto; font-size: 12px;">${safeErrorText}</pre>`;
+        view.innerHTML = `
+          <div style="padding: 2rem; text-align: center; max-width: 600px; margin: 3rem auto;">
+            <h2>Erro ao carregar a página.</h2>
+            <p style="color: var(--text-muted); margin: 1rem 0;">Uma nova versão do site pode ter sido publicada.</p>
+            <button onclick="window.location.reload()" class="btn-primary" style="margin-bottom: 1.5rem;">Recarregar página</button>
+            <pre style="color: red; text-align: left; padding: 1rem; background: #222; overflow-x: auto; font-size: 12px; border-radius: 4px;">${safeErrorText}</pre>
+          </div>
+        `;
       }
     } else {
       currentViewComponent = null;
@@ -209,6 +242,26 @@ export function navigateTo(url) {
 
 export function initRouter() {
   window.addEventListener('popstate', router);
+
+  // Auto-reload on Vite chunk preload errors
+  window.addEventListener('vite:preloadError', (event) => {
+    event.preventDefault();
+    let hasRetried = false;
+    try {
+      hasRetried = sessionStorage.getItem('chunk_retry') === 'true';
+      if (!hasRetried) sessionStorage.setItem('chunk_retry', 'true');
+    } catch (_) {}
+
+    if (!hasRetried) {
+      if ('caches' in window) {
+        caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).finally(() => {
+          window.location.reload();
+        });
+        return;
+      }
+      window.location.reload();
+    }
+  });
   
   document.body.addEventListener('click', e => {
     if (e.target.matches('[data-link]')) {
@@ -217,12 +270,25 @@ export function initRouter() {
     }
   });
 
-  // Handle redirect from 404.html (GitHub Pages SPA fallback)
-  const redirect = sessionStorage.getItem('redirect');
+  // Handle redirect from 404.html (sessionStorage or ?redirect= fallback)
+  let redirect = null;
+  try {
+    redirect = sessionStorage.getItem('redirect');
+    if (redirect) sessionStorage.removeItem('redirect');
+  } catch (_) {}
+
+  if (!redirect) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectParam = urlParams.get('redirect');
+    if (redirectParam) {
+      redirect = decodeURIComponent(redirectParam);
+    }
+  }
+
   if (redirect) {
-    sessionStorage.removeItem('redirect');
     window.history.replaceState(null, null, redirect);
   }
   
   router();
 }
+

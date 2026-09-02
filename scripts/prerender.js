@@ -193,7 +193,65 @@ async function prerender() {
       count++;
     }
 
-    console.log(`Pre-rendering completed! Successfully generated ${count} static HTML files.`);
+    console.log(`Pre-rendering completed! Successfully generated ${count} poem static HTML files.`);
+
+    // Pre-render top-level static pages for direct URL access without 404
+    console.log('Generating static HTML for top-level routes...');
+    const staticRoutes = [
+      { route: 'sobre', title: 'Sobre Natanael Brentano — Poemas', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.' },
+      { route: 'info', title: 'Sobre Natanael Brentano — Poemas', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.' },
+      { route: 'colecoes', title: 'Coleções e Sentimentos — Natanael Brentano', description: 'Explore poemas organizados por séries temáticas e sentimentos.' },
+      { route: 'admin', title: 'Painel Admin — Natanael Brentano', description: 'Área administrativa para gestão de poemas e métricas.' },
+      { route: 'login', title: 'Login Admin — Natanael Brentano', description: 'Acesso ao painel administrativo.' },
+      { route: 'unsubscribe', title: 'Cancelar Inscrição — Natanael Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.' },
+      { route: 'cancelar-inscricao', title: 'Cancelar Inscrição — Natanael Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.' }
+    ];
+
+    for (const sr of staticRoutes) {
+      const targetDir = path.join(distDir, sr.route);
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+      let html = originalHtml
+        .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(sr.title)}</title>`)
+        .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${baseUrl}${sr.route}" />`)
+        .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(sr.description)}" />`)
+        .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(sr.title)}" />`)
+        .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(sr.description)}" />`)
+        .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${baseUrl}${sr.route}" />`)
+        .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(sr.title)}" />`)
+        .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(sr.description)}" />`);
+      fs.writeFileSync(path.join(targetDir, 'index.html'), html, 'utf-8');
+    }
+
+    // Pre-render collection routes
+    try {
+      const colSnapshot = await getDocs(collection(db, 'collections'));
+      colSnapshot.forEach(doc => {
+        const col = doc.data();
+        if (col.slug) {
+          const colDir = path.join(distDir, 'colecao', col.slug);
+          if (!fs.existsSync(colDir)) {
+            fs.mkdirSync(colDir, { recursive: true });
+          }
+          const title = `${col.name} — Coleção de Poemas`;
+          const desc = col.description || `Poemas da coleção ${col.name}.`;
+          let html = originalHtml
+            .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)}</title>`)
+            .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${baseUrl}colecao/${col.slug}" />`)
+            .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(desc)}" />`)
+            .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(title)}" />`)
+            .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(desc)}" />`)
+            .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${baseUrl}colecao/${col.slug}" />`);
+          fs.writeFileSync(path.join(colDir, 'index.html'), html, 'utf-8');
+        }
+      });
+      console.log(`Generated static HTML for ${colSnapshot.docs.length} collections.`);
+    } catch (e) {
+      console.warn('Could not prerender collection routes:', e.message);
+    }
+
+    console.log('All static pages successfully pre-rendered!');
     process.exit(0);
   } catch (err) {
     console.error('Failed to pre-render:', err);
