@@ -40,6 +40,7 @@ export default {
       
       try {
         await signInWithEmailAndPassword(auth, email, password);
+        try { localStorage.setItem('has_admin_session', '1'); } catch (_) {}
         errorEl.textContent = '';
         navigateTo('/admin');
       } catch (error) {
