@@ -8,11 +8,17 @@ const supabase = {
   auth: {
     getSession: async () => {
       const auth = await getFirebaseAuth();
+      if (auth.currentUser) {
+        try { localStorage.setItem('has_admin_session', '1'); } catch (_) {}
+      } else {
+        try { localStorage.removeItem('has_admin_session'); } catch (_) {}
+      }
       return { data: { session: auth.currentUser } };
     },
     signOut: async () => {
       const auth = await getFirebaseAuth();
       await auth.signOut();
+      try { localStorage.removeItem('has_admin_session'); } catch (_) {}
     }
   },
   from: (tableName) => {

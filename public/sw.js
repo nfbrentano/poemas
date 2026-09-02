@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poemas-cache-v17';
+const CACHE_NAME = 'poemas-cache-v18';
 const STATIC_ASSETS = [
   '/poemas/',
   '/poemas/index.html',
@@ -54,7 +54,7 @@ self.addEventListener('fetch', (event) => {
   // 1. Navigation requests (HTML pages) - Network First strategy
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-cache' })
         .then((response) => {
           if (response.status === 200) {
             const responseClone = response.clone();

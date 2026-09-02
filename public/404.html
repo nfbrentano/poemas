@@ -9,6 +9,11 @@
       var pathname = window.location.pathname;
       var fullPath = pathname + window.location.search + window.location.hash;
       
+      var isAsset = /\.(js|css|png|jpg|jpeg|webp|gif|svg|ico|json|woff2?|map|xml|txt)$/i.test(pathname) || pathname.indexOf('/assets/') !== -1;
+      if (isAsset) {
+        return;
+      }
+
       // Se não estiver na raiz, armazena para redirecionar no SPA
       if (pathname !== basePath && pathname !== basePath + 'index.html') {
         var stored = false;

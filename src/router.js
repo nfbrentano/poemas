@@ -166,13 +166,22 @@ export async function router() {
           } catch (_) {}
 
           if (!hasRetried) {
-            if ('caches' in window) {
-              caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).finally(() => {
-                window.location.reload();
-              });
-              return;
-            }
-            window.location.reload();
+            const clearAndReload = async () => {
+              try {
+                if ('caches' in window) {
+                  const names = await caches.keys();
+                  await Promise.all(names.map(n => caches.delete(n)));
+                }
+                if ('serviceWorker' in navigator) {
+                  const registrations = await navigator.serviceWorker.getRegistrations();
+                  for (const reg of registrations) {
+                    await reg.update().catch(() => {});
+                  }
+                }
+              } catch (_) {}
+              window.location.reload();
+            };
+            clearAndReload();
             return;
           }
         }
@@ -188,10 +197,29 @@ export async function router() {
           <div style="padding: 2rem; text-align: center; max-width: 600px; margin: 3rem auto;">
             <h2>Erro ao carregar a página.</h2>
             <p style="color: var(--text-muted); margin: 1rem 0;">Uma nova versão do site pode ter sido publicada.</p>
-            <button onclick="window.location.reload()" class="btn-primary" style="margin-bottom: 1.5rem;">Recarregar página</button>
+            <button id="chunk-reload-btn" class="btn-primary" style="margin-bottom: 1.5rem; cursor: pointer;">Recarregar página</button>
             <pre style="color: red; text-align: left; padding: 1rem; background: #222; overflow-x: auto; font-size: 12px; border-radius: 4px;">${safeErrorText}</pre>
           </div>
         `;
+        const reloadBtn = document.getElementById('chunk-reload-btn');
+        if (reloadBtn) {
+          reloadBtn.addEventListener('click', async () => {
+            try {
+              sessionStorage.removeItem('chunk_retry');
+              if ('caches' in window) {
+                const names = await caches.keys();
+                await Promise.all(names.map(n => caches.delete(n)));
+              }
+              if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const reg of registrations) {
+                  await reg.unregister().catch(() => {});
+                }
+              }
+            } catch (_) {}
+            window.location.reload();
+          });
+        }
       }
     } else {
       currentViewComponent = null;
@@ -253,13 +281,22 @@ export function initRouter() {
     } catch (_) {}
 
     if (!hasRetried) {
-      if ('caches' in window) {
-        caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).finally(() => {
-          window.location.reload();
-        });
-        return;
-      }
-      window.location.reload();
+      const clearAndReload = async () => {
+        try {
+          if ('caches' in window) {
+            const names = await caches.keys();
+            await Promise.all(names.map(n => caches.delete(n)));
+          }
+          if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of registrations) {
+              await reg.update().catch(() => {});
+            }
+          }
+        } catch (_) {}
+        window.location.reload();
+      };
+      clearAndReload();
     }
   });
   
