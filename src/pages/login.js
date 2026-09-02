@@ -7,6 +7,7 @@ export default {
   async render(container) {
     const auth = await getFirebaseAuth();
     if (auth.currentUser) {
+      try { localStorage.setItem('has_admin_session', '1'); } catch (_) {}
       navigateTo('/admin');
       return;
     }

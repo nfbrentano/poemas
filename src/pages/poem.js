@@ -1,4 +1,4 @@
-import { db, getFirebaseAuth } from '../utils/firebase.js';
+import { db } from '../utils/firebase.js';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { updateSEO } from '../utils/seo.js';
 import { trackPageView } from '../utils/analytics.js';
@@ -845,11 +845,16 @@ export default {
 
     // Setup Admin async if logged in
     const setupAdmin = async () => {
+      if (localStorage.getItem('has_admin_session') !== '1') return;
+
       try {
         const { getFirebaseAuth } = await import('../utils/firebase.js');
         const auth = await getFirebaseAuth();
         const initUI = () => {
-          if (!auth.currentUser) return;
+          if (!auth.currentUser) {
+            localStorage.removeItem('has_admin_session');
+            return;
+          }
           isAdmin = true;
           const adminSlot = document.getElementById('poem-admin-actions');
           if (adminSlot) {

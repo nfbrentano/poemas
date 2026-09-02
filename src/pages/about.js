@@ -1,6 +1,5 @@
-import { db, getFirebaseAuth, getFirebaseStorage } from '../utils/firebase.js';
+import { db } from '../utils/firebase.js';
 import { collection, getDocs, doc, setDoc, getCountFromServer, query, where } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { pushToggle } from '../components/push-toggle.js';
 
 export default {
@@ -126,12 +125,18 @@ export default {
     };
     loadSettings();
 
-    // Verificação de Admin em segundo plano (sem travar a renderização inicial)
+    // Verificação de Admin em segundo plano (apenas se houver flag de sessão ativa)
     const checkAdmin = async () => {
+      if (localStorage.getItem('has_admin_session') !== '1') return;
+
       try {
+        const { getFirebaseAuth, getFirebaseStorage } = await import('../utils/firebase.js');
         const auth = await getFirebaseAuth();
         const initAdminUI = () => {
-          if (!auth.currentUser) return;
+          if (!auth.currentUser) {
+            localStorage.removeItem('has_admin_session');
+            return;
+          }
 
           const avatarControls = container.querySelector('#admin-avatar-controls');
           if (avatarControls) {
@@ -152,7 +157,10 @@ export default {
                 try {
                   const fileExt = file.name.split('.').pop().toLowerCase();
                   const fileName = `avatar_${Date.now()}.${fileExt}`;
-                  const storage = await getFirebaseStorage();
+                  const [{ ref, uploadBytes, getDownloadURL }, storage] = await Promise.all([
+                    import('firebase/storage'),
+                    getFirebaseStorage()
+                  ]);
                   const storageRef = ref(storage, `avatars/${fileName}`);
                   await uploadBytes(storageRef, file);
                   const publicURL = await getDownloadURL(storageRef);
