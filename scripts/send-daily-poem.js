@@ -14,7 +14,7 @@ const firebaseConfig = {
 const gmailUser = process.env.GMAIL_USER;
 const gmailPass = process.env.GMAIL_PASS;
 const targetEmail = 'nfgbrentano@gmail.com';
-const baseUrl = 'https://nfbrentano.github.io/poemas/'; 
+const baseUrl = 'https://nfgbrentano.art.br/'; 
 
 if (!firebaseConfig.apiKey || !gmailUser || !gmailPass) {
   console.error('Firebase credentials and Gmail credentials (GMAIL_USER, GMAIL_PASS) are required.');

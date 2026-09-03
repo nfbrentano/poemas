@@ -1,12 +1,12 @@
-const CACHE_NAME = 'poemas-cache-v18';
+const CACHE_NAME = 'poemas-cache-v19';
 const STATIC_ASSETS = [
-  '/poemas/',
-  '/poemas/index.html',
-  '/poemas/offline.html',
-  '/poemas/manifest.json',
-  '/poemas/favicon.svg',
-  '/poemas/icons/icon-192x192.png',
-  '/poemas/icons/icon-512x512.png'
+  '/',
+  '/index.html',
+  '/offline.html',
+  '/manifest.json',
+  '/favicon.svg',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -68,8 +68,8 @@ self.addEventListener('fetch', (event) => {
           // Only fallback to cache if offline/network failure
           return caches.match(event.request).then((cachedResponse) => {
             if (cachedResponse) return cachedResponse;
-            return caches.match('/poemas/index.html').then((cachedIndex) => {
-              return cachedIndex || caches.match('/poemas/offline.html');
+            return caches.match('/index.html').then((cachedIndex) => {
+              return cachedIndex || caches.match('/offline.html');
             });
           });
         })
@@ -77,8 +77,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Static Assets (/poemas/assets/*) - Cache First strategy (Vite content-hashed files)
-  if (requestUrl.pathname.startsWith('/poemas/assets/')) {
+  // 2. Static Assets (/assets/*) - Cache First strategy (Vite content-hashed files)
+  if (requestUrl.pathname.startsWith('/assets/')) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
@@ -128,13 +128,13 @@ self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : { 
     title: 'Natanael Brentano', 
     body: 'Uma nova obra foi publicada. Venha ler.',
-    url: '/poemas/'
+    url: '/'
   };
   
   const options = {
     body: data.body,
-    icon: '/poemas/icons/icon-192x192.png',
-    badge: '/poemas/icons/icon-192x192.png',
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/icon-192x192.png',
     data: data.url
   };
 

@@ -12,7 +12,7 @@ const gmailUser = defineSecret("GMAIL_USER");
 const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
 const senderName = defineSecret("SENDER_NAME");
 
-const siteUrl = "https://nfbrentano.github.io/poemas";
+const siteUrl = "https://nfgbrentano.art.br";
 
 exports.sendNewsletter = onCall(
   {

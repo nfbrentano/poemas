@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/poemas/',
+  base: '/',
   build: {
     modulePreload: false,
     rollupOptions: {

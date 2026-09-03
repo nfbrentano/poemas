@@ -41,11 +41,11 @@ export default {
       websiteSchema.textContent = JSON.stringify({
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "url": "https://nfbrentano.github.io/poemas/",
+        "url": "https://nfgbrentano.art.br/",
         "name": "Poemas — Natanael Brentano",
         "potentialAction": {
           "@type": "SearchAction",
-          "target": "https://nfbrentano.github.io/poemas/?q={search_term_string}",
+          "target": "https://nfgbrentano.art.br/?q={search_term_string}",
           "query-input": "required name=search_term_string"
         }
       });

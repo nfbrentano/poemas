@@ -15,7 +15,7 @@ const firebaseConfig = {
   appId: process.env.VITE_FIREBASE_APP_ID
 };
 
-const baseUrl = 'https://nfbrentano.github.io/poemas/'; 
+const baseUrl = 'https://nfgbrentano.art.br/'; 
 
 if (!firebaseConfig.apiKey) {
   console.error('Environment variables for Firebase are required.');
@@ -66,7 +66,7 @@ async function prerender() {
         return match; // Keep external stylesheets as is
       }
       
-      const cleanHref = href.startsWith('/poemas/') ? href.slice('/poemas'.length) : href;
+      const cleanHref = href.startsWith('/poemas/') ? href.slice('/poemas'.length) : (href.startsWith('/') ? href.slice(1) : href);
       const cssPath = path.join(distDir, cleanHref);
       
       try {

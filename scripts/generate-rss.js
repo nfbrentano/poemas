@@ -15,7 +15,7 @@ const firebaseConfig = {
   appId: process.env.VITE_FIREBASE_APP_ID
 };
 
-const baseUrl = 'https://nfbrentano.github.io/poemas/'; 
+const baseUrl = 'https://nfgbrentano.art.br/'; 
 
 if (!firebaseConfig.apiKey) {
   console.error('Environment variables for Firebase are required.');
