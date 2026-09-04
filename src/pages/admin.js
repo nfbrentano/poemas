@@ -1641,8 +1641,8 @@ export default {
       const [logsRes, poemsRes] = await Promise.all([
         supabase
           .from('email_campaign_logs')
-          .select('id, sent_at, status, details, poem_id, poems(title)')
-          .order('sent_at', { ascending: false }),
+          .select('id, created_at, sent_at, status, details, poem_id, poems(title)')
+          .order('created_at', { ascending: false }),
         supabase
           .from('poems')
           .select('id, title')
@@ -1711,7 +1711,7 @@ export default {
                 ${lastLog?.poems?.title || 'Nenhum envio registrado'}
               </div>
               <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: var(--space-3xs);">
-                ${lastLog ? formatRelativeTime(lastLog.sent_at) : 'Nenhum dado'}
+                ${lastLog ? formatRelativeTime(lastLog.created_at || lastLog.sent_at) : 'Nenhum dado'}
               </div>
             </div>
           </div>
@@ -1936,7 +1936,8 @@ export default {
         
         tbody.innerHTML = filteredLogs.map(log => {
           const title = log.poems?.title || 'Desconhecido';
-          const formattedDate = new Date(log.sent_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+          const timeVal = log.created_at || log.sent_at;
+          const formattedDate = timeVal ? new Date(timeVal).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A';
           const isSuccess = log.status === 'success';
           
           const statusBadge = isSuccess 
@@ -1992,7 +1993,8 @@ export default {
             selectedLogForResend = log;
             
             container.querySelector('#detail-poem-title').innerText = log.poems?.title || 'Desconhecido';
-            container.querySelector('#detail-date').innerText = new Date(log.sent_at).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'medium' });
+            const timeVal = log.created_at || log.sent_at;
+            container.querySelector('#detail-date').innerText = timeVal ? new Date(timeVal).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'medium' }) : 'Desconhecida';
             
             const isSuccess = log.status === 'success';
             container.querySelector('#detail-status-badge').innerHTML = isSuccess 
@@ -2053,9 +2055,9 @@ export default {
         }
         
         if (sort === 'newest') {
-          filtered.sort((a, b) => new Date(b.sent_at) - new Date(a.sent_at));
+          filtered.sort((a, b) => new Date(b.created_at || b.sent_at) - new Date(a.created_at || a.sent_at));
         } else if (sort === 'oldest') {
-          filtered.sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
+          filtered.sort((a, b) => new Date(a.created_at || a.sent_at) - new Date(b.created_at || b.sent_at));
         } else if (sort === 'title-az') {
           filtered.sort((a, b) => {
             const titleA = a.poems?.title || '';
