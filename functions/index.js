@@ -186,7 +186,11 @@ exports.sendNewsletter = onCall(
       await db.collection("email_campaign_logs").add({
         poem_id: poemId,
         status: successCount > 0 ? "success" : "failed",
-        details: `Enviado via Gmail SMTP. Sucesso: ${successCount}, Falhas: ${failCount}.`,
+        type: targetEmail ? "individual" : "newsletter",
+        target_email: targetEmail || null,
+        details: targetEmail 
+          ? `Envio individual para ${targetEmail}. Sucesso: ${successCount}, Falhas: ${failCount}.`
+          : `Newsletter enviada via Gmail SMTP. Sucesso: ${successCount}, Falhas: ${failCount}.`,
         created_at: admin.firestore.FieldValue.serverTimestamp(),
       });
 
@@ -200,6 +204,8 @@ exports.sendNewsletter = onCall(
         .add({
           poem_id: poemId,
           status: "failed",
+          type: targetEmail ? "individual" : "newsletter",
+          target_email: targetEmail || null,
           details: `Erro geral na execução: ${error.message || String(error)}`,
           created_at: admin.firestore.FieldValue.serverTimestamp(),
         })

@@ -1747,6 +1747,7 @@ export default {
               <thead>
                 <tr style="border-bottom: 1px solid var(--border-strong); color: var(--text-secondary); font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
                   <th style="padding-bottom: var(--space-sm); font-weight: 500;">Obra</th>
+                  <th style="padding-bottom: var(--space-sm); font-weight: 500;">Tipo</th>
                   <th style="padding-bottom: var(--space-sm); font-weight: 500;">Data do Envio</th>
                   <th style="padding-bottom: var(--space-sm); font-weight: 500;">Status</th>
                   <th style="padding-bottom: var(--space-sm); font-weight: 500;">Detalhes</th>
@@ -1808,6 +1809,10 @@ export default {
               <div style="display: grid; grid-template-columns: 100px 1fr; gap: var(--space-xs);">
                 <span style="color: var(--text-muted); font-weight: 500;">Obra:</span>
                 <span id="detail-poem-title" style="color: var(--text-primary); font-weight: 500; font-family: var(--font-display); font-size: 1.1rem;">-</span>
+              </div>
+              <div style="display: grid; grid-template-columns: 100px 1fr; gap: var(--space-xs);">
+                <span style="color: var(--text-muted); font-weight: 500;">Tipo:</span>
+                <span id="detail-type" style="color: var(--text-primary); font-family: var(--font-ui);">-</span>
               </div>
               <div style="display: grid; grid-template-columns: 100px 1fr; gap: var(--space-xs); align-items: center;">
                 <span style="color: var(--text-muted); font-weight: 500;">Status:</span>
@@ -1954,6 +1959,9 @@ export default {
               </span>
             `;
             
+          const typeLabel = log.type === 'individual' ? 'Individual' : (log.type === 'newsletter' ? 'Newsletter' : 'Desconhecido');
+          const typeBadge = `<span style="padding: 0.2rem 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 4px; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">${typeLabel}</span>`;
+            
           const detailsPreview = log.details 
             ? (log.details.length > 50 ? `${escapeHtml(log.details.slice(0, 48))}...` : escapeHtml(log.details))
             : '-';
@@ -1961,6 +1969,7 @@ export default {
           return `
             <tr style="border-bottom: 1px solid var(--border-subtle); transition: background-color var(--transition-fast);">
               <td style="padding: var(--space-md) 0; font-family: var(--font-display); font-size: 1.15rem; color: var(--text-primary); font-weight: 400;">${escapeHtml(title)}</td>
+              <td style="padding: var(--space-md) 0; font-family: var(--font-ui);">${typeBadge}</td>
               <td style="padding: var(--space-md) 0; font-family: var(--font-ui); color: var(--text-secondary); font-size: 0.85rem;">${formattedDate}</td>
               <td style="padding: var(--space-md) 0;">${statusBadge}</td>
               <td style="padding: var(--space-md) 0; font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${detailsPreview}</td>
@@ -1993,6 +2002,10 @@ export default {
             selectedLogForResend = log;
             
             container.querySelector('#detail-poem-title').innerText = log.poems?.title || 'Desconhecido';
+            
+            const typeText = log.type === 'individual' ? \`Individual\${log.target_email ? \` (\${log.target_email})\` : ''}\` : (log.type === 'newsletter' ? 'Newsletter' : 'Desconhecido');
+            container.querySelector('#detail-type').innerText = typeText;
+            
             const timeVal = log.created_at || log.sent_at;
             container.querySelector('#detail-date').innerText = timeVal ? new Date(timeVal).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'medium' }) : 'Desconhecida';
             
