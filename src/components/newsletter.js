@@ -5,9 +5,9 @@ export const newsletter = {
   render() {
     return `
       <section class="newsletter-section fade-in">
-        <h2 class="newsletter-title">O Eco das Palavras</h2>
+        <h2 class="newsletter-title">Um pedacinho de mim para você</h2>
         <p class="newsletter-description">
-          Receba ocasionalmente novos poemas e devaneios direto na sua caixa de entrada. Sem spam, apenas poesia.
+          Receba novos poemas, devaneios e o compilado do mês direto na sua caixa de entrada. Sem spam, apenas palavras sinceras.
         </p>
         <form id="subscribe-form" class="subscribe-form" aria-label="Assinar newsletter">
           <input type="email" id="subscriber-email" class="subscribe-input" placeholder="Endereço de e-mail" required aria-label="Endereço de e-mail para newsletter">

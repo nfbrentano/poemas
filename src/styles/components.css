@@ -2064,8 +2064,8 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
   min-width: 0;
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 16px, black calc(100% - 30px), transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, black 16px, black calc(100% - 30px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12px, black calc(100% - 40px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 12px, black calc(100% - 40px), transparent 100%);
 }
 
 .filter-chips-scroll::-webkit-scrollbar {
@@ -2215,7 +2215,18 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
 .collection-img-placeholder {
   width: 100%;
   height: 180px;
-  background: var(--border-subtle);
+  background: linear-gradient(135deg, var(--bg-primary), var(--border-subtle));
+  position: relative;
+}
+.collection-img-placeholder::after {
+  content: '✦';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  color: var(--text-muted);
+  opacity: 0.3;
 }
 
 .collection-info {

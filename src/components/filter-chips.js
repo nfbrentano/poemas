@@ -37,7 +37,8 @@ export const filterChips = {
       });
     });
 
-    const tags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]).slice(0, 20);
+    const tags = Object.keys(tagCounts).map(name => ({ name, count: tagCounts[name] }))
+      .sort((a, b) => b.count - a.count).slice(0, 20);
 
     if (tags.length > 0) {
       cachedTags = tags;
@@ -67,7 +68,9 @@ export const filterChips = {
 
     if (tagsContainer) {
       tagsContainer.innerHTML = tags.map(tag => `
-        <button class="filter-chip ${activeTags.includes(tag) ? 'active' : ''}" data-type="tag" data-value="${tag}">${tag}</button>
+        <button class="filter-chip ${activeTags.includes(tag.name) ? 'active' : ''}" data-type="tag" data-value="${tag.name}">
+          ${tag.name} <span class="chip-count" style="opacity: 0.6; font-size: 0.85em; margin-left: 2px;">(${tag.count})</span>
+        </button>
       `).join('');
     }
 
