@@ -1,5 +1,5 @@
 import { db } from '../utils/firebase.js';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 import { updateSEO } from '../utils/seo.js';
 import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
