@@ -4,6 +4,7 @@ export default defineConfig({
   base: '/',
   build: {
     modulePreload: false,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id) {
