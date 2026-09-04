@@ -119,24 +119,6 @@ export default {
                poem.next_title = nextDoc.title;
            }
          } catch (e) { console.warn('Error fetching next poem:', e); }
-         
-         // Fetch related poems (sharing at least one tag)
-         poem.related_poems = [];
-         if (poem.tags && poem.tags.length > 0) {
-           try {
-             // Query for poems that have ANY of the tags of the current poem
-             // Firestore 'array-contains-any' is limited to 10 items, which is fine since poems usually have < 10 tags.
-             const tagsToSearch = poem.tags.slice(0, 10);
-             const relatedQ = query(collection(db, 'poems'), where('status', '==', 'published'), where('tags', 'array-contains-any', tagsToSearch), limit(10));
-             const relatedSnap = await getDocs(relatedQ);
-             let related = [];
-             relatedSnap.forEach(d => {
-               if (d.id !== poem.id) related.push(d.data());
-             });
-             // Sort randomly and take top 3
-             poem.related_poems = related.sort(() => 0.5 - Math.random()).slice(0, 3);
-           } catch (e) { console.warn('Error fetching related poems:', e); }
-         }
       }
     } catch(err) {
       error = err;
@@ -352,20 +334,6 @@ export default {
         </div>
 
         <div class="poem-nav">
-          ${poem.related_poems && poem.related_poems.length > 0 ? `
-          <div class="related-poems-section" style="margin-bottom: var(--space-xl); border-top: 1px solid var(--border-subtle); padding-top: var(--space-lg);">
-            <h3 style="font-family: var(--font-display); font-size: 1.2rem; color: var(--text-secondary); margin-bottom: var(--space-md); text-align: center;">Continue lendo</h3>
-            <div class="related-poems-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
-              ${poem.related_poems.map(rp => `
-                <a href="${import.meta.env.BASE_URL}poema/${rp.slug}" data-link class="related-poem-card" style="padding: var(--space-md); border: 1px solid var(--border-subtle); border-radius: 8px; text-decoration: none; transition: border-color 0.2s, background-color 0.2s;">
-                  <h4 style="font-family: var(--font-display); font-size: 1.1rem; color: var(--text-primary); margin: 0 0 var(--space-xs) 0;">${rp.title}</h4>
-                  <p style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-secondary); margin: 0;">${stripHtml(rp.excerpt || rp.content).replace(/\s+/g, ' ').substring(0, 60)}...</p>
-                </a>
-              `).join('')}
-            </div>
-          </div>
-          ` : ''}
-
           <button id="prev-btn" class="nav-btn" style="${!prevSlug ? 'display:none;' : ''}" aria-label="Poema anterior" title="${prevTitle || ''}">
             <span class="nav-btn-label">← Anterior</span>
             <span class="nav-btn-title">${prevTitle || ''}</span>
