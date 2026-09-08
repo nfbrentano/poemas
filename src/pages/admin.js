@@ -2013,7 +2013,7 @@ export default {
             
             container.querySelector('#detail-poem-title').innerText = log.poems?.title || 'Desconhecido';
             
-            const typeText = log.type === 'individual' ? \`Individual\${log.target_email ? \` (\${log.target_email})\` : ''}\` : (log.type === 'newsletter' ? 'Newsletter' : 'Desconhecido');
+            const typeText = log.type === 'individual' ? `Individual${log.target_email ? ` (${log.target_email})` : ''}` : (log.type === 'newsletter' ? 'Newsletter' : 'Desconhecido');
             container.querySelector('#detail-type').innerText = typeText;
             
             const timeVal = log.created_at || log.sent_at;
