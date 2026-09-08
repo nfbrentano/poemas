@@ -1656,6 +1656,16 @@ export default {
       const publishedPoems = poemsRes.data || [];
       publishedPoems.sort((a, b) => a.title.localeCompare(b.title));
       
+      // Normalize logs data (handle Firestore Timestamps and missing joined tables)
+      logs.forEach(log => {
+        const matchedPoem = publishedPoems.find(p => p.id === log.poem_id);
+        if (matchedPoem && !log.poems) log.poems = { title: matchedPoem.title };
+        if (log.created_at && typeof log.created_at.toDate === 'function') log.created_at = log.created_at.toDate().toISOString();
+        else if (log.created_at && log.created_at.seconds) log.created_at = new Date(log.created_at.seconds * 1000).toISOString();
+        if (log.sent_at && typeof log.sent_at.toDate === 'function') log.sent_at = log.sent_at.toDate().toISOString();
+        else if (log.sent_at && log.sent_at.seconds) log.sent_at = new Date(log.sent_at.seconds * 1000).toISOString();
+      });
+      
       // Calculate KPIs
       const totalCount = logs.length;
       const successCount = logs.filter(l => l.status === 'success').length;
