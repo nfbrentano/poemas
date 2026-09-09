@@ -147,10 +147,7 @@ input:focus, textarea:focus, select:focus {
 
 @media (max-width: 768px) {
   .site-header {
-    height: auto;
-    min-height: calc(var(--header-height) * 0.7);
-    padding-top: calc(env(safe-area-inset-top, 0px) + var(--space-sm)) !important;
-    padding-bottom: var(--space-sm);
+    display: none !important;
   }
 }
 
@@ -199,10 +196,10 @@ input:focus, textarea:focus, select:focus {
 
 @media (max-width: 768px) {
   .site-content {
-    padding-top: var(--space-2xl) !important;
-    padding-bottom: var(--space-xl) !important;
-    min-height: calc(100vh - calc(var(--header-height) * 0.7));
-    min-height: calc(100dvh - calc(var(--header-height) * 0.7));
+    padding-top: calc(env(safe-area-inset-top, 0px) + var(--space-xl)) !important;
+    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + var(--space-xl)) !important;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 }
 
