@@ -24,6 +24,6 @@
     "@zumer/snapdom": "^2.24.3",
     "dotenv": "^17.4.2",
     "firebase": "^12.18.0",
-    "nodemailer": "^9.0.6"
+    "nodemailer": "^9.1.1"
   }
 }

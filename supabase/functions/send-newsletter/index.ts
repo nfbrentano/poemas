@@ -1,7 +1,7 @@
 // @ts-nocheck
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import nodemailer from 'npm:nodemailer@6.9.13';
+import nodemailer from 'npm:nodemailer@9.1.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
