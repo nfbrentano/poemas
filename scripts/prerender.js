@@ -183,6 +183,22 @@ async function prerender() {
         `${articleMeta}${jsonLdScript}\n  </head>`
       );
 
+      // 7. Injetar o conteúdo do poema no corpo do HTML para SEO (Googlebot lê antes do JS)
+      const seoHtml = `
+    <div id="app">
+      <main class="site-content container" style="padding-top: 80px;">
+        <article class="poem-article">
+          <header class="poem-header">
+            <h1 class="poem-title">${escapeHtml(poem.title)}</h1>
+          </header>
+          <div class="poem-content">
+            ${poem.content}
+          </div>
+        </article>
+      </main>
+    </div>`;
+      modifiedHtml = modifiedHtml.replace(/<div id="app"><\/div>/i, seoHtml);
+
       // Definir caminho de escrita do index.html para o poema correspondente
       const poemDir = path.join(distDir, 'poema', poem.slug);
       if (!fs.existsSync(poemDir)) {
