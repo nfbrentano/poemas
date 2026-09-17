@@ -1,4 +1,4 @@
-import{_ as e,g as t,p as n,s as r,u as i}from"./vendor-firebase-BaoyJsfj.js";import{db as a}from"./firebase-DvthlrAF.js";var o={render(){return`
+import{_ as e,g as t,p as n,s as r,u as i}from"./vendor-firebase-BaoyJsfj.js";import{db as a}from"./firebase-BH47X0HM.js";var o={render(){return`
       <section class="newsletter-section fade-in">
         <h2 class="newsletter-title">Um pedacinho de mim para você</h2>
         <p class="newsletter-description">

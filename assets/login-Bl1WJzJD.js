@@ -1,4 +1,4 @@
-import{x as e}from"./vendor-firebase-BaoyJsfj.js";import{t}from"./index-Bzky9zOq.js";import{getFirebaseAuth as n}from"./firebase-DvthlrAF.js";var r={meta:{title:`Login Admin`},async render(r){let i=await n();if(i.currentUser){try{localStorage.setItem(`has_admin_session`,`1`)}catch{}t(`/admin`);return}r.innerHTML=`
+import{x as e}from"./vendor-firebase-BaoyJsfj.js";import{t}from"./index-Dxqa1yDI.js";import{getFirebaseAuth as n}from"./firebase-BH47X0HM.js";var r={meta:{title:`Login Admin`},async render(r){let i=await n();if(i.currentUser){try{localStorage.setItem(`has_admin_session`,`1`)}catch{}t(`/admin`);return}r.innerHTML=`
       <div class="login-container fade-in" style="max-width: 400px; margin: 4rem auto; padding: 2rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color-light);">
         <h2 style="text-align: center; margin-bottom: 2rem; font-family: var(--font-sans);">Acesso Admin</h2>
         <form id="login-form" style="display: flex; flex-direction: column; gap: 1rem;">
