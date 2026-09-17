@@ -7,6 +7,45 @@
     <priority>1.0</priority>
   </url>
   
+  <!-- Static Pages -->
+  <url>
+    <loc>https://nfgbrentano.art.br/sobre</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfgbrentano.art.br/colecoes</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Collections -->
+  <url>
+    <loc>https://nfgbrentano.art.br/colecao/reflexoes-e-tempo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfgbrentano.art.br/colecao/amor</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfgbrentano.art.br/colecao/amor-e-conexao</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfgbrentano.art.br/colecao/familia-e-afeto</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://nfgbrentano.art.br/colecao/paz-e-esperanca</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
   <!-- Poems -->
   <url>
     <loc>https://nfgbrentano.art.br/poema/labirinto-da-vida</loc>

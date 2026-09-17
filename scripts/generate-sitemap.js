@@ -35,7 +35,13 @@ async function generateSitemap() {
     const snapshot = await getDocs(q);
     const poems = snapshot.docs.map(doc => doc.data());
 
-    console.log(`Found ${poems.length} poems. Generating XML...`);
+    console.log(`Found ${poems.length} poems.`);
+
+    console.log('Fetching collections from Supabase...');
+    const colSnapshot = await getDocs(collection(db, 'collections'));
+    const collections = colSnapshot.docs.map(doc => doc.data()).filter(col => col.slug);
+
+    console.log(`Found ${collections.length} collections. Generating XML...`);
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -45,6 +51,25 @@ async function generateSitemap() {
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+  
+  <!-- Static Pages -->
+  <url>
+    <loc>${baseUrl}sobre</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}colecoes</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Collections -->
+${collections.map(col => `  <url>
+    <loc>${baseUrl}colecao/${col.slug}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`).join('\n')}
   
   <!-- Poems -->
 ${poems.map(poem => `  <url>
@@ -63,7 +88,8 @@ ${poems.map(poem => `  <url>
     const outputPath = path.join(publicDir, 'sitemap.xml');
     fs.writeFileSync(outputPath, sitemap);
     
-    console.log(`Successfully generated sitemap with ${poems.length + 1} URLs at: ${outputPath}`);
+    const totalUrls = poems.length + collections.length + 3;
+    console.log(`Successfully generated sitemap with ${totalUrls} URLs at: ${outputPath}`);
     process.exit(0);
   } catch (err) {
     console.error('Failed to generate sitemap:', err.message);
