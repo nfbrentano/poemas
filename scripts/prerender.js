@@ -802,7 +802,21 @@ async function prerender() {
     const sitemapPath = path.join(distDir, 'sitemap.xml');
     if (fs.existsSync(sitemapPath)) {
       const sitemapContent = fs.readFileSync(sitemapPath, 'utf-8');
-      const locMatches = [...sitemapContent.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim());
+      let locMatches = [];
+      if (sitemapContent.includes('<sitemapindex')) {
+        const subSitemaps = [...sitemapContent.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim());
+        for (const subUrl of subSitemaps) {
+          const fileName = path.basename(subUrl);
+          const subFilePath = path.join(distDir, fileName);
+          if (fs.existsSync(subFilePath)) {
+            const subContent = fs.readFileSync(subFilePath, 'utf-8');
+            const subUrls = [...subContent.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim());
+            locMatches.push(...subUrls);
+          }
+        }
+      } else {
+        locMatches = [...sitemapContent.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim());
+      }
       const privateRoutes = ['/admin', '/login', '/unsubscribe', '/cancelar-inscricao'];
 
       for (const loc of locMatches) {

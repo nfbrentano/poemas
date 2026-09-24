@@ -16,6 +16,10 @@ dist
 dist-ssr
 *.local
 
+# Generated SEO feeds (generated directly into dist/)
+public/sitemap*.xml
+public/feed.xml
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

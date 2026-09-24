@@ -2,8 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
-
-import { stripHtml } from '../src/utils/html.js';
+import { buildRssFeed, SITE_URL } from '../src/utils/rss-builder.js';
 
 // Note: Run this with node --env-file=.env.local scripts/generate-rss.js
 const firebaseConfig = {
@@ -15,7 +14,7 @@ const firebaseConfig = {
   appId: process.env.VITE_FIREBASE_APP_ID
 };
 
-const baseUrl = 'https://nfgbrentano.art.br/'; 
+const baseUrl = process.env.SITE_URL || SITE_URL;
 
 if (!firebaseConfig.apiKey) {
   console.error('Environment variables for Firebase are required.');
@@ -25,77 +24,43 @@ if (!firebaseConfig.apiKey) {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-function escapeXml(unsafe) {
-  return unsafe.replace(/[<>&'"]/g, function (c) {
-    switch (c) {
-      case '<': return '&lt;';
-      case '>': return '&gt;';
-      case '&': return '&amp;';
-      case '\'': return '&apos;';
-      case '"': return '&quot;';
-    }
+export async function runGenerateRss(outputDirectory) {
+  console.log('Fetching published poems from Firestore for RSS feed...');
+  const q = query(
+    collection(db, 'poems'),
+    where('status', '==', 'published'),
+    orderBy('published_at', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  const poems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  console.log(`Found ${poems.length} published poems. Generating RSS XML (limited to 50 latest)...`);
+
+  const rssXml = buildRssFeed({
+    baseUrl,
+    poems,
+    buildDate: new Date(),
+    limit: 50
   });
-}
 
-function getExcerpt(poem, limit = 160) {
-  if (poem.excerpt && poem.excerpt.trim()) {
-    return poem.excerpt.trim();
+  const targetDir = outputDirectory || path.resolve(process.cwd(), 'dist');
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
   }
-  const cleanContent = stripHtml(poem.content);
-  if (cleanContent.length <= limit) return cleanContent;
-  return cleanContent.slice(0, limit - 3) + '...';
+
+  const outputPath = path.join(targetDir, 'feed.xml');
+  fs.writeFileSync(outputPath, rssXml, 'utf-8');
+
+  const count = Math.min(poems.length, 50);
+  console.log(`Successfully generated RSS feed with ${count} items at: ${outputPath}`);
 }
 
-async function generateRss() {
-  try {
-    console.log('Fetching published poems for RSS feed...');
-    
-    const q = query(
-      collection(db, 'poems'),
-      where('status', '==', 'published'),
-      orderBy('published_at', 'desc')
-    );
-    const snapshot = await getDocs(q);
-    const poems = snapshot.docs.map(doc => doc.data());
-
-    console.log(`Found ${poems.length} poems. Generating RSS XML...`);
-
-    const lastBuildDate = poems.length > 0 ? new Date(poems[0].published_at).toUTCString() : new Date().toUTCString();
-
-    const rss = `<?xml version="1.0" encoding="UTF-8" ?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Poemas Brasileiros - Natanael Brentano</title>
-    <link>${baseUrl}</link>
-    <description>Coleção de poemas originais em português por Natanael Fernando Gatti Brentano.</description>
-    <language>pt-br</language>
-    <lastBuildDate>${lastBuildDate}</lastBuildDate>
-    <atom:link href="${baseUrl}feed.xml" rel="self" type="application/rss+xml" />
-    
-${poems.map(poem => `    <item>
-      <title>${escapeXml(poem.title || '')}</title>
-      <link>${baseUrl}poema/${poem.slug}</link>
-      <guid>${baseUrl}poema/${poem.slug}</guid>
-      <description>${escapeXml(getExcerpt(poem))}</description>
-      <pubDate>${new Date(poem.published_at).toUTCString()}</pubDate>
-    </item>`).join('\n')}
-  </channel>
-</rss>`;
-
-    const publicDir = path.resolve(process.cwd(), 'public');
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
-    }
-
-    const outputPath = path.join(publicDir, 'feed.xml');
-    fs.writeFileSync(outputPath, rss);
-    
-    console.log(`Successfully generated RSS feed with ${poems.length} items at: ${outputPath}`);
-    process.exit(0);
-  } catch (err) {
-    console.error('Failed to generate RSS feed:', err.message);
-    process.exit(1);
-  }
+if (process.argv[1] && process.argv[1].endsWith('generate-rss.js')) {
+  const outDir = process.env.OUTPUT_DIR || path.resolve(process.cwd(), 'dist');
+  runGenerateRss(outDir)
+    .then(() => process.exit(0))
+    .catch(err => {
+      console.error('Failed to generate RSS feed:', err.message);
+      process.exit(1);
+    });
 }
-
-generateRss();

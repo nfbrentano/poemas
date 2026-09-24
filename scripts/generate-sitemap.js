@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
+import { generateAllSitemaps, formatDateToYMD, SITE_URL } from '../src/utils/sitemap-builder.js';
 
 // Note: Run this with node --env-file=.env.local scripts/generate-sitemap.js
 const firebaseConfig = {
@@ -13,7 +14,7 @@ const firebaseConfig = {
   appId: process.env.VITE_FIREBASE_APP_ID
 };
 
-const baseUrl = 'https://nfgbrentano.art.br/'; 
+const baseUrl = process.env.SITE_URL || SITE_URL;
 
 if (!firebaseConfig.apiKey) {
   console.error('Environment variables for Firebase are required.');
@@ -23,80 +24,75 @@ if (!firebaseConfig.apiKey) {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function generateSitemap() {
+function getFileMTime(relativePath) {
   try {
-    console.log('Fetching published poems from Supabase...');
-    
-    const q = query(
-      collection(db, 'poems'),
-      where('status', '==', 'published'),
-      orderBy('published_at', 'desc')
-    );
-    const snapshot = await getDocs(q);
-    const poems = snapshot.docs.map(doc => doc.data());
-
-    console.log(`Found ${poems.length} poems.`);
-
-    console.log('Fetching collections from Supabase...');
-    const colSnapshot = await getDocs(collection(db, 'collections'));
-    const collections = colSnapshot.docs.map(doc => doc.data()).filter(col => col.slug);
-
-    const FORBIDDEN_SITEMAP_ROUTES = ['/admin', '/login', '/unsubscribe', '/cancelar-inscricao'];
-
-    console.log(`Found ${collections.length} collections. Generating XML...`);
-
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Home Page -->
-  <url>
-    <loc>${baseUrl}</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  
-  <!-- Static Pages -->
-  <url>
-    <loc>${baseUrl}sobre</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}colecoes</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Collections -->
-${collections.map(col => `  <url>
-    <loc>${baseUrl}colecao/${col.slug}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`).join('\n')}
-  
-  <!-- Poems -->
-${poems.map(poem => `  <url>
-    <loc>${baseUrl}poema/${poem.slug}</loc>
-    <lastmod>${new Date(poem.published_at || new Date()).toISOString().split('T')[0]}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>`).join('\n')}
-</urlset>`;
-
-    const publicDir = path.resolve(process.cwd(), 'public');
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
+    const fullPath = path.resolve(process.cwd(), relativePath);
+    if (fs.existsSync(fullPath)) {
+      return formatDateToYMD(fs.statSync(fullPath).mtime);
     }
-
-    const outputPath = path.join(publicDir, 'sitemap.xml');
-    fs.writeFileSync(outputPath, sitemap);
-    
-    const totalUrls = poems.length + collections.length + 3;
-    console.log(`Successfully generated sitemap with ${totalUrls} URLs at: ${outputPath}`);
-    process.exit(0);
-  } catch (err) {
-    console.error('Failed to generate sitemap:', err.message);
-    process.exit(1);
-  }
+  } catch (e) {}
+  return null;
 }
 
-generateSitemap();
+export async function runGenerateSitemap(outputDirectory) {
+  console.log('Fetching published poems from Firestore...');
+  const poemsQuery = query(
+    collection(db, 'poems'),
+    where('status', '==', 'published'),
+    orderBy('published_at', 'desc')
+  );
+  const poemSnapshot = await getDocs(poemsQuery);
+  const poems = poemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  console.log(`Found ${poems.length} published poems.`);
+
+  console.log('Fetching collections from Firestore...');
+  const colSnapshot = await getDocs(collection(db, 'collections'));
+  const collections = colSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(col => col.slug);
+  console.log(`Found ${collections.length} collections.`);
+
+  console.log('Fetching collection_poems relations from Firestore...');
+  let collectionPoems = [];
+  try {
+    const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
+    collectionPoems = cpSnapshot.docs.map(doc => doc.data());
+  } catch (e) {
+    console.warn('Could not fetch collection_poems:', e.message);
+  }
+
+  const staticPages = [
+    { loc: 'sobre', lastmod: getFileMTime('src/pages/about.js') },
+    { loc: 'colecoes', lastmod: getFileMTime('src/pages/collections.js') }
+  ];
+
+  console.log('Building sitemap index and sub-sitemaps...');
+  const sitemapsMap = generateAllSitemaps({
+    baseUrl,
+    poems,
+    collections,
+    collectionPoems,
+    staticPages
+  });
+
+  const targetDir = outputDirectory || path.resolve(process.cwd(), 'dist');
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
+  }
+
+  for (const [filename, xmlContent] of Object.entries(sitemapsMap)) {
+    const filePath = path.join(targetDir, filename);
+    fs.writeFileSync(filePath, xmlContent, 'utf-8');
+    console.log(`✓ Wrote ${filename} to ${filePath}`);
+  }
+
+  console.log(`Successfully generated sitemap index and sub-sitemaps in: ${targetDir}`);
+}
+
+if (process.argv[1] && process.argv[1].endsWith('generate-sitemap.js')) {
+  const outDir = process.env.OUTPUT_DIR || path.resolve(process.cwd(), 'dist');
+  runGenerateSitemap(outDir)
+    .then(() => process.exit(0))
+    .catch(err => {
+      console.error('Failed to generate sitemap:', err.message);
+      process.exit(1);
+    });
+}

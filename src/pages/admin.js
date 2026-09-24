@@ -1530,10 +1530,12 @@ export default {
       
       let error = null;
       if (id) {
+        payload.updated_at = new Date().toISOString();
         const res = await supabase.from('poems').update(payload).eq('id', id);
         error = res.error;
       } else {
         payload.created_at = new Date().toISOString();
+        payload.updated_at = payload.published_at || payload.created_at;
         const res = await supabase.from('poems').insert([payload]);
         error = res.error;
       }
@@ -1582,6 +1584,7 @@ export default {
         const payload = getFormData();
         payload.status = 'published';
         payload.published_at = new Date().toISOString();
+        payload.updated_at = payload.published_at;
         
         let poemId = id;
         let error = null;

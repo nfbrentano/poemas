@@ -108,7 +108,7 @@ export const filterChips = {
         const containerRect = tagsContainer.getBoundingClientRect();
         const chipRect = activeChip.getBoundingClientRect();
         const scrollOffset = chipRect.left - containerRect.left - 20;
-        if (scrollOffset !== 0) {
+        if (scrollOffset !== 0 && typeof tagsContainer.scrollBy === 'function') {
           tagsContainer.scrollBy({ left: scrollOffset, behavior: 'smooth' });
         }
       }, 50);
