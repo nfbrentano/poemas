@@ -41,6 +41,8 @@ async function generateSitemap() {
     const colSnapshot = await getDocs(collection(db, 'collections'));
     const collections = colSnapshot.docs.map(doc => doc.data()).filter(col => col.slug);
 
+    const FORBIDDEN_SITEMAP_ROUTES = ['/admin', '/login', '/unsubscribe', '/cancelar-inscricao'];
+
     console.log(`Found ${collections.length} collections. Generating XML...`);
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

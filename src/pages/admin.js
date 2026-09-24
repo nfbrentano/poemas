@@ -170,7 +170,7 @@ function debounce(fn, delay) {
 }
 
 export default {
-  meta: { title: 'Dashboard Admin' },
+  meta: { title: 'Dashboard Admin', robots: 'noindex, nofollow' },
   
   async render(container, params) {
     // Check Auth

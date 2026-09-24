@@ -3,7 +3,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { navigateTo } from '../router.js';
 
 export default {
-  meta: { title: 'Login Admin' },
+  meta: { title: 'Login Admin', robots: 'noindex, nofollow' },
   async render(container) {
     const auth = await getFirebaseAuth();
     if (auth.currentUser) {

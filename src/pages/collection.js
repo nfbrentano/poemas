@@ -1,6 +1,6 @@
 import { db } from '../utils/firebase.js';
 import { collection as firestoreCollection, query, where, getDocs, documentId } from 'firebase/firestore';
-import { updateSEO } from '../utils/seo.js';
+import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
 import { escapeHtml } from '../utils/html.js';
 
 export const collection = {
@@ -80,11 +80,11 @@ export const collection = {
     }
 
     if (error || !col) {
-      document.title = 'Coleção não encontrada — Natanael Brentano';
+      setNotFoundSEO();
       container.innerHTML = `
         <div class="not-found-page fade-in">
           <p class="not-found-label">404</p>
-          <h2 class="not-found-title">Coleção não encontrada.</h2>
+          <h2 class="not-found-title">Página não encontrada</h2>
           <p class="not-found-desc">A coleção que você procura não existe ou foi removida.</p>
           <a href="${import.meta.env.BASE_URL}colecoes" data-link class="not-found-link">← Voltar para coleções</a>
         </div>

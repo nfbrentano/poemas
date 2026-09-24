@@ -462,10 +462,10 @@ async function prerender() {
       { route: 'sobre', title: 'Sobre Natanael Brentano — Poemas', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.' },
       { route: 'info', title: 'Sobre Natanael Brentano — Poemas', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.' },
       { route: 'colecoes', title: 'Coleções e Sentimentos — Natanael Brentano', description: 'Explore poemas organizados por séries temáticas e sentimentos.' },
-      { route: 'admin', title: 'Painel Admin — Natanael Brentano', description: 'Área administrativa para gestão de poemas e métricas.' },
-      { route: 'login', title: 'Login Admin — Natanael Brentano', description: 'Acesso ao painel administrativo.' },
-      { route: 'unsubscribe', title: 'Cancelar Inscrição — Natanael Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.' },
-      { route: 'cancelar-inscricao', title: 'Cancelar Inscrição — Natanael Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.' }
+      { route: 'admin', title: 'Painel Admin — Natanael Brentano', description: 'Área administrativa para gestão de poemas e métricas.', robots: 'noindex, nofollow' },
+      { route: 'login', title: 'Login Admin — Natanael Brentano', description: 'Acesso ao painel administrativo.', robots: 'noindex, nofollow' },
+      { route: 'unsubscribe', title: 'Cancelar Inscrição — Natanael Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.', robots: 'noindex, nofollow' },
+      { route: 'cancelar-inscricao', title: 'Cancelar Inscrição — Natanael Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.', robots: 'noindex, nofollow' }
     ];
 
     for (const sr of staticRoutes) {
@@ -483,6 +483,10 @@ async function prerender() {
         .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(sr.title)}" />`)
         .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(sr.description)}" />`);
       
+      if (sr.robots) {
+        html = html.replace(/<\/head>/i, `  <meta name="robots" content="${escapeHtml(sr.robots)}" />\n</head>`);
+      }
+
       fs.writeFileSync(path.join(targetDir, 'index.html'), html, 'utf-8');
     }
 
@@ -509,6 +513,101 @@ async function prerender() {
       console.log(`Generated static HTML for ${allCollections.length} collections.`);
     } catch (e) {
       console.warn('Could not prerender collection routes:', e.message);
+    }
+
+    // Generate legacy redirects (RF06 & RNF02)
+    console.log('Generating legacy redirects...');
+    const legacyRedirectsPath = path.resolve(process.cwd(), 'scripts/legacy-redirects.json');
+    let legacyRedirects = {};
+    if (fs.existsSync(legacyRedirectsPath)) {
+      try {
+        legacyRedirects = JSON.parse(fs.readFileSync(legacyRedirectsPath, 'utf-8'));
+      } catch (err) {
+        console.warn('Could not read legacy-redirects.json:', err.message);
+      }
+    }
+
+    for (const [origin, destination] of Object.entries(legacyRedirects)) {
+      if (origin.startsWith('/') && !origin.includes('?')) {
+        const cleanOrigin = origin.replace(/^\/|\/$/g, '');
+        const cleanDest = destination.replace(/^\/|\/$/g, '');
+        if (cleanOrigin && cleanOrigin !== cleanDest) {
+          const targetDir = path.join(distDir, cleanOrigin);
+          if (!fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true });
+          }
+          const fullDest = destination.startsWith('http') ? destination : `${baseUrl}${cleanDest}`;
+          const redirectHtml = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Redirecionando...</title>
+  <link rel="canonical" href="${fullDest}">
+  <meta http-equiv="refresh" content="0; url=${destination}">
+</head>
+<body>
+  <p>Redirecionando para <a href="${destination}">${destination}</a>...</p>
+</body>
+</html>`;
+          fs.writeFileSync(path.join(targetDir, 'index.html'), redirectHtml, 'utf-8');
+        }
+      }
+    }
+
+    // Generate dist/routes.json and inject into dist/404.html (RF05)
+    console.log('Generating dist/routes.json and updating dist/404.html...');
+    const knownRoutes = [
+      '/',
+      ...staticRoutes.map(sr => `/${sr.route}`),
+      '/aleatorio',
+      ...poems.map(p => `/poema/${p.slug}`),
+      ...allCollections.filter(c => c.slug).map(c => `/colecao/${c.slug}`)
+    ];
+    fs.writeFileSync(path.join(distDir, 'routes.json'), JSON.stringify(knownRoutes, null, 2), 'utf-8');
+
+    const dist404Path = path.join(distDir, '404.html');
+    if (fs.existsSync(dist404Path)) {
+      let html404 = fs.readFileSync(dist404Path, 'utf-8');
+      const injection = `<script id="__ROUTES__">window.__KNOWN_ROUTES__ = ${JSON.stringify(knownRoutes)}; window.__LEGACY_REDIRECTS__ = ${JSON.stringify(legacyRedirects)};</script>`;
+      if (html404.includes('id="__ROUTES__"')) {
+        html404 = html404.replace(/<script id="__ROUTES__">[\s\S]*?<\/script>/i, injection);
+      } else {
+        html404 = html404.replace(/<\/head>/i, `  ${injection}\n</head>`);
+      }
+      fs.writeFileSync(dist404Path, html404, 'utf-8');
+    }
+
+    // Automated Sitemap Noindex Audit (RNF01 & CA06)
+    console.log('Running sitemap noindex audit...');
+    const sitemapPath = path.join(distDir, 'sitemap.xml');
+    if (fs.existsSync(sitemapPath)) {
+      const sitemapContent = fs.readFileSync(sitemapPath, 'utf-8');
+      const locMatches = [...sitemapContent.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim());
+      const privateRoutes = ['/admin', '/login', '/unsubscribe', '/cancelar-inscricao'];
+
+      for (const loc of locMatches) {
+        // Guard 1: Ensure no private routes in sitemap
+        for (const priv of privateRoutes) {
+          if (loc.endsWith(priv) || loc.includes(`${priv}/`)) {
+            throw new Error(`[BUILD AUDIT FAILED] Sitemap contains forbidden private route: ${loc}`);
+          }
+        }
+
+        // Guard 2: Ensure no sitemap URL contains 'noindex'
+        const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+        const relativePath = loc.replace(cleanBaseUrl, '').replace(/^\/|\/$/g, '');
+        const targetHtmlPath = relativePath 
+          ? path.join(distDir, relativePath, 'index.html') 
+          : path.join(distDir, 'index.html');
+
+        if (fs.existsSync(targetHtmlPath)) {
+          const fileContent = fs.readFileSync(targetHtmlPath, 'utf-8');
+          if (/<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(fileContent)) {
+            throw new Error(`[BUILD AUDIT FAILED] Sitemap URL "${loc}" contains 'noindex' in ${targetHtmlPath}! Build aborted to prevent deindexing valid content.`);
+          }
+        }
+      }
+      console.log(`✓ Sitemap audit passed: ${locMatches.length} URLs verified, none contain 'noindex'.`);
     }
 
     console.log('All static pages successfully pre-rendered!');

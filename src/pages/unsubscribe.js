@@ -2,7 +2,8 @@
 
 export default {
   meta: {
-    title: 'Cancelar Inscrição'
+    title: 'Cancelar Inscrição',
+    robots: 'noindex, nofollow'
   },
   
   async render(container) {

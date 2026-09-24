@@ -1,4 +1,4 @@
-import { updateSEO } from '../utils/seo.js';
+import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
 import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
@@ -159,11 +159,11 @@ export default {
 
       if (error || !poem) {
         console.warn('[Poem] Poem not found or error occurred');
-        document.title = 'Obra não encontrada — Natanael Brentano';
+        setNotFoundSEO();
         container.innerHTML = `
           <div class="not-found-page fade-in">
             <p class="not-found-label">404</p>
-            <h2 class="not-found-title">Obra não encontrada</h2>
+            <h2 class="not-found-title">Página não encontrada</h2>
             <p class="not-found-desc">O poema que você procura pode ter mudado de endereço ou ainda não foi publicado.</p>
             <a href="${import.meta.env.BASE_URL}" data-link class="not-found-link">← Voltar ao sumário</a>
           </div>

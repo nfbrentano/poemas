@@ -1,4 +1,6 @@
 import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
+import { setNotFoundSEO } from './utils/seo.js';
+import legacyRedirects from '../scripts/legacy-redirects.json';
 
 export const routes = {
   '/': () => import('./pages/home.js').then(m => m.default),
@@ -28,6 +30,14 @@ export async function router() {
   
   // Ensure path starts with / and remove duplicate and trailing slashes (except root)
   path = '/' + path.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+
+  // Check legacy redirects (e.g. /?p=277, /2021/02/18/277, etc.)
+  const fullPathWithQuery = path + window.location.search;
+  const legacyTarget = legacyRedirects[fullPathWithQuery] || legacyRedirects[window.location.search] || legacyRedirects[path];
+  if (legacyTarget && legacyTarget !== path && legacyTarget !== fullPathWithQuery) {
+    navigateTo(legacyTarget);
+    return;
+  }
 
   if (path === '/explore') {
     navigateTo('/colecoes');
@@ -133,6 +143,18 @@ export async function router() {
           }
         }
 
+        if (component.meta && component.meta.robots) {
+          let robotsTag = document.querySelector('meta[name="robots"]');
+          if (!robotsTag) {
+            robotsTag = document.createElement('meta');
+            robotsTag.setAttribute('name', 'robots');
+            document.head.appendChild(robotsTag);
+          }
+          robotsTag.setAttribute('content', component.meta.robots);
+        } else {
+          document.querySelector('meta[name="robots"]')?.remove();
+        }
+
         // Anunciar para tecnologias assistivas (leitores de tela)
         const pageTitle = component.meta?.title || 'Página';
         const announcer = document.getElementById('route-announcer');
@@ -232,10 +254,11 @@ export async function router() {
       }
     } else {
       currentViewComponent = null;
+      setNotFoundSEO();
       view.innerHTML = `
         <div class="not-found-page fade-in">
           <p class="not-found-label">404</p>
-          <h2 class="not-found-title">Página não encontrada.</h2>
+          <h2 class="not-found-title">Página não encontrada</h2>
           <p class="not-found-desc">O poema que você procura pode ter mudado de endereço — ou nunca existiu.</p>
           <a href="${import.meta.env.BASE_URL}" data-link class="not-found-link">← Voltar para o início</a>
         </div>

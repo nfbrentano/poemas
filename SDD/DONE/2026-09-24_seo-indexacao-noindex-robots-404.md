@@ -39,12 +39,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado `dist/admin/index.html`, quando o inspeciono, então contém `noindex, nofollow`.
-- [ ] **CA02:** Dado `robots.txt` publicado, quando o valido no testador do Search Console, então `/admin` está bloqueado e `/poema/x/` permitido.
-- [ ] **CA03:** Dado a URL `/poema/nao-existe/`, quando a abro, então vejo a página de "não encontrado" com `noindex` e sem canonical.
-- [ ] **CA04:** Dado a URL `/qualquer-coisa-inexistente`, quando faço `curl -I`, então o status é `404` e o HTML não redireciona para `/`.
-- [ ] **CA05:** Dado uma entrada `/?p=277 → /poema/<slug>/` no mapa legado (ou equivalente), quando acesso a origem, então chego ao destino.
-- [ ] **CA06:** Dado o build, quando uma URL do sitemap tem `noindex`, então o build falha com mensagem clara.
+- [x] **CA01:** Dado `dist/admin/index.html`, quando o inspeciono, então contém `noindex, nofollow`.
+- [x] **CA02:** Dado `robots.txt` publicado, quando o valido no testador do Search Console, então `/admin` está bloqueado e `/poema/x/` permitido.
+- [x] **CA03:** Dado a URL `/poema/nao-existe/`, quando a abro, então vejo a página de "não encontrado" com `noindex` e sem canonical.
+- [x] **CA04:** Dado a URL `/qualquer-coisa-inexistente`, quando faço `curl -I`, então o status é `404` e o HTML não redireciona para `/`.
+- [x] **CA05:** Dado uma entrada `/?p=277 → /poema/<slug>/` no mapa legado (ou equivalente), quando acesso a origem, então chego ao destino.
+- [x] **CA06:** Dado o build, quando uma URL do sitemap tem `noindex`, então o build falha com mensagem clara.
 
 ## O que a atividade não inclui
 

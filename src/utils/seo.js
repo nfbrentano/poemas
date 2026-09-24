@@ -1,4 +1,21 @@
-export function updateSEO({ title, description, url, imageUrl, type = 'website', publishedTime, tags }) {
+export function setNotFoundSEO() {
+  document.title = 'Página não encontrada — Natanael Brentano';
+
+  let robotsTag = document.querySelector('meta[name="robots"]');
+  if (!robotsTag) {
+    robotsTag = document.createElement('meta');
+    robotsTag.setAttribute('name', 'robots');
+    document.head.appendChild(robotsTag);
+  }
+  robotsTag.setAttribute('content', 'noindex');
+
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) {
+    canonical.remove();
+  }
+}
+
+export function updateSEO({ title, description, url, imageUrl, type = 'website', publishedTime, tags, robots }) {
   const defaultTitle = 'Poemas Brasileiros - Natanael Brentano';
   const defaultDesc = 'Coleção de poemas originais em português por Natanael Fernando Gatti Brentano. Temas de amor, natureza e reflexões cotidianas.';
   const defaultImage = `${window.location.origin}${import.meta.env.BASE_URL}og-default.png`;
@@ -42,6 +59,13 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
     document.head.appendChild(canonical);
   }
   canonical.setAttribute('href', finalUrl);
+
+  // Meta Robots
+  if (robots) {
+    setMeta('meta[name="robots"]', 'content', robots);
+  } else {
+    document.querySelector('meta[name="robots"]')?.remove();
+  }
 
   // Dynamic Meta Description
   setMeta('meta[name="description"]', 'content', finalDesc);
