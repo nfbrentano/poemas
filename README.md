@@ -52,7 +52,10 @@ VITE_FIREBASE_PROJECT_ID=seu_project_id
 VITE_FIREBASE_STORAGE_BUCKET=seu_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=seu_messaging_sender_id
 VITE_FIREBASE_APP_ID=seu_app_id
+VITE_VAPID_PUBLIC_KEY=sua_chave_publica_vapid # Opcional: ativa notificações Web Push
 ```
+
+Consulte [.env.example](.env.example) para o template completo e o guia [docs/notificacoes-push-vapid.md](docs/notificacoes-push-vapid.md) para o passo a passo de geração da chave VAPID no Firebase Console.
 
 ### Desenvolvimento
 
@@ -100,7 +103,7 @@ poemas/
 ### GitHub Actions (Automático)
 
 1. Em **Settings > Pages**, selecione **GitHub Actions** como _Source_
-2. Configure os secrets `VITE_FIREBASE_*` em **Settings > Secrets and variables > Actions**
+2. Configure os secrets `VITE_FIREBASE_*` e `VITE_VAPID_PUBLIC_KEY` em **Settings > Secrets and variables > Actions**
 3. Cada push na `main` dispara o deploy automaticamente
 
 ### Domínio Customizado

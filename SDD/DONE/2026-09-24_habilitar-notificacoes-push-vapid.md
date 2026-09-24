@@ -27,7 +27,7 @@ N/A
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o desenvolvedor tenha lido as instruções, quando ele gerar a key pair no console do Firebase e colocar em `.env.local`, então o sistema de notificações deverá poder ser ativado na interface do usuário sem apresentar erro de VAPID não configurado.
+- [x] **CA01:** Dado que o desenvolvedor tenha lido as instruções, quando ele gerar a key pair no console do Firebase e colocar em `.env.local`, então o sistema de notificações deverá poder ser ativado na interface do usuário sem apresentar erro de VAPID não configurado.
 
 ## O que a atividade não inclui
 
