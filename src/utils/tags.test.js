@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeTag, formatTag } from './tags.js';
+import { normalizeTag, formatTag, slugifyTag, tagToSlug } from './tags.js';
 
 describe('tags utility', () => {
   describe('normalizeTag', () => {
@@ -36,4 +36,27 @@ describe('tags utility', () => {
       expect(formatTag('')).toBe('');
     });
   });
+
+  describe('slugifyTag (CT01)', () => {
+    it('CT01: converts Amor-Próprio with spaces to amor-proprio', () => {
+      expect(slugifyTag('Amor-Próprio ')).toBe('amor-proprio');
+    });
+
+    it('removes sentiment prefixes and normalizes accents and special chars', () => {
+      expect(slugifyTag('sentimento:saudade')).toBe('saudade');
+      expect(slugifyTag('tag de sentimento: Solidão')).toBe('solidao');
+      expect(slugifyTag('  sentimento: paz & amor  ')).toBe('paz-amor');
+    });
+
+    it('returns empty string for invalid inputs', () => {
+      expect(slugifyTag(null)).toBe('');
+      expect(slugifyTag('')).toBe('');
+      expect(slugifyTag(undefined)).toBe('');
+    });
+
+    it('aliases tagToSlug correctly', () => {
+      expect(tagToSlug('Amor-Próprio ')).toBe('amor-proprio');
+    });
+  });
 });
+

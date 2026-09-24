@@ -1,4 +1,6 @@
-import { normalizeTag } from './tags.js';
+import { normalizeTag, tagToSlug, slugifyTag } from './tags.js';
+
+export { tagToSlug, slugifyTag };
 
 export const SITE_URL = 'https://nfgbrentano.art.br/';
 
@@ -44,21 +46,6 @@ export function getPoemLastMod(poem) {
   return formatDateToYMD(dateVal) || new Date().toISOString().split('T')[0];
 }
 
-/**
- * Converts a sentiment tag into a URL-friendly slug.
- * @param {string} tag
- * @returns {string}
- */
-export function tagToSlug(tag) {
-  const norm = normalizeTag(tag);
-  if (!norm) return '';
-  return norm
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 /**
  * Finds the maximum YYYY-MM-DD date in an array of dates.

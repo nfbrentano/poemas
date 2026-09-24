@@ -14,10 +14,16 @@ import {
   collectionSchema,
   collectionsListSchema,
   websiteSchema,
-  serializeJsonLd
+  sentimentSchema,
+  sentimentsListSchema,
+  serializeJsonLd,
+  renderBreadcrumbsHtml
 } from '../src/utils/structured-data.js';
+import { slugifyTag, formatTag, tagToSlug } from '../src/utils/tags.js';
+import { getSentimentIntro, getSentimentName } from '../src/data/sentiments.js';
 
 import { loadFonts, generatePoemOgImage, generateCollectionOgImage, generateDefaultOgImage } from './generate-og-images.js';
+
 
 // Note: Run this with node --env-file=.env.local scripts/prerender.js
 const firebaseConfig = {
@@ -182,6 +188,10 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
         &copy; ${currentYear} Natanael Brentano. Todos os direitos reservados.
       </div>
       <div class="footer-social">
+        <a href="/sentimentos" data-link class="footer-social-link">
+          <span>Sentimentos</span>
+        </a>
+        <span class="footer-separator">•</span>
         <a href="https://instagram.com/nfgbrentano" target="_blank" rel="noopener" aria-label="Instagram @nfgbrentano" class="footer-social-link">
           <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="footer-icon"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
           <span>@nfgbrentano</span>
@@ -315,7 +325,7 @@ function renderHomeMarkup({ poems, podPoem, allCollections = [] }) {
             <span class="filter-label">Sentimentos:</span>
             <div class="filter-chips">
               <a href="/" data-link class="filter-chip active">Todos</a>
-              ${topTags.map(tag => `<a href="/?tags=${encodeURIComponent(tag)}" data-link class="filter-chip">${escapeHtml(tag)}</a>`).join('')}
+              ${topTags.map(tag => `<a href="/sentimento/${tagToSlug(tag)}/" data-link class="filter-chip">${escapeHtml(tag)}</a>`).join('')}
             </div>
           </div>
         </div>
@@ -788,6 +798,231 @@ async function prerender() {
       console.warn('Could not prerender collection routes:', e.message);
     }
 
+    // Pre-render sentiment routes and /sentimentos/ hub (RF04, RF07, RF08, RF09, CA01, CA02, CA05, CA06)
+    console.log('Generating pre-rendered content for sentiments and tag redirects...');
+    const sentimentMap = new Map();
+    poems.forEach(poem => {
+      const tags = Array.isArray(poem.tags) ? poem.tags : [];
+      tags.forEach(t => {
+        const slug = slugifyTag(t);
+        if (!slug) return;
+        if (!sentimentMap.has(slug)) {
+          sentimentMap.set(slug, {
+            slug,
+            name: getSentimentName(slug, formatTag(t)),
+            poems: []
+          });
+        }
+        sentimentMap.get(slug).poems.push(poem);
+      });
+    });
+
+    const allSentiments = Array.from(sentimentMap.values());
+    const qualifyingSentiments = allSentiments
+      .filter(s => s.poems.length >= 3)
+      .sort((a, b) => b.poems.length - a.poems.length || a.name.localeCompare(b.name));
+
+    // 1. Render /sentimentos/ hub
+    try {
+      const sentimentsDir = path.join(distDir, 'sentimentos');
+      if (!fs.existsSync(sentimentosDir)) {
+        fs.mkdirSync(sentimentosDir, { recursive: true });
+      }
+      const hubTitle = 'Poemas por Sentimento — Natanael Brentano';
+      const hubDesc = 'Navegue pelos poemas organizados por sentimentos e temas, descobrindo versos sobre amor, saudade, efêmero e vida.';
+      const hubUrl = `${baseUrl}sentimentos/`;
+      const hubBreadcrumbs = [
+        { name: 'Início', url: baseUrl },
+        { name: 'Sentimentos', url: hubUrl }
+      ];
+      const hubStructuredData = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(sentimentsListSchema(qualifyingSentiments))}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(hubBreadcrumbs))}</script>`;
+
+      const hubMainMarkup = `
+      <section class="sentiments-page fade-in">
+        <header class="page-header" style="margin-bottom: var(--space-2xl);">
+          ${renderBreadcrumbsHtml(hubBreadcrumbs)}
+          <h1 class="page-title" style="font-family: var(--font-display); font-size: clamp(2rem, 4vw, 2.75rem); margin-bottom: 0.75rem;">Poemas por Sentimento</h1>
+          <p class="page-description" style="color: var(--text-muted); font-size: 1.05rem; max-width: 650px; line-height: 1.6;">
+            Navegue pelos poemas organizados por sentimentos e temas. Cada página reúne versos que exploram uma emoção, reflexão ou estado de espírito.
+          </p>
+        </header>
+
+        <div class="sentiments-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;">
+          ${qualifyingSentiments.map(s => `
+            <a href="/sentimento/${escapeHtml(s.slug)}/" class="sentiment-card" data-link style="padding: 1.25rem; border: 1px solid var(--border-subtle); border-radius: 8px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease;">
+              <span class="sentiment-name" style="font-weight: 500; font-family: var(--font-display); font-size: 1.1rem; color: var(--text-primary);">${escapeHtml(s.name)}</span>
+              <span class="sentiment-badge" style="color: var(--accent); font-size: 0.85rem; background: var(--border-subtle); padding: 3px 10px; border-radius: 12px;">${s.poems.length} poemas</span>
+            </a>
+          `).join('')}
+        </div>
+      </section>
+      `;
+
+      const hubShell = renderBaseLayout({
+        mainContent: hubMainMarkup,
+        dataPrerendered: '/sentimentos'
+      });
+
+      let hubHtml = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<div id="app"><\/div>/i, `<div id="app">${hubShell}</div>`)
+        .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(hubTitle)}</title>`)
+        .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${hubUrl}" />`)
+        .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(hubDesc)}" />`)
+        .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(hubTitle)}" />`)
+        .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(hubDesc)}" />`)
+        .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${hubUrl}" />`)
+        .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="${escapeHtml(hubTitle)}" />`)
+        .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(hubTitle)}" />`)
+        .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(hubDesc)}" />`)
+        .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
+
+      hubHtml = hubHtml.replace(/<\/head>/i, `${hubStructuredData}\n</head>`);
+      fs.writeFileSync(path.join(sentimentosDir, 'index.html'), hubHtml, 'utf-8');
+      console.log('Generated static HTML for /sentimentos/');
+    } catch (e) {
+      console.warn('Could not prerender /sentimentos/ hub:', e.message);
+    }
+
+    // 2. Render each /sentimento/<slug>/ page and /tag/<slug>/ redirect
+    try {
+      for (const s of allSentiments) {
+        const sentDir = path.join(distDir, 'sentimento', s.slug);
+        if (!fs.existsSync(sentDir)) {
+          fs.mkdirSync(sentDir, { recursive: true });
+        }
+
+        const isIndexable = s.poems.length >= 3;
+        const pageTitle = `Poemas sobre ${s.name} — Natanael Brentano`;
+        const introText = getSentimentIntro(s.name, s.slug);
+        const count = s.poems.length;
+        const countSuffix = count === 1 ? '1 poema' : `${count} poemas`;
+        const metaDescription = `${countSuffix} sobre ${s.name.toLowerCase()}. ${introText}`.slice(0, 160);
+        const sentUrl = `${baseUrl}sentimento/${s.slug}/`;
+
+        // Calculate related sentiments
+        const relatedCounts = {};
+        s.poems.forEach(p => {
+          (p.tags || []).forEach(t => {
+            const relSlug = slugifyTag(t);
+            if (relSlug && relSlug !== s.slug) {
+              if (!relatedCounts[relSlug]) {
+                relatedCounts[relSlug] = {
+                  slug: relSlug,
+                  name: getSentimentName(relSlug, formatTag(t)),
+                  count: 0
+                };
+              }
+              relatedCounts[relSlug].count += 1;
+            }
+          });
+        });
+        const relatedList = Object.values(relatedCounts)
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 6);
+
+        const relatedHtml = relatedList.length > 0 ? `
+          <div class="sentiment-related" style="margin: 1.5rem 0 2rem 0;">
+            <span class="filter-label" style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Sentimentos relacionados:</span>
+            <div class="related-sentiment-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+              ${relatedList.map(r => `
+                <a href="/sentimento/${escapeHtml(r.slug)}/" class="filter-chip" data-link>
+                  ${escapeHtml(r.name)} <span class="chip-count" style="opacity: 0.6; font-size: 0.85em;">(${r.count})</span>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+        ` : '';
+
+        const sortedPoems = [...s.poems].sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+
+        const breadcrumbItems = [
+          { name: 'Início', url: baseUrl },
+          { name: 'Sentimentos', url: `${baseUrl}sentimentos/` },
+          { name: s.name, url: sentUrl }
+        ];
+
+        const sentMainMarkup = `
+        <section class="collection-detail sentiment-detail fade-in">
+          <header class="collection-header">
+            ${renderBreadcrumbsHtml(breadcrumbItems)}
+            <a href="/sentimentos" class="back-link" data-link>← Ver todos os sentimentos</a>
+            <h1 class="collection-title">Poemas sobre ${escapeHtml(s.name)}</h1>
+            <p class="collection-meta" style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">
+              ${count} poema${count !== 1 ? 's' : ''}
+            </p>
+            <p class="collection-desc-large" style="margin-top: 1rem;">${escapeHtml(introText)}</p>
+            ${relatedHtml}
+          </header>
+
+          <div class="poems-list">
+            ${sortedPoems.map(poem => {
+              const year = new Date(poem.published_at).getFullYear();
+              return `
+                <article class="poem-row">
+                  <a href="/poema/${escapeHtml(poem.slug)}" class="poem-row-link" data-link>
+                    <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                    <span class="poem-row-year">${year}</span>
+                  </a>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        </section>
+        `;
+
+        const sentShell = renderBaseLayout({
+          mainContent: sentMainMarkup,
+          dataPrerendered: `/sentimento/${s.slug}`
+        });
+
+        let sentHtml = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
+          .replace(/<div id="app"><\/div>/i, `<div id="app">${sentShell}</div>`)
+          .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(pageTitle)}</title>`)
+          .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${sentUrl}" />`)
+          .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(metaDescription)}" />`)
+          .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(pageTitle)}" />`)
+          .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(metaDescription)}" />`)
+          .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${sentUrl}" />`)
+          .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="${escapeHtml(pageTitle)}" />`)
+          .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(pageTitle)}" />`)
+          .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(metaDescription)}" />`)
+          .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
+
+        if (isIndexable) {
+          const sentStructuredData = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(sentimentSchema(s.name, s.slug, sortedPoems, introText))}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(breadcrumbItems))}</script>`;
+          sentHtml = sentHtml.replace(/<\/head>/i, `${sentStructuredData}\n</head>`);
+        } else {
+          // RF07 & CA02 & CT02: < 3 poemas recebe noindex, follow
+          sentHtml = sentHtml.replace(/<\/head>/i, `  <meta name="robots" content="noindex, follow" />\n</head>`);
+        }
+
+        fs.writeFileSync(path.join(sentDir, 'index.html'), sentHtml, 'utf-8');
+
+        // RF09: Redirecionar /tag/<slug> para /sentimento/<slug>/ gerando dist/tag/<slug>/index.html
+        const tagDir = path.join(distDir, 'tag', s.slug);
+        if (!fs.existsSync(tagDir)) {
+          fs.mkdirSync(tagDir, { recursive: true });
+        }
+        const tagRedirectHtml = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Redirecionando...</title>
+  <link rel="canonical" href="${sentUrl}">
+  <meta http-equiv="refresh" content="0; url=${sentUrl}">
+</head>
+<body>
+  <p>Redirecionando para <a href="${sentUrl}">${sentUrl}</a>...</p>
+</body>
+</html>`;
+        fs.writeFileSync(path.join(tagDir, 'index.html'), tagRedirectHtml, 'utf-8');
+      }
+      console.log(`Generated static HTML for ${allSentiments.length} sentiments (${qualifyingSentiments.length} indexable) and tag redirects.`);
+    } catch (e) {
+      console.warn('Could not prerender sentiment routes:', e.message);
+    }
+
+
     // Pre-render home page in dist/index.html (RF05)
     console.log('Generating pre-rendered content for home page (dist/index.html)...');
     const sortedPoemsDesc = [...poems].sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
@@ -859,10 +1094,13 @@ async function prerender() {
     const knownRoutes = [
       '/',
       ...staticRoutes.map(sr => `/${sr.route}`),
+      '/sentimentos',
+      ...allSentiments.map(s => `/sentimento/${s.slug}`),
       '/aleatorio',
       ...poems.map(p => `/poema/${p.slug}`),
       ...allCollections.filter(c => c.slug).map(c => `/colecao/${c.slug}`)
     ];
+
     fs.writeFileSync(path.join(distDir, 'routes.json'), JSON.stringify(knownRoutes, null, 2), 'utf-8');
 
     const dist404Path = path.join(distDir, '404.html');

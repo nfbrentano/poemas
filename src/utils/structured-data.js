@@ -211,6 +211,73 @@ export function collectionsListSchema(collections = []) {
 }
 
 /**
+ * Schema for a sentiment page (/sentimento/<slug>/).
+ * @param {string} sentimentName
+ * @param {string} slug
+ * @param {object[]} poems
+ * @param {string} description
+ */
+export function sentimentSchema(sentimentName, slug, poems = [], description = '') {
+  const sentUrl = ensureTrailingSlash(`${SITE_URL}/sentimento/${slug}`);
+  const poemsList = Array.isArray(poems) ? poems : [];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": sentUrl,
+    "url": sentUrl,
+    "name": `Poemas sobre ${sentimentName}`,
+    "description": description || `Poemas sobre ${sentimentName.toLowerCase()} de Natanael Brentano.`,
+    "inLanguage": "pt-BR",
+    "isPartOf": {
+      "@id": WEBSITE_ID
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": poemsList.length,
+      "itemListElement": poemsList.map((p, idx) => ({
+        "@type": "ListItem",
+        "position": idx + 1,
+        "name": p.title || '',
+        "url": ensureTrailingSlash(`${SITE_URL}/poema/${p.slug}`)
+      }))
+    }
+  };
+}
+
+/**
+ * Schema for the sentiments catalog page (/sentimentos/).
+ * @param {Array<{ name: string, slug: string }>} sentiments
+ */
+export function sentimentsListSchema(sentiments = []) {
+  const sentUrl = `${SITE_URL}/sentimentos/`;
+  const list = Array.isArray(sentiments) ? sentiments : [];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": sentUrl,
+    "url": sentUrl,
+    "name": "Poemas por Sentimento — Natanael Brentano",
+    "description": "Explore os poemas de Natanael Brentano organizados por sentimentos e temas.",
+    "inLanguage": "pt-BR",
+    "isPartOf": {
+      "@id": WEBSITE_ID
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": list.length,
+      "itemListElement": list.map((s, idx) => ({
+        "@type": "ListItem",
+        "position": idx + 1,
+        "name": s.name || s.slug,
+        "url": ensureTrailingSlash(`${SITE_URL}/sentimento/${s.slug}`)
+      }))
+    }
+  };
+}
+
+/**
  * RF07: Schema for breadcrumbs (BreadcrumbList).
  * @param {Array<{name: string, url: string}>} items
  */

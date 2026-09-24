@@ -105,6 +105,20 @@
         return;
       }
 
+      // RF09 & CT04: Check legacy tag redirects (/tag/<slug> or ?tag=<slug>)
+      if (cleanPath.indexOf('/tag/') === 0) {
+        var tagSlug = cleanPath.replace(/^\/tag\/?/, '').replace(/\/$/, '');
+        if (tagSlug) {
+          window.location.replace('/sentimento/' + tagSlug + '/');
+          return;
+        }
+      }
+      var tagParamMatch = search.match(/[?&]tag=([^&]+)/);
+      if (tagParamMatch && tagParamMatch[1]) {
+        window.location.replace('/sentimento/' + decodeURIComponent(tagParamMatch[1]) + '/');
+        return;
+      }
+
       // Check known routes injected during build
       var knownRoutes = window.__KNOWN_ROUTES__ || [];
       var isKnown = false;

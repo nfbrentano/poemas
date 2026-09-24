@@ -11,6 +11,8 @@ export const routes = {
   '/sobre': () => import('./pages/about.js').then(m => m.default),
   '/colecoes': () => import('./pages/collections.js').then(m => m.default),
   '/colecao/:slug': () => import('./pages/collection.js').then(m => m.default),
+  '/sentimentos': () => import('./pages/sentiments.js').then(m => m.default),
+  '/sentimento/:slug': () => import('./pages/sentiment.js').then(m => m.default),
   '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default),
   '/cancelar-inscricao': () => import('./pages/unsubscribe.js').then(m => m.default)
 };
@@ -39,6 +41,21 @@ export async function router() {
     return;
   }
 
+  // RF09 & CT04: Redirecionar /tag/<slug> e /?tag=<slug> para /sentimento/<slug>/
+  if (path.startsWith('/tag/')) {
+    const tagSlug = path.replace(/^\/tag\/?/, '').replace(/\/$/, '');
+    if (tagSlug) {
+      navigateTo(`/sentimento/${tagSlug}/`);
+      return;
+    }
+  }
+
+  const searchTag = new URLSearchParams(window.location.search).get('tag');
+  if (searchTag && path === '/') {
+    navigateTo(`/sentimento/${searchTag}/`);
+    return;
+  }
+
   if (path === '/info') {
     navigateTo('/sobre');
     return;
@@ -53,6 +70,7 @@ export async function router() {
     getRandomPoem();
     return;
   }
+
   
   const view = document.getElementById('main-content');
   

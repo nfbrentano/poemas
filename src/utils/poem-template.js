@@ -1,6 +1,6 @@
 import { escapeHtml, stripHtml, sanitizeUrl } from './html.js';
 import { formatPoemForAnimation } from './text-format.js';
-import { formatTag } from './tags.js';
+import { formatTag, slugifyTag } from './tags.js';
 import { newsletter } from '../components/newsletter.js';
 import { renderBreadcrumbsHtml } from './structured-data.js';
 
@@ -42,9 +42,11 @@ export function renderPoemMarkup({
   if (poem.tags && poem.tags.length > 0) {
     tagsHtml = poem.tags.map(t => {
       const formatted = formatTag(t);
-      return `<a href="${baseUrl}?tags=${encodeURIComponent(t)}" class="tag-chip" data-link>#${escapeHtml(formatted)}</a>`;
+      const slug = slugifyTag(t);
+      return `<a href="${baseUrl}sentimento/${slug}/" class="tag-chip" data-link>#${escapeHtml(formatted)}</a>`;
     }).join(' ');
   }
+
 
   const taxonomyHtml = (collectionsHtml || tagsHtml) ? `
     <div class="poem-taxonomy" style="margin-top: var(--space-2xl); text-align: center; display: flex; flex-direction: column; gap: var(--space-md); align-items: center;">

@@ -18,3 +18,23 @@ export function formatTag(tag) {
   if (!normalized) return '';
   return normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
 }
+
+/**
+ * Converts a tag into a URL-friendly slug.
+ * Removes common sentiment prefixes, accents, trims, lowercases, and replaces non-alphanumeric with hyphens.
+ * @param {string} tag
+ * @returns {string}
+ */
+export function slugifyTag(tag) {
+  const norm = normalizeTag(tag);
+  if (!norm) return '';
+  return norm
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export const tagToSlug = slugifyTag;
+

@@ -50,7 +50,23 @@ describe('Router', () => {
 
     expect(mockAboutComponent.render).toHaveBeenCalled();
   });
+
+  it('CT04: redirects legacy /tag/<slug> and /?tag=<slug> to /sentimento/<slug>/', async () => {
+    const pushStateSpy = vi.spyOn(window.history, 'pushState');
+
+    window.history.pushState(null, null, '/tag/saudade');
+    await router();
+    expect(pushStateSpy).toHaveBeenCalledWith(null, null, '/sentimento/saudade/');
+
+    pushStateSpy.mockClear();
+    window.history.pushState(null, null, '/?tag=amor');
+    await router();
+    expect(pushStateSpy).toHaveBeenCalledWith(null, null, '/sentimento/amor/');
+
+    pushStateSpy.mockRestore();
+  });
 });
+
 
 describe('initRouter Click Interception', () => {
   beforeEach(() => {
