@@ -40,12 +40,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um poema com anterior e próximo, quando inspeciono o DOM, então existem `<a rel="prev">` e `<a rel="next">` com `href` canônico.
-- [ ] **CA02:** Dado o HTML prerenderizado de um poema, quando o abro sem JS, então vejo links para o poema anterior, o próximo e pelo menos 3 relacionados.
-- [ ] **CA03:** Dado que estou em um poema, quando navego via SPA para `/sobre/`, então o canonical, a description e o JSON-LD são os da página Sobre.
-- [ ] **CA04:** Dado `dist/sobre/index.html`, quando o abro sem JS, então vejo a foto real com `alt` descritivo.
-- [ ] **CA05:** Dado que acesso `/info`, quando a página carrega, então chego em `/sobre/`.
-- [ ] **CA06:** Dado um poema com título `<b>x</b>`, quando abro a página, então o título aparece como texto literal.
+- [x] **CA01:** Dado um poema com anterior e próximo, quando inspeciono o DOM, então existem `<a rel="prev">` e `<a rel="next">` com `href` canônico.
+- [x] **CA02:** Dado o HTML prerenderizado de um poema, quando o abro sem JS, então vejo links para o poema anterior, o próximo e pelo menos 3 relacionados.
+- [x] **CA03:** Dado que estou em um poema, quando navego via SPA para `/sobre/`, então o canonical, a description e o JSON-LD são os da página Sobre.
+- [x] **CA04:** Dado `dist/sobre/index.html`, quando o abro sem JS, então vejo a foto real com `alt` descritivo.
+- [x] **CA05:** Dado que acesso `/info`, quando a página carrega, então chego em `/sobre/`.
+- [x] **CA06:** Dado um poema com título `<b>x</b>`, quando abro a página, então o título aparece como texto literal.
 
 ## O que a atividade não inclui
 

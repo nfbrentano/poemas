@@ -213,14 +213,15 @@ export default {
       .trim()
       .slice(0, 160) + '...';
 
+    const escapedPoemTitle = escapeHtml(poem.title || '');
     const primaryCol = collectionsData && collectionsData.length > 0 ? collectionsData[0] : null;
     const breadcrumbItems = primaryCol ? [
       { name: 'Início', url: `${SITE_URL}/` },
       { name: primaryCol.name, url: `${SITE_URL}/colecao/${primaryCol.slug}/` },
-      { name: poem.title, url: canonicalPoemUrl }
+      { name: escapedPoemTitle, url: canonicalPoemUrl }
     ] : [
       { name: 'Início', url: `${SITE_URL}/` },
-      { name: poem.title, url: canonicalPoemUrl }
+      { name: escapedPoemTitle, url: canonicalPoemUrl }
     ];
 
     const fallbackImageUrl = `${window.location.origin}${import.meta.env.BASE_URL}og-cover.jpg`;
@@ -561,10 +562,10 @@ export default {
           }
           break;
         case 'ArrowRight':
-          if (nextSlug) navigateTo(`/poema/${nextSlug}`);
+          if (nextSlug) navigateTo(`/poema/${nextSlug}/`);
           break;
         case 'ArrowLeft':
-          if (prevSlug) navigateTo(`/poema/${prevSlug}`);
+          if (prevSlug) navigateTo(`/poema/${prevSlug}/`);
           break;
         case 'i':
         case 'I':
@@ -626,21 +627,13 @@ export default {
       const elapsedTime = Date.now() - touchStartTime;
 
       if (elapsedTime <= 500 && Math.abs(deltaX) > 100 && Math.abs(deltaX) > Math.abs(deltaY) * 3) {
-        if (deltaX > 0 && nextSlug) navigateTo(`/poema/${nextSlug}`);
-        else if (deltaX < 0 && prevSlug) navigateTo(`/poema/${prevSlug}`);
+        if (deltaX > 0 && nextSlug) navigateTo(`/poema/${nextSlug}/`);
+        else if (deltaX < 0 && prevSlug) navigateTo(`/poema/${prevSlug}/`);
       }
     };
 
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
-
-    // Click handlers
-    nextBtn?.addEventListener('click', () => {
-      if (nextSlug) navigateTo(`/poema/${nextSlug}`);
-    });
-    document.getElementById('prev-btn')?.addEventListener('click', () => {
-      if (prevSlug) navigateTo(`/poema/${prevSlug}`);
-    });
 
     // Newsletter form logic
     newsletter.init();

@@ -975,6 +975,7 @@ input, textarea {
   align-items: center;
   justify-content: center;
   line-height: 1.2;
+  text-decoration: none;
 }
 
 .nav-btn-label {

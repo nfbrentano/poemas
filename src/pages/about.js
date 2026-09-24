@@ -2,11 +2,13 @@ import { db } from '../utils/firebase.js';
 import { collection, getDocs, doc, setDoc, getCountFromServer, query, where } from 'firebase/firestore';
 import { pushToggle } from '../components/push-toggle.js';
 import { updateSEO } from '../utils/seo.js';
-import { profilePageSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
+import { profilePageSchema, breadcrumbSchema, SITE_URL } from '../utils/structured-data.js';
+import { renderAboutMarkup, DEFAULT_AVATAR_URL } from '../utils/about-template.js';
 
 export default {
   meta: {
-    title: 'Sobre Natanael Brentano'
+    title: 'Sobre Natanael Brentano — Poeta',
+    description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.'
   },
   async render(container) {
     const canonicalAboutUrl = `${SITE_URL}/sobre/`;
@@ -16,7 +18,7 @@ export default {
     ];
 
     updateSEO({
-      title: 'Sobre Natanael Brentano',
+      title: 'Sobre Natanael Brentano — Poeta',
       description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.',
       url: canonicalAboutUrl,
       type: 'profile',
@@ -26,85 +28,20 @@ export default {
       ]
     });
 
-    container.innerHTML = `
-      <section class="about-page fade-in">
-        <div class="about-container">
-          ${renderBreadcrumbsHtml(breadcrumbItems)}
-          <div class="about-header">
-            <div class="about-avatar-container">
-              <div class="about-avatar">
-                <img id="profile-img" alt="Foto de Natanael Brentano" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="140" height="140" />
-                <div id="admin-avatar-controls"></div>
-              </div>
-            </div>
-            <div class="about-intro">
-              <h1>Natanael Brentano</h1>
-              <p class="about-tagline">Poeta e observador do cotidiano</p>
-              <div class="social-links">
-                <a href="https://instagram.com/nfgbrentano" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 6px;">
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                  Instagram
-                </a>
-                <a href="mailto:nfgbrentano@gmail.com" style="display: flex; align-items: center; gap: 6px;">
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                  Contato
-                </a>
-              </div>
-            </div>
-          </div>
+    const isPrerendered = container.getAttribute('data-prerendered') === '/sobre';
+    if (isPrerendered) {
+      container.removeAttribute('data-prerendered');
+    } else {
+      let cachedAvatar = DEFAULT_AVATAR_URL;
+      try {
+        cachedAvatar = localStorage.getItem('profilePhotoURL') || DEFAULT_AVATAR_URL;
+      } catch (_) {}
 
-          <div class="about-content">
-            <div class="about-section bio-section" id="autor">
-              <h2 class="section-title">Sobre o autor</h2>
-              <div id="bio-content" class="bio-text">
-                Natanael Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.
-              </div>
-              <div id="admin-bio-controls"></div>
-            </div>
-
-            <div class="about-grid">
-              <div class="about-section">
-                <h2 class="section-title">Influências</h2>
-                <ul class="influences-list">
-                  <li>Manoel de Barros (a poesia das miudezas)</li>
-                  <li>Fernando Pessoa (o labirinto da alma)</li>
-                  <li>Hilda Hilst (o sagrado e o profano)</li>
-                  <li>Clarice Lispector (o silêncio entre as palavras)</li>
-                </ul>
-              </div>
-
-              <div class="about-section">
-                <h2 class="section-title">Marcos Literários</h2>
-                <div class="timeline">
-                  <div class="timeline-item">
-                    <span class="year">2015</span>
-                    <span class="event">Início das publicações e primeiros versos (dezembro de 2015, com obras como <em>Como falar</em> e <em>Carinho</em>).</span>
-                  </div>
-                  <div class="timeline-item">
-                    <span class="year">2016 – 2024</span>
-                    <span class="event">Fase de maturação poética e escrita contínua sobre o tempo, os afetos e a efemeridade cotidiana.</span>
-                  </div>
-                  <div class="timeline-item">
-                    <span class="year">2025</span>
-                    <span class="event">Intensa produção criativa (100 poemas no ano) e alcance do marco de 100 poemas catalogados em setembro com <em>Melodia do Coração</em>.</span>
-                  </div>
-                  <div class="timeline-item">
-                    <span class="year">2026</span>
-                    <span class="event">Consolidação do acervo digital e superação da marca de 200 poemas em julho com <em>Trilha Sonora do Agora</em>, reunindo atualmente <strong id="total-poems-count">222</strong> poemas publicados.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="about-settings">
-            ${pushToggle.render()}
-          </div>
-        </div>
-
-        <div id="admin-modal-container"></div>
-      </section>
-    `;
+      container.innerHTML = renderAboutMarkup({
+        avatarUrl: cachedAvatar,
+        baseUrl: import.meta.env.BASE_URL
+      });
+    }
 
     const imgEl = container.querySelector('#profile-img');
     const bioContent = container.querySelector('#bio-content');

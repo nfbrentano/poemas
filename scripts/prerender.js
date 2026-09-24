@@ -5,6 +5,7 @@ import path from 'path';
 
 import { stripHtml, escapeHtml } from '../src/utils/html.js';
 import { renderPoemMarkup } from '../src/utils/poem-template.js';
+import { renderAboutMarkup, DEFAULT_AVATAR_URL, DEFAULT_AUTHOR_BIO } from '../src/utils/about-template.js';
 import { getPoemOfDay } from '../src/utils/poemOfDay.js';
 import {
   poemSchema,
@@ -612,9 +613,27 @@ async function prerender() {
 
     // Pre-render top-level static pages for direct URL access without 404
     console.log('Generating static HTML for top-level routes...');
+
+    let authorAvatarUrl = DEFAULT_AVATAR_URL;
+    let authorBioText = DEFAULT_AUTHOR_BIO;
+    try {
+      const settingsSnap = await getDocs(collection(db, 'site_settings'));
+      settingsSnap.forEach(d => {
+        const data = d.data();
+        const key = data.key || d.id;
+        if (key === 'avatar_url' && data.value) {
+          authorAvatarUrl = data.value;
+        }
+        if (key === 'author_bio' && data.value) {
+          authorBioText = data.value;
+        }
+      });
+    } catch (err) {
+      console.warn('Could not fetch site_settings in prerender:', err);
+    }
+
     const staticRoutes = [
-      { route: 'sobre', title: 'Sobre Natanael Brentano — Poemas', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.' },
-      { route: 'info', title: 'Sobre Natanael Brentano — Poemas', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.' },
+      { route: 'sobre', title: 'Sobre Natanael Brentano — Poeta', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.', type: 'profile' },
       { route: 'colecoes', title: 'Coleções e Sentimentos — Natanael Brentano', description: 'Explore poemas organizados por séries temáticas e sentimentos.' },
       { route: 'admin', title: 'Painel Admin — Natanael Brentano', description: 'Área administrativa para gestão de poemas e métricas.', robots: 'noindex, nofollow' },
       { route: 'login', title: 'Login Admin — Natanael Brentano', description: 'Acesso ao painel administrativo.', robots: 'noindex, nofollow' },
@@ -642,8 +661,12 @@ async function prerender() {
         .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="${escapeHtml(sr.title)}" />`)
         .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
       
+      if (sr.type) {
+        html = html.replace(/<meta property="og:type" content="[^"]*"\s*\/?>/i, `<meta property="og:type" content="${escapeHtml(sr.type)}" />`);
+      }
+
       let structuredDataHtml = '';
-      if (sr.route === 'sobre' || sr.route === 'info') {
+      if (sr.route === 'sobre') {
         const sobreBreadcrumbs = [
           { name: 'Início', url: baseUrl },
           { name: 'Sobre', url: `${baseUrl}sobre/` }
@@ -665,8 +688,47 @@ async function prerender() {
         html = html.replace(/<\/head>/i, `  <meta name="robots" content="${escapeHtml(sr.robots)}" />\n</head>`);
       }
 
+      // RF04 & CA04: Pre-renderizar DOM estático completo da página /sobre/
+      if (sr.route === 'sobre') {
+        const renderedAboutMarkup = renderAboutMarkup({
+          avatarUrl: authorAvatarUrl,
+          bioText: authorBioText,
+          poemsCount: count || poems.length,
+          baseUrl: '/'
+        });
+        const aboutShell = renderBaseLayout({
+          mainContent: renderedAboutMarkup,
+          dataPrerendered: '/sobre'
+        });
+        html = html.replace(
+          /<div id="app"><\/div>/i,
+          `<div id="app">${aboutShell}</div>`
+        );
+      }
+
       fs.writeFileSync(path.join(targetDir, 'index.html'), html, 'utf-8');
     }
+
+    // RF05 & CA05: Redirecionar /info/ para /sobre/
+    const infoDir = path.join(distDir, 'info');
+    if (!fs.existsSync(infoDir)) {
+      fs.mkdirSync(infoDir, { recursive: true });
+    }
+    const infoRedirectHtml = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=${baseUrl}sobre/">
+  <link rel="canonical" href="${baseUrl}sobre/">
+  <title>Redirecionando...</title>
+  <script>window.location.replace('/sobre/');</script>
+</head>
+<body>
+  <p>Redirecionando para <a href="/sobre/">/sobre/</a>...</p>
+</body>
+</html>
+`;
+    fs.writeFileSync(path.join(infoDir, 'index.html'), infoRedirectHtml, 'utf-8');
 
     // Pre-render collection routes
     try {

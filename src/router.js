@@ -1,6 +1,6 @@
 import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
-import { setNotFoundSEO } from './utils/seo.js';
-import { setStructuredData } from './utils/structured-data.js';
+import { setNotFoundSEO, updateSEO } from './utils/seo.js';
+import { setStructuredData, SITE_URL } from './utils/structured-data.js';
 import legacyRedirects from '../scripts/legacy-redirects.json';
 
 export const routes = {
@@ -9,7 +9,6 @@ export const routes = {
   '/admin': () => import('./pages/admin.js').then(m => m.default),
   '/login': () => import('./pages/login.js').then(m => m.default),
   '/sobre': () => import('./pages/about.js').then(m => m.default),
-  '/info': () => import('./pages/about.js').then(m => m.default),
   '/colecoes': () => import('./pages/collections.js').then(m => m.default),
   '/colecao/:slug': () => import('./pages/collection.js').then(m => m.default),
   '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default),
@@ -37,6 +36,11 @@ export async function router() {
   const legacyTarget = legacyRedirects[fullPathWithQuery] || legacyRedirects[window.location.search] || legacyRedirects[path];
   if (legacyTarget && legacyTarget !== path && legacyTarget !== fullPathWithQuery) {
     navigateTo(legacyTarget);
+    return;
+  }
+
+  if (path === '/info') {
+    navigateTo('/sobre');
     return;
   }
 
@@ -160,6 +164,24 @@ export async function router() {
           }
         } else {
           document.querySelector('meta[name="robots"]')?.remove();
+        }
+
+        // RF07: Garantir que nenhuma rota SPA herde dados de <head> da rota anterior
+        const currentCanonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href') || '';
+        const expectedCanonicalPath = path.endsWith('/') ? path : `${path}/`;
+        if (!currentCanonical.endsWith(expectedCanonicalPath)) {
+          const metaTitle = component.meta?.title;
+          const defaultPageTitle = metaTitle
+            ? (metaTitle.includes('Natanael Brentano') ? metaTitle : `${metaTitle} — Natanael Brentano`)
+            : 'Poemas Brasileiros — Natanael Brentano';
+
+          updateSEO({
+            title: defaultPageTitle,
+            description: component.meta?.description || '',
+            url: `${SITE_URL}${expectedCanonicalPath}`,
+            robots: component.meta?.robots || undefined,
+            structuredData: []
+          });
         }
 
         // Anunciar para tecnologias assistivas (leitores de tela)

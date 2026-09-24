@@ -54,7 +54,7 @@ export function renderPoemMarkup({
   ` : '';
 
   const relatedHtml = (relatedPoems && relatedPoems.length > 0) ? relatedPoems.map(r => `
-    <a href="${baseUrl}poema/${escapeHtml(r.slug)}" class="related-poem-card" style="padding: var(--space-md); border: 1px solid var(--border-subtle); border-radius: 4px; display: block; text-decoration: none; color: var(--text-primary); transition: background-color var(--transition-fast);" data-link onmouseover="this.style.backgroundColor='var(--border-subtle)'" onmouseout="this.style.backgroundColor='transparent'">
+    <a href="${baseUrl}poema/${escapeHtml(r.slug)}/" class="related-poem-card" style="padding: var(--space-md); border: 1px solid var(--border-subtle); border-radius: 4px; display: block; text-decoration: none; color: var(--text-primary); transition: background-color var(--transition-fast);" data-link onmouseover="this.style.backgroundColor='var(--border-subtle)'" onmouseout="this.style.backgroundColor='transparent'">
       <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 4px;">${escapeHtml(r.title)}</h3>
       ${r.excerpt ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">${escapeHtml(stripHtml(r.excerpt).substring(0, 100))}...</p>` : ''}
     </a>
@@ -178,18 +178,26 @@ export function renderPoemMarkup({
         </div>
 
         <div class="poem-nav">
-          <button id="prev-btn" class="nav-btn" style="${!prevSlug ? 'display:none;' : ''}" aria-label="Poema anterior" title="${prevTitle || ''}">
-            <span class="nav-btn-label">← Anterior</span>
-            <span class="nav-btn-title">${prevTitle || ''}</span>
-          </button>
+          ${prevSlug ? `
+            <a id="prev-btn" href="${baseUrl}poema/${escapeHtml(prevSlug)}/" class="nav-btn" data-link rel="prev" aria-label="Poema anterior: ${escapeHtml(prevTitle || '')}" title="${escapeHtml(prevTitle || '')}">
+              <span class="nav-btn-label">← Anterior</span>
+              <span class="nav-btn-title">${escapeHtml(prevTitle || '')}</span>
+            </a>
+          ` : `
+            <div id="prev-btn" class="nav-btn" style="visibility: hidden;" aria-hidden="true"></div>
+          `}
           
           <div class="nav-center">
           </div>
           
-          <button id="next-btn" class="nav-btn nav-btn-next" style="${!nextSlug ? 'display:none;' : ''}" aria-label="Próximo poema" title="${nextTitle || ''}">
-            <span class="nav-btn-label">Próximo →</span>
-            <span class="nav-btn-title">${nextTitle || ''}</span>
-          </button>
+          ${nextSlug ? `
+            <a id="next-btn" href="${baseUrl}poema/${escapeHtml(nextSlug)}/" class="nav-btn nav-btn-next" data-link rel="next" aria-label="Próximo poema: ${escapeHtml(nextTitle || '')}" title="${escapeHtml(nextTitle || '')}">
+              <span class="nav-btn-label">Próximo →</span>
+              <span class="nav-btn-title">${escapeHtml(nextTitle || '')}</span>
+            </a>
+          ` : `
+            <div id="next-btn" class="nav-btn nav-btn-next" style="visibility: hidden;" aria-hidden="true"></div>
+          `}
         </div>
 
         <div class="share-section">
