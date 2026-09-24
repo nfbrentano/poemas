@@ -13,7 +13,7 @@ export default {
           <div class="about-header">
             <div class="about-avatar-container">
               <div class="about-avatar">
-                <img id="profile-img" alt="Foto de Natanael Brentano" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
+                <img id="profile-img" alt="Foto de Natanael Brentano" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="140" height="140" />
                 <div id="admin-avatar-controls"></div>
               </div>
             </div>

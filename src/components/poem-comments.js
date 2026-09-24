@@ -1,5 +1,3 @@
-import { db } from '../utils/firebase.js';
-import { collection, query, where, orderBy, getDocs, addDoc } from 'firebase/firestore';
 import { escapeHtml } from '../utils/html.js';
 import { toast } from './toast.js';
 
@@ -18,6 +16,8 @@ export const PoemComments = {
       let comments = [];
       let error = null;
       try {
+        const { db } = await import('../utils/firebase.js');
+        const { collection, query, where, orderBy, getDocs } = await import('firebase/firestore');
         const q = query(
           collection(db, 'poem_comments'),
           where('poem_id', '==', poemId),
@@ -85,6 +85,8 @@ export const PoemComments = {
 
       let error = null;
       try {
+        const { db } = await import('../utils/firebase.js');
+        const { collection, addDoc } = await import('firebase/firestore');
         await addDoc(collection(db, 'poem_comments'), {
           poem_id: poemId,
           author_name: author,

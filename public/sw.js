@@ -1,12 +1,16 @@
-const CACHE_NAME = 'poemas-cache-v19';
+const CACHE_NAME = 'poemas-cache-v20';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/offline.html',
   '/manifest.json',
   '/favicon.svg',
+  '/favicon.ico',
+  '/apple-touch-icon.png',
   '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icons/icon-512x512.png',
+  '/fonts/merriweather-v33-latin-regular.woff2',
+  '/fonts/cormorant-garamond-v21-latin-regular.woff2'
 ];
 
 self.addEventListener('install', (event) => {

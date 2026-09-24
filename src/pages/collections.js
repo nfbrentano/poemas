@@ -82,11 +82,14 @@ export const collections = {
           if (!cols || cols.length === 0) {
             grid.innerHTML = '<p class="empty-msg">Nenhuma coleção encontrada.</p>';
           } else {
-            grid.innerHTML = cols.map(col => {
+          grid.innerHTML = cols.map((col, index) => {
               const safeImg = sanitizeUrl(col.image_url);
+              const imgAttr = index === 0 
+                ? 'fetchpriority="high" width="360" height="180" decoding="async"' 
+                : 'loading="lazy" decoding="async" width="360" height="180"';
               return `
               <a href="${BASE_URL}colecao/${escapeHtml(col.slug)}" class="collection-card" data-link>
-                ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="${escapeHtml(col.name)}" class="collection-img" loading="lazy" decoding="async">` : '<div class="collection-img-placeholder"></div>'}
+                ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="${escapeHtml(col.name)}" class="collection-img" ${imgAttr}>` : '<div class="collection-img-placeholder"></div>'}
                 <div class="collection-info">
                   <h2 class="collection-name">${escapeHtml(col.name)}</h2>
                   <span class="collection-count">${col.collection_poems?.[0]?.count || 0} poemas</span>

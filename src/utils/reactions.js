@@ -1,6 +1,3 @@
-import { db } from './firebase.js';
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
-
 const EMOJIS = ['🕯️', '💧', '🌿', '🌙', '✨', '❤️'];
 
 function getSessionId() {
@@ -26,6 +23,8 @@ function getSessionId() {
 export async function loadReactions(poemId) {
   let data = [];
   try {
+    const { db } = await import('./firebase.js');
+    const { collection, query, where, getDocs } = await import('firebase/firestore');
     const q = query(collection(db, 'poem_reactions'), where('poem_id', '==', poemId));
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
@@ -49,6 +48,8 @@ export async function loadReactions(poemId) {
 export async function toggleReaction(poemId, emoji) {
   const sessionId = getSessionId();
   try {
+    const { db } = await import('./firebase.js');
+    const { collection, query, where, getDocs, addDoc, deleteDoc, doc } = await import('firebase/firestore');
     const q = query(
       collection(db, 'poem_reactions'),
       where('poem_id', '==', poemId),

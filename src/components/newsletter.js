@@ -1,6 +1,3 @@
-import { db } from '../utils/firebase.js';
-import { doc, setDoc } from 'firebase/firestore';
-
 export const newsletter = {
   render() {
     return `
@@ -41,6 +38,8 @@ export const newsletter = {
       submitBtn.disabled = true;
       
       try {
+        const { db } = await import('../utils/firebase.js');
+        const { doc, setDoc } = await import('firebase/firestore');
         await setDoc(doc(db, 'subscribers', email), { 
           email, 
           created_at: new Date().toISOString() 

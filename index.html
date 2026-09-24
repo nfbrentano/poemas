@@ -12,8 +12,9 @@
     <link rel="manifest" href="/manifest.json">
 
     <meta name="theme-color" content="#050505">
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="32x32">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <!-- Canonical & RSS -->
     <link rel="canonical" href="https://nfgbrentano.art.br/" />
@@ -35,18 +36,8 @@
     <meta name="twitter:description" content="Coleção de poemas originais em português por Natanael Fernando Gatti Brentano. Temas de amor, natureza e reflexões cotidianas." />
     <meta name="twitter:image" content="https://nfgbrentano.art.br/og-cover.jpg" />
     
-    <!-- Fonts Preconnect & Prefetch -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    
-    <!-- Defer Google Fonts -->
-    <link rel="stylesheet" media="print" onload="this.onload=null;this.media='all'" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300..500&family=Merriweather:ital,wght@0,400;1,400&display=swap">
-    <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300..500&family=Merriweather:ital,wght@0,400;1,400&display=swap">
-    </noscript>
+    <!-- Preload only poem body font for fast LCP -->
+    <link rel="preload" href="/fonts/merriweather-v33-latin-regular.woff2" as="font" type="font/woff2" crossorigin>
     
     <style>
       .sr-only {

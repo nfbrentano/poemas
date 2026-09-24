@@ -1,22 +1,49 @@
 import './styles/variables.css';
 import './styles/global.css';
 import './styles/components.css';
-import Clarity from '@microsoft/clarity';
 import { initRouter } from './router.js';
 import { header } from './components/header.js';
 import { backToTop } from './components/back-to-top.js';
 import { getRandomPoem } from './utils/navigation.js';
 
-// Initialize Microsoft Clarity
-Clarity.init('y5mmw0thvu');
+// Initialize Microsoft Clarity deferred after load/LCP
+const initClarity = () => {
+  const run = () => {
+    import('@microsoft/clarity')
+      .then(m => {
+        const Clarity = m.default || m;
+        Clarity.init('y5mmw0thvu');
+      })
+      .catch(err => console.debug?.('[clarity]', err));
+  };
+
+  const schedule = () => {
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(run, { timeout: 3000 });
+    } else {
+      setTimeout(run, 1500);
+    }
+  };
+
+  if (document.readyState === 'complete') {
+    schedule();
+  } else {
+    window.addEventListener('load', schedule, { once: true });
+    setTimeout(run, 3000);
+  }
+};
+initClarity();
 
 // Setup Initial Page Classes
 if (window.location.pathname.includes('/poema/')) {
   document.body.classList.add('is-poem-page');
 }
 
-// Setup Base Layout
-document.querySelector('#app').innerHTML = `
+// Setup Base Layout (only if not already present from pre-rendering)
+const appEl = document.querySelector('#app');
+const existingMain = document.getElementById('main-content');
+if (!existingMain && appEl) {
+  appEl.innerHTML = `
   ${header.render()}
   <div id="mobile-brand" class="mobile-brand"><a href="${import.meta.env.BASE_URL}" data-link>Natanael Brentano</a></div>
   <main id="main-content" class="site-content container"></main>
@@ -90,6 +117,7 @@ document.querySelector('#app').innerHTML = `
     </div>
   </div>
 `;
+}
 
 // Initialize Components
 header.init();
