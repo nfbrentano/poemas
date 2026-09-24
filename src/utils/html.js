@@ -81,3 +81,16 @@ export function sanitizeUrl(url) {
 
   return '';
 }
+
+/**
+ * Normalizes text for search by stripping HTML, removing diacritics, and converting to lowercase.
+ * @param {string} text
+ * @returns {string}
+ */
+export function normalizeForSearch(text) {
+  if (typeof text !== 'string') return '';
+  return stripHtml(text)
+    .normalize('NFD')
+    .replace(/[\p{Diacritic}]/gu, '')
+    .toLowerCase();
+}

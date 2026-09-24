@@ -6,27 +6,7 @@
     <meta name="google-site-verification" content="wPQzoAupcNdkEpgcqnBO0GKAYr5wKYOg3gTPjQ_QWXE" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.clarity.ms https://scripts.clarity.ms https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co https://firebasestorage.googleapis.com https://*.clarity.ms https://c.clarity.ms https://*.bing.com https://c.bing.com; media-src 'self' https://*.supabase.co https://firebasestorage.googleapis.com blob: data:; connect-src 'self' https://*.supabase.co https://api.emailjs.com https://*.clarity.ms https://c.clarity.ms https://*.bing.com https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com wss://*.googleapis.com https://ipapi.co https://*.cloudfunctions.net; frame-src 'self' https://poemas-natanael.firebaseapp.com; worker-src 'self' blob:; manifest-src 'self';">
     <title>Poemas Brasileiros - Natanael Brentano | nfgbrentano.art.br</title>
-    <script>
-      (function () {
-        try {
-          if (window.top !== window.self) {
-            window.top.location = window.self.location;
-          }
-        } catch (e) {
-          // Cross-origin iframe frame busting suppressed to avoid infinite loops
-        }
-        try {
-          var saved = localStorage.getItem('site-mode');
-          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var mode = saved || (prefersDark ? 'dark' : 'light');
-          if (mode === 'light') {
-            document.documentElement.setAttribute('data-theme', 'light');
-          } else if (mode === 'contrast') {
-            document.documentElement.setAttribute('data-high-contrast', 'true');
-          }
-        } catch (e) {}
-      })();
-    </script>
+    <script src="/theme-init.js"></script>
     
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">

@@ -5,6 +5,7 @@ import Clarity from '@microsoft/clarity';
 import { initRouter } from './router.js';
 import { header } from './components/header.js';
 import { backToTop } from './components/back-to-top.js';
+import { getRandomPoem } from './utils/navigation.js';
 
 // Initialize Microsoft Clarity
 Clarity.init('y5mmw0thvu');
@@ -17,6 +18,7 @@ if (window.location.pathname.includes('/poema/')) {
 // Setup Base Layout
 document.querySelector('#app').innerHTML = `
   ${header.render()}
+  <div id="mobile-brand" class="mobile-brand"><a href="${import.meta.env.BASE_URL}" data-link>Natanael Brentano</a></div>
   <main id="main-content" class="site-content container"></main>
   <footer class="site-footer">
     <div class="container footer-grid">
@@ -58,12 +60,65 @@ document.querySelector('#app').innerHTML = `
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
       <span>Sobre</span>
     </a>
+    <button class="bottom-nav-item" id="bottom-settings-btn" type="button" aria-label="Ajustes">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span>Ajustes</span>
+    </button>
   </nav>
+
+  <div class="bottom-sheet-overlay" id="global-settings-overlay"></div>
+  <div class="poem-settings-panel bottom-sheet" id="global-settings-sheet">
+    <div class="bottom-sheet-handle"></div>
+    <div class="settings-sheet-content" style="width: 100%;">
+      <h3 style="margin-top: 0; margin-bottom: var(--space-md); font-family: var(--font-display); font-size: 1.2rem; text-align: center;">Ajustes</h3>
+      
+      <div style="margin-bottom: var(--space-lg);">
+        <span id="current-theme-label" style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Tema: Automático</span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
+          <button class="btn-theme-select btn-secondary" data-theme="light">Claro</button>
+          <button class="btn-theme-select btn-secondary" data-theme="sepia">Sépia</button>
+          <button class="btn-theme-select btn-secondary" data-theme="dark">Escuro</button>
+          <button class="btn-theme-select btn-secondary" data-theme="contrast">Alto Contraste</button>
+        </div>
+      </div>
+
+      <div>
+        <button id="mobile-random-poem-btn" class="btn-secondary" style="width: 100%; justify-content: center; display: flex; gap: 8px;">
+          ⚄ Poema Aleatório
+        </button>
+      </div>
+    </div>
+  </div>
 `;
 
 // Initialize Components
 header.init();
 backToTop.init();
+
+// Global Settings logic
+const settingsBtn = document.getElementById('bottom-settings-btn');
+const settingsOverlay = document.getElementById('global-settings-overlay');
+const settingsSheet = document.getElementById('global-settings-sheet');
+
+const openSettings = () => {
+  settingsOverlay?.classList.add('active');
+  settingsSheet?.classList.add('active');
+  document.body.style.overflow = 'hidden';
+};
+
+const closeSettings = () => {
+  settingsOverlay?.classList.remove('active');
+  settingsSheet?.classList.remove('active');
+  document.body.style.overflow = '';
+};
+
+settingsBtn?.addEventListener('click', openSettings);
+settingsOverlay?.addEventListener('click', closeSettings);
+
+document.getElementById('mobile-random-poem-btn')?.addEventListener('click', () => {
+  closeSettings();
+  getRandomPoem();
+});
 
 // Initialize Router
 initRouter();

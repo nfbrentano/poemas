@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, stripHtml, sanitizeUrl } from './html.js';
+import { escapeHtml, stripHtml, sanitizeUrl, normalizeForSearch } from './html.js';
 
 describe('html utils', () => {
   describe('escapeHtml', () => {
@@ -72,6 +72,25 @@ describe('html utils', () => {
       expect(sanitizeUrl(null)).toBe('');
       expect(sanitizeUrl(undefined)).toBe('');
       expect(sanitizeUrl(123)).toBe('');
+    });
+  });
+
+  describe('normalizeForSearch', () => {
+    it('removes accents and converts to lowercase', () => {
+      expect(normalizeForSearch('Solidão')).toBe('solidao');
+      expect(normalizeForSearch('Ação')).toBe('acao');
+      expect(normalizeForSearch('maçã')).toBe('maca');
+    });
+
+    it('strips html tags before normalizing', () => {
+      expect(normalizeForSearch('<p>Mar</p>')).toBe('mar');
+      expect(normalizeForSearch('<strong>Coração</strong>')).toBe('coracao');
+    });
+
+    it('handles empty or non-string inputs', () => {
+      expect(normalizeForSearch('')).toBe('');
+      expect(normalizeForSearch(null)).toBe('');
+      expect(normalizeForSearch(undefined)).toBe('');
     });
   });
 });

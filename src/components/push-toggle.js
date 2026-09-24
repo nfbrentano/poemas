@@ -47,8 +47,12 @@ export const pushToggle = {
         }
         await updateUI();
       } catch (err) {
-        console.error(err);
-        msg.textContent = 'Erro ao configurar notificações. Verifique as permissões do navegador.';
+        if (err.message && err.message.includes('VAPID')) {
+          msg.textContent = 'Recurso de notificações não configurado no servidor.';
+        } else {
+          console.error(err);
+          msg.textContent = 'Erro ao configurar notificações. Verifique as permissões do navegador.';
+        }
       } finally {
         btn.disabled = false;
         setTimeout(() => { msg.textContent = ''; }, 5000);

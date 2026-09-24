@@ -62,6 +62,15 @@ export async function router() {
       document.body.classList.add('is-poem-page');
     }
     
+    const mobileBrand = document.getElementById('mobile-brand');
+    if (mobileBrand) {
+      if (path === '/') {
+        mobileBrand.style.display = 'none';
+      } else {
+        mobileBrand.style.display = 'block';
+      }
+    }
+    
     // Find matching route
     let match = null;
     let params = {};
@@ -269,43 +278,66 @@ export function navigateTo(url) {
 
 
 export function initRouter() {
-  window.addEventListener('popstate', router);
+  window.removeEventListener('popstate', window.__routerPopstateHandler);
+  window.__routerPopstateHandler = router;
+  window.addEventListener('popstate', window.__routerPopstateHandler);
 
-  // Auto-reload on Vite chunk preload errors
-  window.addEventListener('vite:preloadError', (event) => {
-    event.preventDefault();
-    let hasRetried = false;
-    try {
-      hasRetried = sessionStorage.getItem('chunk_retry') === 'true';
-      if (!hasRetried) sessionStorage.setItem('chunk_retry', 'true');
-    } catch (_) {}
+  if (!window.__vitePreloadErrorHandler) {
+    window.__vitePreloadErrorHandler = (event) => {
+      event.preventDefault();
+      let hasRetried = false;
+      try {
+        hasRetried = sessionStorage.getItem('chunk_retry') === 'true';
+        if (!hasRetried) sessionStorage.setItem('chunk_retry', 'true');
+      } catch (_) {}
 
-    if (!hasRetried) {
-      const clearAndReload = async () => {
-        try {
-          if ('caches' in window) {
-            const names = await caches.keys();
-            await Promise.all(names.map(n => caches.delete(n)));
-          }
-          if ('serviceWorker' in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (const reg of registrations) {
-              await reg.update().catch(() => {});
+      if (!hasRetried) {
+        const clearAndReload = async () => {
+          try {
+            if ('caches' in window) {
+              const names = await caches.keys();
+              await Promise.all(names.map(n => caches.delete(n)));
             }
-          }
-        } catch (_) {}
-        window.location.reload();
-      };
-      clearAndReload();
-    }
-  });
+            if ('serviceWorker' in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              for (const reg of registrations) {
+                await reg.update().catch(() => {});
+              }
+            }
+          } catch (_) {}
+          window.location.reload();
+        };
+        clearAndReload();
+      }
+    };
+    window.addEventListener('vite:preloadError', window.__vitePreloadErrorHandler);
+  }
   
-  document.body.addEventListener('click', e => {
-    if (e.target.matches('[data-link]')) {
-      e.preventDefault();
-      navigateTo(e.target.href);
+  document.body.removeEventListener('click', window.__routerClickHandler);
+  window.__routerClickHandler = (e) => {
+    const link = e.target.closest('[data-link]');
+    
+    if (!link) return;
+
+    // Allow opening in new tab with modifiers or middle click
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) {
+      return;
     }
-  });
+
+    // Allow native behavior for target="_blank"
+    if (link.target === '_blank') {
+      return;
+    }
+
+    // Allow native behavior for external links
+    if (link.origin && link.origin !== window.location.origin) {
+      return;
+    }
+
+    e.preventDefault();
+    navigateTo(link.getAttribute('href') || link.href);
+  };
+  document.body.addEventListener('click', window.__routerClickHandler);
 
   // Handle redirect from 404.html (sessionStorage or ?redirect= fallback)
   let redirect = null;

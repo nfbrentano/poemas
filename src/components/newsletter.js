@@ -1,5 +1,5 @@
 import { db } from '../utils/firebase.js';
-import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 
 export const newsletter = {
   render() {
@@ -25,7 +25,8 @@ export const newsletter = {
     subForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const emailInput = document.getElementById('subscriber-email');
-      const email = emailInput.value;
+      const submitBtn = subForm.querySelector('button[type="submit"]');
+      const email = emailInput.value.trim().toLowerCase();
       const msgEl = document.getElementById('subscribe-message');
       
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -37,23 +38,26 @@ export const newsletter = {
 
       msgEl.innerHTML = 'Enviando...';
       msgEl.style.color = 'var(--text-secondary)';
+      submitBtn.disabled = true;
       
       try {
-        const q = query(collection(db, 'subscribers'), where('email', '==', email));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
+        await setDoc(doc(db, 'subscribers', email), { 
+          email, 
+          created_at: new Date().toISOString() 
+        });
+        msgEl.innerHTML = 'Obrigado por assinar.';
+        msgEl.style.color = 'var(--success)';
+        subForm.reset();
+      } catch (err) {
+        if (err.code === 'permission-denied') {
           msgEl.innerHTML = 'Este e-mail já está inscrito.';
           msgEl.style.color = 'var(--text-secondary)';
         } else {
-          await addDoc(collection(db, 'subscribers'), { email, created_at: new Date().toISOString() });
-          msgEl.innerHTML = 'Obrigado por assinar.';
-          msgEl.style.color = 'var(--success)';
-          subForm.reset();
+          msgEl.innerHTML = 'Erro ao inscrever. Tente novamente.';
+          msgEl.style.color = 'var(--error)';
         }
-      } catch (err) {
-        msgEl.innerHTML = 'Erro ao inscrever. Tente novamente.';
-        msgEl.style.color = 'var(--error)';
+      } finally {
+        submitBtn.disabled = false;
       }
     });
   }

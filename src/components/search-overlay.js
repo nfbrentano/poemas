@@ -1,6 +1,7 @@
 import { db } from '../utils/firebase.js';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { navigateTo } from '../router.js';
+import { normalizeForSearch, escapeHtml, stripHtml } from '../utils/html.js';
 
 export const searchOverlay = {
   overlay: null,
@@ -18,7 +19,17 @@ export const searchOverlay = {
       const querySnapshot = await getDocs(q);
       const data = [];
       querySnapshot.forEach((doc) => {
-        data.push({ id: doc.id, ...doc.data() });
+        const docData = doc.data();
+        data.push({ 
+          id: doc.id, 
+          ...docData,
+          _normalized: {
+            title: normalizeForSearch(docData.title || ''),
+            excerpt: normalizeForSearch(docData.excerpt || ''),
+            content: normalizeForSearch(docData.content || ''),
+            tags: (docData.tags || []).map(normalizeForSearch)
+          }
+        });
       });
       this.allPoemsCache = data;
       return this.allPoemsCache;
@@ -37,12 +48,16 @@ export const searchOverlay = {
 
     const hasActiveSearch = query.length >= 2;
 
+    const helpText = document.getElementById('search-help-text');
+
     if (!hasActiveSearch) {
       resultsContainer.innerHTML = '';
       if (sortingContainer) sortingContainer.style.display = 'none';
+      if (helpText) helpText.style.display = 'block';
       return;
     }
 
+    if (helpText) helpText.style.display = 'none';
     if (sortingContainer) sortingContainer.style.display = 'flex';
     if (resultsCountEl) {
       resultsCountEl.textContent = `${results.length} obra${results.length !== 1 ? 's' : ''} encontrada${results.length !== 1 ? 's' : ''}`;
@@ -55,40 +70,63 @@ export const searchOverlay = {
 
     const highlight = (text, term) => {
       if (!text) return '';
-      if (!term || term.length < 2) return text;
-      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`(${escaped})`, 'gi');
-      return text.replace(regex, '<mark>$1</mark>');
+      if (!term || term.length < 2) return escapeHtml(text);
+      const q = normalizeForSearch(term);
+      if (!q) return escapeHtml(text);
+
+      let result = '';
+      let remaining = text;
+      
+      const getNorm = (str) => str.normalize('NFD').replace(/[\p{Diacritic}]/gu, '').toLowerCase();
+      let normRemaining = getNorm(remaining);
+      let idx = normRemaining.indexOf(q);
+
+      while (idx !== -1) {
+        result += escapeHtml(remaining.substring(0, idx));
+        result += '<mark>' + escapeHtml(remaining.substring(idx, idx + q.length)) + '</mark>';
+        remaining = remaining.substring(idx + q.length);
+        normRemaining = getNorm(remaining);
+        idx = normRemaining.indexOf(q);
+      }
+      result += escapeHtml(remaining);
+      return result;
     };
 
     resultsContainer.innerHTML = results.map(poem => {
-      const q = query.toLowerCase();
-      const inTitle = poem.title.toLowerCase().includes(q);
-      const inExcerpt = poem.excerpt && poem.excerpt.toLowerCase().includes(q);
-      const inContent = poem.content && poem.content.toLowerCase().includes(q);
-      const inTag = poem.tags && poem.tags.some(t => t.toLowerCase().includes(q));
+      const q = normalizeForSearch(query);
+      const n = poem._normalized;
+      
+      const inTitle = n.title.includes(q);
+      const inExcerpt = n.excerpt && n.excerpt.includes(q);
+      const inContent = n.content && n.content.includes(q);
+      const inTag = n.tags && n.tags.some(t => t.includes(q));
       
       let badge = '';
       let snippetHtml = '';
 
+      let baseExcerpt = poem.excerpt;
+      if (!baseExcerpt && poem.content) {
+        baseExcerpt = stripHtml(poem.content).substring(0, 120).trim() + '...';
+      }
+
       if (query.length >= 2) {
         if (inTitle) {
           badge = '<span class="search-match-badge badge-title">no título</span>';
-          snippetHtml = `<div class="search-result-excerpt">${highlight(poem.excerpt, query)}</div>`;
+          snippetHtml = `<div class="search-result-excerpt">${highlight(baseExcerpt, query)}</div>`;
         } else if (inContent) {
           badge = '<span class="search-match-badge badge-content">no poema</span>';
-          const snippet = this.getSnippet(poem.content, query);
+          const snippet = this.getSnippet(poem.content, query) || baseExcerpt;
           snippetHtml = `<div class="search-result-snippet">"${highlight(snippet, query)}"</div>`;
         } else if (inTag) {
           badge = '<span class="search-match-badge badge-tag">no sentimento</span>';
-          snippetHtml = `<div class="search-result-excerpt">${highlight(poem.excerpt, query)}</div>`;
+          snippetHtml = `<div class="search-result-excerpt">${highlight(baseExcerpt, query)}</div>`;
         } else if (inExcerpt) {
-          snippetHtml = `<div class="search-result-excerpt">${highlight(poem.excerpt, query)}</div>`;
+          snippetHtml = `<div class="search-result-excerpt">${highlight(baseExcerpt, query)}</div>`;
         } else {
-           snippetHtml = `<div class="search-result-excerpt">${poem.excerpt}</div>`;
+           snippetHtml = `<div class="search-result-excerpt">${escapeHtml(baseExcerpt)}</div>`;
         }
       } else {
-        snippetHtml = `<div class="search-result-excerpt">${poem.excerpt}</div>`;
+        snippetHtml = `<div class="search-result-excerpt">${escapeHtml(baseExcerpt)}</div>`;
       }
 
       return `
@@ -98,7 +136,7 @@ export const searchOverlay = {
             ${badge}
           </div>
           ${snippetHtml}
-          ${poem.tags && poem.tags.length > 0 ? `<div class="search-result-tags" style="font-size:0.7rem; color:var(--accent-subtle); margin-top:4px;">${poem.tags.join(', ')}</div>` : ''}
+          ${poem.tags && poem.tags.length > 0 ? `<div class="search-result-tags" style="font-size:0.7rem; color:var(--accent-subtle); margin-top:4px;">${poem.tags.map(t => highlight(t, query)).join(', ')}</div>` : ''}
         </div>
       `;
     }).join('');
@@ -116,19 +154,30 @@ export const searchOverlay = {
     const input = document.getElementById('overlay-search-input');
     const query = input ? input.value.trim() : '';
     
+    if (this.overlay && this.overlay.classList.contains('active')) {
+      const url = new URL(window.location);
+      if (query) {
+        url.searchParams.set('q', query);
+      } else {
+        url.searchParams.delete('q');
+      }
+      history.replaceState({ ...history.state, searchOpen: true }, '', url);
+    }
+
     if (!this.allPoemsCache) return;
 
     let filtered = [...this.allPoemsCache];
     
     // 1. Text & Tag Filter
     if (query.length >= 2) {
-      const q = query.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.title.toLowerCase().includes(q) || 
-        (p.excerpt && p.excerpt.toLowerCase().includes(q)) || 
-        (p.content && p.content.toLowerCase().includes(q)) ||
-        (p.tags && p.tags.some(t => t.toLowerCase().includes(q)))
-      );
+      const q = normalizeForSearch(query);
+      filtered = filtered.filter(p => {
+        const n = p._normalized;
+        return n.title.includes(q) || 
+               n.excerpt.includes(q) || 
+               n.content.includes(q) ||
+               n.tags.some(t => t.includes(q));
+      });
     } else {
       this.renderSearchResults([], query);
       return;
@@ -140,10 +189,10 @@ export const searchOverlay = {
     } else {
       // Relevance
       if (query.length >= 2) {
-        const q = query.toLowerCase();
+        const q = normalizeForSearch(query);
         filtered.sort((a, b) => {
-          const aTitle = a.title.toLowerCase();
-          const bTitle = b.title.toLowerCase();
+          const aTitle = a._normalized.title;
+          const bTitle = b._normalized.title;
           
           const aExact = aTitle === q;
           const bExact = bTitle === q;
@@ -160,8 +209,8 @@ export const searchOverlay = {
           if (aTitleIn && !bTitleIn) return -1;
           if (!aTitleIn && bTitleIn) return 1;
           
-          const aExcerptIn = a.excerpt && a.excerpt.toLowerCase().includes(q);
-          const bExcerptIn = b.excerpt && b.excerpt.toLowerCase().includes(q);
+          const aExcerptIn = a._normalized.excerpt.includes(q);
+          const bExcerptIn = b._normalized.excerpt.includes(q);
           if (aExcerptIn && !bExcerptIn) return -1;
           if (!aExcerptIn && bExcerptIn) return 1;
 
@@ -181,16 +230,17 @@ export const searchOverlay = {
 
   getSnippet(content, query) {
     if (!content || !query || query.length < 2) return null;
-    const q = query.toLowerCase();
-    const c = content.toLowerCase();
+    const cleanContent = stripHtml(content);
+    const q = normalizeForSearch(query);
+    const c = normalizeForSearch(cleanContent);
     const idx = c.indexOf(q);
     if (idx === -1) return null;
     
     const start = Math.max(0, idx - 40);
-    const end = Math.min(content.length, idx + query.length + 40);
-    let snippet = content.substring(start, end).replace(/\n/g, ' ');
+    const end = Math.min(cleanContent.length, idx + q.length + 40);
+    let snippet = cleanContent.substring(start, end).replace(/\n/g, ' ');
     if (start > 0) snippet = '…' + snippet;
-    if (end < content.length) snippet = snippet + '…';
+    if (end < cleanContent.length) snippet = snippet + '…';
     return snippet;
   },
 
@@ -205,6 +255,12 @@ export const searchOverlay = {
   init() {
     if (this.overlay) return;
     
+    window.addEventListener('popstate', (e) => {
+      if (this.overlay && this.overlay.classList.contains('active') && (!e.state || !e.state.searchOpen)) {
+        this.close(true);
+      }
+    });
+
     this.overlay = document.createElement('div');
     this.overlay.id = 'search-overlay';
     this.overlay.className = 'search-overlay';
@@ -217,19 +273,20 @@ export const searchOverlay = {
           <button id="search-clear-btn" class="search-clear-btn" aria-label="Limpar busca">&times;</button>
         </div>
         
-        <div id="search-sorting" class="search-sorting-container" style="display:none; justify-content:space-between; align-items:center; margin: var(--space-sm) 0; font-size:0.75rem; color:var(--text-secondary); font-family:var(--font-ui); border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;">
+        <p id="search-help-text" class="search-overlay-help">Digite título, trecho ou sentimento do poema</p>
+
+        <div id="search-sorting" class="search-sorting-container" style="display:none;">
           <span id="search-results-count"></span>
-          <div style="display:flex; align-items:center; gap:4px;">
+          <div class="search-sort-controls">
             <label for="search-sort-select">Ordenar por:</label>
-            <select id="search-sort-select" style="background:transparent; border:none; color:var(--text-primary); font-size:0.75rem; padding:0; outline:none; cursor:pointer;">
-              <option value="relevance" style="background:var(--bg-elevated); color:var(--text-primary);">Relevância</option>
-              <option value="recent" style="background:var(--bg-elevated); color:var(--text-primary);">Mais Recentes</option>
+            <select id="search-sort-select">
+              <option value="relevance">Relevância</option>
+              <option value="recent">Mais Recentes</option>
             </select>
           </div>
         </div>
 
         <div id="search-results" class="search-results-container"></div>
-        <p class="search-overlay-help">Digite título, trecho ou sentimento do poema</p>
       </div>
     `;
     document.body.appendChild(this.overlay);
@@ -276,23 +333,41 @@ export const searchOverlay = {
     });
   },
 
-  async open() {
+  async open(initialQuery = null) {
     this.init();
+    const wasActive = this.overlay.classList.contains('active');
+    
     this.overlay.classList.add('active');
     this.overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 
+    if (!wasActive) {
+      if (initialQuery === null) {
+        this.pushedState = true;
+        history.pushState({ ...history.state, searchOpen: true }, '');
+      } else {
+        this.pushedState = false;
+        history.replaceState({ ...history.state, searchOpen: true }, '');
+      }
+    }
+
     // Lazy load cache
     await this.loadAllPoems();
 
-    setTimeout(() => {
-      const input = this.overlay.querySelector('#overlay-search-input');
-      if (input) input.focus();
-    }, 100);
+    const input = this.overlay.querySelector('#overlay-search-input');
+    if (input) {
+      if (initialQuery !== null) {
+        input.value = initialQuery;
+        const clearBtn = this.overlay.querySelector('#search-clear-btn');
+        if (clearBtn) clearBtn.style.display = initialQuery ? 'block' : 'none';
+        this.triggerSearch();
+      }
+      setTimeout(() => input.focus(), 100);
+    }
   },
 
-  close() {
-    if (this.overlay) {
+  close(fromPopState = false) {
+    if (this.overlay && this.overlay.classList.contains('active')) {
       this.overlay.classList.remove('active');
       this.overlay.style.display = 'none';
       document.body.style.overflow = '';
@@ -305,6 +380,16 @@ export const searchOverlay = {
       window.dispatchEvent(new CustomEvent('global-search', { 
         detail: { query: '', results: null } 
       }));
+
+      if (fromPopState !== true) {
+        if (this.pushedState) {
+          history.back();
+        } else {
+          const url = new URL(window.location);
+          url.searchParams.delete('q');
+          history.replaceState({ ...history.state, searchOpen: false }, '', url);
+        }
+      }
     }
   }
 };

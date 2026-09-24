@@ -51,3 +51,95 @@ describe('Router', () => {
     expect(mockAboutComponent.render).toHaveBeenCalled();
   });
 });
+
+describe('initRouter Click Interception', () => {
+  beforeEach(() => {
+    // We only need to test the event handler, but to avoid calling the full initRouter logic repeatedly,
+    // we can just import initRouter and call it once or mock navigateTo
+    document.body.innerHTML = `
+      <div id="main-content"></div>
+      <a href="/interno" data-link id="internal-link">
+        <svg id="svg-child"></svg>
+      </a>
+      <a href="https://external.com" data-link id="external-link">External</a>
+      <a href="/blank" data-link target="_blank" id="blank-link">Blank</a>
+      <p id="not-a-link">Text</p>
+    `;
+    // We already have a router setup from earlier, let's just trigger the global click handler directly
+    // since initRouter attaches it to window.__routerClickHandler
+    // First, ensure initRouter is imported
+  });
+
+  it('intercepts click on child element of [data-link]', async () => {
+    const { initRouter } = await import('./router.js');
+    initRouter();
+    
+    // We need to spy on pushState or intercept it since navigateTo calls history.pushState
+    const pushStateSpy = vi.spyOn(window.history, 'pushState');
+    
+    const svgChild = document.getElementById('svg-child');
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    
+    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+    svgChild.dispatchEvent(event);
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+    expect(pushStateSpy).toHaveBeenCalledWith(null, null, '/interno');
+    
+    pushStateSpy.mockRestore();
+  });
+
+  it('does not intercept click with modifier keys', async () => {
+    const { initRouter } = await import('./router.js');
+    initRouter();
+    
+    const pushStateSpy = vi.spyOn(window.history, 'pushState');
+    
+    const link = document.getElementById('internal-link');
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true, metaKey: true });
+    
+    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+    link.dispatchEvent(event);
+
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+    expect(pushStateSpy).not.toHaveBeenCalled();
+    
+    pushStateSpy.mockRestore();
+  });
+
+  it('does not intercept external links even with [data-link]', async () => {
+    const { initRouter } = await import('./router.js');
+    initRouter();
+    
+    const pushStateSpy = vi.spyOn(window.history, 'pushState');
+    
+    const link = document.getElementById('external-link');
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    
+    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+    link.dispatchEvent(event);
+
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+    expect(pushStateSpy).not.toHaveBeenCalled();
+    
+    pushStateSpy.mockRestore();
+  });
+
+  it('does not intercept clicks outside of links', async () => {
+    const { initRouter } = await import('./router.js');
+    initRouter();
+    
+    const pushStateSpy = vi.spyOn(window.history, 'pushState');
+    
+    const p = document.getElementById('not-a-link');
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    
+    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+    p.dispatchEvent(event);
+
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+    expect(pushStateSpy).not.toHaveBeenCalled();
+    
+    pushStateSpy.mockRestore();
+  });
+});

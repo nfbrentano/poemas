@@ -58,7 +58,7 @@ export const header = {
 
     document.getElementById('search-toggle-btn')?.addEventListener('click', openSearch);
     document.getElementById('bottom-search-btn')?.addEventListener('click', openSearch);
-    document.getElementById('random-poem-btn')?.addEventListener('click', () => getRandomPoem());
+    document.getElementById('random-poem-btn')?.addEventListener('click', (e) => getRandomPoem(e));
 
     document.addEventListener('keydown', (e) => {
       if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {

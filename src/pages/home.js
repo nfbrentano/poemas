@@ -6,6 +6,7 @@ import { getRandomPoem } from '../utils/navigation.js';
 import { filterChips } from '../components/filter-chips.js';
 import { normalizeTag, formatTag } from '../utils/tags.js';
 import { stripHtml, escapeHtml } from '../utils/html.js';
+import { getPoemOfDay } from '../utils/poemOfDay.js';
 
 export default {
   meta: {
@@ -175,34 +176,52 @@ export default {
     }
 
     // Poem of the Day Logic (only show when not filtering by tag)
-    const seedStr = new Date().toISOString().slice(0, 10);
-    const seed = seedStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const podIndex = seed % poems.length;
-    const podPoem = poems[podIndex];
+    const podPoem = getPoemOfDay(poems);
     
     // Remove POD from the list to avoid repetition if we are showing all
-    if (!isFiltering) {
-      displayPoems = displayPoems.filter((_, i) => i !== podIndex);
+    if (!isFiltering && podPoem) {
+      displayPoems = displayPoems.filter(p => p.id !== podPoem.id);
     }
 
+    let currentLimit = parseInt(sessionStorage.getItem('home_poem_limit'), 10) || 20;
+
+    const renderPagination = (total, limit, isSearchActive) => {
+      if (isSearchActive || total === 0) return '';
+      
+      const showing = Math.min(limit, total);
+      if (showing >= total) {
+        return `<p class="pagination-status" style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: var(--space-lg);">Mostrando ${total} de ${total}</p>`;
+      }
+      return `
+        <div class="pagination-controls" style="display: flex; flex-direction: column; align-items: center; gap: var(--space-md); margin-top: var(--space-xl);">
+          <button id="load-more-btn" class="btn-secondary">Carregar mais poemas</button>
+          <p class="pagination-status" style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Mostrando ${showing} de ${total}</p>
+        </div>
+      `;
+    };
+
     // Helper to render the poem list
-    const renderPoemList = (items, isSearchActive = false, searchTerm = '') => {
+    const renderPoemList = (items, isSearchActive = false, searchTerm = '', limit = null) => {
       if (items.length === 0) {
         return `
           <p class="search-empty-msg">
-            Nenhum poema encontrado${searchTerm ? ` para "<strong>${searchTerm}</strong>"` : ''}.
+            Nenhum poema encontrado${searchTerm ? ` para "<strong>${escapeHtml(searchTerm)}</strong>"` : ''}.
           </p>
         `;
       }
 
-      return items.map((poem, index) => {
+      const itemsToRender = limit && !isSearchActive ? items.slice(0, limit) : items;
+      let lastYear = null;
+      let html = '';
+
+      itemsToRender.forEach((poem, index) => {
         const year = new Date(poem.published_at).getFullYear();
         const dateStr = new Date(poem.published_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
         
         // Show featured only if NOT searching, NOT filtering, and it's the first one
         if (!isSearchActive && !isFiltering && index === 0) {
           const rawExcerpt = poem.excerpt || stripHtml(poem.content || '').replace(/\s+/g, ' ').trim().slice(0, 160) + '...';
-          return `
+          html += `
           <article class="poem-featured fade-in">
             <a href="${BASE_URL}poema/${poem.slug}" data-link>
               <h2 class="featured-title">${escapeHtml(poem.title)}</h2>
@@ -218,16 +237,23 @@ export default {
             <div class="featured-separator"></div>
           </article>
           `;
+          lastYear = year;
+        } else {
+          if (lastYear !== year) {
+            html += `<h3 class="year-separator" style="font-family: var(--font-display); font-size: 1.5rem; color: var(--text-muted); margin: var(--space-xl) 0 var(--space-md) 0; border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-xs);">${year}</h3>`;
+            lastYear = year;
+          }
+          html += `
+          <article class="poem-row fade-in">
+            <a href="${BASE_URL}poema/${poem.slug}" data-link class="poem-row-link">
+              <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+              <span class="poem-row-year">${year}</span>
+            </a>
+          </article>
+          `;
         }
-        
-        return `
-        <article class="poem-row fade-in">
-          <a href="${BASE_URL}poema/${poem.slug}" data-link class="poem-row-link">
-            <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
-            <span class="poem-row-year">${year}</span>
-          </a>
-        </article>
-      `}).join('');
+      });
+      return html;
     };
     
     const podExcerpt = podPoem ? (podPoem.excerpt || stripHtml(podPoem.content || '').replace(/\s+/g, ' ').trim().slice(0, 160) + '...') : '';
@@ -253,7 +279,10 @@ export default {
           ${isFiltering ? `<h2 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: var(--space-lg); color: var(--text-primary); text-align: center; opacity: 0.7;">Resultados filtrados</h2>` : ''}
           
           <div class="list-container">
-            ${renderPoemList(displayPoems)}
+            ${renderPoemList(displayPoems, false, '', currentLimit)}
+          </div>
+          <div class="pagination-container">
+            ${renderPagination(displayPoems.length, currentLimit, false)}
           </div>
           <div class="random-home-container">
             <button id="random-home-btn" class="random-home-link">→ Poema aleatório</button>
@@ -270,30 +299,76 @@ export default {
     await filterChips.init(container, tags, poems);
 
     // Setup Event Listeners for featured share
-    container.querySelectorAll('.featured-share-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const { platform, slug, title } = btn.dataset;
-        const shareUrl = `${window.location.origin}${import.meta.env.BASE_URL}poema/${slug}`;
-        const shareText = `Leia "${title}", de Natanael Brentano:`;
+    const setupFeaturedShare = () => {
+      container.querySelectorAll('.featured-share-btn').forEach(btn => {
+        // Remove old listener to avoid duplicates if re-rendered
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
         
-        let url = '';
-        if (platform === 'whatsapp') url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
-        if (platform === 'twitter') url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
+        newBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const { platform, slug, title } = newBtn.dataset;
+          const shareUrl = `${window.location.origin}${import.meta.env.BASE_URL}poema/${slug}`;
+          const shareText = `Leia "${title}", de Natanael Brentano:`;
+          
+          let url = '';
+          if (platform === 'whatsapp') url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
+          if (platform === 'twitter') url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+          window.open(url, '_blank', 'noopener,noreferrer');
+        });
       });
-    });
+    };
+    setupFeaturedShare();
+
+    // Setup pagination
+    const setupPagination = () => {
+      const loadMoreBtn = container.querySelector('#load-more-btn');
+      if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', () => {
+          currentLimit += 20;
+          sessionStorage.setItem('home_poem_limit', currentLimit);
+          
+          const listContainer = container.querySelector('.list-container');
+          const paginationContainer = container.querySelector('.pagination-container');
+          
+          if (listContainer) {
+            listContainer.innerHTML = renderPoemList(displayPoems, false, '', currentLimit);
+            setupFeaturedShare(); // Re-attach share events if featured poem was re-rendered
+          }
+          if (paginationContainer) {
+            paginationContainer.innerHTML = renderPagination(displayPoems.length, currentLimit, false);
+            setupPagination(); // re-attach event listener
+          }
+
+          // Focus on the first newly loaded item
+          const newItems = listContainer.querySelectorAll('.poem-row-link, .poem-featured a');
+          const focusIndex = currentLimit - 20;
+          if (newItems[focusIndex]) {
+            newItems[focusIndex].focus();
+          }
+        });
+      }
+    };
+    setupPagination();
 
     const handleGlobalSearch = (e) => {
       const { query, results } = e.detail;
       const searchTerm = query;
       const listContainer = container.querySelector('.list-container');
+      const paginationContainer = container.querySelector('.pagination-container');
+
+      const isSearchActive = searchTerm.length > 0;
 
       if (listContainer) {
-        // Se temos resultados pré-filtrados do evento global, usamos eles.
-        // Caso contrário (como ao fechar a busca), voltamos para a lista original.
         const poemsToShow = results || displayPoems;
-        listContainer.innerHTML = renderPoemList(poemsToShow, searchTerm.length > 0, searchTerm);
+        listContainer.innerHTML = renderPoemList(poemsToShow, isSearchActive, searchTerm, currentLimit);
+        setupFeaturedShare();
+      }
+      
+      if (paginationContainer) {
+        const poemsToShow = results || displayPoems;
+        paginationContainer.innerHTML = renderPagination(poemsToShow.length, currentLimit, isSearchActive);
+        setupPagination();
       }
       
       // Hide POD and Hero when searching
@@ -339,8 +414,14 @@ export default {
 
     // Random Poem logic
     const randomHomeBtn = container.querySelector('#random-home-btn');
-    randomHomeBtn?.addEventListener('click', () => {
-      getRandomPoem();
+    randomHomeBtn?.addEventListener('click', (e) => {
+      getRandomPoem(e);
     });
+
+    if (params.q) {
+      import('../components/search-overlay.js').then(({ searchOverlay }) => {
+        searchOverlay.open(params.q);
+      });
+    }
   }
 };

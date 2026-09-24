@@ -31,24 +31,70 @@ export function updateActiveNavLink() {
     }
   });
 }
+import { toast } from '../components/toast.js';
 
-export async function getRandomPoem() {
+let cachedPublishedSlugs = null;
+
+export async function getRandomPoem(event) {
+  let btn = null;
+  if (event) {
+    btn = event.currentTarget || event.target;
+  }
+
+  const currentPath = window.location.pathname;
+  let currentSlug = null;
+  if (currentPath.includes('/poema/')) {
+    currentSlug = currentPath.split('/poema/')[1].replace(/\/$/, '');
+  }
+
   try {
-    const { db } = await import('./firebase.js');
-    const { collection, getDocs } = await import('firebase/firestore');
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'wait';
+    }
+
+    let availableSlugs = [];
+
+    const { searchOverlay } = await import('../components/search-overlay.js');
+    if (searchOverlay && searchOverlay.allPoemsCache) {
+      availableSlugs = searchOverlay.allPoemsCache.map(p => p.slug);
+      cachedPublishedSlugs = availableSlugs;
+    } else if (cachedPublishedSlugs) {
+      availableSlugs = cachedPublishedSlugs;
+    } else {
+      const { db } = await import('./firebase.js');
+      const { collection, getDocs, query, where } = await import('firebase/firestore');
+      
+      const q = query(collection(db, 'poems'), where('status', '==', 'published'));
+      const querySnapshot = await getDocs(q);
+      const poems = [];
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.slug) poems.push(data.slug);
+      });
+      cachedPublishedSlugs = poems;
+      availableSlugs = poems;
+    }
+
+    if (availableSlugs.length > 1 && currentSlug) {
+      availableSlugs = availableSlugs.filter(slug => slug !== currentSlug);
+    }
     
-    const querySnapshot = await getDocs(collection(db, 'poems'));
-    const poems = [];
-    querySnapshot.forEach(doc => {
-      const data = doc.data();
-      if (data.slug) poems.push(data.slug);
-    });
-    
-    if (poems.length > 0) {
-      const randomSlug = poems[Math.floor(Math.random() * poems.length)];
+    if (availableSlugs.length > 0) {
+      const randomSlug = availableSlugs[Math.floor(Math.random() * availableSlugs.length)];
       navigateTo('/poema/' + randomSlug);
+    } else {
+      toast.show('Não foi possível sortear um poema agora.', 'error');
     }
   } catch (err) {
     console.error('Error fetching random poem:', err);
+    toast.show('Não foi possível sortear um poema agora.', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+    }
   }
 }

@@ -31,13 +31,18 @@
 - Emulador do Firestore para testar as regras.
 - Acesso ao Firebase Console para publicar.
 
+### Decisões de Revisão (RNF02)
+
+- **`poem_reactions`:** Mantida leitura pública (`read: if true`). A leitura é indispensável para renderizar os contadores de reações e destacar os emojis reagidos na sessão do leitor anônimo em cada poema. Os documentos contêm apenas `{ poem_id, emoji, session_id }`, sem dados pessoais sensíveis ou identificáveis.
+- **`push_subscriptions`:** Mantido `read: if true` no estado atual, pois a rotina de cancelamento no frontend (`pushManager.unsubscribe()`) executa uma query anônima por `subscription.endpoint` para localizar e deletar o documento correspondente. Como melhoria futura de segurança, planeja-se adotar ID determinístico derivado do hash do endpoint ou uma função de backend com permissão de exclusão, permitindo fechar o `read` exclusivamente para o admin/backend.
+
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um visitante anônimo, quando ele consulta `poems` sem o filtro de status pelo SDK, então recebe `permission-denied`.
-- [ ] **CA02:** Dado um visitante anônimo, quando ele lê por ID um documento com `status: 'draft'`, então recebe `permission-denied`.
-- [ ] **CA03:** Dado o site público, quando navego por home, poema, coleções, busca e aleatório, então nenhuma página exibe erro.
-- [ ] **CA04:** Dado o admin logado, quando abro a lista de rascunhos, então todos aparecem.
-- [ ] **CA05:** Dado que rodo `npm run build`, quando o build termina, então o sitemap, o RSS e o prerender são gerados sem erros.
+- [x] **CA01:** Dado um visitante anônimo, quando ele consulta `poems` sem o filtro de status pelo SDK, então recebe `permission-denied`.
+- [x] **CA02:** Dado um visitante anônimo, quando ele lê por ID um documento com `status: 'draft'`, então recebe `permission-denied`.
+- [x] **CA03:** Dado o site público, quando navego por home, poema, coleções, busca e aleatório, então nenhuma página exibe erro.
+- [x] **CA04:** Dado o admin logado, quando abro a lista de rascunhos, então todos aparecem.
+- [x] **CA05:** Dado que rodo `npm run build`, quando o build termina, então o sitemap, o RSS e o prerender são gerados sem erros.
 
 ## O que a atividade não inclui
 

@@ -34,10 +34,23 @@
     var saved = localStorage.getItem('site-mode');
     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     var mode = saved || (prefersDark ? 'dark' : 'light');
-    if (mode === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
+    
+    var themeColors = {
+      dark: '#050505',
+      light: '#fdfdfd',
+      sepia: '#f4ecd8',
+      contrast: '#000000'
+    };
+
+    if (mode === 'light' || mode === 'sepia') {
+      document.documentElement.setAttribute('data-theme', mode);
     } else if (mode === 'contrast') {
       document.documentElement.setAttribute('data-high-contrast', 'true');
+    }
+    
+    var metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor && themeColors[mode]) {
+      metaThemeColor.setAttribute('content', themeColors[mode]);
     }
   } catch (e) {}
 })();

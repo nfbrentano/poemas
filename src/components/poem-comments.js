@@ -56,10 +56,30 @@ export const PoemComments = {
     // Submit Comment
     commentForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const author = document.getElementById('comment-author').value;
-      const content = document.getElementById('comment-content').value;
-      const btn = document.getElementById('submit-comment-btn');
+      
+      const website = document.getElementById('comment-website')?.value;
+      if (website) {
+        toast.show('Sua nota foi enviada e aguarda moderação.', 'success');
+        commentForm.reset();
+        commentForm.style.display = 'none';
+        return;
+      }
 
+      const lastSubmit = localStorage.getItem('last_comment_time');
+      if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) {
+        toast.show('Por favor, aguarde 1 minuto entre os envios.', 'error');
+        return;
+      }
+
+      const author = document.getElementById('comment-author').value.trim();
+      const content = document.getElementById('comment-content').value.trim();
+
+      if (!author || !content) {
+        toast.show('Preencha os campos corretamente.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('submit-comment-btn');
       btn.disabled = true;
       btn.innerText = 'Enviando...';
 
@@ -72,6 +92,7 @@ export const PoemComments = {
           approved: false,
           created_at: new Date().toISOString()
         });
+        localStorage.setItem('last_comment_time', Date.now().toString());
       } catch (err) {
         error = err;
         console.error('Error adding comment:', err);
@@ -84,6 +105,7 @@ export const PoemComments = {
       } else {
         toast.show('Sua nota foi enviada e aguarda moderação.', 'success');
         commentForm.reset();
+        commentForm.style.display = 'none';
         btn.disabled = false;
         btn.innerText = 'Enviar Nota';
       }

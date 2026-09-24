@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
+import { getPoemOfDay } from '../src/utils/poemOfDay.js';
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
@@ -50,7 +51,7 @@ async function sendDailyPoem() {
     }
     
     // Pick a random poem
-    const randomPoem = poems[Math.floor(Math.random() * poems.length)];
+    const randomPoem = getPoemOfDay(poems);
     
     console.log(`Sending poem: "${randomPoem.title}" to ${targetEmail} via Gmail SMTP...`);
     

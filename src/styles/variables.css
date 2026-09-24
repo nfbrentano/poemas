@@ -43,6 +43,13 @@
   --container-main: 1200px; /* Wider and adaptive main page layout container */
   --container-admin: 1000px;
   --header-height: 100px;
+  
+  /* Z-Index Scale */
+  --z-nav: 500;
+  --z-floating: 990;
+  --z-overlay: 1000;
+  --z-modal: 2000;
+  --z-toast: 3000;
 
   /* Transitions */
   --transition-fade: 0.7s cubic-bezier(0.16, 1, 0.3, 1);

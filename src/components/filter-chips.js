@@ -53,8 +53,9 @@ export const filterChips = {
         <div class="filter-group">
           <span class="filter-label">Sentimentos:</span>
           <div class="filter-chips" id="tag-filters">
-            <button class="filter-chip ${activeTags.length === 0 ? 'active' : ''}" data-type="tag" data-value="all">Todos</button>
-            <div id="dynamic-tags" class="filter-chips-scroll"></div>
+            <div id="dynamic-tags" class="filter-chips-scroll">
+              <button class="filter-chip ${activeTags.length === 0 ? 'active' : ''}" data-type="tag" data-value="all">Todos</button>
+            </div>
           </div>
         </div>
       </div>
@@ -67,7 +68,9 @@ export const filterChips = {
     const tagsContainer = container.querySelector('#dynamic-tags');
 
     if (tagsContainer) {
-      tagsContainer.innerHTML = tags.map(tag => `
+      const allButtonHtml = `<button class="filter-chip ${activeTags.length === 0 ? 'active' : ''}" data-type="tag" data-value="all">Todos</button>`;
+      
+      tagsContainer.innerHTML = allButtonHtml + tags.map(tag => `
         <button class="filter-chip ${activeTags.includes(tag.name) ? 'active' : ''}" data-type="tag" data-value="${tag.name}">
           ${tag.name} <span class="chip-count" style="opacity: 0.6; font-size: 0.85em; margin-left: 2px;">(${tag.count})</span>
         </button>
@@ -99,5 +102,17 @@ export const filterChips = {
       });
     });
 
+    const activeChip = container.querySelector('.filter-chip.active');
+    if (activeChip && tagsContainer) {
+      setTimeout(() => {
+        const containerRect = tagsContainer.getBoundingClientRect();
+        const chipRect = activeChip.getBoundingClientRect();
+        const scrollOffset = chipRect.left - containerRect.left - 20;
+        if (scrollOffset !== 0) {
+          tagsContainer.scrollBy({ left: scrollOffset, behavior: 'smooth' });
+        }
+      }, 50);
+    }
   }
 };
+
