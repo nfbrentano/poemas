@@ -1,6 +1,7 @@
 import { db } from '../utils/firebase.js';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { updateSEO } from '../utils/seo.js';
+import { websiteSchema } from '../utils/structured-data.js';
 import { newsletter } from '../components/newsletter.js';
 import { getRandomPoem } from '../utils/navigation.js';
 import { filterChips } from '../components/filter-chips.js';
@@ -31,27 +32,10 @@ export default {
     updateSEO({
       title: seoTitle,
       description: 'Poesia contemporânea e textos curtos sobre o efêmero.',
-      type: 'website'
+      url: 'https://nfgbrentano.art.br/',
+      type: 'website',
+      structuredData: [websiteSchema()]
     });
-    
-    let websiteSchema = document.querySelector('script[id="website-schema"]');
-    if (!websiteSchema) {
-      websiteSchema = document.createElement('script');
-      websiteSchema.id = 'website-schema';
-      websiteSchema.type = 'application/ld+json';
-      websiteSchema.textContent = JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "url": "https://nfgbrentano.art.br/",
-        "name": "Poemas — Natanael Brentano",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://nfgbrentano.art.br/?q={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
-      });
-      document.head.appendChild(websiteSchema);
-    }
     
     const isFiltering = tags.length > 0 || activeCols.length > 0;
     

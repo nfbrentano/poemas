@@ -1,15 +1,35 @@
 import { db } from '../utils/firebase.js';
 import { collection, getDocs, doc, setDoc, getCountFromServer, query, where } from 'firebase/firestore';
 import { pushToggle } from '../components/push-toggle.js';
+import { updateSEO } from '../utils/seo.js';
+import { profilePageSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
 
 export default {
   meta: {
     title: 'Sobre Natanael Brentano'
   },
   async render(container) {
+    const canonicalAboutUrl = `${SITE_URL}/sobre/`;
+    const breadcrumbItems = [
+      { name: 'Início', url: `${SITE_URL}/` },
+      { name: 'Sobre', url: canonicalAboutUrl }
+    ];
+
+    updateSEO({
+      title: 'Sobre Natanael Brentano',
+      description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.',
+      url: canonicalAboutUrl,
+      type: 'profile',
+      structuredData: [
+        profilePageSchema(),
+        breadcrumbSchema(breadcrumbItems)
+      ]
+    });
+
     container.innerHTML = `
       <section class="about-page fade-in">
         <div class="about-container">
+          ${renderBreadcrumbsHtml(breadcrumbItems)}
           <div class="about-header">
             <div class="about-avatar-container">
               <div class="about-avatar">
@@ -34,7 +54,7 @@ export default {
           </div>
 
           <div class="about-content">
-            <div class="about-section bio-section">
+            <div class="about-section bio-section" id="autor">
               <h2 class="section-title">Sobre o autor</h2>
               <div id="bio-content" class="bio-text">
                 Natanael Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.

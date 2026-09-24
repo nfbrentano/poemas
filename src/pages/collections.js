@@ -2,6 +2,7 @@ import { db } from '../utils/firebase.js';
 import { collection, query, orderBy, getDocs, where } from 'firebase/firestore';
 import { filterChips } from '../components/filter-chips.js';
 import { updateSEO } from '../utils/seo.js';
+import { collectionsListSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
 import { normalizeTag } from '../utils/tags.js';
 import { escapeHtml, sanitizeUrl } from '../utils/html.js';
 
@@ -15,15 +16,27 @@ export const collections = {
       const activeCols = params.cols ? params.cols.split(',') : [];
       const isFiltering = activeTags.length > 0 || activeCols.length > 0;
 
+      const canonicalCollectionsUrl = `${SITE_URL}/colecoes/`;
+      const breadcrumbItems = [
+        { name: 'Início', url: `${SITE_URL}/` },
+        { name: 'Coleções', url: canonicalCollectionsUrl }
+      ];
+
       updateSEO({
         title: 'Coleções e Sentimentos — Natanael Brentano',
         description: 'Explore poemas organizados por séries temáticas e sentimentos.',
-        type: 'website'
+        url: canonicalCollectionsUrl,
+        type: 'website',
+        structuredData: [
+          collectionsListSchema([]),
+          breadcrumbSchema(breadcrumbItems)
+        ]
       });
 
       container.innerHTML = `
         <section class="collections-page fade-in">
           <header class="page-header" style="text-align: center; margin-bottom: var(--space-2xl);">
+            ${renderBreadcrumbsHtml(breadcrumbItems)}
             <h1 class="page-title">Explorar</h1>
             <p class="page-subtitle">Séries temáticas, livros e sentimentos catalogados</p>
           </header>
@@ -71,6 +84,19 @@ export const collections = {
             const count = cpData.filter(cp => cp.collection_id === doc.id).length;
             cols.push({ id: doc.id, ...colData, collection_poems: [{ count }] });
           });
+
+          if (cols.length > 0) {
+            updateSEO({
+              title: 'Coleções e Sentimentos — Natanael Brentano',
+              description: 'Explore poemas organizados por séries temáticas e sentimentos.',
+              url: canonicalCollectionsUrl,
+              type: 'website',
+              structuredData: [
+                collectionsListSchema(cols),
+                breadcrumbSchema(breadcrumbItems)
+              ]
+            });
+          }
         } catch (err) {
           error = err;
         }

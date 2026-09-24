@@ -5,6 +5,15 @@ import path from 'path';
 
 import { stripHtml, escapeHtml } from '../src/utils/html.js';
 import { renderPoemMarkup } from '../src/utils/poem-template.js';
+import {
+  poemSchema,
+  breadcrumbSchema,
+  profilePageSchema,
+  collectionSchema,
+  collectionsListSchema,
+  websiteSchema,
+  serializeJsonLd
+} from '../src/utils/structured-data.js';
 
 // Note: Run this with node --env-file=.env.local scripts/prerender.js
 const firebaseConfig = {
@@ -239,14 +248,15 @@ async function prerender() {
       process.exit(1);
     }
 
-    console.log('Fetching published poems and collections for pre-rendering...');
+    console.log('Fetching published poems, collections and relations for pre-rendering...');
     const poemsQuery = query(
       collection(db, 'poems'),
       where('status', '==', 'published')
     );
-    const [poemsSnapshot, collectionsSnapshot] = await Promise.all([
+    const [poemsSnapshot, collectionsSnapshot, collectionPoemsSnapshot] = await Promise.all([
       getDocs(poemsQuery),
-      getDocs(collection(db, 'collections')).catch(() => ({ docs: [] }))
+      getDocs(collection(db, 'collections')).catch(() => ({ docs: [] })),
+      getDocs(collection(db, 'collection_poems')).catch(() => ({ docs: [] }))
     ]);
 
     const poems = poemsSnapshot.docs.map(doc => {
@@ -258,6 +268,17 @@ async function prerender() {
       id: doc.id,
       ...doc.data()
     }));
+
+    const collectionPoems = collectionPoemsSnapshot.docs ? collectionPoemsSnapshot.docs.map(doc => doc.data()) : [];
+    const poemToColsMap = new Map();
+    const colToPoemsMap = new Map();
+    collectionPoems.forEach(cp => {
+      if (!poemToColsMap.has(cp.poem_id)) poemToColsMap.set(cp.poem_id, []);
+      poemToColsMap.get(cp.poem_id).push({ collection_id: cp.collection_id, order: cp.order });
+
+      if (!colToPoemsMap.has(cp.collection_id)) colToPoemsMap.set(cp.collection_id, []);
+      colToPoemsMap.get(cp.collection_id).push({ poem_id: cp.poem_id, order: cp.order });
+    });
 
     // Sort published poems by date published ascending for previous/next calculation
     poems.sort((a, b) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime());
@@ -272,6 +293,12 @@ async function prerender() {
     // Inject critical CSS right before </head> if not already present
     if (!originalHtml.includes('id="critical-css"')) {
       originalHtml = originalHtml.replace(/<\/head>/i, `  ${criticalCssTag}\n</head>`);
+    }
+
+    // RF03: Ensure WebSite structured data is present in dist/index.html
+    if (!originalHtml.includes('"@type":"WebSite"') && !originalHtml.includes('"@type": "WebSite"')) {
+      const homeLd = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(websiteSchema())}</script>`;
+      originalHtml = originalHtml.replace(/<\/head>/i, `  ${homeLd}\n</head>`);
     }
 
     // Write back critical CSS to dist/index.html
@@ -289,13 +316,14 @@ async function prerender() {
       const nextTitle = nextPoem ? nextPoem.title : '';
 
       // Find collections associated with this poem
+      const associatedColIds = new Set((poemToColsMap.get(poem.id) || []).map(r => r.collection_id));
       const collectionsData = allCollections.filter(c => 
-        poem.collection_slugs && poem.collection_slugs.includes(c.slug)
+        associatedColIds.has(c.id) || (poem.collection_slugs && poem.collection_slugs.includes(c.slug))
       );
 
       // Find related poems (share tags or collections, up to 3)
       const poemTags = new Set(poem.tags || []);
-      const poemCols = new Set(poem.collection_slugs || []);
+      const poemCols = new Set([...(poem.collection_slugs || []), ...collectionsData.map(c => c.slug)]);
       const otherPoems = poems.filter(p => p.id !== poem.id);
       
       const scoredPoems = otherPoems.map(p => {
@@ -314,27 +342,24 @@ async function prerender() {
 
       const excerpt = getExcerpt(poem);
       const title = `${poem.title} — Natanael Brentano`;
-      const url = `${baseUrl}poema/${poem.slug}`;
+      const url = `${baseUrl}poema/${poem.slug}/`;
       const ogImage = `https://${firebaseConfig.projectId}.web.app/og-image?slug=${poem.slug}`;
       const publishedIso = new Date(poem.published_at).toISOString();
 
-      // JSON-LD Structured Data
-      const structuredData = {
-        "@context": "https://schema.org",
-        "@type": "CreativeWork",
-        "genre": "Poetry",
-        "inLanguage": "pt-BR",
-        "headline": poem.title,
-        "description": excerpt,
-        "author": { 
-          "@type": "Person", 
-          "name": "Natanael Brentano",
-          "sameAs": ["https://instagram.com/nfgbrentano"]
-        },
-        "datePublished": publishedIso,
-        "url": url,
-        "image": ogImage
-      };
+      // JSON-LD Structured Data (RF04 & RF07)
+      const primaryCol = collectionsData && collectionsData.length > 0 ? collectionsData[0] : null;
+      const breadcrumbItems = primaryCol ? [
+        { name: 'Início', url: baseUrl },
+        { name: primaryCol.name, url: `${baseUrl}colecao/${primaryCol.slug}/` },
+        { name: poem.title, url }
+      ] : [
+        { name: 'Início', url: baseUrl },
+        { name: poem.title, url }
+      ];
+
+      const poemLd = poemSchema(poem, collectionsData);
+      const breadcrumbLd = breadcrumbSchema(breadcrumbItems);
+      const jsonLdScript = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(poemLd)}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbLd)}</script>`;
 
       // Tags meta dinâmicas adicionais
       let articleMeta = `
@@ -346,8 +371,6 @@ async function prerender() {
           articleMeta += `\n    <meta property="article:tag" content="${escapeHtml(tag)}" />`;
         });
       }
-      
-      const jsonLdScript = `\n    <script type="application/ld+json">${JSON.stringify(structuredData)}</script>`;
 
       // CA01 & CA02: Pre-render full poem DOM and embed __DATA__ payload
       const renderedMarkup = renderPoemMarkup({
@@ -376,7 +399,7 @@ async function prerender() {
       const dataScriptTag = `\n    <script type="application/json" id="__DATA__">${JSON.stringify(poemDataPayload)}</script>`;
 
       // Modificando as tags meta no HTML original
-      let modifiedHtml = originalHtml;
+      let modifiedHtml = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
 
       // 1. Substituir o título
       modifiedHtml = modifiedHtml.replace(
@@ -473,16 +496,38 @@ async function prerender() {
       if (!fs.existsSync(targetDir)) {
         fs.mkdirSync(targetDir, { recursive: true });
       }
-      let html = originalHtml
+      const canonicalRouteUrl = `${baseUrl}${sr.route}/`;
+
+      // Remove existing JSON-LD
+      let html = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
         .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(sr.title)}</title>`)
-        .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${baseUrl}${sr.route}" />`)
+        .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${canonicalRouteUrl}" />`)
         .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(sr.description)}" />`)
         .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(sr.title)}" />`)
         .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(sr.description)}" />`)
-        .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${baseUrl}${sr.route}" />`)
+        .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${canonicalRouteUrl}" />`)
         .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(sr.title)}" />`)
         .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(sr.description)}" />`);
       
+      let structuredDataHtml = '';
+      if (sr.route === 'sobre' || sr.route === 'info') {
+        const sobreBreadcrumbs = [
+          { name: 'Início', url: baseUrl },
+          { name: 'Sobre', url: `${baseUrl}sobre/` }
+        ];
+        structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(profilePageSchema())}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(sobreBreadcrumbs))}</script>`;
+      } else if (sr.route === 'colecoes') {
+        const colecoesBreadcrumbs = [
+          { name: 'Início', url: baseUrl },
+          { name: 'Coleções', url: `${baseUrl}colecoes/` }
+        ];
+        structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(collectionsListSchema(allCollections))}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(colecoesBreadcrumbs))}</script>`;
+      }
+
+      if (structuredDataHtml) {
+        html = html.replace(/<\/head>/i, `${structuredDataHtml}\n</head>`);
+      }
+
       if (sr.robots) {
         html = html.replace(/<\/head>/i, `  <meta name="robots" content="${escapeHtml(sr.robots)}" />\n</head>`);
       }
@@ -500,13 +545,39 @@ async function prerender() {
           }
           const title = `${col.name} — Coleção de Poemas`;
           const desc = col.description || `Poemas da coleção ${col.name}.`;
-          let html = originalHtml
+          const colUrl = `${baseUrl}colecao/${col.slug}/`;
+
+          const associatedRelations = colToPoemsMap.get(col.id) || [];
+          const poemOrderMap = new Map(associatedRelations.map(r => [r.poem_id, r.order]));
+          const colPoems = poems.filter(p => poemOrderMap.has(p.id) || (p.collection_slugs && p.collection_slugs.includes(col.slug)))
+            .map(p => ({ ...p, _order: poemOrderMap.get(p.id) }));
+          
+          colPoems.sort((a, b) => {
+            if (a._order !== undefined && b._order !== undefined && a._order !== b._order) {
+              return a._order - b._order;
+            }
+            return new Date(a.published_at).getTime() - new Date(b.published_at).getTime();
+          });
+          const colBreadcrumbs = [
+            { name: 'Início', url: baseUrl },
+            { name: 'Coleções', url: `${baseUrl}colecoes/` },
+            { name: col.name, url: colUrl }
+          ];
+
+          const colLd = collectionSchema(col, colPoems);
+          const breadcrumbLd = breadcrumbSchema(colBreadcrumbs);
+          const structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(colLd)}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbLd)}</script>`;
+
+          let html = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
             .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)}</title>`)
-            .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${baseUrl}colecao/${col.slug}" />`)
+            .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${colUrl}" />`)
             .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(desc)}" />`)
             .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(title)}" />`)
             .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(desc)}" />`)
-            .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${baseUrl}colecao/${col.slug}" />`);
+            .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${colUrl}" />`);
+
+          html = html.replace(/<\/head>/i, `${structuredDataHtml}\n</head>`);
+
           fs.writeFileSync(path.join(colDir, 'index.html'), html, 'utf-8');
         }
       });

@@ -1,6 +1,7 @@
 import { db } from '../utils/firebase.js';
 import { collection as firestoreCollection, query, where, getDocs, documentId } from 'firebase/firestore';
 import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
+import { collectionSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
 import { escapeHtml } from '../utils/html.js';
 
 export const collection = {
@@ -95,11 +96,22 @@ export const collection = {
     // Atualizar SEO e título da página (RF01)
     const finalTitle = col.name;
     const finalDesc = col.description || 'Coleção de poemas.';
+    const canonicalColUrl = `${SITE_URL}/colecao/${col.slug}/`;
+    const breadcrumbItems = [
+      { name: 'Início', url: `${SITE_URL}/` },
+      { name: 'Coleções', url: `${SITE_URL}/colecoes/` },
+      { name: col.name, url: canonicalColUrl }
+    ];
+
     updateSEO({
       title: finalTitle,
       description: finalDesc,
-      url: window.location.href,
-      type: 'website'
+      url: canonicalColUrl,
+      type: 'website',
+      structuredData: [
+        collectionSchema(col, poemsList),
+        breadcrumbSchema(breadcrumbItems)
+      ]
     });
     
     collection.meta.title = finalTitle;
@@ -108,6 +120,7 @@ export const collection = {
     container.innerHTML = `
       <section class="collection-detail fade-in">
         <header class="collection-header">
+          ${renderBreadcrumbsHtml(breadcrumbItems)}
           <a href="${import.meta.env.BASE_URL}colecoes" class="back-link" data-link>← Voltar para coleções</a>
           <h1 class="collection-title">${escapeHtml(col.name)}</h1>
           <p class="collection-meta" style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">

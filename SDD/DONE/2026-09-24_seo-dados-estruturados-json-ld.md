@@ -44,11 +44,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado uma página de poema prerenderizada, quando a valido no Rich Results Test, então são detectados o item do poema e um `BreadcrumbList`, sem erros.
-- [ ] **CA02:** Dado a página `/sobre/`, quando inspeciono o HTML estático, então existe um `ProfilePage` cuja `mainEntity` é a Person com `@id` `…/sobre/#autor`.
-- [ ] **CA03:** Dado uma coleção com 10 poemas, quando inspeciono o JSON-LD, então há um `ItemList` com 10 `ListItem` em ordem e com URLs canônicas.
-- [ ] **CA04:** Dado que navego via SPA por 5 páginas, quando conto os `script[type="application/ld+json"]` no `<head>`, então só existem os blocos da página atual.
-- [ ] **CA05:** Dado um poema cujo título contém `</script>`, quando o prerender roda, então o HTML continua válido e o JSON-LD é parseável.
+- [x] **CA01:** Dado uma página de poema prerenderizada, quando a valido no Rich Results Test, então são detectados o item do poema e um `BreadcrumbList`, sem erros.
+- [x] **CA02:** Dado a página `/sobre/`, quando inspeciono o HTML estático, então existe um `ProfilePage` cuja `mainEntity` é a Person com `@id` `…/sobre/#autor`.
+- [x] **CA03:** Dado uma coleção com 10 poemas, quando inspeciono o JSON-LD, então há um `ItemList` com 10 `ListItem` em ordem e com URLs canônicas.
+- [x] **CA04:** Dado que navego via SPA por 5 páginas, quando conto os `script[type="application/ld+json"]` no `<head>`, então só existem os blocos da página atual.
+- [x] **CA05:** Dado um poema cujo título contém `</script>`, quando o prerender roda, então o HTML continua válido e o JSON-LD é parseável.
 
 ## O que a atividade não inclui
 

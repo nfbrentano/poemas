@@ -1,3 +1,5 @@
+import { setStructuredData, poemSchema } from './structured-data.js';
+
 export function setNotFoundSEO() {
   document.title = 'Página não encontrada — Natanael Brentano';
 
@@ -13,9 +15,12 @@ export function setNotFoundSEO() {
   if (canonical) {
     canonical.remove();
   }
+
+  // Remove any structured data on 404 pages
+  setStructuredData([]);
 }
 
-export function updateSEO({ title, description, url, imageUrl, type = 'website', publishedTime, tags, robots }) {
+export function updateSEO({ title, description, url, imageUrl, type = 'website', publishedTime, tags, robots, structuredData }) {
   const defaultTitle = 'Poemas Brasileiros - Natanael Brentano';
   const defaultDesc = 'Coleção de poemas originais em português por Natanael Fernando Gatti Brentano. Temas de amor, natureza e reflexões cotidianas.';
   const defaultImage = `${window.location.origin}${import.meta.env.BASE_URL}og-default.png`;
@@ -87,33 +92,25 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   setMeta('meta[name="twitter:description"]', 'content', finalDesc);
   setMeta('meta[name="twitter:image"]', 'content', finalImage);
 
-  // JSON-LD Structured Data
-  let jsonLdScript = document.querySelector('script[type="application/ld+json"]');
-  if (type === 'article') {
-    if (!jsonLdScript) {
-      jsonLdScript = document.createElement('script');
-      jsonLdScript.setAttribute('type', 'application/ld+json');
-      document.head.appendChild(jsonLdScript);
-    }
-
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "CreativeWork",
-      "genre": "Poetry",
-      "inLanguage": "pt-BR",
-      "headline": title,
-      "description": finalDesc,
-      "author": { 
-        "@type": "Person", 
-        "name": "Natanael Brentano",
-        "sameAs": ["https://instagram.com/nfgbrentano"]
-      },
-      "datePublished": publishedTime ? new Date(publishedTime).toISOString() : undefined,
-      "url": finalUrl,
-      "image": finalImage
+  // JSON-LD Structured Data (RF08)
+  if (structuredData !== undefined) {
+    setStructuredData(structuredData);
+  } else if (type === 'article') {
+    // Fallback for article if structuredData was not explicitly provided
+    const fallbackPoem = {
+      title,
+      published_at: publishedTime,
+      excerpt: finalDesc,
+      image: finalImage,
+      tags
     };
-    jsonLdScript.textContent = JSON.stringify(structuredData);
+    setStructuredData([poemSchema(fallbackPoem)]);
+  } else {
+    // Default clean-up
+    setStructuredData([]);
+  }
 
+  if (type === 'article') {
     // Article Specific Meta
     if (publishedTime) {
       setMeta('meta[property="article:published_time"]', 'content', new Date(publishedTime).toISOString());
@@ -129,18 +126,17 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
     }
 
     // Dynamic OG Image for Articles
-    const firebaseUrl = import.meta.env.VITE_FIREBASE_OG_URL; // Add this to your env if you have a Firebase OG generator function
+    const firebaseUrl = import.meta.env.VITE_FIREBASE_OG_URL;
     if (firebaseUrl && url && url.includes('/poema/')) {
-      const slug = url.split('/').pop();
+      const slug = url.split('/').filter(Boolean).pop();
       const dynamicOgUrl = `${firebaseUrl}?slug=${slug}`;
       setMeta('meta[property="og:image"]', 'content', dynamicOgUrl);
       setMeta('meta[name="twitter:image"]', 'content', dynamicOgUrl);
     }
   } else {
-    // Clean up
-    if (jsonLdScript) jsonLdScript.remove();
     document.querySelector('meta[property="article:published_time"]')?.remove();
     document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
   }
 }
+
 

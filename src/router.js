@@ -1,5 +1,6 @@
 import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
 import { setNotFoundSEO } from './utils/seo.js';
+import { setStructuredData } from './utils/structured-data.js';
 import legacyRedirects from '../scripts/legacy-redirects.json';
 
 export const routes = {
@@ -151,6 +152,9 @@ export async function router() {
             document.head.appendChild(robotsTag);
           }
           robotsTag.setAttribute('content', component.meta.robots);
+          if (component.meta.robots.includes('noindex')) {
+            setStructuredData([]);
+          }
         } else {
           document.querySelector('meta[name="robots"]')?.remove();
         }

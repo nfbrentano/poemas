@@ -1,4 +1,5 @@
 import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
+import { poemSchema, breadcrumbSchema, SITE_URL } from '../utils/structured-data.js';
 import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
@@ -206,21 +207,35 @@ export default {
     trackPageView('/poema/' + poem.slug, poem.id);
 
     // Update SEO dynamically
-    const poemUrl = window.location.href;
+    const canonicalPoemUrl = `${SITE_URL}/poema/${poem.slug}/`;
     const cleanExcerpt = stripHtml(poem.excerpt || poem.content || '')
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 160) + '...';
 
+    const primaryCol = collectionsData && collectionsData.length > 0 ? collectionsData[0] : null;
+    const breadcrumbItems = primaryCol ? [
+      { name: 'Início', url: `${SITE_URL}/` },
+      { name: primaryCol.name, url: `${SITE_URL}/colecao/${primaryCol.slug}/` },
+      { name: poem.title, url: canonicalPoemUrl }
+    ] : [
+      { name: 'Início', url: `${SITE_URL}/` },
+      { name: poem.title, url: canonicalPoemUrl }
+    ];
+
     const fallbackImageUrl = `${window.location.origin}${import.meta.env.BASE_URL}og-cover.jpg`;
     updateSEO({
       title: poem.title,
       description: cleanExcerpt,
-      url: poemUrl,
+      url: canonicalPoemUrl,
       imageUrl: fallbackImageUrl,
       type: 'article',
       publishedTime: poem.published_at,
-      tags: poem.tags
+      tags: poem.tags,
+      structuredData: [
+        poemSchema(poem, collectionsData),
+        breadcrumbSchema(breadcrumbItems)
+      ]
     });
 
     // Setup Intersection Observer para animação das estrofes

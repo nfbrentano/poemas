@@ -2,6 +2,7 @@ import { escapeHtml, stripHtml, sanitizeUrl } from './html.js';
 import { formatPoemForAnimation } from './text-format.js';
 import { formatTag } from './tags.js';
 import { newsletter } from '../components/newsletter.js';
+import { renderBreadcrumbsHtml } from './structured-data.js';
 
 export const EMOJIS = ['🕯️', '💧', '🌿', '🌙', '✨', '❤️'];
 
@@ -59,11 +60,23 @@ export function renderPoemMarkup({
     </a>
   `).join('') : '';
 
+  const primaryCollection = collectionsData && collectionsData.length > 0 ? collectionsData[0] : null;
+  const breadcrumbItems = primaryCollection ? [
+    { name: 'Início', url: baseUrl },
+    { name: primaryCollection.name, url: `${baseUrl}colecao/${primaryCollection.slug}/` },
+    { name: poem.title, url: `${baseUrl}poema/${poem.slug}/` }
+  ] : [
+    { name: 'Início', url: baseUrl },
+    { name: poem.title, url: `${baseUrl}poema/${poem.slug}/` }
+  ];
+  const breadcrumbsHtml = renderBreadcrumbsHtml(breadcrumbItems);
+
   return `
     <div class="poem-container">
       <div class="scroll-progress-container"><div id="scroll-bar" class="scroll-progress-bar"></div></div>
       
       <article class="single-poem fade-in">
+        ${breadcrumbsHtml}
         <header>
           <h1>${escapeHtml(poem.title)}</h1>
           <div class="poem-meta">
