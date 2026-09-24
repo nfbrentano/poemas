@@ -141,7 +141,7 @@ input:focus, textarea:focus, select:focus {
   font-family: var(--font-ui);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-overlay);
   backdrop-filter: blur(8px);
 }
 

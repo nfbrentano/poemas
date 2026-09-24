@@ -194,6 +194,14 @@ export const header = {
       if (headerEl) {
         headerEl.classList.toggle('scrolled', window.scrollY > 10);
       }
+    }, { passive: true });
+
+    // Handle resize to clear mobile nav state on desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768 && mainNav && mainNav.classList.contains('active')) {
+        closeMenu();
+        document.removeEventListener('keydown', trapFocus);
+      }
     });
   }
 };
