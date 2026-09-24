@@ -11,9 +11,12 @@ import { getPoemOfDay } from '../utils/poemOfDay.js';
 
 export default {
   meta: {
-    title: 'Natanael Brentano - Poemas'
+    title: 'Poemas Brasileiros — Natanael Brentano'
   },
   cleanup() {
+    this.meta = {
+      title: 'Poemas Brasileiros — Natanael Brentano'
+    };
   },
   async render(container, params = {}) {
     const activeTags = params.tags ? params.tags.split(',') : [];
@@ -21,7 +24,24 @@ export default {
     const activeTagLegacy = params.tag ? [decodeURIComponent(params.tag)] : []; // Support legacy /tag/:tag
     const tags = [...new Set([...activeTags, ...activeTagLegacy])];
 
-    let seoTitle = 'Natanael Brentano — Poemas';
+    const searchParams = new URLSearchParams(window.location.search);
+    const hasFilterOrSearch = tags.length > 0 || 
+      activeCols.length > 0 || 
+      Boolean(params.q) || 
+      Boolean(params.busca) ||
+      searchParams.has('tags') || 
+      searchParams.has('cols') || 
+      searchParams.has('tag') || 
+      searchParams.has('q') || 
+      searchParams.has('busca') || 
+      searchParams.has('page');
+
+    this.meta = {
+      title: 'Poemas Brasileiros — Natanael Brentano',
+      robots: hasFilterOrSearch ? 'noindex, follow' : null
+    };
+
+    let seoTitle = 'Poemas Brasileiros — Natanael Brentano';
     if (tags.length > 0 || activeCols.length > 0) {
       const parts = [];
       if (tags.length > 0) parts.push(`Sentimentos: ${tags.join(', ')}`);
@@ -31,16 +51,29 @@ export default {
 
     updateSEO({
       title: seoTitle,
-      description: 'Poesia contemporânea e textos curtos sobre o efêmero.',
+      description: 'Poemas e poesia brasileira contemporânea de Natanael Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.',
       url: 'https://nfgbrentano.art.br/',
       type: 'website',
-      structuredData: [websiteSchema()]
+      robots: hasFilterOrSearch ? 'noindex, follow' : null,
+      structuredData: hasFilterOrSearch ? [] : [websiteSchema()]
     });
     
     const isFiltering = tags.length > 0 || activeCols.length > 0;
+    const isPrerendered = container.getAttribute('data-prerendered') === '/' && !isFiltering;
+    const BASE_URL = import.meta.env.BASE_URL;
+
+    const heroHtml = `
+      <section class="home-hero fade-in">
+        <h1 class="home-title">Poemas de Natanael Brentano</h1>
+        <p class="home-description">
+          Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. Conheça as <a href="${BASE_URL}colecoes" data-link>coleções temáticas</a> e saiba mais <a href="${BASE_URL}sobre" data-link>sobre o autor</a>.
+        </p>
+      </section>
+    `;
     
     const skeletonHtml = `
       <div class="home-layout">
+        ${heroHtml}
         ${!isFiltering ? `
         <section class="poem-of-day" aria-hidden="true" style="min-height: 180px;">
           <div class="skeleton" style="width: 140px; height: 14px; margin: 0 auto var(--space-sm) auto; border-radius: 4px;"></div>
@@ -76,7 +109,9 @@ export default {
       </div>
     `;
     
-    container.innerHTML = skeletonHtml;
+    if (!isPrerendered) {
+      container.innerHTML = skeletonHtml;
+    }
     
     // Fetch published poems with collections
     let poems = [];
@@ -116,8 +151,6 @@ export default {
       return;
     }
     
-    const BASE_URL = import.meta.env.BASE_URL;
-
     // Collect and count tags (unifying sentiments)
     const tagCounts = {};
     poems.forEach(p => {
@@ -244,7 +277,7 @@ export default {
 
     container.innerHTML = `
       <div class="home-layout">
-        
+        ${heroHtml}
         ${!isFiltering && podPoem ? `
         <section class="poem-of-day fade-in">
           <p class="pod-label">— poema do dia —</p>
@@ -278,6 +311,8 @@ export default {
     `;
 
 
+    
+    container.removeAttribute('data-prerendered');
     
     newsletter.init();
     await filterChips.init(container, tags, poems);
@@ -357,7 +392,7 @@ export default {
       
       // Hide POD and Hero when searching
       const podSection = container.querySelector('.poem-of-day');
-      const heroSection = container.querySelector('.hero-section');
+      const heroSection = container.querySelector('.home-hero') || container.querySelector('.hero-section');
       if (searchTerm.length > 0) {
         if (podSection) podSection.style.display = 'none';
         if (heroSection) heroSection.style.display = 'none';

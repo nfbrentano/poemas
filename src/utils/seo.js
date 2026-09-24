@@ -21,12 +21,16 @@ export function setNotFoundSEO() {
 }
 
 export function updateSEO({ title, description, url, imageUrl, type = 'website', publishedTime, tags, robots, structuredData }) {
-  const defaultTitle = 'Poemas Brasileiros - Natanael Brentano';
-  const defaultDesc = 'Coleção de poemas originais em português por Natanael Fernando Gatti Brentano. Temas de amor, natureza e reflexões cotidianas.';
+  const brandSuffix = 'Natanael Brentano';
+  const defaultTitle = `Poemas Brasileiros — ${brandSuffix}`;
+  const defaultDesc = 'Poemas e poesia brasileira contemporânea de Natanael Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.';
   const defaultImage = `${window.location.origin}${import.meta.env.BASE_URL}og-default.png`;
   
-  // Set document title
-  const finalTitle = title ? `${title} — Natanael Brentano` : defaultTitle;
+  // Set document title without duplicating brand suffix
+  let finalTitle = defaultTitle;
+  if (title) {
+    finalTitle = title.includes(brandSuffix) ? title : `${title} — ${brandSuffix}`;
+  }
   document.title = finalTitle;
   
   // Helper to safely update meta tags

@@ -37,11 +37,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado a home carregada, quando conto `h1` no DOM, então existe exatamente 1.
-- [ ] **CA02:** Dado a home, quando leio `document.title`, então "Natanael Brentano" aparece uma única vez.
-- [ ] **CA03:** Dado que acesso `/?tags=amor`, quando inspeciono o `<head>`, então o canonical é `https://nfgbrentano.art.br/` e há `robots noindex, follow`.
-- [ ] **CA04:** Dado `dist/index.html`, quando o abro com JavaScript desativado, então vejo o h1, a apresentação e links para pelo menos 20 poemas.
-- [ ] **CA05:** Dado que limpo os filtros na home, quando inspeciono o `<head>`, então a meta `noindex` foi removida.
+- [x] **CA01:** Dado a home carregada, quando conto `h1` no DOM, então existe exatamente 1.
+- [x] **CA02:** Dado a home, quando leio `document.title`, então "Natanael Brentano" aparece uma única vez.
+- [x] **CA03:** Dado que acesso `/?tags=amor`, quando inspeciono o `<head>`, então o canonical é `https://nfgbrentano.art.br/` e há `robots noindex, follow`.
+- [x] **CA04:** Dado `dist/index.html`, quando o abro com JavaScript desativado, então vejo o h1, a apresentação e links para pelo menos 20 poemas.
+- [x] **CA05:** Dado que limpo os filtros na home, quando inspeciono o `<head>`, então a meta `noindex` foi removida.
 
 ## O que a atividade não inclui
 

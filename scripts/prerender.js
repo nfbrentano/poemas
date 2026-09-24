@@ -5,6 +5,7 @@ import path from 'path';
 
 import { stripHtml, escapeHtml } from '../src/utils/html.js';
 import { renderPoemMarkup } from '../src/utils/poem-template.js';
+import { getPoemOfDay } from '../src/utils/poemOfDay.js';
 import {
   poemSchema,
   breadcrumbSchema,
@@ -97,12 +98,19 @@ button { cursor: pointer; font-family: var(--font-ui); font-size: var(--btn-font
 .footer-grid { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); }
 .footer-social { display: flex; align-items: center; gap: var(--space-sm); }
 .bottom-nav, .mobile-brand, .bottom-sheet-overlay, .bottom-sheet { display: none; }
+.home-hero { text-align: center; padding: var(--space-xl) 0 var(--space-lg); max-width: var(--container-main); margin: 0 auto; }
+.home-title { font-family: var(--font-display); font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 300; color: var(--text-primary); margin-bottom: var(--space-xs); letter-spacing: -0.01em; line-height: 1.25; }
+.home-description { font-family: var(--font-poem); font-size: 1rem; color: var(--text-secondary); line-height: 1.7; max-width: 580px; margin: 0 auto; }
+.home-description a { color: var(--accent-subtle); text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 768px) {
   .site-header { display: none; }
   .mobile-brand { display: block; text-align: center; padding: var(--space-md) 0; font-family: var(--font-display); font-size: 1.2rem; }
   .site-content { padding-top: var(--space-md); padding-bottom: 70px; }
   .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--bg-primary); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-around; align-items: center; z-index: var(--z-header, 500); }
   .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-muted); gap: 2px; }
+  .home-hero { padding: var(--space-lg) 0 var(--space-md); }
+  .home-title { font-size: 1.6rem; }
+  .home-description { font-size: 0.95rem; padding: 0 var(--space-sm); }
 }
   `;
 
@@ -233,6 +241,122 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
         </button>
       </div>
     </div>
+  </div>
+  `;
+}
+
+function renderHomeMarkup({ poems, podPoem, allCollections = [] }) {
+  const podExcerpt = podPoem ? getExcerpt(podPoem, 160) : '';
+  const displayPoems = podPoem ? poems.filter(p => p.id !== podPoem.id) : poems;
+  const recentPoems = displayPoems.slice(0, 20);
+  
+  const featuredPoem = recentPoems[0];
+  const featuredExcerpt = featuredPoem ? getExcerpt(featuredPoem, 160) : '';
+  const featuredDateStr = featuredPoem ? new Date(featuredPoem.published_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : '';
+  
+  let poemRowsHtml = '';
+  if (featuredPoem) {
+    let lastYear = new Date(featuredPoem.published_at).getFullYear();
+    for (let i = 1; i < recentPoems.length; i++) {
+      const p = recentPoems[i];
+      const year = new Date(p.published_at).getFullYear();
+      if (lastYear !== year) {
+        poemRowsHtml += `<h3 class="year-separator" style="font-family: var(--font-display); font-size: 1.5rem; color: var(--text-muted); margin: var(--space-xl) 0 var(--space-md) 0; border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-xs);">${year}</h3>`;
+        lastYear = year;
+      }
+      poemRowsHtml += `
+      <article class="poem-row fade-in">
+        <a href="/poema/${p.slug}/" data-link class="poem-row-link">
+          <h3 class="poem-row-title">${escapeHtml(p.title)}</h3>
+          <span class="poem-row-year">${year}</span>
+        </a>
+      </article>`;
+    }
+  }
+
+  // Tags counts for sentiments preview
+  const tagCounts = {};
+  poems.forEach(p => {
+    (p.tags || []).forEach(t => {
+      if (t) tagCounts[t] = (tagCounts[t] || 0) + 1;
+    });
+  });
+  const topTags = Object.entries(tagCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(e => e[0]);
+
+  return `
+  <div class="home-layout">
+    <section class="home-hero">
+      <h1 class="home-title">Poemas de Natanael Brentano</h1>
+      <p class="home-description">
+        Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. Conheça as <a href="/colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="/sobre/" data-link>sobre o autor</a>.
+      </p>
+    </section>
+
+    ${podPoem ? `
+    <section class="poem-of-day fade-in">
+      <p class="pod-label">— poema do dia —</p>
+      <a href="/poema/${podPoem.slug}/" data-link class="pod-link">
+        <h2 class="pod-title">${escapeHtml(podPoem.title)}</h2>
+        <p class="pod-excerpt">${escapeHtml(podExcerpt)}</p>
+      </a>
+    </section>
+    ` : ''}
+
+    <section class="poems-list fade-in" style="padding-top: var(--space-xl);">
+      <div class="discovery-filters" style="margin-bottom: var(--space-xl);">
+        <div class="filter-section">
+          <div class="filter-group">
+            <span class="filter-label">Sentimentos:</span>
+            <div class="filter-chips">
+              <a href="/" data-link class="filter-chip active">Todos</a>
+              ${topTags.map(tag => `<a href="/?tags=${encodeURIComponent(tag)}" data-link class="filter-chip">${escapeHtml(tag)}</a>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-container">
+        ${featuredPoem ? `
+        <article class="poem-featured fade-in">
+          <a href="/poema/${featuredPoem.slug}/" data-link>
+            <h2 class="featured-title">${escapeHtml(featuredPoem.title)}</h2>
+            <div class="featured-excerpt">${escapeHtml(featuredExcerpt)}</div>
+            <div class="featured-meta">
+              <span>${featuredDateStr}</span>
+            </div>
+          </a>
+          <div class="featured-actions" style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button class="featured-share-btn btn-secondary btn-sm" data-platform="whatsapp" data-slug="${featuredPoem.slug}" data-title="${escapeHtml(featuredPoem.title)}">WhatsApp</button>
+            <button class="featured-share-btn btn-secondary btn-sm" data-platform="twitter" data-slug="${featuredPoem.slug}" data-title="${escapeHtml(featuredPoem.title)}">X (Twitter)</button>
+          </div>
+          <div class="featured-separator"></div>
+        </article>
+        ` : ''}
+        ${poemRowsHtml}
+      </div>
+
+      <div class="pagination-container">
+        <p class="pagination-status" style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: var(--space-lg);">Mostrando ${recentPoems.length} de ${poems.length}</p>
+      </div>
+      
+      <div class="random-home-container">
+        <a href="/aleatorio" data-link class="random-home-link">→ Poema aleatório</a>
+      </div>
+    </section>
+
+    <section class="newsletter-section">
+      <div class="newsletter-card">
+        <h3>Receba novos poemas</h3>
+        <p>Inscreva seu e-mail para receber versos inéditos diretamente na sua caixa de entrada.</p>
+        <form class="newsletter-form" action="#">
+          <input type="email" placeholder="Seu melhor e-mail" aria-label="Seu e-mail" required />
+          <button type="submit" class="btn-primary">Inscrever-se</button>
+        </form>
+      </div>
+    </section>
   </div>
   `;
 }
@@ -585,6 +709,31 @@ async function prerender() {
     } catch (e) {
       console.warn('Could not prerender collection routes:', e.message);
     }
+
+    // Pre-render home page in dist/index.html (RF05)
+    console.log('Generating pre-rendered content for home page (dist/index.html)...');
+    const sortedPoemsDesc = [...poems].sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+    const podPoem = getPoemOfDay(poems);
+    const homeMainMarkup = renderHomeMarkup({ poems: sortedPoemsDesc, podPoem, allCollections });
+    const homeShell = renderBaseLayout({
+      mainContent: homeMainMarkup,
+      dataPrerendered: '/'
+    });
+
+    const homeDesc = 'Poemas e poesia brasileira contemporânea de Natanael Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.';
+    let homeHtml = originalHtml
+      .replace(/<div id="app"><\/div>/i, `<div id="app">${homeShell}</div>`)
+      .replace(/<title>[^<]*<\/title>/i, `<title>Poemas Brasileiros — Natanael Brentano</title>`)
+      .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${baseUrl}" />`)
+      .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(homeDesc)}" />`)
+      .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="Poemas Brasileiros — Natanael Brentano" />`)
+      .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(homeDesc)}" />`)
+      .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${baseUrl}" />`)
+      .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="Poemas Brasileiros — Natanael Brentano" />`)
+      .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(homeDesc)}" />`);
+
+    fs.writeFileSync(templatePath, homeHtml, 'utf-8');
+    console.log('Pre-rendered home page successfully generated at dist/index.html');
 
     // Generate legacy redirects (RF06 & RNF02)
     console.log('Generating legacy redirects...');

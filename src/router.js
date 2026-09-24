@@ -139,8 +139,11 @@ export async function router() {
         // Update meta tags if component provides them
         if (component.meta && component.meta.title) {
           const currentTitle = document.title;
-          if (!currentTitle.includes(component.meta.title)) {
-             document.title = `${component.meta.title} — Natanael Brentano`;
+          const metaTitle = component.meta.title;
+          if (!currentTitle.includes(metaTitle)) {
+             document.title = metaTitle.includes('Natanael Brentano')
+               ? metaTitle
+               : `${metaTitle} — Natanael Brentano`;
           }
         }
 

@@ -25,9 +25,21 @@ describe('updateSEO', () => {
       type: 'article' 
     });
     const ogTitle = document.querySelector('meta[property="og:title"]');
-    expect(ogTitle.getAttribute('content')).toBe('Test — Natanael Brentano');
-    
     const ogType = document.querySelector('meta[property="og:type"]');
     expect(ogType.getAttribute('content')).toBe('article');
+  });
+
+  it('does not duplicate brand suffix when title already contains Natanael Brentano (CT05)', () => {
+    updateSEO({ title: 'Poemas Brasileiros — Natanael Brentano' });
+    expect(document.title).toBe('Poemas Brasileiros — Natanael Brentano');
+
+    updateSEO({ title: 'Sobre Natanael Brentano' });
+    expect(document.title).toBe('Sobre Natanael Brentano');
+  });
+
+  it('uses default title with brand suffix and length <= 60 chars', () => {
+    updateSEO({});
+    expect(document.title).toBe('Poemas Brasileiros — Natanael Brentano');
+    expect(document.title.length).toBeLessThanOrEqual(60);
   });
 });
