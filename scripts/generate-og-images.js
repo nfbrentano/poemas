@@ -15,12 +15,12 @@ let merriweatherFontBuffer;
 
 async function loadFonts() {
   console.log('Loading fonts for OG images...');
-  // Cormorant Garamond Regular TTF
-  const cormorantRes = await fetch('https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYpMt5.ttf');
+  // Cormorant Garamond Regular WOFF
+  const cormorantRes = await fetch('https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_v86KnTOjA.woff');
   cormorantFontBuffer = await cormorantRes.arrayBuffer();
 
-  // Merriweather Italic TTF
-  const merriweatherRes = await fetch('https://fonts.gstatic.com/s/merriweather/v33/u-4m0qUljzgWLcwIgLlcCRGcaHdWylI.ttf');
+  // Merriweather Italic WOFF
+  const merriweatherRes = await fetch('https://fonts.gstatic.com/s/merriweather/v33/u-4B0qyriQwlOrhSvowK_l5-eTxCVx0ZbwLvKH2Gk9hLmp0v5yA-xXPqCzLvPee1XYk_XSf-FmTCUG33Avc.woff');
   merriweatherFontBuffer = await merriweatherRes.arrayBuffer();
 }
 

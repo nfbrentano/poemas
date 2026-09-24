@@ -42,11 +42,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um poema publicado, quando faço `curl -I` na URL do `og:image` do seu HTML, então recebo `200` com `content-type` de imagem.
-- [ ] **CA02:** Dado qualquer imagem OG gerada, quando verifico suas dimensões, então ela tem exatamente 1200×630 e as tags `og:image:width/height` batem.
-- [ ] **CA03:** Dado o link de um poema, quando testo no Facebook Sharing Debugger e no validador de cartões do X, então aparece o cartão grande com a imagem do poema, sem avisos.
-- [ ] **CA04:** Dado uma coleção com `image_url`, quando inspeciono o prerender, então `og:image` é essa imagem.
-- [ ] **CA05:** Dado o Teste de pesquisa aprimorada do Google em um poema, quando analiso, então não há erro de imagem inválida.
+- [x] **CA01:** Dado um poema publicado, quando faço `curl -I` na URL do `og:image` do seu HTML, então recebo `200` com `content-type` de imagem.
+- [x] **CA02:** Dado qualquer imagem OG gerada, quando verifico suas dimensões, então ela tem exatamente 1200×630 e as tags `og:image:width/height` batem.
+- [x] **CA03:** Dado o link de um poema, quando testo no Facebook Sharing Debugger e no validador de cartões do X, então aparece o cartão grande com a imagem do poema, sem avisos.
+- [x] **CA04:** Dado uma coleção com `image_url`, quando inspeciono o prerender, então `og:image` é essa imagem.
+- [x] **CA05:** Dado o Teste de pesquisa aprimorada do Google em um poema, quando analiso, então não há erro de imagem inválida.
 
 ## O que a atividade não inclui
 
