@@ -7,6 +7,7 @@ import { escapeHtml, stripHtml, sanitizeUrl } from '../utils/html.js';
 import { toast } from '../components/toast.js';
 import { AudioPlayer } from '../components/audio-player.js';
 import { ImmersiveReader } from '../components/immersive-reader.js';
+import { PoemComments } from '../components/poem-comments.js';
 import { renderPoemMarkup, EMOJIS } from '../utils/poem-template.js';
 
 function throttle(func, limit) {
@@ -42,6 +43,7 @@ export default {
     
     ImmersiveReader.cleanup();
     AudioPlayer.cleanup();
+    PoemComments.cleanup();
     document.body.classList.remove('poem-page-active');
 
     handleScroll = null;
@@ -305,12 +307,7 @@ export default {
       }
     }, { passive: true });
 
-    const toggleCommentBtn = document.getElementById('toggle-comment-btn');
-    const commentForm = document.getElementById('comment-form');
-    toggleCommentBtn?.addEventListener('click', () => {
-      commentForm.style.display = commentForm.style.display === 'none' ? 'block' : 'none';
-      toggleCommentBtn.style.display = 'none';
-    });
+    PoemComments.init(container, poem.id);
 
     // Sharing Logic
     const shareUrl = window.location.href;
@@ -799,10 +796,8 @@ export default {
         });
       }).catch(err => console.debug?.('[reactions]', err));
 
-      // 2. Comments
-      import('../components/poem-comments.js').then(({ PoemComments }) => {
-        PoemComments.init(container, poem.id);
-      }).catch(err => console.debug?.('[comments]', err));
+      // 2. Comments (Firestore query deferred)
+      PoemComments.loadComments(poem.id, container);
 
       // 3. Related poems (only if not pre-rendered)
       if ((!relatedPoems || relatedPoems.length === 0) && poem.tags && poem.tags.length > 0) {

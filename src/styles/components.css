@@ -1949,6 +1949,11 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
   color: var(--text-secondary);
 }
 
+.comment-form[hidden],
+#toggle-comment-btn[hidden] {
+  display: none !important;
+}
+
 .comment-form {
   background: var(--bg-elevated);
   padding: var(--space-lg);

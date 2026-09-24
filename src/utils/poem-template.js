@@ -258,8 +258,8 @@ export function renderPoemMarkup({
             <p class="comments-empty">Silêncio... nenhum comentário ainda.</p>
           </div>
           
-          <button id="toggle-comment-btn" class="btn-secondary" style="margin-top: var(--space-sm); width: 100%;">+ Deixar uma nota</button>
-          <form id="comment-form" class="comment-form" style="display: none; margin-top: var(--space-md);">
+          <button id="toggle-comment-btn" class="btn-secondary" aria-expanded="false" aria-controls="comment-form" style="margin-top: var(--space-sm); width: 100%;">+ Deixar uma nota</button>
+          <form id="comment-form" class="comment-form" hidden style="margin-top: var(--space-md);">
             <p class="comment-form-title">Deixe sua nota</p>
             <div class="comment-form-group" style="display: none;" aria-hidden="true">
               <input type="text" id="comment-website" name="website" tabindex="-1" autocomplete="off">
@@ -271,7 +271,7 @@ export function renderPoemMarkup({
               <textarea id="comment-content" placeholder="Sua percepção sobre esta obra..." required maxlength="500"></textarea>
             </div>
             <button type="submit" id="submit-comment-btn" class="btn-primary">Enviar Nota</button>
-            <p id="comment-msg" class="comment-msg"></p>
+            <p id="comment-msg" class="comment-msg" aria-live="polite"></p>
           </form>
         </div>
 

@@ -59,13 +59,13 @@ Pontos secundários a revisar no mesmo fluxo:
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que estou na página de um poema e a seção de comentários já carregou, quando clico em "+ Deixar uma nota", então o formulário aparece e o foco vai para o campo "Seu nome".
-- [ ] **CA02:** Dado que acabei de abrir a página, quando clico em "+ Deixar uma nota" antes de o módulo de comentários carregar, então o formulário também aparece.
-- [ ] **CA03:** Dado que preenchi nome e nota válidos, quando clico em "Enviar Nota", então vejo "Sua nota foi enviada e aguarda moderação." e um documento é criado em `poem_comments` com `approved: false`.
-- [ ] **CA04:** Dado que enviei uma nota com sucesso, quando o envio termina, então o formulário é limpo e o botão "+ Deixar uma nota" volta a aparecer.
-- [ ] **CA05:** Dado que um comentário foi aprovado no admin, quando abro a página do poema, então ele aparece na lista com nome e data.
-- [ ] **CA06:** Dado que a consulta de comentários falhou, quando a seção é renderizada, então vejo uma mensagem de erro distinta de "Silêncio... nenhum comentário ainda." e o erro fica registrado no console.
-- [ ] **CA07:** Dado que naveguei por vários poemas pela SPA, quando clico em "+ Deixar uma nota" em qualquer um deles, então o formulário abre (sem listeners duplicados que o fechem).
+- [x] **CA01:** Dado que estou na página de um poema e a seção de comentários já carregou, quando clico em "+ Deixar uma nota", então o formulário aparece e o foco vai para o campo "Seu nome".
+- [x] **CA02:** Dado que acabei de abrir a página, quando clico em "+ Deixar uma nota" antes de o módulo de comentários carregar, então o formulário também aparece.
+- [x] **CA03:** Dado que preenchi nome e nota válidos, quando clico em "Enviar Nota", então vejo "Sua nota foi enviada e aguarda moderação." e um documento é criado em `poem_comments` com `approved: false`.
+- [x] **CA04:** Dado que enviei uma nota com sucesso, quando o envio termina, então o formulário é limpo e o botão "+ Deixar uma nota" volta a aparecer.
+- [x] **CA05:** Dado que um comentário foi aprovado no admin, quando abro a página do poema, então ele aparece na lista com nome e data.
+- [x] **CA06:** Dado que a consulta de comentários falhou, quando a seção é renderizada, então vejo uma mensagem de erro distinta de "Silêncio... nenhum comentário ainda." e o erro fica registrado no console.
+- [x] **CA07:** Dado que naveguei por vários poemas pela SPA, quando clico em "+ Deixar uma nota" em qualquer um deles, então o formulário abre (sem listeners duplicados que o fechem).
 
 ## O que a atividade não inclui
 
