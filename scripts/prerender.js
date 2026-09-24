@@ -16,6 +16,8 @@ import {
   serializeJsonLd
 } from '../src/utils/structured-data.js';
 
+import { loadFonts, generatePoemOgImage, generateCollectionOgImage, generateDefaultOgImage } from './generate-og-images.js';
+
 // Note: Run this with node --env-file=.env.local scripts/prerender.js
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
@@ -410,6 +412,9 @@ async function prerender() {
     console.log(`Found ${poems.length} poems to pre-render.`);
     let originalHtml = fs.readFileSync(templatePath, 'utf-8');
 
+    await loadFonts();
+    const defaultOgImage = await generateDefaultOgImage();
+
     // RF04: Inline critical CSS (~6-8 KB < 14 KB), keep external stylesheet <link> for browser caching
     const criticalCss = getCriticalCss();
     const criticalCssTag = `<style id="critical-css">${criticalCss}</style>`;
@@ -467,7 +472,9 @@ async function prerender() {
       const excerpt = getExcerpt(poem);
       const title = `${poem.title} — Natanael Brentano`;
       const url = `${baseUrl}poema/${poem.slug}/`;
-      const ogImage = `https://${firebaseConfig.projectId}.web.app/og-image?slug=${poem.slug}`;
+      const generatedOgPath = await generatePoemOgImage(poem);
+      const ogImage = `${baseUrl.replace(/\/$/, '')}${generatedOgPath}`;
+      poem.image = ogImage; // Inject into poem object so structured-data uses it
       const publishedIso = new Date(poem.published_at).toISOString();
 
       // JSON-LD Structured Data (RF04 & RF07)
@@ -558,7 +565,7 @@ async function prerender() {
       );
       modifiedHtml = modifiedHtml.replace(
         /<meta property="og:image" content="[^"]*"\s*\/?>/i,
-        `<meta property="og:image" content="${ogImage}" />`
+        `<meta property="og:image" content="${ogImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/png" />\n    <meta property="og:image:alt" content="${escapeHtml(title)}" />`
       );
       modifiedHtml = modifiedHtml.replace(
         /<meta property="og:type" content="[^"]*"\s*\/?>/i,
@@ -631,7 +638,9 @@ async function prerender() {
         .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(sr.description)}" />`)
         .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${canonicalRouteUrl}" />`)
         .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(sr.title)}" />`)
-        .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(sr.description)}" />`);
+        .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(sr.description)}" />`)
+        .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="${escapeHtml(sr.title)}" />`)
+        .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
       
       let structuredDataHtml = '';
       if (sr.route === 'sobre' || sr.route === 'info') {
@@ -661,7 +670,7 @@ async function prerender() {
 
     // Pre-render collection routes
     try {
-      allCollections.forEach(col => {
+      for (const col of allCollections) {
         if (col.slug) {
           const colDir = path.join(distDir, 'colecao', col.slug);
           if (!fs.existsSync(colDir)) {
@@ -670,6 +679,9 @@ async function prerender() {
           const title = `${col.name} — Coleção de Poemas`;
           const desc = col.description || `Poemas da coleção ${col.name}.`;
           const colUrl = `${baseUrl}colecao/${col.slug}/`;
+          
+          const generatedOgPath = await generateCollectionOgImage(col);
+          const ogImage = generatedOgPath.startsWith('http') ? generatedOgPath : `${baseUrl.replace(/\/$/, '')}${generatedOgPath}`;
 
           const associatedRelations = colToPoemsMap.get(col.id) || [];
           const poemOrderMap = new Map(associatedRelations.map(r => [r.poem_id, r.order]));
@@ -698,13 +710,17 @@ async function prerender() {
             .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(desc)}" />`)
             .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(title)}" />`)
             .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(desc)}" />`)
-            .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${colUrl}" />`);
+            .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${colUrl}" />`)
+            .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${ogImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/png" />\n    <meta property="og:image:alt" content="${escapeHtml(title)}" />`)
+            .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(title)}" />`)
+            .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(desc)}" />`)
+            .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${ogImage}" />`);
 
           html = html.replace(/<\/head>/i, `${structuredDataHtml}\n</head>`);
 
           fs.writeFileSync(path.join(colDir, 'index.html'), html, 'utf-8');
         }
-      });
+      }
       console.log(`Generated static HTML for ${allCollections.length} collections.`);
     } catch (e) {
       console.warn('Could not prerender collection routes:', e.message);
@@ -729,8 +745,10 @@ async function prerender() {
       .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="Poemas Brasileiros — Natanael Brentano" />`)
       .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(homeDesc)}" />`)
       .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${baseUrl}" />`)
+      .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="Poemas Brasileiros — Natanael Brentano" />`)
       .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="Poemas Brasileiros — Natanael Brentano" />`)
-      .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(homeDesc)}" />`);
+      .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(homeDesc)}" />`)
+      .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
 
     fs.writeFileSync(templatePath, homeHtml, 'utf-8');
     console.log('Pre-rendered home page successfully generated at dist/index.html');

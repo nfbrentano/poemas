@@ -14,9 +14,12 @@
     "test": "vitest"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "fast-xml-parser": "^5.11.0",
     "gh-pages": "^6.3.0",
     "jsdom": "^30.0.1",
+    "satori": "^0.33.5",
+    "satori-html": "^0.3.2",
     "vite": "^8.2.1",
     "vitest": "^4.1.11"
   },

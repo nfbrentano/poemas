@@ -24,7 +24,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   const brandSuffix = 'Natanael Brentano';
   const defaultTitle = `Poemas Brasileiros — ${brandSuffix}`;
   const defaultDesc = 'Poemas e poesia brasileira contemporânea de Natanael Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.';
-  const defaultImage = `${window.location.origin}${import.meta.env.BASE_URL}og-default.png`;
+  const defaultImage = `${window.location.origin}${import.meta.env.BASE_URL}og-default.jpg`;
   
   // Set document title without duplicating brand suffix
   let finalTitle = defaultTitle;
@@ -130,10 +130,9 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
     }
 
     // Dynamic OG Image for Articles
-    const firebaseUrl = import.meta.env.VITE_FIREBASE_OG_URL;
-    if (firebaseUrl && url && url.includes('/poema/')) {
+    if (url && url.includes('/poema/')) {
       const slug = url.split('/').filter(Boolean).pop();
-      const dynamicOgUrl = `${firebaseUrl}?slug=${slug}`;
+      const dynamicOgUrl = `${window.location.origin}/og/poema/${slug}.png`;
       setMeta('meta[property="og:image"]', 'content', dynamicOgUrl);
       setMeta('meta[name="twitter:image"]', 'content', dynamicOgUrl);
     }
