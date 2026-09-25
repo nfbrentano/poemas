@@ -50,12 +50,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o HTML prerenderizado de `/sobre/`, quando o leio sem JS, então vejo a seção "Perguntas frequentes" com pelo menos 4 perguntas e respostas.
-- [ ] **CA02:** Dado o FAQ, quando confiro "Quantos poemas estão publicados no site?", então o número corresponde à quantidade de poemas publicados no momento do build.
-- [ ] **CA03:** Dado `/sobre/`, quando valido o JSON-LD, então há um `FAQPage` cujo texto é idêntico ao visível e que passa no Schema Markup Validator sem erros.
-- [ ] **CA04:** Dado uma coleção com `description` preenchida, quando abro `/colecao/<slug>/`, então vejo o parágrafo introdutório antes da lista de poemas, também no HTML estático.
-- [ ] **CA05:** Dado a página de um poema, quando inspeciono o HTML, então há um `<dl>` com Autor, data em `<time>`, coleção e sentimentos como links, e tempo de leitura.
-- [ ] **CA06:** Dado o admin, quando edito uma coleção, então consigo salvar e alterar o campo de descrição.
+- [x] **CA01:** Dado o HTML prerenderizado de `/sobre/`, quando o leio sem JS, então vejo a seção "Perguntas frequentes" com pelo menos 4 perguntas e respostas.
+- [x] **CA02:** Dado o FAQ, quando confiro "Quantos poemas estão publicados no site?", então o número corresponde à quantidade de poemas publicados no momento do build.
+- [x] **CA03:** Dado `/sobre/`, quando valido o JSON-LD, então há um `FAQPage` cujo texto é idêntico ao visível e que passa no Schema Markup Validator sem erros.
+- [x] **CA04:** Dado uma coleção com `description` preenchida, quando abro `/colecao/<slug>/`, então vejo o parágrafo introdutório antes da lista de poemas, também no HTML estático.
+- [x] **CA05:** Dado a página de um poema, quando inspeciono o HTML, então há um `<dl>` com Autor, data em `<time>`, coleção e sentimentos como links, e tempo de leitura.
+- [x] **CA06:** Dado o admin, quando edito uma coleção, então consigo salvar e alterar o campo de descrição.
 
 ## O que a atividade não inclui
 

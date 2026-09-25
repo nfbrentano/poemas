@@ -3,6 +3,7 @@ import { collection as firestoreCollection, query, where, getDocs, documentId } 
 import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
 import { collectionSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
 import { escapeHtml } from '../utils/html.js';
+import { renderCollectionMarkup } from '../utils/collection-template.js';
 
 export const collection = {
   meta: {
@@ -117,30 +118,16 @@ export const collection = {
     collection.meta.title = finalTitle;
     document.title = `${finalTitle} — Natanael Brentano`;
 
-    container.innerHTML = `
-      <section class="collection-detail fade-in">
-        <header class="collection-header">
-          ${renderBreadcrumbsHtml(breadcrumbItems)}
-          <a href="${import.meta.env.BASE_URL}colecoes/" class="back-link" data-link>← Voltar para coleções</a>
-          <h1 class="collection-title">${escapeHtml(col.name)}</h1>
-          <p class="collection-meta" style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">
-            ${poemsList.length} poema${poemsList.length !== 1 ? 's' : ''}
-          </p>
-          <p class="collection-desc-large" style="margin-top: 1rem;">${escapeHtml(col.description || '')}</p>
-        </header>
-
-        <div class="poems-list">
-          ${poemsList.length > 0 ? poemsList.map(poem => `
-            <article class="poem-row">
-              <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
-                <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
-                <span class="poem-row-year">${new Date(poem.published_at).getFullYear()}</span>
-              </a>
-            </article>
-          `).join('') : '<p class="empty-state-desc">Nenhum poema publicado nesta coleção ainda.</p>'}
-        </div>
-      </section>
-    `;
+    const isPrerendered = container.getAttribute('data-prerendered') === `/colecao/${col.slug}`;
+    if (isPrerendered) {
+      container.removeAttribute('data-prerendered');
+    } else {
+      container.innerHTML = renderCollectionMarkup({
+        col,
+        poemsList,
+        baseUrl: import.meta.env.BASE_URL
+      });
+    }
   }
 };
 

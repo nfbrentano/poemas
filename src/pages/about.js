@@ -2,8 +2,8 @@ import { db } from '../utils/firebase.js';
 import { collection, getDocs, doc, setDoc, getCountFromServer, query, where } from 'firebase/firestore';
 import { pushToggle } from '../components/push-toggle.js';
 import { updateSEO } from '../utils/seo.js';
-import { profilePageSchema, breadcrumbSchema, SITE_URL } from '../utils/structured-data.js';
-import { renderAboutMarkup, DEFAULT_AVATAR_URL } from '../utils/about-template.js';
+import { profilePageSchema, breadcrumbSchema, faqPageSchema, SITE_URL } from '../utils/structured-data.js';
+import { renderAboutMarkup, getAboutFaq, DEFAULT_AVATAR_URL } from '../utils/about-template.js';
 
 export default {
   meta: {
@@ -24,7 +24,8 @@ export default {
       type: 'profile',
       structuredData: [
         profilePageSchema(),
-        breadcrumbSchema(breadcrumbItems)
+        breadcrumbSchema(breadcrumbItems),
+        faqPageSchema(getAboutFaq())
       ]
     });
 

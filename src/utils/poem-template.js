@@ -62,6 +62,26 @@ export function renderPoemMarkup({
     </a>
   `).join('') : '';
 
+  const publishedDate = poem.published_at ? new Date(poem.published_at) : new Date();
+  const publishedIso = !isNaN(publishedDate.getTime()) ? publishedDate.toISOString().slice(0, 10) : '';
+  const publishedFormatted = !isNaN(publishedDate.getTime()) ? publishedDate.toLocaleDateString('pt-BR') : '';
+
+  let collectionsDlHtml = '<span>Obra avulsa</span>';
+  if (collectionsData && collectionsData.length > 0) {
+    collectionsDlHtml = collectionsData.map(c => `
+      <a href="${baseUrl}colecao/${escapeHtml(c.slug)}/" data-link>${escapeHtml(c.name)}</a>
+    `).join(', ');
+  }
+
+  let tagsDlHtml = '<span>—</span>';
+  if (poem.tags && poem.tags.length > 0) {
+    tagsDlHtml = poem.tags.map(t => {
+      const formatted = formatTag(t);
+      const slug = slugifyTag(t);
+      return `<a href="${baseUrl}sentimento/${slug}/" data-link>#${escapeHtml(formatted)}</a>`;
+    }).join(' ');
+  }
+
   const primaryCollection = collectionsData && collectionsData.length > 0 ? collectionsData[0] : null;
   const breadcrumbItems = primaryCollection ? [
     { name: 'Início', url: baseUrl },
@@ -82,7 +102,9 @@ export function renderPoemMarkup({
         <header>
           <h1>${escapeHtml(poem.title)}</h1>
           <div class="poem-meta">
-            <span>${new Date(poem.published_at).toLocaleDateString('pt-BR')}</span>
+            <span>Por <a href="${baseUrl}sobre/" rel="author" data-link>Natanael Brentano</a></span>
+            <span>•</span>
+            <span><time datetime="${publishedIso}">${publishedFormatted}</time></span>
             <span>•</span>
             <span class="reading-time">${readingLabel}</span>
           </div>
@@ -171,6 +193,31 @@ export function renderPoemMarkup({
         <div id="poem-text" class="poem-content">${formattedContent}</div>
 
         ${taxonomyHtml}
+
+        <section class="poem-metadata-section" aria-label="Ficha técnica da obra">
+          <dl class="poem-metadata-list">
+            <div class="poem-metadata-item">
+              <dt>Autor</dt>
+              <dd><a href="${baseUrl}sobre/" rel="author" data-link>Natanael Brentano</a></dd>
+            </div>
+            <div class="poem-metadata-item">
+              <dt>Publicado em</dt>
+              <dd><time datetime="${publishedIso}">${publishedFormatted}</time></dd>
+            </div>
+            <div class="poem-metadata-item">
+              <dt>Coleção</dt>
+              <dd>${collectionsDlHtml}</dd>
+            </div>
+            <div class="poem-metadata-item">
+              <dt>Sentimentos</dt>
+              <dd>${tagsDlHtml}</dd>
+            </div>
+            <div class="poem-metadata-item">
+              <dt>Tempo de leitura</dt>
+              <dd>${readingLabel}</dd>
+            </div>
+          </dl>
+        </section>
 
         <div id="related-poems-section" style="${relatedHtml ? '' : 'display: none; '}margin-top: var(--space-2xl); margin-bottom: var(--space-2xl);">
           <p class="share-label" style="text-align: center; margin-bottom: var(--space-md);">Você também pode gostar</p>

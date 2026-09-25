@@ -66,7 +66,7 @@ export default {
       <section class="home-hero fade-in">
         <h1 class="home-title">Poemas de Natanael Brentano</h1>
         <p class="home-description">
-          Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. Conheça as <a href="${BASE_URL}colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="${BASE_URL}sobre/" data-link>sobre o autor</a>.
+          Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. O acervo reúne mais de 200 poemas publicados em coleções temáticas. Conheça as <a href="${BASE_URL}colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="${BASE_URL}sobre/" data-link>sobre o autor</a>.
         </p>
       </section>
     `;

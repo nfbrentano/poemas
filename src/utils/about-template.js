@@ -17,10 +17,40 @@ export function renderPushToggleHtml() {
 export const DEFAULT_AVATAR_URL = 'https://firebasestorage.googleapis.com/v0/b/poemas-natanael.firebasestorage.app/o/avatars%2Favatar_1788017538021.jpeg?alt=media&token=e54e38e7-5950-4c47-97a1-9ac1f8bcef15';
 export const DEFAULT_AUTHOR_BIO = 'Natanael Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.';
 
+export function getAboutFaq({ poemsCount = 222, collectionsCount = 5 } = {}) {
+  return [
+    {
+      question: 'Quem é Natanael Brentano?',
+      answer: 'Natanael Brentano é um poeta e escritor brasileiro contemporâneo, autor de versos em língua portuguesa dedicados a explorar o tempo, os afetos, a efemeridade e as sutilezas do cotidiano.'
+    },
+    {
+      question: 'Sobre quais temas ele escreve?',
+      answer: 'Sua produção poética aborda temas como o amor, a finitude, a saudade, a memória e a contemplação do instante presente, dialogando com referências como Manoel de Barros, Fernando Pessoa, Clarice Lispector e Hilda Hilst.'
+    },
+    {
+      question: 'Quantos poemas estão publicados no site?',
+      answer: `Atualmente estão publicados ${poemsCount} poemas no site oficial, distribuídos em ${collectionsCount} coleções temáticas, com produção contínua iniciada em dezembro de 2015 e novos versos adicionados regularmente.`
+    },
+    {
+      question: 'Como os poemas estão organizados?',
+      answer: 'Os poemas estão estruturados em coleções temáticas e catalogados por sentimentos e temas, permitindo navegar por temas, explorar o acervo por ordem cronológica ou descobrir obras de maneira aleatória.'
+    },
+    {
+      question: 'Posso compartilhar ou citar os poemas?',
+      answer: 'Sim, a citação e o compartilhamento dos poemas são permitidos para fins não comerciais, desde que acompanhados da devida atribuição de autoria a Natanael Brentano e com o link para a obra original no site.'
+    },
+    {
+      question: 'Como receber novos poemas?',
+      answer: 'Você pode receber novos poemas se inscrevendo gratuitamente na newsletter disponível nas páginas do site ou ativando as notificações push no seu navegador para receber avisos imediatos de publicações.'
+    }
+  ];
+}
+
 export function renderAboutMarkup({
   avatarUrl = DEFAULT_AVATAR_URL,
   bioText = DEFAULT_AUTHOR_BIO,
   poemsCount = 222,
+  collectionsCount = 5,
   baseUrl = '/'
 } = {}) {
   const canonicalAboutUrl = `${SITE_URL}/sobre/`;
@@ -30,6 +60,7 @@ export function renderAboutMarkup({
   ];
 
   const formattedBio = bioText.replace(/\n/g, '<br>');
+  const faqList = getAboutFaq({ poemsCount, collectionsCount });
 
   return `
       <section class="about-page fade-in">
@@ -98,6 +129,18 @@ export function renderAboutMarkup({
                     <span class="event">Consolidação do acervo digital e superação da marca de 200 poemas em julho com <em>Trilha Sonora do Agora</em>, reunindo atualmente <strong id="total-poems-count">${poemsCount}</strong> poemas publicados.</span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div class="about-section faq-section" id="faq">
+              <h2 class="section-title">Perguntas frequentes</h2>
+              <div class="faq-list">
+                ${faqList.map(item => `
+                  <article class="faq-item">
+                    <h3 class="faq-question">${escapeHtml(item.question)}</h3>
+                    <p class="faq-answer">${escapeHtml(item.answer)}</p>
+                  </article>
+                `).join('')}
               </div>
             </div>
           </div>

@@ -65,6 +65,26 @@ export function profilePageSchema() {
 }
 
 /**
+ * FAQPage schema for questions and answers.
+ * @param {Array<{ question: string, answer: string }>} items
+ */
+export function faqPageSchema(items = []) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${SITE_URL}/sobre/#faq`,
+    "mainEntity": (items || []).map(item => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer
+      }
+    }))
+  };
+}
+
+/**
  * RF03: WebSite schema for the homepage.
  */
 export function websiteSchema() {

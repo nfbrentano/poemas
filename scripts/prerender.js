@@ -5,12 +5,14 @@ import path from 'path';
 
 import { stripHtml, escapeHtml } from '../src/utils/html.js';
 import { renderPoemMarkup } from '../src/utils/poem-template.js';
-import { renderAboutMarkup, DEFAULT_AVATAR_URL, DEFAULT_AUTHOR_BIO } from '../src/utils/about-template.js';
+import { renderAboutMarkup, getAboutFaq, DEFAULT_AVATAR_URL, DEFAULT_AUTHOR_BIO } from '../src/utils/about-template.js';
+import { renderCollectionMarkup } from '../src/utils/collection-template.js';
 import { getPoemOfDay } from '../src/utils/poemOfDay.js';
 import {
   poemSchema,
   breadcrumbSchema,
   profilePageSchema,
+  faqPageSchema,
   collectionSchema,
   collectionsListSchema,
   websiteSchema,
@@ -304,7 +306,7 @@ function renderHomeMarkup({ poems, podPoem, allCollections = [] }) {
     <section class="home-hero">
       <h1 class="home-title">Poemas de Natanael Brentano</h1>
       <p class="home-description">
-        Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. Conheça as <a href="/colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="/sobre/" data-link>sobre o autor</a>.
+        Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. O acervo reúne atualmente ${poems.length} poemas publicados em ${allCollections.length} coleções temáticas. Conheça as <a href="/colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="/sobre/" data-link>sobre o autor</a>.
       </p>
     </section>
 
@@ -683,7 +685,11 @@ async function prerender() {
           { name: 'Início', url: baseUrl },
           { name: 'Sobre', url: `${baseUrl}sobre/` }
         ];
-        structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(profilePageSchema())}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(sobreBreadcrumbs))}</script>`;
+        const faqList = getAboutFaq({
+          poemsCount: count || poems.length,
+          collectionsCount: allCollections.filter(c => c.slug).length
+        });
+        structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(profilePageSchema())}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(sobreBreadcrumbs))}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(faqPageSchema(faqList))}</script>`;
       } else if (sr.route === 'colecoes') {
         const colecoesBreadcrumbs = [
           { name: 'Início', url: baseUrl },
@@ -706,6 +712,7 @@ async function prerender() {
           avatarUrl: authorAvatarUrl,
           bioText: authorBioText,
           poemsCount: count || poems.length,
+          collectionsCount: allCollections.filter(c => c.slug).length,
           baseUrl: '/'
         });
         const aboutShell = renderBaseLayout({
@@ -791,6 +798,17 @@ async function prerender() {
             .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${ogImage}" />`);
 
           html = html.replace(/<\/head>/i, `${structuredDataHtml}\n</head>`);
+
+          const colMarkup = renderCollectionMarkup({
+            col,
+            poemsList: colPoems,
+            baseUrl: '/'
+          });
+          const colShell = renderBaseLayout({
+            mainContent: colMarkup,
+            dataPrerendered: `/colecao/${col.slug}`
+          });
+          html = html.replace(/<div id="app"><\/div>/i, `<div id="app">${colShell}</div>`);
 
           fs.writeFileSync(path.join(colDir, 'index.html'), html, 'utf-8');
         }
