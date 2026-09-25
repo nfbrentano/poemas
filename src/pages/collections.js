@@ -114,7 +114,7 @@ export const collections = {
                 ? 'fetchpriority="high" width="360" height="180" decoding="async"' 
                 : 'loading="lazy" decoding="async" width="360" height="180"';
               return `
-              <a href="${BASE_URL}colecao/${escapeHtml(col.slug)}" class="collection-card" data-link>
+              <a href="${BASE_URL}colecao/${escapeHtml(col.slug)}/" class="collection-card" data-link>
                 ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="${escapeHtml(col.name)}" class="collection-img" ${imgAttr} onerror="this.onerror=null; const p=document.createElement('div'); p.className='collection-img-placeholder'; this.replaceWith(p);">` : '<div class="collection-img-placeholder"></div>'}
                 <div class="collection-info">
                   <h2 class="collection-name">${escapeHtml(col.name)}</h2>

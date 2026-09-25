@@ -31,7 +31,7 @@ export function renderPoemMarkup({
   let collectionsHtml = '';
   if (collectionsData && collectionsData.length > 0) {
     collectionsHtml = collectionsData.map(c => `
-      <a href="${baseUrl}colecao/${escapeHtml(c.slug)}" class="btn-secondary" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;" data-link>
+      <a href="${baseUrl}colecao/${escapeHtml(c.slug)}/" class="btn-secondary" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;" data-link>
          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
          ${escapeHtml(c.name)}
       </a>

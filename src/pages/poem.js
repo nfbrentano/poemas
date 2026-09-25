@@ -840,7 +840,7 @@ export default {
                 const relatedList = document.getElementById('related-poems-list');
                 if (relatedList) {
                   relatedList.innerHTML = top3.map(r => `
-                    <a href="${import.meta.env.BASE_URL}poema/${r.slug}" class="related-poem-card" style="padding: var(--space-md); border: 1px solid var(--border-subtle); border-radius: 4px; display: block; text-decoration: none; color: var(--text-primary); transition: background-color var(--transition-fast);" data-link onmouseover="this.style.backgroundColor='var(--border-subtle)'" onmouseout="this.style.backgroundColor='transparent'">
+                    <a href="${import.meta.env.BASE_URL}poema/${r.slug}/" class="related-poem-card" style="padding: var(--space-md); border: 1px solid var(--border-subtle); border-radius: 4px; display: block; text-decoration: none; color: var(--text-primary); transition: background-color var(--transition-fast);" data-link onmouseover="this.style.backgroundColor='var(--border-subtle)'" onmouseout="this.style.backgroundColor='transparent'">
                       <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 4px;">${escapeHtml(r.title)}</h3>
                       ${r.excerpt ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">${escapeHtml(stripHtml(r.excerpt).substring(0, 100))}...</p>` : ''}
                     </a>
@@ -871,7 +871,7 @@ export default {
       slugsToPrefetch.forEach(s => {
         const link = document.createElement('link');
         link.rel = 'prefetch';
-        link.href = `${window.location.origin}${BASE_URL}poema/${s}`;
+        link.href = `${window.location.origin}${BASE_URL}poema/${s}/`;
         document.head.appendChild(link);
       });
     };

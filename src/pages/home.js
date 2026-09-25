@@ -66,7 +66,7 @@ export default {
       <section class="home-hero fade-in">
         <h1 class="home-title">Poemas de Natanael Brentano</h1>
         <p class="home-description">
-          Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. Conheça as <a href="${BASE_URL}colecoes" data-link>coleções temáticas</a> e saiba mais <a href="${BASE_URL}sobre" data-link>sobre o autor</a>.
+          Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. Conheça as <a href="${BASE_URL}colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="${BASE_URL}sobre/" data-link>sobre o autor</a>.
         </p>
       </section>
     `;
@@ -240,7 +240,7 @@ export default {
           const rawExcerpt = poem.excerpt || stripHtml(poem.content || '').replace(/\s+/g, ' ').trim().slice(0, 160) + '...';
           html += `
           <article class="poem-featured fade-in">
-            <a href="${BASE_URL}poema/${poem.slug}" data-link>
+            <a href="${BASE_URL}poema/${poem.slug}/" data-link>
               <h2 class="featured-title">${escapeHtml(poem.title)}</h2>
               <div class="featured-excerpt">${escapeHtml(rawExcerpt)}</div>
               <div class="featured-meta">
@@ -262,7 +262,7 @@ export default {
           }
           html += `
           <article class="poem-row fade-in">
-            <a href="${BASE_URL}poema/${poem.slug}" data-link class="poem-row-link">
+            <a href="${BASE_URL}poema/${poem.slug}/" data-link class="poem-row-link">
               <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
               <span class="poem-row-year">${year}</span>
             </a>
@@ -281,7 +281,7 @@ export default {
         ${!isFiltering && podPoem ? `
         <section class="poem-of-day fade-in">
           <p class="pod-label">— poema do dia —</p>
-          <a href="${BASE_URL}poema/${podPoem.slug}" data-link class="pod-link">
+          <a href="${BASE_URL}poema/${podPoem.slug}/" data-link class="pod-link">
             <h2 class="pod-title">${escapeHtml(podPoem.title)}</h2>
             <p class="pod-excerpt">${escapeHtml(podExcerpt)}</p>
           </a>

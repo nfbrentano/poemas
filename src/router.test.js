@@ -51,6 +51,25 @@ describe('Router', () => {
     expect(mockAboutComponent.render).toHaveBeenCalled();
   });
 
+  it('CT04: replaces URL with trailing slash when navigating to route without trailing slash (RF07)', async () => {
+    const mockComponent = {
+      render: vi.fn().mockResolvedValue(undefined),
+      meta: { title: 'Poema' }
+    };
+    routes['/poema/:slug'] = vi.fn().mockResolvedValue(mockComponent);
+
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState');
+
+    navigateTo('/poema/meu-slug');
+    await router();
+
+    expect(replaceStateSpy).toHaveBeenCalledWith(null, '', '/poema/meu-slug/');
+    expect(window.location.pathname).toBe('/poema/meu-slug/');
+    expect(mockComponent.render).toHaveBeenCalled();
+
+    replaceStateSpy.mockRestore();
+  });
+
   it('CT04: redirects legacy /tag/<slug> and /?tag=<slug> to /sentimento/<slug>/', async () => {
     const pushStateSpy = vi.spyOn(window.history, 'pushState');
 
