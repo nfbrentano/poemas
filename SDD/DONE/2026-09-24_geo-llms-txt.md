@@ -47,12 +47,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o site publicado, quando acesso `https://nfgbrentano.art.br/llms.txt`, então recebo um Markdown com título, resumo, seção de autor, coleções e lista de poemas com links.
-- [ ] **CA02:** Dado um poema em rascunho, quando o build roda, então ele não aparece em `llms.txt` nem em `llms-full.txt`.
-- [ ] **CA03:** Dado um poema com várias estrofes, quando leio seu trecho em `llms-full.txt`, então os versos e as estrofes estão preservados, sem tags HTML.
-- [ ] **CA04:** Dado um poema novo publicado, quando o próximo deploy termina, então ele aparece no topo da seção `## Poemas`.
-- [ ] **CA05:** Dado o `<head>` da home, quando inspeciono, então há um `link rel="alternate"` apontando para `/llms.txt`.
-- [ ] **CA06:** Dado que o Firestore está indisponível no build, quando `npm run build` roda, então o build conclui com um aviso e os arquivos contêm pelo menos as seções estáticas.
+- [x] **CA01:** Dado o site publicado, quando acesso `https://nfgbrentano.art.br/llms.txt`, então recebo um Markdown com título, resumo, seção de autor, coleções e lista de poemas com links.
+- [x] **CA02:** Dado um poema em rascunho, quando o build roda, então ele não aparece em `llms.txt` nem em `llms-full.txt`.
+- [x] **CA03:** Dado um poema com várias estrofes, quando leio seu trecho em `llms-full.txt`, então os versos e as estrofes estão preservados, sem tags HTML.
+- [x] **CA04:** Dado um poema novo publicado, quando o próximo deploy termina, então ele aparece no topo da seção `## Poemas`.
+- [x] **CA05:** Dado o `<head>` da home, quando inspeciono, então há um `link rel="alternate"` apontando para `/llms.txt`.
+- [x] **CA06:** Dado que o Firestore está indisponível no build, quando `npm run build` roda, então o build conclui com um aviso e os arquivos contêm pelo menos as seções estáticas.
 
 ## O que a atividade não inclui
 

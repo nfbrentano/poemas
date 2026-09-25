@@ -7,8 +7,9 @@
     "dev": "vite",
     "sitemap": "node --env-file=.env.local scripts/generate-sitemap.js || node scripts/generate-sitemap.js",
     "rss": "node --env-file=.env.local scripts/generate-rss.js || node scripts/generate-rss.js",
+    "llms": "node --env-file=.env.local scripts/generate-llms.js || node scripts/generate-llms.js",
     "migrate:updated-at": "node --env-file=.env.local scripts/migrate-updated-at.js",
-    "build": "vite build && npm run sitemap && npm run rss && (node --env-file=.env.local scripts/prerender.js || node scripts/prerender.js)",
+    "build": "vite build && npm run sitemap && npm run rss && npm run llms && (node --env-file=.env.local scripts/prerender.js || node scripts/prerender.js)",
     "deploy": "npm run build && gh-pages -d dist",
     "preview": "vite preview",
     "test": "vitest"
