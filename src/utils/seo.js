@@ -1,4 +1,4 @@
-import { setStructuredData, poemSchema } from './structured-data.js';
+import { setStructuredData, poemSchema, pageGraphSchema } from './structured-data.js';
 import { cleanCanonicalUrl } from './url.js';
 
 export function setNotFoundSEO() {
@@ -98,9 +98,13 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   setMeta('meta[name="twitter:description"]', 'content', finalDesc);
   setMeta('meta[name="twitter:image"]', 'content', finalImage);
 
-  // JSON-LD Structured Data (RF08)
-  if (structuredData !== undefined) {
-    setStructuredData(structuredData);
+  // JSON-LD Structured Data (RF01, RF06, RF07)
+  if (structuredData !== undefined && structuredData !== null && structuredData !== false) {
+    if (Array.isArray(structuredData) && structuredData.length === 0) {
+      setStructuredData([]);
+    } else {
+      setStructuredData([pageGraphSchema(structuredData)]);
+    }
   } else if (type === 'article') {
     // Fallback for article if structuredData was not explicitly provided
     const fallbackPoem = {
@@ -110,7 +114,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
       image: finalImage,
       tags
     };
-    setStructuredData([poemSchema(fallbackPoem)]);
+    setStructuredData([pageGraphSchema([poemSchema(fallbackPoem)])]);
   } else {
     // Default clean-up
     setStructuredData([]);

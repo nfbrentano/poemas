@@ -19,6 +19,7 @@ import {
   sentimentSchema,
   sentimentsListSchema,
   serializeJsonLd,
+  pageGraphSchema,
   renderBreadcrumbsHtml
 } from '../src/utils/structured-data.js';
 import { slugifyTag, formatTag, tagToSlug } from '../src/utils/tags.js';
@@ -441,7 +442,7 @@ async function prerender() {
 
     // RF03: Ensure WebSite structured data is present in dist/index.html
     if (!originalHtml.includes('"@type":"WebSite"') && !originalHtml.includes('"@type": "WebSite"')) {
-      const homeLd = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(websiteSchema())}</script>`;
+      const homeLd = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(pageGraphSchema())}</script>`;
       originalHtml = originalHtml.replace(/<\/head>/i, `  ${homeLd}\n</head>`);
     }
 
@@ -505,7 +506,8 @@ async function prerender() {
 
       const poemLd = poemSchema(poem, collectionsData);
       const breadcrumbLd = breadcrumbSchema(breadcrumbItems);
-      const jsonLdScript = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(poemLd)}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbLd)}</script>`;
+      const poemGraph = pageGraphSchema([poemLd, breadcrumbLd]);
+      const jsonLdScript = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(poemGraph)}</script>`;
 
       // Tags meta dinâmicas adicionais
       let articleMeta = `
@@ -689,13 +691,22 @@ async function prerender() {
           poemsCount: count || poems.length,
           collectionsCount: allCollections.filter(c => c.slug).length
         });
-        structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(profilePageSchema())}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(sobreBreadcrumbs))}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(faqPageSchema(faqList))}</script>`;
+        const sobreGraph = pageGraphSchema([
+          profilePageSchema(authorAvatarUrl),
+          breadcrumbSchema(sobreBreadcrumbs),
+          faqPageSchema(faqList)
+        ]);
+        structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(sobreGraph)}</script>`;
       } else if (sr.route === 'colecoes') {
         const colecoesBreadcrumbs = [
           { name: 'Início', url: baseUrl },
           { name: 'Coleções', url: `${baseUrl}colecoes/` }
         ];
-        structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(collectionsListSchema(allCollections))}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(colecoesBreadcrumbs))}</script>`;
+        const colecoesGraph = pageGraphSchema([
+          collectionsListSchema(allCollections),
+          breadcrumbSchema(colecoesBreadcrumbs)
+        ]);
+        structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(colecoesGraph)}</script>`;
       }
 
       if (structuredDataHtml) {
@@ -783,7 +794,8 @@ async function prerender() {
 
           const colLd = collectionSchema(col, colPoems);
           const breadcrumbLd = breadcrumbSchema(colBreadcrumbs);
-          const structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(colLd)}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbLd)}</script>`;
+          const colGraph = pageGraphSchema([colLd, breadcrumbLd]);
+          const structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(colGraph)}</script>`;
 
           let html = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
             .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)}</title>`)
@@ -855,7 +867,7 @@ async function prerender() {
         { name: 'Início', url: baseUrl },
         { name: 'Sentimentos', url: hubUrl }
       ];
-      const hubStructuredData = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(sentimentsListSchema(qualifyingSentiments))}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(hubBreadcrumbs))}</script>`;
+      const hubStructuredData = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(pageGraphSchema([sentimentsListSchema(qualifyingSentiments), breadcrumbSchema(hubBreadcrumbs)]))}</script>`;
 
       const hubMainMarkup = `
       <section class="sentiments-page fade-in">
@@ -1009,7 +1021,7 @@ async function prerender() {
           .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
 
         if (isIndexable) {
-          const sentStructuredData = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(sentimentSchema(s.name, s.slug, sortedPoems, introText))}</script>\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(breadcrumbSchema(breadcrumbItems))}</script>`;
+          const sentStructuredData = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(pageGraphSchema([sentimentSchema(s.name, s.slug, sortedPoems, introText), breadcrumbSchema(breadcrumbItems)]))}</script>`;
           sentHtml = sentHtml.replace(/<\/head>/i, `${sentStructuredData}\n</head>`);
         } else {
           // RF07 & CA02 & CT02: < 3 poemas recebe noindex, follow
@@ -1066,6 +1078,14 @@ async function prerender() {
       .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="Poemas Brasileiros — Natanael Brentano" />`)
       .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(homeDesc)}" />`)
       .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
+
+    const homeGraph = pageGraphSchema();
+    const homeLdTag = `<script type="application/ld+json" data-seo="true">${serializeJsonLd(homeGraph)}</script>`;
+    if (homeHtml.includes('type="application/ld+json"')) {
+      homeHtml = homeHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, homeLdTag);
+    } else {
+      homeHtml = homeHtml.replace(/<\/head>/i, `  ${homeLdTag}\n</head>`);
+    }
 
     fs.writeFileSync(templatePath, homeHtml, 'utf-8');
     console.log('Pre-rendered home page successfully generated at dist/index.html');

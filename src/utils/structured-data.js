@@ -1,8 +1,10 @@
 import { escapeHtml, stripHtml, sanitizeUrl } from './html.js';
+import { slugifyTag } from './tags.js';
 
 export const SITE_URL = 'https://nfgbrentano.art.br';
 export const AUTHOR_ID = 'https://nfgbrentano.art.br/sobre/#autor';
 export const WEBSITE_ID = 'https://nfgbrentano.art.br/#website';
+export const DEFAULT_AUTHOR_PHOTO = 'https://firebasestorage.googleapis.com/v0/b/poemas-natanael.firebasestorage.app/o/avatars%2Favatar_1788017538021.jpeg?alt=media&token=e54e38e7-5950-4c47-97a1-9ac1f8bcef15';
 
 /**
  * Escapes characters such as '<' to prevent breaking HTML <script> tags.
@@ -25,9 +27,9 @@ export function ensureTrailingSlash(url) {
 }
 
 /**
- * RF02: Schema for the author (Person entity).
+ * RF02 & RF03: Schema for the author (Person entity).
  */
-export function personSchema() {
+export function personSchema(imageUrl = DEFAULT_AUTHOR_PHOTO) {
   return {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -35,9 +37,14 @@ export function personSchema() {
     "name": "Natanael Brentano",
     "alternateName": "Natanael Fernando Gatti Brentano",
     "url": `${SITE_URL}/sobre/`,
-    "image": `${SITE_URL}/og-cover.jpg`,
+    "image": imageUrl || DEFAULT_AUTHOR_PHOTO,
     "description": "Natanael Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.",
     "jobTitle": "Poeta",
+    "nationality": {
+      "@type": "Country",
+      "name": "Brasil"
+    },
+    "knowsLanguage": "pt-BR",
     "knowsAbout": [
       "Poesia",
       "Literatura Brasileira",
@@ -52,7 +59,7 @@ export function personSchema() {
 /**
  * RF02: ProfilePage schema for /sobre/ whose mainEntity is the Person.
  */
-export function profilePageSchema() {
+export function profilePageSchema(imageUrl = DEFAULT_AUTHOR_PHOTO) {
   return {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
@@ -60,7 +67,7 @@ export function profilePageSchema() {
     "url": `${SITE_URL}/sobre/`,
     "name": "Sobre Natanael Brentano",
     "inLanguage": "pt-BR",
-    "mainEntity": personSchema()
+    "mainEntity": personSchema(imageUrl)
   };
 }
 
@@ -111,7 +118,7 @@ export function websiteSchema() {
 }
 
 /**
- * RF04: Schema for a poem (CreativeWork & Poem).
+ * RF02 & RF04: Schema for a poem (CreativeWork & Poem).
  */
 export function poemSchema(poem, collections = []) {
   if (!poem) return null;
@@ -123,6 +130,11 @@ export function poemSchema(poem, collections = []) {
   
   const excerpt = poem.excerpt || stripHtml(poem.content || '').replace(/\s+/g, ' ').trim().slice(0, 160);
   const plainText = stripHtml(poem.content || '').trim();
+  const wordCount = plainText ? plainText.split(/\s+/).filter(Boolean).length : 0;
+  const publishedYear = !isNaN(new Date(publishedDate).getTime())
+    ? new Date(publishedDate).getFullYear()
+    : new Date().getFullYear();
+  const licenseUrl = poem.license || 'https://creativecommons.org/licenses/by-nc-nd/4.0/';
 
   const websiteRef = { "@id": WEBSITE_ID };
   const collectionRefs = (Array.isArray(collections) ? collections : []).map(col => {
@@ -142,6 +154,18 @@ export function poemSchema(poem, collections = []) {
   const keywords = Array.isArray(poem.tags) ? poem.tags : [];
   const imageUrl = poem.image || `https://poemas-natanael.web.app/og-image?slug=${poemSlug}`;
 
+  const about = keywords.filter(Boolean).map(tag => {
+    const slug = slugifyTag(tag);
+    const term = {
+      "@type": "DefinedTerm",
+      "name": tag
+    };
+    if (slug) {
+      term.url = `${SITE_URL}/sentimento/${slug}/`;
+    }
+    return term;
+  });
+
   return {
     "@context": "https://schema.org",
     "@type": ["CreativeWork", "Poem"],
@@ -153,11 +177,21 @@ export function poemSchema(poem, collections = []) {
     "genre": "Poetry",
     "inLanguage": "pt-BR",
     "keywords": keywords,
+    "about": about,
     "datePublished": publishedDate,
     "dateModified": modifiedDate,
-    "author": {
+    "copyrightYear": publishedYear,
+    "copyrightHolder": {
       "@id": AUTHOR_ID
     },
+    "license": licenseUrl,
+    "author": {
+      "@type": "Person",
+      "@id": AUTHOR_ID,
+      "name": "Natanael Brentano",
+      "url": `${SITE_URL}/sobre/`
+    },
+    "wordCount": wordCount,
     "isPartOf": isPartOf,
     "mainEntityOfPage": poemUrl,
     "image": imageUrl,
@@ -362,3 +396,52 @@ export function renderBreadcrumbsHtml(items = []) {
 
   return `<nav aria-label="breadcrumb" class="breadcrumb-nav"><ol class="breadcrumb-list">${listItems}</ol></nav>`;
 }
+
+/**
+ * RF01: Builds a unified @graph JSON-LD structure containing complete WebSite and Person entities
+ * along with page-specific entities (Poem, CollectionPage, ProfilePage, BreadcrumbList, etc.) all linked by @id.
+ * Ensures deduplication so that each entity @id appears exactly once in @graph.
+ *
+ * @param {Array|Object} pageEntities Additional entities for the current page
+ * @returns {Object} JSON-LD @graph root object
+ */
+export function pageGraphSchema(pageEntities = []) {
+  const baseEntities = [websiteSchema(), personSchema()];
+  const inputList = Array.isArray(pageEntities)
+    ? pageEntities
+    : (pageEntities ? [pageEntities] : []);
+
+  const entityMap = new Map();
+
+  const addEntity = (entity) => {
+    if (!entity) return;
+    if (entity['@graph'] && Array.isArray(entity['@graph'])) {
+      entity['@graph'].forEach(addEntity);
+      return;
+    }
+
+    // Strip @context from individual nodes inside @graph
+    const { '@context': _, ...node } = entity;
+    const id = node['@id'] || (Array.isArray(node['@type']) ? node['@type'].join('_') : node['@type']);
+
+    if (id) {
+      if (entityMap.has(id)) {
+        entityMap.set(id, { ...entityMap.get(id), ...node });
+      } else {
+        entityMap.set(id, node);
+      }
+    } else {
+      entityMap.set(Symbol(), node);
+    }
+  };
+
+  baseEntities.forEach(addEntity);
+  inputList.forEach(addEntity);
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": Array.from(entityMap.values())
+  };
+}
+
+export const buildPageGraph = pageGraphSchema;

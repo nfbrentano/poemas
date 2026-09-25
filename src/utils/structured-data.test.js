@@ -10,6 +10,8 @@ import {
   serializeJsonLd,
   setStructuredData,
   renderBreadcrumbsHtml,
+  pageGraphSchema,
+  DEFAULT_AUTHOR_PHOTO,
   AUTHOR_ID,
   WEBSITE_ID
 } from './structured-data.js';
@@ -44,6 +46,24 @@ describe('structured-data.js', () => {
       expect(schema.datePublished).toBe('2026-01-15T12:00:00.000Z');
       expect(schema.dateModified).toBe('2026-02-01T10:00:00.000Z');
       expect(schema.author['@id']).toBe(AUTHOR_ID);
+      expect(schema.author.name).toBe('Natanael Brentano');
+      expect(schema.author.url).toBe('https://nfgbrentano.art.br/sobre/');
+      expect(schema.license).toBe('https://creativecommons.org/licenses/by-nc-nd/4.0/');
+      expect(schema.copyrightHolder['@id']).toBe(AUTHOR_ID);
+      expect(schema.copyrightYear).toBe(2026);
+      expect(schema.wordCount).toBe(9);
+      expect(schema.about).toEqual([
+        {
+          '@type': 'DefinedTerm',
+          name: 'amor',
+          url: 'https://nfgbrentano.art.br/sentimento/amor/'
+        },
+        {
+          '@type': 'DefinedTerm',
+          name: 'tempo',
+          url: 'https://nfgbrentano.art.br/sentimento/tempo/'
+        }
+      ]);
       expect(schema.url).toBe('https://nfgbrentano.art.br/poema/cantico-do-silencio/');
 
       // isPartOf deve conter o WebSite e a coleção
@@ -127,12 +147,15 @@ describe('structured-data.js', () => {
     });
   });
 
-  describe('personSchema e profilePageSchema (RF02)', () => {
-    it('personSchema deve conter @id fixo, name, url, image, sameAs e knowsAbout', () => {
+  describe('personSchema e profilePageSchema (RF02 & RF03)', () => {
+    it('personSchema deve conter @id fixo, name, url, image real, nationality, knowsLanguage, sameAs e knowsAbout', () => {
       const person = personSchema();
       expect(person['@id']).toBe('https://nfgbrentano.art.br/sobre/#autor');
       expect(person.name).toBe('Natanael Brentano');
       expect(person.url).toBe('https://nfgbrentano.art.br/sobre/');
+      expect(person.image).toBe(DEFAULT_AUTHOR_PHOTO);
+      expect(person.nationality).toEqual({ '@type': 'Country', name: 'Brasil' });
+      expect(person.knowsLanguage).toBe('pt-BR');
       expect(person.sameAs).toContain('https://instagram.com/nfgbrentano');
       expect(person.knowsAbout).toContain('Poesia');
     });
@@ -143,6 +166,7 @@ describe('structured-data.js', () => {
       expect(profile['@id']).toBe('https://nfgbrentano.art.br/sobre/');
       expect(profile.mainEntity['@id']).toBe('https://nfgbrentano.art.br/sobre/#autor');
       expect(profile.mainEntity['@type']).toBe('Person');
+      expect(profile.mainEntity.image).toBe(DEFAULT_AUTHOR_PHOTO);
     });
   });
 
@@ -249,6 +273,40 @@ describe('structured-data.js', () => {
       expect(html).toContain('aria-current="page"');
       expect(html).toContain('Poema 1');
       expect(html).toContain('›');
+    });
+  });
+
+  describe('pageGraphSchema (RF01, RF06, CA01, CA05, CT01, CT03)', () => {
+    it('deve gerar @graph unificado contendo WebSite, Person, Poem e BreadcrumbList', () => {
+      const poem = poemSchema({ title: 'Poema Teste', slug: 'poema-teste', content: 'Texto do poema' });
+      const breadcrumbs = breadcrumbSchema([{ name: 'Início', url: 'https://nfgbrentano.art.br/' }]);
+
+      const graph = pageGraphSchema([poem, breadcrumbs]);
+
+      expect(graph['@context']).toBe('https://schema.org');
+      expect(Array.isArray(graph['@graph'])).toBe(true);
+
+      const types = graph['@graph'].map(e => e['@type']);
+      expect(types).toContain('WebSite');
+      expect(types).toContain('Person');
+      expect(types.some(t => Array.isArray(t) && t.includes('Poem'))).toBe(true);
+      expect(types).toContain('BreadcrumbList');
+    });
+
+    it('deve deduplicar entidades com mesmo @id no grafo (CT03)', () => {
+      const graph = pageGraphSchema([
+        websiteSchema(),
+        personSchema(),
+        personSchema()
+      ]);
+
+      const personNodes = graph['@graph'].filter(e => e['@type'] === 'Person');
+      expect(personNodes).toHaveLength(1);
+      expect(personNodes[0]['@id']).toBe(AUTHOR_ID);
+
+      const websiteNodes = graph['@graph'].filter(e => e['@type'] === 'WebSite');
+      expect(websiteNodes).toHaveLength(1);
+      expect(websiteNodes[0]['@id']).toBe(WEBSITE_ID);
     });
   });
 });

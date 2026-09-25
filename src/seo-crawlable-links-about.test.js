@@ -197,10 +197,10 @@ describe('{SEO} Links rastreáveis e página Sobre (SDD 2026-09-24)', () => {
       expect(document.querySelector('meta[property="article:published_time"]')).toBeNull();
       expect(document.querySelectorAll('meta[property="article:tag"]').length).toBe(0);
 
-      // JSON-LD deve conter ProfilePage
+      // JSON-LD deve conter ProfilePage (isolado ou dentro do @graph)
       const jsonLdScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
       const parsedLd = jsonLdScripts.map(s => JSON.parse(s.textContent));
-      const hasProfilePage = parsedLd.some(s => s['@type'] === 'ProfilePage');
+      const hasProfilePage = parsedLd.some(s => s['@type'] === 'ProfilePage' || (Array.isArray(s['@graph']) && s['@graph'].some(g => g['@type'] === 'ProfilePage')));
       expect(hasProfilePage).toBe(true);
     });
   });

@@ -44,13 +44,13 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o HTML prerenderizado de qualquer poema, quando extraio o JSON-LD, então encontro no mesmo documento `Person` (com `name`), `WebSite`, `Poem` e `BreadcrumbList` ligados por `@id`.
-- [ ] **CA02:** Dado o schema `Poem`, quando inspeciono `author`, então ele contém `@id`, `name: "Natanael Brentano"` e `url` para `/sobre/`.
-- [ ] **CA03:** Dado o schema `Poem`, quando inspeciono, então há `license`, `copyrightHolder`, `copyrightYear`, `wordCount` e `about` (sentimentos como `DefinedTerm`).
-- [ ] **CA04:** Dado a página de um poema, quando a vejo no navegador (inclusive com JS desativado), então há um byline "por Natanael Brentano" com link `rel="author"` para `/sobre/` e a data em `<time datetime>`.
-- [ ] **CA05:** Dado a home, quando valido o JSON-LD, então `publisher` e `author` apontam para um `Person` declarado na própria página.
-- [ ] **CA06:** Dado qualquer página, quando a submeto ao Schema Markup Validator, então não há erros.
-- [ ] **CA07:** Dado que navego de um poema para outro pela SPA, quando inspeciono o `<head>`, então o grafo corresponde ao poema atual.
+- [x] **CA01:** Dado o HTML prerenderizado de qualquer poema, quando extraio o JSON-LD, então encontro no mesmo documento `Person` (com `name`), `WebSite`, `Poem` e `BreadcrumbList` ligados por `@id`.
+- [x] **CA02:** Dado o schema `Poem`, quando inspeciono `author`, então ele contém `@id`, `name: "Natanael Brentano"` e `url` para `/sobre/`.
+- [x] **CA03:** Dado o schema `Poem`, quando inspeciono, então há `license`, `copyrightHolder`, `copyrightYear`, `wordCount` e `about` (sentimentos como `DefinedTerm`).
+- [x] **CA04:** Dado a página de um poema, quando a vejo no navegador (inclusive com JS desativado), então há um byline "por Natanael Brentano" com link `rel="author"` para `/sobre/` e a data em `<time datetime>`.
+- [x] **CA05:** Dado a home, quando valido o JSON-LD, então `publisher` e `author` apontam para um `Person` declarado na própria página.
+- [x] **CA06:** Dado qualquer página, quando a submeto ao Schema Markup Validator, então não há erros.
+- [x] **CA07:** Dado que navego de um poema para outro pela SPA, quando inspeciono o `<head>`, então o grafo corresponde ao poema atual.
 
 ## O que a atividade não inclui
 

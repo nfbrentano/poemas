@@ -11,6 +11,8 @@ import {
   serializeJsonLd,
   setStructuredData,
   renderBreadcrumbsHtml,
+  pageGraphSchema,
+  DEFAULT_AUTHOR_PHOTO,
   AUTHOR_ID,
   WEBSITE_ID
 } from './utils/structured-data.js';
@@ -45,11 +47,23 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
         { name: 'Aurora Boreal', url: 'https://nfgbrentano.art.br/poema/aurora-boreal/' }
       ]);
 
-      // Validações do poema
+      // Validações do poema (RF02 & RF04)
       expect(pSchema['@type']).toEqual(['CreativeWork', 'Poem']);
       expect(pSchema.headline).toBe('Aurora Boreal');
       expect(pSchema.keywords).toEqual(['noite', 'frio']);
       expect(pSchema.author['@id']).toBe(AUTHOR_ID);
+      expect(pSchema.author.name).toBe('Natanael Brentano');
+      expect(pSchema.author.url).toBe('https://nfgbrentano.art.br/sobre/');
+      expect(pSchema.copyrightHolder['@id']).toBe(AUTHOR_ID);
+      expect(pSchema.copyrightYear).toBe(2026);
+      expect(pSchema.license).toBe('https://creativecommons.org/licenses/by-nc-nd/4.0/');
+      expect(pSchema.wordCount).toBe(5);
+      expect(pSchema.about).toHaveLength(2);
+      expect(pSchema.about[0]).toEqual({
+        '@type': 'DefinedTerm',
+        name: 'noite',
+        url: 'https://nfgbrentano.art.br/sentimento/noite/'
+      });
       expect(pSchema.isPartOf).toEqual([
         { '@id': WEBSITE_ID },
         {
@@ -80,7 +94,9 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
       expect(person['@id']).toBe('https://nfgbrentano.art.br/sobre/#autor');
       expect(person.name).toBe('Natanael Brentano');
       expect(person.url).toBe('https://nfgbrentano.art.br/sobre/');
-      expect(person.image).toBe('https://nfgbrentano.art.br/og-cover.jpg');
+      expect(person.image).toBe(DEFAULT_AUTHOR_PHOTO);
+      expect(person.nationality).toEqual({ '@type': 'Country', name: 'Brasil' });
+      expect(person.knowsLanguage).toBe('pt-BR');
       expect(person.sameAs).toContain('https://instagram.com/nfgbrentano');
       expect(person.knowsAbout).toContain('Poesia');
     });
@@ -112,8 +128,8 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
     });
   });
 
-  describe('CA04 & CT05: Sem duplicação de blocos JSON-LD ao navegar via SPA por 5 páginas', () => {
-    it('ao navegar sequencialmente por 5 páginas, deve conter apenas os blocos da página atual', () => {
+  describe('CA04 & CT05 & CT06: Grafo JSON-LD unificado sem duplicação ao navegar via SPA por 5 páginas', () => {
+    it('ao navegar sequencialmente por 5 páginas, deve conter exatamente 1 script com o @graph da página atual', () => {
       // 1. Rota Home (/)
       updateSEO({
         title: 'Home',
@@ -122,10 +138,13 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
       });
       let scripts = document.querySelectorAll('script[type="application/ld+json"]');
       expect(scripts).toHaveLength(1);
-      expect(scripts[0].textContent).toContain('WebSite');
+      let graphData = JSON.parse(scripts[0].textContent);
+      expect(graphData['@graph']).toBeDefined();
+      expect(graphData['@graph'].some(e => e['@type'] === 'WebSite')).toBe(true);
+      expect(graphData['@graph'].some(e => e['@type'] === 'Person')).toBe(true);
 
       // 2. Rota Poema (/poema/sol)
-      const poem = { title: 'Sol', slug: 'sol' };
+      const poem = { title: 'Sol', slug: 'sol', content: 'Raio de sol dourado' };
       updateSEO({
         title: 'Sol',
         url: 'https://nfgbrentano.art.br/poema/sol/',
@@ -136,10 +155,12 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
         ]
       });
       scripts = document.querySelectorAll('script[type="application/ld+json"]');
-      expect(scripts).toHaveLength(2);
-      expect(scripts[0].textContent).toContain('CreativeWork');
-      expect(scripts[1].textContent).toContain('BreadcrumbList');
-      expect(document.head.innerHTML).not.toContain('"@type":"WebSite"');
+      expect(scripts).toHaveLength(1);
+      graphData = JSON.parse(scripts[0].textContent);
+      expect(graphData['@graph'].some(e => Array.isArray(e['@type']) && e['@type'].includes('Poem'))).toBe(true);
+      expect(graphData['@graph'].some(e => e['@type'] === 'BreadcrumbList')).toBe(true);
+      expect(graphData['@graph'].some(e => e['@type'] === 'Person')).toBe(true);
+      expect(graphData['@graph'].some(e => e['@type'] === 'WebSite')).toBe(true);
 
       // 3. Rota Coleção (/colecao/luz)
       const col = { name: 'Luz', slug: 'luz' };
@@ -152,10 +173,11 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
         ]
       });
       scripts = document.querySelectorAll('script[type="application/ld+json"]');
-      expect(scripts).toHaveLength(2);
-      expect(scripts[0].textContent).toContain('CollectionPage');
-      expect(scripts[1].textContent).toContain('BreadcrumbList');
-      expect(document.head.innerHTML).not.toContain('Aurora Boreal');
+      expect(scripts).toHaveLength(1);
+      graphData = JSON.parse(scripts[0].textContent);
+      expect(graphData['@graph'].some(e => e['@type'] === 'CollectionPage' && e.name === 'Luz')).toBe(true);
+      expect(graphData['@graph'].some(e => e['@type'] === 'BreadcrumbList')).toBe(true);
+      expect(scripts[0].textContent).not.toContain('Aurora Boreal');
 
       // 4. Rota Coleções (/colecoes/)
       updateSEO({
@@ -167,9 +189,9 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
         ]
       });
       scripts = document.querySelectorAll('script[type="application/ld+json"]');
-      expect(scripts).toHaveLength(2);
-      expect(scripts[0].textContent).toContain('CollectionPage');
-      expect(scripts[1].textContent).toContain('BreadcrumbList');
+      expect(scripts).toHaveLength(1);
+      graphData = JSON.parse(scripts[0].textContent);
+      expect(graphData['@graph'].some(e => e['@type'] === 'CollectionPage' && e.url.endsWith('/colecoes/'))).toBe(true);
 
       // 5. Rota Sobre (/sobre/)
       updateSEO({
@@ -181,9 +203,10 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
         ]
       });
       scripts = document.querySelectorAll('script[type="application/ld+json"]');
-      expect(scripts).toHaveLength(2);
-      expect(scripts[0].textContent).toContain('ProfilePage');
-      expect(scripts[1].textContent).toContain('BreadcrumbList');
+      expect(scripts).toHaveLength(1);
+      graphData = JSON.parse(scripts[0].textContent);
+      expect(graphData['@graph'].some(e => e['@type'] === 'ProfilePage')).toBe(true);
+      expect(graphData['@graph'].some(e => e['@type'] === 'Person')).toBe(true);
 
       // 6. Rota 404 / Não encontrada
       setNotFoundSEO();
@@ -239,6 +262,96 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
       expect(html).toContain('aria-current="page"');
       expect(html).toContain('O Tempo Passa');
       expect(html).toContain('›');
+    });
+  });
+
+  describe('GEO: Grafo conectado e entidade autor completa (SDD 2026-09-24)', () => {
+    it('CA01 & CT01: pageGraphSchema no poema deve conter Person, WebSite, Poem e BreadcrumbList ligados por @id', () => {
+      const mockPoem = {
+        title: 'Vozes da Terra',
+        slug: 'vozes-da-terra',
+        content: 'Canto que brota da terra fértil.',
+        published_at: '2026-03-24T12:00:00.000Z',
+        tags: ['terra', 'vida']
+      };
+      const mockCollections = [{ name: 'Sementes', slug: 'sementes' }];
+      const poemLd = poemSchema(mockPoem, mockCollections);
+      const breadcrumbsLd = breadcrumbSchema([
+        { name: 'Início', url: 'https://nfgbrentano.art.br/' },
+        { name: 'Sementes', url: 'https://nfgbrentano.art.br/colecao/sementes/' },
+        { name: 'Vozes da Terra', url: 'https://nfgbrentano.art.br/poema/vozes-da-terra/' }
+      ]);
+
+      const graph = pageGraphSchema([poemLd, breadcrumbsLd]);
+
+      expect(graph['@context']).toBe('https://schema.org');
+      expect(Array.isArray(graph['@graph'])).toBe(true);
+
+      const nodes = graph['@graph'];
+      const websiteNode = nodes.find(n => n['@type'] === 'WebSite');
+      const personNode = nodes.find(n => n['@type'] === 'Person');
+      const poemNode = nodes.find(n => Array.isArray(n['@type']) && n['@type'].includes('Poem'));
+      const breadcrumbNode = nodes.find(n => n['@type'] === 'BreadcrumbList');
+
+      expect(websiteNode).toBeDefined();
+      expect(personNode).toBeDefined();
+      expect(poemNode).toBeDefined();
+      expect(breadcrumbNode).toBeDefined();
+
+      // Ligação por @id
+      expect(websiteNode.publisher['@id']).toBe(AUTHOR_ID);
+      expect(websiteNode.author['@id']).toBe(AUTHOR_ID);
+      expect(poemNode.author['@id']).toBe(AUTHOR_ID);
+      expect(poemNode.copyrightHolder['@id']).toBe(AUTHOR_ID);
+      expect(poemNode.isPartOf.some(p => p['@id'] === WEBSITE_ID)).toBe(true);
+    });
+
+    it('CA02 & CT02: autor autocontido no Poem com @id, name e url', () => {
+      const poem = poemSchema({ title: 'Verso Livre', slug: 'verso-livre' });
+      expect(poem.author['@id']).toBe(AUTHOR_ID);
+      expect(poem.author.name).toBe('Natanael Brentano');
+      expect(poem.author.url).toBe('https://nfgbrentano.art.br/sobre/');
+    });
+
+    it('CA03: Poem contém license, copyrightHolder, copyrightYear, wordCount e about (DefinedTerm)', () => {
+      const poem = poemSchema({
+        title: 'Poema Completo',
+        slug: 'poema-completo',
+        content: '<p>Um dois três quatro cinco.</p>',
+        published_at: '2026-02-10T12:00:00Z',
+        tags: ['esperanca']
+      });
+
+      expect(poem.license).toBe('https://creativecommons.org/licenses/by-nc-nd/4.0/');
+      expect(poem.copyrightHolder['@id']).toBe(AUTHOR_ID);
+      expect(poem.copyrightYear).toBe(2026);
+      expect(poem.wordCount).toBe(5);
+      expect(poem.about).toEqual([
+        {
+          '@type': 'DefinedTerm',
+          name: 'esperanca',
+          url: 'https://nfgbrentano.art.br/sentimento/esperanca/'
+        }
+      ]);
+    });
+
+    it('CT03: sem duplicatas de Person com @id diferentes no grafo', () => {
+      const poemLd = poemSchema({ title: 'Poema Teste', slug: 'poema-teste' });
+      const graph = pageGraphSchema([poemLd, profilePageSchema()]);
+      const personNodes = graph['@graph'].filter(n => n['@type'] === 'Person');
+      expect(personNodes).toHaveLength(1);
+      expect(personNodes[0]['@id']).toBe(AUTHOR_ID);
+    });
+
+    it('CA05: home grafo contém WebSite e Person declarados na própria página', () => {
+      const graph = pageGraphSchema();
+      const websiteNode = graph['@graph'].find(n => n['@type'] === 'WebSite');
+      const personNode = graph['@graph'].find(n => n['@type'] === 'Person');
+
+      expect(websiteNode).toBeDefined();
+      expect(personNode).toBeDefined();
+      expect(websiteNode.publisher['@id']).toBe(personNode['@id']);
+      expect(websiteNode.author['@id']).toBe(personNode['@id']);
     });
   });
 });
