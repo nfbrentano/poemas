@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poemas-cache-v20';
+const CACHE_NAME = 'poemas-cache-v21';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -55,12 +55,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Navigation requests (HTML pages) - Network First strategy
-  if (event.request.mode === 'navigate') {
+  const acceptHeader = event.request.headers.get('accept') || '';
+  const isHtmlPage = event.request.mode === 'navigate' ||
+    event.request.destination === 'document' ||
+    acceptHeader.includes('text/html') ||
+    (!requestUrl.pathname.includes('.') && !requestUrl.pathname.startsWith('/api'));
+
+  // 1. Navigation requests & HTML pages - Network First strategy
+  if (isHtmlPage) {
     event.respondWith(
       fetch(event.request, { cache: 'no-cache' })
         .then((response) => {
-          if (response.status === 200) {
+          if (response && response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseClone);
@@ -69,12 +75,14 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Only fallback to cache if offline/network failure
+          // Fallback to cache, then SPA index.html, then offline.html without rejecting
           return caches.match(event.request).then((cachedResponse) => {
             if (cachedResponse) return cachedResponse;
             return caches.match('/index.html').then((cachedIndex) => {
               return cachedIndex || caches.match('/offline.html');
             });
+          }).then((fallback) => {
+            return fallback || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
           });
         })
     );
@@ -89,7 +97,7 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse;
         }
         return fetch(event.request).then((networkResponse) => {
-          if (networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseClone);
@@ -109,7 +117,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse.status === 200) {
+        if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
@@ -117,10 +125,11 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch((err) => {
+        console.warn('[SW] Background/fetch failed for:', event.request.url, err);
         if (cachedResponse) {
           return cachedResponse;
         }
-        throw err;
+        return new Response('', { status: 408, statusText: 'Request Timeout' });
       });
 
       return cachedResponse || fetchPromise;
