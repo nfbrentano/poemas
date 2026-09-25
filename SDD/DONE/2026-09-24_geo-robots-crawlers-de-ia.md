@@ -39,11 +39,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o site publicado, quando acesso `https://nfgbrentano.art.br/robots.txt`, então vejo grupos explícitos para os robôs de busca de IA listados em RF01, todos com `Allow: /`.
-- [ ] **CA02:** Dado o `robots.txt` publicado, quando o avalio para `GPTBot`, `ClaudeBot` e `Google-Extended`, então o resultado corresponde à decisão registrada pelo autor.
-- [ ] **CA03:** Dado qualquer `User-agent`, quando testo `/admin`, `/login`, `/analytics` e `/unsubscribe`, então todas estão bloqueadas.
-- [ ] **CA04:** Dado que fiz um deploy com um poema novo, quando o workflow termina, então o log mostra o ping do IndexNow com a URL do poema.
-- [ ] **CA05:** Dado o domínio, quando consulto o Bing Webmaster Tools, então o site está verificado e o sitemap foi enviado.
+- [x] **CA01:** Dado o site publicado, quando acesso `https://nfgbrentano.art.br/robots.txt`, então vejo grupos explícitos para os robôs de busca de IA listados em RF01, todos com `Allow: /`.
+- [x] **CA02:** Dado o `robots.txt` publicado, quando o avalio para `GPTBot`, `ClaudeBot` e `Google-Extended`, então o resultado corresponde à decisão registrada pelo autor.
+- [x] **CA03:** Dado qualquer `User-agent`, quando testo `/admin`, `/login`, `/analytics` e `/unsubscribe`, então todas estão bloqueadas.
+- [x] **CA04:** Dado que fiz um deploy com um poema novo, quando o workflow termina, então o log mostra o ping do IndexNow com a URL do poema.
+- [x] **CA05:** Dado o domínio, quando consulto o Bing Webmaster Tools, então o site está verificado e o sitemap foi enviado.
 
 ## O que a atividade não inclui
 

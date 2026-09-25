@@ -1,4 +1,164 @@
+# ==============================================================================
+# robots.txt para https://nfgbrentano.art.br
+# Em conformidade com a RFC 9309 (Robots Exclusion Protocol)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Motores de Busca e Citação com IA (GEO / AI Search & Citation Bots)
+# ------------------------------------------------------------------------------
+User-agent: OAI-SearchBot
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: ChatGPT-User
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: PerplexityBot
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: Perplexity-User
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: Claude-SearchBot
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: Claude-User
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: DuckAssistBot
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: Bingbot
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+# ------------------------------------------------------------------------------
+# 2. Robôs de Treinamento de Modelos de IA (Permitidos pelo autor para citação e presença)
+# ------------------------------------------------------------------------------
+User-agent: GPTBot
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: ClaudeBot
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: Google-Extended
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: Applebot-Extended
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: CCBot
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: meta-externalagent
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+User-agent: Bytespider
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+# ------------------------------------------------------------------------------
+# 3. Motores de Busca Convencionais
+# ------------------------------------------------------------------------------
+User-agent: Googlebot
+Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
+Allow: /
+
+# ------------------------------------------------------------------------------
+# 4. Regra Geral Padrão
+# ------------------------------------------------------------------------------
 User-agent: *
 Disallow: /admin
+Disallow: /login
+Disallow: /analytics
+Disallow: /unsubscribe
+Disallow: /cancelar-inscricao
 Allow: /
+
+# ------------------------------------------------------------------------------
+# 5. Índices de Conteúdo para IA e LLMs (llmstxt.org)
+# ------------------------------------------------------------------------------
+# LLMs index and full-text context:
+# https://nfgbrentano.art.br/llms.txt
+# https://nfgbrentano.art.br/llms-full.txt
+
+# ------------------------------------------------------------------------------
+# 6. Sitemap do Site
+# ------------------------------------------------------------------------------
 Sitemap: https://nfgbrentano.art.br/sitemap.xml
