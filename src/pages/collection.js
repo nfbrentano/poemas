@@ -87,7 +87,7 @@ export const collection = {
           <p class="not-found-label">404</p>
           <h2 class="not-found-title">Página não encontrada</h2>
           <p class="not-found-desc">A coleção que você procura não existe ou foi removida.</p>
-          <a href="${import.meta.env.BASE_URL}colecoes" data-link class="not-found-link">← Voltar para coleções</a>
+          <a href="${import.meta.env.BASE_URL}colecoes/" data-link class="not-found-link">← Voltar para coleções</a>
         </div>
       `;
       return;
@@ -121,7 +121,7 @@ export const collection = {
       <section class="collection-detail fade-in">
         <header class="collection-header">
           ${renderBreadcrumbsHtml(breadcrumbItems)}
-          <a href="${import.meta.env.BASE_URL}colecoes" class="back-link" data-link>← Voltar para coleções</a>
+          <a href="${import.meta.env.BASE_URL}colecoes/" class="back-link" data-link>← Voltar para coleções</a>
           <h1 class="collection-title">${escapeHtml(col.name)}</h1>
           <p class="collection-meta" style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">
             ${poemsList.length} poema${poemsList.length !== 1 ? 's' : ''}
@@ -132,7 +132,7 @@ export const collection = {
         <div class="poems-list">
           ${poemsList.length > 0 ? poemsList.map(poem => `
             <article class="poem-row">
-              <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}" class="poem-row-link" data-link>
+              <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
                 <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
                 <span class="poem-row-year">${new Date(poem.published_at).getFullYear()}</span>
               </a>

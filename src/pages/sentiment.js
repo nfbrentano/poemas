@@ -149,7 +149,7 @@ export const sentiment = {
       <section class="collection-detail sentiment-detail fade-in">
         <header class="collection-header">
           ${renderBreadcrumbsHtml(breadcrumbItems)}
-          <a href="${import.meta.env.BASE_URL}sentimentos" class="back-link" data-link>← Ver todos os sentimentos</a>
+          <a href="${import.meta.env.BASE_URL}sentimentos/" class="back-link" data-link>← Ver todos os sentimentos</a>
           <h1 class="collection-title">${escapeHtml(pageTitle)}</h1>
           <p class="collection-meta" style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">
             ${count} poema${count !== 1 ? 's' : ''}
@@ -163,7 +163,7 @@ export const sentiment = {
             const year = new Date(poem.published_at).getFullYear();
             return `
               <article class="poem-row">
-                <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}" class="poem-row-link" data-link>
+                <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
                   <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
                   <span class="poem-row-year">${year}</span>
                 </a>
@@ -186,7 +186,7 @@ export const sentiment = {
         <p class="not-found-label">404</p>
         <h2 class="not-found-title">Sentimento não encontrado</h2>
         <p class="not-found-desc">Não encontramos poemas para o sentimento solicitado.</p>
-        <a href="${import.meta.env.BASE_URL}sentimentos" data-link class="not-found-link">← Ver todos os sentimentos</a>
+        <a href="${import.meta.env.BASE_URL}sentimentos/" data-link class="not-found-link">← Ver todos os sentimentos</a>
       </div>
     `;
   }

@@ -156,8 +156,8 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
           </div>
           <ul>
             <li><a href="/" data-link>Poemas</a></li>
-            <li><a href="/colecoes" data-link>Coleções</a></li>
-            <li><a href="/sobre" data-link>Sobre</a></li>
+            <li><a href="/colecoes/" data-link>Coleções</a></li>
+            <li><a href="/sobre/" data-link>Sobre</a></li>
           </ul>
         </nav>
         
@@ -188,7 +188,7 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
         &copy; ${currentYear} Natanael Brentano. Todos os direitos reservados.
       </div>
       <div class="footer-social">
-        <a href="/sentimentos" data-link class="footer-social-link">
+        <a href="/sentimentos/" data-link class="footer-social-link">
           <span>Sentimentos</span>
         </a>
         <span class="footer-separator">•</span>
@@ -214,7 +214,7 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
       <span>Poemas</span>
     </a>
-    <a href="/colecoes" class="bottom-nav-item" data-link>
+    <a href="/colecoes/" class="bottom-nav-item" data-link>
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       <span>Coleções</span>
     </a>
@@ -222,7 +222,7 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       <span>Buscar</span>
     </button>
-    <a href="/sobre" class="bottom-nav-item" data-link>
+    <a href="/sobre/" class="bottom-nav-item" data-link>
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
       <span>Sobre</span>
     </a>
@@ -947,7 +947,7 @@ async function prerender() {
         <section class="collection-detail sentiment-detail fade-in">
           <header class="collection-header">
             ${renderBreadcrumbsHtml(breadcrumbItems)}
-            <a href="/sentimentos" class="back-link" data-link>← Ver todos os sentimentos</a>
+            <a href="/sentimentos/" class="back-link" data-link>← Ver todos os sentimentos</a>
             <h1 class="collection-title">Poemas sobre ${escapeHtml(s.name)}</h1>
             <p class="collection-meta" style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">
               ${count} poema${count !== 1 ? 's' : ''}
@@ -961,7 +961,7 @@ async function prerender() {
               const year = new Date(poem.published_at).getFullYear();
               return `
                 <article class="poem-row">
-                  <a href="/poema/${escapeHtml(poem.slug)}" class="poem-row-link" data-link>
+                  <a href="/poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
                     <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
                     <span class="poem-row-year">${year}</span>
                   </a>

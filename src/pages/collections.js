@@ -198,7 +198,7 @@ export const collections = {
               const year = new Date(poem.published_at).getFullYear();
               return `
                 <article class="poem-row fade-in">
-                  <a href="${BASE_URL}poema/${escapeHtml(poem.slug)}" data-link class="poem-row-link">
+                  <a href="${BASE_URL}poema/${escapeHtml(poem.slug)}/" data-link class="poem-row-link">
                     <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
                     <span class="poem-row-year">${year}</span>
                   </a>
