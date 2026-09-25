@@ -62,5 +62,3 @@ jobs:
         uses: actions/deploy-pages@v4
       - name: Ping IndexNow
         run: node scripts/ping-indexnow.js --ping
-        env:
-          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
