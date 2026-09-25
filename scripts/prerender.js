@@ -422,6 +422,8 @@ async function prerender() {
 
     console.log(`Found ${poems.length} poems to pre-render.`);
     let originalHtml = fs.readFileSync(templatePath, 'utf-8');
+    // Reset <div id="app"> to empty in case dist/index.html was already prerendered in a previous run
+    originalHtml = originalHtml.replace(/<div id="app">[\s\S]*?<\/body>/i, '<div id="app"></div>\n  </body>');
 
     await loadFonts();
     const defaultOgImage = await generateDefaultOgImage();
@@ -824,7 +826,7 @@ async function prerender() {
 
     // 1. Render /sentimentos/ hub
     try {
-      const sentimentsDir = path.join(distDir, 'sentimentos');
+      const sentimentosDir = path.join(distDir, 'sentimentos');
       if (!fs.existsSync(sentimentosDir)) {
         fs.mkdirSync(sentimentosDir, { recursive: true });
       }

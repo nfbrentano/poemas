@@ -1,7 +1,8 @@
 import { stripHtml } from './html.js';
 import { formatTag } from './tags.js';
+import { SITE_URL } from './url.js';
 
-export const SITE_URL = 'https://nfgbrentano.art.br/';
+export { SITE_URL };
 
 /**
  * Escapes characters that are special in XML text nodes or attribute values.

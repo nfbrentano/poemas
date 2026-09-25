@@ -1,4 +1,5 @@
 import { setStructuredData, poemSchema } from './structured-data.js';
+import { cleanCanonicalUrl } from './url.js';
 
 export function setNotFoundSEO() {
   document.title = 'Página não encontrada — Natanael Brentano';
@@ -57,17 +58,18 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   };
 
   const finalDesc = (description || defaultDesc).slice(0, 160);
-  const finalUrl = url || window.location.href;
+  const rawUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+  const canonicalUrl = cleanCanonicalUrl(rawUrl);
   const finalImage = imageUrl || defaultImage;
 
-  // Canonical URL
+  // Canonical URL (RF05)
   let canonical = document.querySelector('link[rel="canonical"]');
   if (!canonical) {
     canonical = document.createElement('link');
     canonical.setAttribute('rel', 'canonical');
     document.head.appendChild(canonical);
   }
-  canonical.setAttribute('href', finalUrl);
+  canonical.setAttribute('href', canonicalUrl);
 
   // Meta Robots
   if (robots) {
@@ -84,7 +86,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   setMeta('meta[property="og:site_name"]', 'content', 'Poemas — Natanael Brentano');
   setMeta('meta[property="og:title"]', 'content', finalTitle);
   setMeta('meta[property="og:description"]', 'content', finalDesc);
-  setMeta('meta[property="og:url"]', 'content', finalUrl);
+  setMeta('meta[property="og:url"]', 'content', canonicalUrl);
   setMeta('meta[property="og:type"]', 'content', type);
   setMeta('meta[property="og:image"]', 'content', finalImage);
   setMeta('meta[property="og:image:width"]', 'content', '1200');

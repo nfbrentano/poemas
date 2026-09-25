@@ -42,4 +42,25 @@ describe('updateSEO', () => {
     expect(document.title).toBe('Poemas Brasileiros — Natanael Brentano');
     expect(document.title.length).toBeLessThanOrEqual(60);
   });
+
+  it('normalizes canonical and og:url with trailing slash (RF05, CA01)', () => {
+    updateSEO({ url: 'https://nfgbrentano.art.br/poema/277' });
+    const canonical = document.querySelector('link[rel="canonical"]');
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    expect(canonical.getAttribute('href')).toBe('https://nfgbrentano.art.br/poema/277/');
+    expect(ogUrl.getAttribute('content')).toBe('https://nfgbrentano.art.br/poema/277/');
+  });
+
+  it('strips query strings and hash from canonical and og:url (RF05, CA05, CT05)', () => {
+    updateSEO({ url: 'https://nfgbrentano.art.br/?tags=amor' });
+    const canonical = document.querySelector('link[rel="canonical"]');
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    expect(canonical.getAttribute('href')).toBe('https://nfgbrentano.art.br/');
+    expect(ogUrl.getAttribute('content')).toBe('https://nfgbrentano.art.br/');
+
+    updateSEO({ url: 'https://nfgbrentano.art.br/poema/meu-slug?ref=1#comentarios' });
+    expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://nfgbrentano.art.br/poema/meu-slug/');
+    expect(document.querySelector('meta[property="og:url"]').getAttribute('content')).toBe('https://nfgbrentano.art.br/poema/meu-slug/');
+  });
 });
+

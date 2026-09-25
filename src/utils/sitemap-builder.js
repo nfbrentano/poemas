@@ -1,24 +1,7 @@
 import { normalizeTag, tagToSlug, slugifyTag } from './tags.js';
+import { SITE_URL, ensureTrailingSlash } from './url.js';
 
-export { tagToSlug, slugifyTag };
-
-export const SITE_URL = 'https://nfgbrentano.art.br/';
-
-/**
- * Ensures a URL has a trailing slash (unless it has a file extension like .xml).
- * @param {string} url
- * @returns {string}
- */
-export function ensureTrailingSlash(url) {
-  if (!url) return '';
-  const [base, query] = url.split('?');
-  const hasExt = /\.[a-z0-9]+$/i.test(base);
-  let cleanBase = base;
-  if (!hasExt && !cleanBase.endsWith('/')) {
-    cleanBase += '/';
-  }
-  return query ? `${cleanBase}?${query}` : cleanBase;
-}
+export { tagToSlug, slugifyTag, SITE_URL, ensureTrailingSlash };
 
 /**
  * Parses any date value (string, Date, Firestore Timestamp) to YYYY-MM-DD.
@@ -87,7 +70,7 @@ export function wrapUrlSet(urlsXml) {
 export function buildPoemSitemap(poems = [], baseUrl = SITE_URL) {
   const publishedPoems = poems.filter(p => p.status === 'published' && p.slug);
   const items = publishedPoems.map(poem => {
-    const loc = `${baseUrl}poema/${poem.slug}`;
+    const loc = `${baseUrl}poema/${poem.slug}/`;
     const lastmod = getPoemLastMod(poem);
     return { loc, lastmod };
   });
@@ -132,7 +115,7 @@ export function buildCollectionSitemap(collections = [], collectionPoems = [], p
     const poemDates = colPoems.map(p => getPoemLastMod(p));
     const lastmod = maxDate(poemDates) || formatDateToYMD(col.updated_at || col.created_at) || null;
     return {
-      loc: `${baseUrl}colecao/${col.slug}`,
+      loc: `${baseUrl}colecao/${col.slug}/`,
       lastmod
     };
   });
@@ -157,10 +140,11 @@ export function buildCollectionSitemap(collections = [], collectionPoems = [], p
  * @returns {{ xml: string, lastmod: string|null, count: number }}
  */
 export function buildPagesSitemap({ homeLastMod = null, staticPages = [] } = {}, baseUrl = SITE_URL) {
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
   const items = [
-    { loc: baseUrl, lastmod: homeLastMod },
+    { loc: cleanBase, lastmod: homeLastMod },
     ...staticPages.map(sp => ({
-      loc: sp.loc.startsWith('http') ? sp.loc : `${baseUrl}${sp.loc.replace(/^\//, '')}`,
+      loc: sp.loc.startsWith('http') ? ensureTrailingSlash(sp.loc) : `${cleanBase}${sp.loc.replace(/^\/|\/$/g, '')}/`,
       lastmod: sp.lastmod || null
     }))
   ];

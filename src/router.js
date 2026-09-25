@@ -1,6 +1,7 @@
 import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
 import { setNotFoundSEO, updateSEO } from './utils/seo.js';
 import { setStructuredData, SITE_URL } from './utils/structured-data.js';
+import { buildUrl } from './utils/url.js';
 import legacyRedirects from '../scripts/legacy-redirects.json';
 
 export const routes = {
@@ -57,12 +58,12 @@ export async function router() {
   }
 
   if (path === '/info') {
-    navigateTo('/sobre');
+    navigateTo('/sobre/');
     return;
   }
 
   if (path === '/explore') {
-    navigateTo('/colecoes');
+    navigateTo('/colecoes/');
     return;
   }
   
@@ -145,6 +146,16 @@ export async function router() {
     }
     
     if (match) {
+      // RF07: Reconhecer as duas formas e, ao navegar via SPA, atualizar a URL para a forma com barra
+      if (!window.location.pathname.endsWith('/')) {
+        const normalizedPath = window.location.pathname + '/';
+        window.history.replaceState(
+          window.history.state,
+          '',
+          normalizedPath + window.location.search + window.location.hash
+        );
+      }
+
       try {
         const component = await match();
         currentViewComponent = component;
@@ -186,8 +197,8 @@ export async function router() {
 
         // RF07: Garantir que nenhuma rota SPA herde dados de <head> da rota anterior
         const currentCanonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href') || '';
-        const expectedCanonicalPath = path.endsWith('/') ? path : `${path}/`;
-        if (!currentCanonical.endsWith(expectedCanonicalPath)) {
+        const expectedCanonicalUrl = buildUrl(path);
+        if (currentCanonical !== expectedCanonicalUrl) {
           const metaTitle = component.meta?.title;
           const defaultPageTitle = metaTitle
             ? (metaTitle.includes('Natanael Brentano') ? metaTitle : `${metaTitle} — Natanael Brentano`)
@@ -196,7 +207,7 @@ export async function router() {
           updateSEO({
             title: defaultPageTitle,
             description: component.meta?.description || '',
-            url: `${SITE_URL}${expectedCanonicalPath}`,
+            url: expectedCanonicalUrl,
             robots: component.meta?.robots || undefined,
             structuredData: []
           });
