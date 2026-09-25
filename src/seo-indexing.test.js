@@ -78,7 +78,7 @@ describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs l
       expect(document.querySelector('meta[name="robots"]')).toBeNull();
       const canonical = document.querySelector('link[rel="canonical"]');
       expect(canonical).toBeTruthy();
-      expect(canonical?.getAttribute('href')).toBe('https://nfgbrentano.art.br/poema/poema-valido');
+      expect(canonical?.getAttribute('href')).toBe('https://nfgbrentano.art.br/poema/poema-valido/');
     });
 
     it('updateSEO deve aceitar parâmetro robots personalizado quando explicitado', () => {
