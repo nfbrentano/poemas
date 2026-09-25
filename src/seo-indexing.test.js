@@ -101,7 +101,7 @@ describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs l
       expect(content).toMatch(/<meta\s+name=["']robots["']\s+content=["']noindex["']/i);
       expect(content).toContain('Página não encontrada — Natanael Brentano');
       expect(content).toContain('href="/"');
-      expect(content).toContain('href="/colecoes"');
+      expect(content).toMatch(/href="\/colecoes\/?"/);
       expect(content).toContain('href="/?busca=1"');
     });
 
