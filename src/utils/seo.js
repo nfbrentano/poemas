@@ -57,7 +57,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
     }
   };
 
-  const finalDesc = (description || defaultDesc).slice(0, 160);
+  const finalDesc = String(description || defaultDesc).replace(/\s+/g, ' ').trim().slice(0, 160);
   const rawUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
   const canonicalUrl = cleanCanonicalUrl(rawUrl);
   const finalImage = imageUrl || defaultImage;
@@ -91,6 +91,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   setMeta('meta[property="og:image"]', 'content', finalImage);
   setMeta('meta[property="og:image:width"]', 'content', '1200');
   setMeta('meta[property="og:image:height"]', 'content', '630');
+  setMeta('meta[property="og:image:type"]', 'content', /\.png(?:[?#]|$)/i.test(finalImage) ? 'image/png' : 'image/jpeg');
 
   // Twitter
   setMeta('meta[name="twitter:card"]', 'content', 'summary_large_image');
@@ -140,6 +141,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
       const slug = url.split('/').filter(Boolean).pop();
       const dynamicOgUrl = `${window.location.origin}/og/poema/${slug}.png`;
       setMeta('meta[property="og:image"]', 'content', dynamicOgUrl);
+      setMeta('meta[property="og:image:type"]', 'content', 'image/png');
       setMeta('meta[name="twitter:image"]', 'content', dynamicOgUrl);
     }
   } else {

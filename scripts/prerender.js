@@ -48,6 +48,16 @@ if (!firebaseConfig.apiKey) {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Remove og:image:* herdadas do template antes de inserir as da página (evita duplicatas conflitantes).
+const OG_IMAGE_EXTRAS_RE = /\s*<meta property="og:image:(?:width|height|type|alt)" content="[^"]*"\s*\/?>/gi;
+
+// Descrições de meta tags em linha única (versos trazem quebras de linha) e com tamanho limitado.
+function metaDescAttr(text, max = 200) {
+  let clean = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (clean.length > max) clean = clean.slice(0, max - 3).trimEnd() + '...';
+  return escapeHtml(clean);
+}
+
 function getExcerpt(poem, limit = 160) {
   if (poem.excerpt && poem.excerpt.trim()) {
     return poem.excerpt.trim();
@@ -564,7 +574,7 @@ async function prerender() {
       // 3. Substituir Descrição Geral
       modifiedHtml = modifiedHtml.replace(
         /<meta name="description" content="[^"]*"\s*\/?>/i,
-        `<meta name="description" content="${escapeHtml(excerpt)}" />`
+        `<meta name="description" content="${metaDescAttr(excerpt)}" />`
       );
 
       // 4. Substituir Open Graph Tags
@@ -574,12 +584,13 @@ async function prerender() {
       );
       modifiedHtml = modifiedHtml.replace(
         /<meta property="og:description" content="[^"]*"\s*\/?>/i,
-        `<meta property="og:description" content="${escapeHtml(excerpt)}" />`
+        `<meta property="og:description" content="${metaDescAttr(excerpt)}" />`
       );
       modifiedHtml = modifiedHtml.replace(
         /<meta property="og:url" content="[^"]*"\s*\/?>/i,
         `<meta property="og:url" content="${url}" />`
       );
+      modifiedHtml = modifiedHtml.replace(OG_IMAGE_EXTRAS_RE, '');
       modifiedHtml = modifiedHtml.replace(
         /<meta property="og:image" content="[^"]*"\s*\/?>/i,
         `<meta property="og:image" content="${ogImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/png" />\n    <meta property="og:image:alt" content="${escapeHtml(title)}" />`
@@ -596,7 +607,7 @@ async function prerender() {
       );
       modifiedHtml = modifiedHtml.replace(
         /<meta name="twitter:description" content="[^"]*"\s*\/?>/i,
-        `<meta name="twitter:description" content="${escapeHtml(excerpt)}" />`
+        `<meta name="twitter:description" content="${metaDescAttr(excerpt)}" />`
       );
       modifiedHtml = modifiedHtml.replace(
         /<meta name="twitter:image" content="[^"]*"\s*\/?>/i,
@@ -668,12 +679,13 @@ async function prerender() {
       let html = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
         .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(sr.title)}</title>`)
         .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${canonicalRouteUrl}" />`)
-        .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(sr.description)}" />`)
+        .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${metaDescAttr(sr.description)}" />`)
         .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(sr.title)}" />`)
-        .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(sr.description)}" />`)
+        .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${metaDescAttr(sr.description)}" />`)
         .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${canonicalRouteUrl}" />`)
         .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(sr.title)}" />`)
-        .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(sr.description)}" />`)
+        .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${metaDescAttr(sr.description)}" />`)
+        .replace(OG_IMAGE_EXTRAS_RE, '')
         .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="${escapeHtml(sr.title)}" />`)
         .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
       
@@ -800,13 +812,14 @@ async function prerender() {
           let html = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
             .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)}</title>`)
             .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${colUrl}" />`)
-            .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(desc)}" />`)
+            .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${metaDescAttr(desc)}" />`)
             .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(title)}" />`)
-            .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(desc)}" />`)
+            .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${metaDescAttr(desc)}" />`)
             .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${colUrl}" />`)
-            .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${ogImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/png" />\n    <meta property="og:image:alt" content="${escapeHtml(title)}" />`)
+            .replace(OG_IMAGE_EXTRAS_RE, '')
+        .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${ogImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/png" />\n    <meta property="og:image:alt" content="${escapeHtml(title)}" />`)
             .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(title)}" />`)
-            .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(desc)}" />`)
+            .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${metaDescAttr(desc)}" />`)
             .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${ogImage}" />`);
 
           html = html.replace(/<\/head>/i, `${structuredDataHtml}\n</head>`);
@@ -899,13 +912,14 @@ async function prerender() {
         .replace(/<div id="app"><\/div>/i, `<div id="app">${hubShell}</div>`)
         .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(hubTitle)}</title>`)
         .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${hubUrl}" />`)
-        .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(hubDesc)}" />`)
+        .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${metaDescAttr(hubDesc)}" />`)
         .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(hubTitle)}" />`)
-        .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(hubDesc)}" />`)
+        .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${metaDescAttr(hubDesc)}" />`)
         .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${hubUrl}" />`)
+        .replace(OG_IMAGE_EXTRAS_RE, '')
         .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="${escapeHtml(hubTitle)}" />`)
         .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(hubTitle)}" />`)
-        .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(hubDesc)}" />`)
+        .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${metaDescAttr(hubDesc)}" />`)
         .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
 
       hubHtml = hubHtml.replace(/<\/head>/i, `${hubStructuredData}\n</head>`);
@@ -1011,13 +1025,14 @@ async function prerender() {
           .replace(/<div id="app"><\/div>/i, `<div id="app">${sentShell}</div>`)
           .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(pageTitle)}</title>`)
           .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${sentUrl}" />`)
-          .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(metaDescription)}" />`)
+          .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${metaDescAttr(metaDescription)}" />`)
           .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(pageTitle)}" />`)
-          .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(metaDescription)}" />`)
+          .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${metaDescAttr(metaDescription)}" />`)
           .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${sentUrl}" />`)
-          .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="${escapeHtml(pageTitle)}" />`)
+          .replace(OG_IMAGE_EXTRAS_RE, '')
+        .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="${escapeHtml(pageTitle)}" />`)
           .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${escapeHtml(pageTitle)}" />`)
-          .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(metaDescription)}" />`)
+          .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${metaDescAttr(metaDescription)}" />`)
           .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
 
         if (isIndexable) {
@@ -1070,13 +1085,14 @@ async function prerender() {
       .replace(/<div id="app"><\/div>/i, `<div id="app">${homeShell}</div>`)
       .replace(/<title>[^<]*<\/title>/i, `<title>Poemas Brasileiros — Natanael Brentano</title>`)
       .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${baseUrl}" />`)
-      .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(homeDesc)}" />`)
+      .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${metaDescAttr(homeDesc)}" />`)
       .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="Poemas Brasileiros — Natanael Brentano" />`)
-      .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(homeDesc)}" />`)
+      .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${metaDescAttr(homeDesc)}" />`)
       .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${baseUrl}" />`)
-      .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="Poemas Brasileiros — Natanael Brentano" />`)
+      .replace(OG_IMAGE_EXTRAS_RE, '')
+        .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="Poemas Brasileiros — Natanael Brentano" />`)
       .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="Poemas Brasileiros — Natanael Brentano" />`)
-      .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${escapeHtml(homeDesc)}" />`)
+      .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${metaDescAttr(homeDesc)}" />`)
       .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
 
     const homeGraph = pageGraphSchema();
