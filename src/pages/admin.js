@@ -169,6 +169,46 @@ function debounce(fn, delay) {
   };
 }
 
+export function attachPoemsToComments(comments, poems) {
+  const poemsMap = new Map();
+  (poems || []).forEach(p => {
+    if (!p) return;
+    if (p.id) poemsMap.set(String(p.id), p);
+    if (p.slug) poemsMap.set(String(p.slug), p);
+  });
+
+  return (comments || []).map(c => {
+    if (!c) return c;
+    const poemId = c.poem_id || c.poemId;
+    const matched = poemId ? poemsMap.get(String(poemId)) : null;
+    let createdAt = c.created_at;
+    if (createdAt && typeof createdAt.toDate === 'function') {
+      createdAt = createdAt.toDate().toISOString();
+    } else if (createdAt && createdAt.seconds) {
+      createdAt = new Date(createdAt.seconds * 1000).toISOString();
+    }
+    return {
+      ...c,
+      created_at: createdAt,
+      poems: matched ? { id: matched.id, title: matched.title, slug: matched.slug } : (c.poems || null)
+    };
+  });
+}
+
+export function formatCommentPoemHtml(c, baseUrl = (import.meta.env?.BASE_URL || '/')) {
+  if (c?.poems?.title) {
+    const titleEscaped = escapeHtml(c.poems.title);
+    if (c.poems.slug) {
+      const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+      const url = `${cleanBase}poema/${encodeURIComponent(c.poems.slug)}`;
+      return `Em: <a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-subtle); text-decoration: underline;" title="Ver poema publicado">${titleEscaped}</a>`;
+    }
+    return `Em: ${titleEscaped}`;
+  }
+  return 'Em: <span style="font-style: italic; color: var(--text-muted);">Obra removida</span>';
+}
+
+
 export default {
   meta: { title: 'Dashboard Admin', robots: 'noindex, nofollow' },
   
@@ -2351,76 +2391,90 @@ export default {
   async renderComments(container) {
     container.innerHTML = '<div class="loading">Carregando comentários...</div>';
     
-    const { data: comments, error } = await supabase
-      .from('poem_comments')
-      .select('id, author_name, content, approved, created_at, poems(title)')
-      .order('created_at', { ascending: false });
+    try {
+      const [commentsRes, poemsRes] = await Promise.all([
+        supabase
+          .from('poem_comments')
+          .select('id, poem_id, author_name, content, approved, created_at')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('poems')
+          .select('id, title, slug')
+      ]);
       
-    if (error) {
-      container.innerHTML = `<div class="error">Erro ao carregar: ${error.message}</div>`;
-      return;
-    }
-    
-    if (!comments || comments.length === 0) {
-      container.innerHTML = '<p>Nenhum comentário encontrado.</p>';
-      return;
-    }
-    
-    const rows = comments.map(c => `
-      <tr style="border-bottom: 1px solid var(--border-subtle); transition: background-color var(--transition-fast);">
-        <td style="padding: var(--space-md) 0; font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); width: 150px;">
-          ${new Date(c.created_at).toLocaleDateString('pt-BR')}
-        </td>
-        <td style="padding: var(--space-md) 0;">
-          <div style="font-family: var(--font-display); font-size: 1.1rem;">${escapeHtml(c.author_name)}</div>
-          <div style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Em: ${c.poems?.title || 'Obra removida'}</div>
-          <div style="font-family: var(--font-body); line-height: 1.4; color: var(--text-primary); max-width: 500px;">${escapeHtml(c.content)}</div>
-        </td>
-        <td style="padding: var(--space-md) 0; vertical-align: middle;">
-          <span style="padding: 0.2rem 0.6rem; border-radius: 2px; font-family: var(--font-ui); font-size: 0.75rem; border: 1px solid ${c.approved ? 'var(--success)' : 'var(--accent-subtle)'}; color: ${c.approved ? 'var(--success)' : 'var(--accent-subtle)'}; text-transform: uppercase; letter-spacing: 1px;">
-            ${c.approved ? 'Aprovado' : 'Pendente'}
-          </span>
-        </td>
-        <td style="padding: var(--space-md) 0; text-align: right; vertical-align: middle;">
-          ${!c.approved ? `<button class="approve-btn" data-id="${c.id}" style="color: var(--success); margin-right: 1rem;">Aprovar</button>` : ''}
-          <button class="delete-comment-btn" data-id="${c.id}" style="color: var(--error);">Excluir</button>
-        </td>
-      </tr>
-    `).join('');
-    
-    container.innerHTML = `
-      <table style="width: 100%; border-collapse: collapse; text-align: left;">
-        <thead>
-          <tr style="border-bottom: 1px solid var(--border-strong); color: var(--text-secondary); font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
-            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Data</th>
-            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Autor e Comentário</th>
-            <th style="padding-bottom: var(--space-sm); font-weight: 500;">Status</th>
-            <th style="padding-bottom: var(--space-sm); text-align: right; font-weight: 500;">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-    `;
+      if (commentsRes.error) {
+        container.innerHTML = `<div class="error">Erro ao carregar: ${commentsRes.error.message}</div>`;
+        return;
+      }
+      
+      const rawComments = commentsRes.data || [];
+      const poems = poemsRes.data || [];
+      
+      if (rawComments.length === 0) {
+        container.innerHTML = '<p>Nenhum comentário encontrado.</p>';
+        return;
+      }
+      
+      const comments = attachPoemsToComments(rawComments, poems);
+      
+      const rows = comments.map(c => `
+        <tr style="border-bottom: 1px solid var(--border-subtle); transition: background-color var(--transition-fast);">
+          <td style="padding: var(--space-md) 0; font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); width: 150px;">
+            ${new Date(c.created_at).toLocaleDateString('pt-BR')}
+          </td>
+          <td style="padding: var(--space-md) 0;">
+            <div style="font-family: var(--font-display); font-size: 1.1rem;">${escapeHtml(c.author_name)}</div>
+            <div style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">${formatCommentPoemHtml(c)}</div>
+            <div style="font-family: var(--font-body); line-height: 1.4; color: var(--text-primary); max-width: 500px;">${escapeHtml(c.content)}</div>
+          </td>
+          <td style="padding: var(--space-md) 0; vertical-align: middle;">
+            <span style="padding: 0.2rem 0.6rem; border-radius: 2px; font-family: var(--font-ui); font-size: 0.75rem; border: 1px solid ${c.approved ? 'var(--success)' : 'var(--accent-subtle)'}; color: ${c.approved ? 'var(--success)' : 'var(--accent-subtle)'}; text-transform: uppercase; letter-spacing: 1px;">
+              ${c.approved ? 'Aprovado' : 'Pendente'}
+            </span>
+          </td>
+          <td style="padding: var(--space-md) 0; text-align: right; vertical-align: middle;">
+            ${!c.approved ? `<button class="approve-btn" data-id="${c.id}" style="color: var(--success); margin-right: 1rem;">Aprovar</button>` : ''}
+            <button class="delete-comment-btn" data-id="${c.id}" style="color: var(--error);">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+      
+      container.innerHTML = `
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-strong); color: var(--text-secondary); font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
+              <th style="padding-bottom: var(--space-sm); font-weight: 500;">Data</th>
+              <th style="padding-bottom: var(--space-sm); font-weight: 500;">Autor e Comentário</th>
+              <th style="padding-bottom: var(--space-sm); font-weight: 500;">Status</th>
+              <th style="padding-bottom: var(--space-sm); text-align: right; font-weight: 500;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
 
-    container.querySelectorAll('.approve-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.dataset.id;
-        const { error } = await supabase.from('poem_comments').update({ approved: true }).eq('id', id);
-        if (error) alert('Erro ao aprovar: ' + error.message);
-        else this.renderComments(container);
+      container.querySelectorAll('.approve-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          const { error } = await supabase.from('poem_comments').update({ approved: true }).eq('id', id);
+          if (error) alert('Erro ao aprovar: ' + error.message);
+          else this.renderComments(container);
+        });
       });
-    });
 
-    container.querySelectorAll('.delete-comment-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Excluir este comentário?')) return;
-        const id = btn.dataset.id;
-        const { error } = await supabase.from('poem_comments').delete().eq('id', id);
-        if (error) alert('Erro ao excluir: ' + error.message);
-        else this.renderComments(container);
+      container.querySelectorAll('.delete-comment-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Excluir este comentário?')) return;
+          const id = btn.dataset.id;
+          const { error } = await supabase.from('poem_comments').delete().eq('id', id);
+          if (error) alert('Erro ao excluir: ' + error.message);
+          else this.renderComments(container);
+        });
       });
-    });
+    } catch (err) {
+      container.innerHTML = `<div class="error">Erro ao carregar: ${err.message}</div>`;
+    }
   }
 };
