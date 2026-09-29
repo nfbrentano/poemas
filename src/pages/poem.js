@@ -721,13 +721,23 @@ export default {
           }
           const adminSlot = document.getElementById('poem-admin-actions');
           if (adminSlot) {
-            adminSlot.innerHTML = `
-              <a href="${import.meta.env.BASE_URL}admin?view=editor&id=${poem.id}" class="btn-secondary" data-link>Editar Obra</a>
-              <button id="resend-email-btn" class="btn-secondary">Reenviar Email</button>
-            `;
-            const resendBtn = document.getElementById('resend-email-btn');
-            if (resendBtn) {
-              resendBtn.addEventListener('click', async () => {
+            adminSlot.textContent = '';
+            const editLink = document.createElement('a');
+            editLink.href = `${import.meta.env.BASE_URL}admin?view=editor&id=${encodeURIComponent(poem.id || '')}`;
+            editLink.className = 'btn-secondary';
+            editLink.setAttribute('data-link', '');
+            editLink.textContent = 'Editar Obra';
+
+            const resendBtn = document.createElement('button');
+            resendBtn.id = 'resend-email-btn';
+            resendBtn.className = 'btn-secondary';
+            resendBtn.textContent = 'Reenviar Email';
+
+            adminSlot.appendChild(editLink);
+            adminSlot.appendChild(document.createTextNode(' '));
+            adminSlot.appendChild(resendBtn);
+
+            resendBtn.addEventListener('click', async () => {
                 if (!confirm('Deseja realmente reenviar o email desta obra para todos os assinantes?')) return;
                 resendBtn.innerText = 'Enviando...';
                 resendBtn.disabled = true;
@@ -746,7 +756,6 @@ export default {
                   resendBtn.disabled = false;
                 }
               });
-            }
           }
         };
 
@@ -863,15 +872,16 @@ export default {
       setTimeout(loadDeferredFeatures, 1000);
     }
 
-    // Prefetch adjacent routes
+    // Prefetch adjacent routes (RF04)
+    const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
     const prefetchRoutes = () => {
       const BASE_URL = import.meta.env.BASE_URL;
-      const slugsToPrefetch = [prevSlug, nextSlug].filter(Boolean);
+      const slugsToPrefetch = [prevSlug, nextSlug].filter(s => typeof s === 'string' && SLUG_REGEX.test(s));
 
       slugsToPrefetch.forEach(s => {
         const link = document.createElement('link');
         link.rel = 'prefetch';
-        link.href = `${window.location.origin}${BASE_URL}poema/${s}/`;
+        link.href = `${window.location.origin}${BASE_URL}poema/${encodeURIComponent(s)}/`;
         document.head.appendChild(link);
       });
     };

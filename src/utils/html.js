@@ -16,31 +16,32 @@ export function escapeHtml(str) {
 
 /**
  * Safely strips HTML tags from a string, preserving line breaks.
- * Uses DOMParser when available to parse HTML and extract text content safely,
- * preventing incomplete multi-character sanitization vulnerabilities.
+ * Strips dangerous tags (script, style, noscript, iframe) and comments,
+ * and iterates until all tags are removed to prevent multi-character bypasses.
  * @param {string} html
  * @returns {string}
  */
 export function stripHtml(html) {
   if (typeof html !== 'string' || !html) return '';
-  if (typeof DOMParser !== 'undefined') {
-    const formatted = html
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<\/p\s*>/gi, '\n\n')
-      .replace(/<\/div\s*>/gi, '\n');
-    const doc = new DOMParser().parseFromString(formatted, 'text/html');
-    doc.querySelectorAll('script, style, noscript, iframe').forEach(el => el.remove());
-    return (doc.body.textContent || '').trim();
-  }
   let result = html
+    .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p\s*>/gi, '\n\n')
     .replace(/<\/div\s*>/gi, '\n');
+
   let prev;
+  // Remove script, style, noscript, and iframe tags along with their content
+  do {
+    prev = result;
+    result = result.replace(/<(?:script|style|noscript|iframe)\b[^>]*>[\s\S]*?<\/(?:script|style|noscript|iframe)>/gi, '');
+  } while (result !== prev);
+
+  // Strip all remaining tags until string stabilizes
   do {
     prev = result;
     result = result.replace(/<[^>]*>/g, '');
   } while (result !== prev);
+
   return result.trim();
 }
 

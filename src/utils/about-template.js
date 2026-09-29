@@ -59,7 +59,7 @@ export function renderAboutMarkup({
     { name: 'Sobre', url: canonicalAboutUrl }
   ];
 
-  const formattedBio = bioText.replace(/\n/g, '<br>');
+  const formattedBio = escapeHtml(bioText || '').replace(/\n/g, '<br>');
   const faqList = getAboutFaq({ poemsCount, collectionsCount });
 
   return `

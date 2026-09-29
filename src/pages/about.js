@@ -3,7 +3,8 @@ import { collection, getDocs, doc, setDoc, getCountFromServer, query, where } fr
 import { pushToggle } from '../components/push-toggle.js';
 import { updateSEO } from '../utils/seo.js';
 import { profilePageSchema, breadcrumbSchema, faqPageSchema, SITE_URL } from '../utils/structured-data.js';
-import { renderAboutMarkup, getAboutFaq, DEFAULT_AVATAR_URL } from '../utils/about-template.js';
+import { escapeHtml } from '../utils/html.js';
+import { renderAboutMarkup, getAboutFaq, DEFAULT_AVATAR_URL, DEFAULT_AUTHOR_BIO } from '../utils/about-template.js';
 
 export default {
   meta: {
@@ -47,6 +48,8 @@ export default {
     const imgEl = container.querySelector('#profile-img');
     const bioContent = container.querySelector('#bio-content');
     
+    let currentBioText = DEFAULT_AUTHOR_BIO;
+
     // Carregar configurações do site e contagem atualizada de poemas
     const loadSettings = async () => {
       try {
@@ -63,7 +66,8 @@ export default {
             try { localStorage.setItem('profilePhotoURL', avatar.value); } catch (_) {}
           }
           if (bio && bioContent) {
-            bioContent.innerHTML = bio.value.replace(/\n/g, '<br>');
+            currentBioText = typeof bio.value === 'string' ? bio.value : '';
+            bioContent.innerHTML = escapeHtml(currentBioText).replace(/\n/g, '<br>');
           }
         }
       } catch (err) {
@@ -171,7 +175,7 @@ export default {
             const cancelBtn = modalContainer.querySelector('#cancel-bio-btn');
 
             editBtn.addEventListener('click', () => {
-              textarea.value = bioContent.innerHTML.replace(/<br>/g, '\n');
+              textarea.value = currentBioText;
               modal.style.display = 'flex';
             });
             cancelBtn.addEventListener('click', () => { modal.style.display = 'none'; });
@@ -180,7 +184,8 @@ export default {
               const newValue = textarea.value;
               try {
                 await setDoc(doc(db, 'site_settings', 'author_bio'), { value: newValue });
-                bioContent.innerHTML = newValue.replace(/\n/g, '<br>');
+                currentBioText = newValue;
+                bioContent.innerHTML = escapeHtml(newValue).replace(/\n/g, '<br>');
                 modal.style.display = 'none';
               } catch (err) {
                 alert('Erro ao salvar bio');

@@ -38,6 +38,24 @@ const firebaseConfig = {
   appId: process.env.VITE_FIREBASE_APP_ID
 };
 
+/**
+ * Safely removes all JSON-LD script tags, iterating until stabilized (RF08, CA10).
+ * Prevents incomplete multi-character sanitization issues.
+ * @param {string} html
+ * @returns {string}
+ */
+export function removeJsonLdScripts(html) {
+  if (typeof html !== 'string' || !html) return '';
+  const regex = /<script\s+type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi;
+  let prev;
+  let result = html;
+  do {
+    prev = result;
+    result = result.replace(regex, '');
+  } while (result !== prev);
+  return result;
+}
+
 const baseUrl = 'https://nfgbrentano.art.br/'; 
 
 if (!firebaseConfig.apiKey) {
@@ -556,8 +574,8 @@ async function prerender() {
       };
       const dataScriptTag = `\n    <script type="application/json" id="__DATA__">${JSON.stringify(poemDataPayload)}</script>`;
 
-      // Modificando as tags meta no HTML original
-      let modifiedHtml = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
+      // Modificando as tags meta no HTML original (RF08)
+      let modifiedHtml = removeJsonLdScripts(originalHtml);
 
       // 1. Substituir o título
       modifiedHtml = modifiedHtml.replace(
@@ -675,8 +693,8 @@ async function prerender() {
       }
       const canonicalRouteUrl = `${baseUrl}${sr.route}/`;
 
-      // Remove existing JSON-LD
-      let html = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
+      // Remove existing JSON-LD (RF08)
+      let html = removeJsonLdScripts(originalHtml)
         .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(sr.title)}</title>`)
         .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${canonicalRouteUrl}" />`)
         .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${metaDescAttr(sr.description)}" />`)
@@ -809,7 +827,7 @@ async function prerender() {
           const colGraph = pageGraphSchema([colLd, breadcrumbLd]);
           const structuredDataHtml = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(colGraph)}</script>`;
 
-          let html = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
+          let html = removeJsonLdScripts(originalHtml)
             .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)}</title>`)
             .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${colUrl}" />`)
             .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${metaDescAttr(desc)}" />`)
@@ -908,7 +926,7 @@ async function prerender() {
         dataPrerendered: '/sentimentos'
       });
 
-      let hubHtml = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
+      let hubHtml = removeJsonLdScripts(originalHtml)
         .replace(/<div id="app"><\/div>/i, `<div id="app">${hubShell}</div>`)
         .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(hubTitle)}</title>`)
         .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${hubUrl}" />`)
@@ -1021,7 +1039,7 @@ async function prerender() {
           dataPrerendered: `/sentimento/${s.slug}`
         });
 
-        let sentHtml = originalHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '')
+        let sentHtml = removeJsonLdScripts(originalHtml)
           .replace(/<div id="app"><\/div>/i, `<div id="app">${sentShell}</div>`)
           .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(pageTitle)}</title>`)
           .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${sentUrl}" />`)
@@ -1097,11 +1115,7 @@ async function prerender() {
 
     const homeGraph = pageGraphSchema();
     const homeLdTag = `<script type="application/ld+json" data-seo="true">${serializeJsonLd(homeGraph)}</script>`;
-    if (homeHtml.includes('type="application/ld+json"')) {
-      homeHtml = homeHtml.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, homeLdTag);
-    } else {
-      homeHtml = homeHtml.replace(/<\/head>/i, `  ${homeLdTag}\n</head>`);
-    }
+    homeHtml = removeJsonLdScripts(homeHtml).replace(/<\/head>/i, `  ${homeLdTag}\n</head>`);
 
     fs.writeFileSync(templatePath, homeHtml, 'utf-8');
     console.log('Pre-rendered home page successfully generated at dist/index.html');

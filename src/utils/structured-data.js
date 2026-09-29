@@ -379,11 +379,13 @@ export function renderBreadcrumbsHtml(items = []) {
     const isLast = idx === lastIndex;
     const name = escapeHtml(item.name || '');
 
-    // For links, convert absolute site URL to relative path if matching site origin
+    // For links, convert absolute site URL to relative path if matching site origin (RF06, CA08)
     let href = item.url;
     try {
-      if (href.startsWith(SITE_URL)) {
-        href = href.slice(SITE_URL.length) || '/';
+      const siteOrigin = new URL(SITE_URL).origin;
+      const itemUrl = new URL(href, SITE_URL);
+      if (itemUrl.origin === siteOrigin) {
+        href = `${itemUrl.pathname}${itemUrl.search}${itemUrl.hash}` || '/';
       }
     } catch (_) {}
 

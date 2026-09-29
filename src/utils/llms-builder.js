@@ -8,21 +8,27 @@ export { SITE_URL };
 
 export const ATTRIBUTION_NOTICE = '© Natanael Brentano. Citações permitidas com crédito e link para a URL do poema.';
 
+const ENTITY_MAP = {
+  '&nbsp;': ' ',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&#x2f;': '/',
+  '&amp;': '&'
+};
+
+const ENTITY_REGEX = /&(?:nbsp|lt|gt|quot|#39|#x2f|amp);/gi;
+
 /**
- * Decodes common HTML entities to plain text characters.
+ * Decodes common HTML entities to plain text characters in a single pass (RF07, CA09).
+ * Prevents double-escaping vulnerabilities where &amp;lt; could become <.
  * @param {string} text
  * @returns {string}
  */
 export function decodeHtmlEntities(text) {
   if (!text || typeof text !== 'string') return '';
-  return text
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&#x2F;/gi, '/');
+  return text.replace(ENTITY_REGEX, match => ENTITY_MAP[match.toLowerCase()] ?? match);
 }
 
 /**

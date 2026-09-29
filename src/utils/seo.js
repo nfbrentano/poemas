@@ -1,5 +1,6 @@
 import { setStructuredData, poemSchema, pageGraphSchema } from './structured-data.js';
-import { cleanCanonicalUrl } from './url.js';
+import { SITE_URL, cleanCanonicalUrl } from './url.js';
+import { sanitizeUrl } from './html.js';
 
 export function setNotFoundSEO() {
   document.title = 'Página não encontrada — Natanael Brentano';
@@ -58,8 +59,24 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   };
 
   const finalDesc = String(description || defaultDesc).replace(/\s+/g, ' ').trim().slice(0, 160);
-  const rawUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
-  const canonicalUrl = cleanCanonicalUrl(rawUrl);
+  
+  // Extrair pathname e garantir origem SITE_URL (RF05, CA07)
+  let pathname = '/';
+  if (url) {
+    try {
+      pathname = new URL(url, SITE_URL).pathname;
+    } catch (_) {
+      pathname = String(url).split(/[?#]/)[0];
+    }
+  } else if (typeof window !== 'undefined' && window.location) {
+    try {
+      pathname = new URL(window.location.href).pathname;
+    } catch (_) {
+      pathname = window.location.pathname || '/';
+    }
+  }
+  const rawCanonical = cleanCanonicalUrl(pathname, SITE_URL);
+  const canonicalUrl = sanitizeUrl(rawCanonical) || SITE_URL;
   const finalImage = imageUrl || defaultImage;
 
   // Canonical URL (RF05)

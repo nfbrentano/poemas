@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import { html } from 'satori-html';
+import { stripHtml } from '../src/utils/html.js';
 
 const distOgDir = path.resolve(process.cwd(), 'dist/og/poema');
 const distColDir = path.resolve(process.cwd(), 'dist/og/colecao');
@@ -46,9 +47,8 @@ export async function generatePoemOgImage(poem) {
 
   const outputPath = path.join(distOgDir, `${poem.slug}.png`);
   
-  // Truncate excerpt and split to lines
-  let text = poem.excerpt || poem.content || '';
-  text = text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+  // Truncate excerpt and split to lines (RF09, CA11)
+  let text = stripHtml(poem.excerpt || poem.content || '').replace(/&nbsp;/g, ' ').trim();
   const maxChars = 200;
   if (text.length > maxChars) {
     text = text.substring(0, maxChars) + '...';

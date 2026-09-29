@@ -1,3 +1,4 @@
+import { JSDOM } from 'jsdom';
 import { stripHtml } from './html.js';
 import { formatTag } from './tags.js';
 import { SITE_URL } from './url.js';
@@ -38,20 +39,19 @@ export function getExcerpt(poem, limit = 160) {
   return cleanContent.slice(0, limit - 3) + '...';
 }
 
+const ALLOWED_RSS_TAGS = new Set(['P', 'BR', 'EM', 'STRONG', 'I', 'B', 'SPAN']);
+const DANGEROUS_RSS_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'OBJECT', 'EMBED', 'SVG', 'MATH']);
+
 /**
- * Formats and sanitizes poem content as HTML suitable for RSS readers inside CDATA.
+ * Formats and sanitizes poem content as safe HTML suitable for RSS readers inside CDATA (RF02, CA03, CA04).
+ * Enforces a strict tag whitelist (p, br, em, strong, i, b, span) and strips all attributes.
  * @param {string} content
  * @returns {string}
  */
 export function formatPoemHtmlForRss(content) {
-  if (!content) return '';
+  if (!content || typeof content !== 'string') return '';
   let html = content.trim();
-  // Strip dangerous elements if any
-  html = html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-    .replace(/\son\w+="[^"]*"/gi, '')
-    .replace(/\son\w+='[^']*'/gi, '');
+  if (!html) return '';
 
   if (!/<p|br|div/i.test(html)) {
     // Plain text poem: convert double newlines to paragraphs and single newlines to br
@@ -60,7 +60,34 @@ export function formatPoemHtmlForRss(content) {
       .map(stanza => `<p>${stanza.replace(/\n/g, '<br />')}</p>`)
       .join('\n');
   }
-  return html;
+
+  const dom = new JSDOM(html);
+  const body = dom.window.document.body;
+
+  function cleanNode(node) {
+    const children = Array.from(node.childNodes);
+    for (const child of children) {
+      if (child.nodeType === 1) {
+        const tagName = child.tagName.toUpperCase();
+        if (DANGEROUS_RSS_TAGS.has(tagName)) {
+          child.remove();
+        } else if (ALLOWED_RSS_TAGS.has(tagName)) {
+          while (child.attributes.length > 0) {
+            child.removeAttribute(child.attributes[0].name);
+          }
+          cleanNode(child);
+        } else {
+          cleanNode(child);
+          child.replaceWith(...Array.from(child.childNodes));
+        }
+      } else if (child.nodeType === 8) {
+        child.remove();
+      }
+    }
+  }
+
+  cleanNode(body);
+  return body.innerHTML.trim();
 }
 
 /**
