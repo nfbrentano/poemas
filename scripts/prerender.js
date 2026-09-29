@@ -175,7 +175,7 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
   return `
   <header class="site-header">
     <div class="header-container">
-      <a href="/" class="logo" data-link>Natanael Brentano</a>
+      <a href="/" class="logo" data-link>Natanael Fernando Gatti Brentano</a>
       
       <div id="header-controls" style="display: flex; align-items: center; gap: var(--space-md);">
         <button id="search-toggle-btn" class="header-search-toggle" aria-label="Buscar poemas" title="Buscar poemas (Pressione /)">
@@ -185,7 +185,7 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
         <div id="nav-overlay" class="nav-overlay"></div>
         <nav class="main-nav">
           <div class="nav-drawer-header">
-            <span class="logo">Natanael Brentano</span>
+            <span class="logo">Natanael Fernando Gatti Brentano</span>
             <button id="nav-close-btn" class="nav-close-btn" aria-label="Fechar menu">
               <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
@@ -214,14 +214,14 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
       </div>
     </div>
   </header>
-  <div id="mobile-brand" class="mobile-brand"><a href="/" data-link>Natanael Brentano</a></div>
+  <div id="mobile-brand" class="mobile-brand"><a href="/" data-link>Natanael Fernando Gatti Brentano</a></div>
   <main id="main-content" class="site-content container" ${mainAttrs}>
     ${mainContent}
   </main>
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-info">
-        &copy; ${currentYear} Natanael Brentano. Todos os direitos reservados.
+        &copy; ${currentYear} Natanael Fernando Gatti Brentano. Todos os direitos reservados.
       </div>
       <div class="footer-social">
         <a href="/sentimentos/" data-link class="footer-social-link">
@@ -340,7 +340,7 @@ function renderHomeMarkup({ poems, podPoem, allCollections = [] }) {
   return `
   <div class="home-layout">
     <section class="home-hero">
-      <h1 class="home-title">Poemas de Natanael Brentano</h1>
+      <h1 class="home-title">Poemas de Natanael Fernando Gatti Brentano</h1>
       <p class="home-description">
         Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. O acervo reúne atualmente ${poems.length} poemas publicados em ${allCollections.length} coleções temáticas. Conheça as <a href="/colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="/sobre/" data-link>sobre o autor</a>.
       </p>
@@ -521,7 +521,7 @@ async function prerender() {
       }));
 
       const excerpt = getExcerpt(poem);
-      const title = `${poem.title} — Natanael Brentano`;
+      const title = `${poem.title} — Natanael Fernando Gatti Brentano`;
       const url = `${baseUrl}poema/${poem.slug}/`;
       const generatedOgPath = await generatePoemOgImage(poem);
       const ogImage = `${baseUrl.replace(/\/$/, '')}${generatedOgPath}`;
@@ -547,7 +547,7 @@ async function prerender() {
       // Tags meta dinâmicas adicionais
       let articleMeta = `
     <meta property="article:published_time" content="${publishedIso}" />
-    <meta property="article:author" content="Natanael Brentano" />
+    <meta property="article:author" content="Natanael Fernando Gatti Brentano" />
       `;
       if (poem.tags && Array.isArray(poem.tags)) {
         poem.tags.forEach(tag => {
@@ -685,12 +685,12 @@ async function prerender() {
     }
 
     const staticRoutes = [
-      { route: 'sobre', title: 'Sobre Natanael Brentano — Poeta', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.', type: 'profile' },
-      { route: 'colecoes', title: 'Coleções e Sentimentos — Natanael Brentano', description: 'Explore poemas organizados por séries temáticas e sentimentos.' },
-      { route: 'admin', title: 'Painel Admin — Natanael Brentano', description: 'Área administrativa para gestão de poemas e métricas.', robots: 'noindex, nofollow' },
-      { route: 'login', title: 'Login Admin — Natanael Brentano', description: 'Acesso ao painel administrativo.', robots: 'noindex, nofollow' },
-      { route: 'unsubscribe', title: 'Cancelar Inscrição — Natanael Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.', robots: 'noindex, nofollow' },
-      { route: 'cancelar-inscricao', title: 'Cancelar Inscrição — Natanael Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.', robots: 'noindex, nofollow' }
+      { route: 'sobre', title: 'Sobre Natanael Fernando Gatti Brentano — Poeta', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.', type: 'profile' },
+      { route: 'colecoes', title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano', description: 'Explore poemas organizados por séries temáticas e sentimentos.' },
+      { route: 'admin', title: 'Painel Admin — Natanael Fernando Gatti Brentano', description: 'Área administrativa para gestão de poemas e métricas.', robots: 'noindex, nofollow' },
+      { route: 'login', title: 'Login Admin — Natanael Fernando Gatti Brentano', description: 'Acesso ao painel administrativo.', robots: 'noindex, nofollow' },
+      { route: 'unsubscribe', title: 'Cancelar Inscrição — Natanael Fernando Gatti Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.', robots: 'noindex, nofollow' },
+      { route: 'cancelar-inscricao', title: 'Cancelar Inscrição — Natanael Fernando Gatti Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.', robots: 'noindex, nofollow' }
     ];
 
     for (const sr of staticRoutes) {
@@ -898,7 +898,7 @@ async function prerender() {
       if (!fs.existsSync(sentimentosDir)) {
         fs.mkdirSync(sentimentosDir, { recursive: true });
       }
-      const hubTitle = 'Poemas por Sentimento — Natanael Brentano';
+      const hubTitle = 'Poemas por Sentimento — Natanael Fernando Gatti Brentano';
       const hubDesc = 'Navegue pelos poemas organizados por sentimentos e temas, descobrindo versos sobre amor, saudade, efêmero e vida.';
       const hubUrl = `${baseUrl}sentimentos/`;
       const hubBreadcrumbs = [
@@ -963,7 +963,7 @@ async function prerender() {
         }
 
         const isIndexable = s.poems.length >= 3;
-        const pageTitle = `Poemas sobre ${s.name} — Natanael Brentano`;
+        const pageTitle = `Poemas sobre ${s.name} — Natanael Fernando Gatti Brentano`;
         const introText = getSentimentIntro(s.name, s.slug);
         const count = s.poems.length;
         const countSuffix = count === 1 ? '1 poema' : `${count} poemas`;
@@ -1105,18 +1105,18 @@ async function prerender() {
       dataPrerendered: '/'
     });
 
-    const homeDesc = 'Poemas e poesia brasileira contemporânea de Natanael Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.';
+    const homeDesc = 'Poemas e poesia contemporânea de Natanael Fernando Gatti Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.';
     let homeHtml = originalHtml
       .replace(/<div id="app"><\/div>/i, `<div id="app">${homeShell}</div>`)
-      .replace(/<title>[^<]*<\/title>/i, `<title>Poemas Brasileiros — Natanael Brentano</title>`)
+      .replace(/<title>[^<]*<\/title>/i, `<title>Poemas Brasileiros — Natanael Fernando Gatti Brentano</title>`)
       .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${baseUrl}" />`)
       .replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${metaDescAttr(homeDesc)}" />`)
-      .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="Poemas Brasileiros — Natanael Brentano" />`)
+      .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="Poemas Brasileiros — Natanael Fernando Gatti Brentano" />`)
       .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${metaDescAttr(homeDesc)}" />`)
       .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${baseUrl}" />`)
       .replace(OG_IMAGE_EXTRAS_RE, '')
-        .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="Poemas Brasileiros — Natanael Brentano" />`)
-      .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="Poemas Brasileiros — Natanael Brentano" />`)
+        .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />\n    <meta property="og:image:width" content="1200" />\n    <meta property="og:image:height" content="630" />\n    <meta property="og:image:type" content="image/jpeg" />\n    <meta property="og:image:alt" content="Poemas Brasileiros — Natanael Fernando Gatti Brentano" />`)
+      .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="Poemas Brasileiros — Natanael Fernando Gatti Brentano" />`)
       .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${metaDescAttr(homeDesc)}" />`)
       .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
 

@@ -15,13 +15,13 @@ export function renderPushToggleHtml() {
 }
 
 export const DEFAULT_AVATAR_URL = 'https://firebasestorage.googleapis.com/v0/b/poemas-natanael.firebasestorage.app/o/avatars%2Favatar_1788017538021.jpeg?alt=media&token=e54e38e7-5950-4c47-97a1-9ac1f8bcef15';
-export const DEFAULT_AUTHOR_BIO = 'Natanael Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.';
+export const DEFAULT_AUTHOR_BIO = 'Natanael Fernando Gatti Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.';
 
 export function getAboutFaq({ poemsCount = 222, collectionsCount = 5 } = {}) {
   return [
     {
-      question: 'Quem é Natanael Brentano?',
-      answer: 'Natanael Brentano é um poeta e escritor brasileiro contemporâneo, autor de versos em língua portuguesa dedicados a explorar o tempo, os afetos, a efemeridade e as sutilezas do cotidiano.'
+      question: 'Quem é Natanael Fernando Gatti Brentano?',
+      answer: 'Natanael Fernando Gatti Brentano é um poeta e escritor brasileiro contemporâneo, autor de versos em língua portuguesa dedicados a explorar o tempo, os afetos, a efemeridade e as sutilezas do cotidiano.'
     },
     {
       question: 'Sobre quais temas ele escreve?',
@@ -37,7 +37,7 @@ export function getAboutFaq({ poemsCount = 222, collectionsCount = 5 } = {}) {
     },
     {
       question: 'Posso compartilhar ou citar os poemas?',
-      answer: 'Sim, a citação e o compartilhamento dos poemas são permitidos para fins não comerciais, desde que acompanhados da devida atribuição de autoria a Natanael Brentano e com o link para a obra original no site.'
+      answer: 'Sim, a citação e o compartilhamento dos poemas são permitidos para fins não comerciais, desde que acompanhados da devida atribuição de autoria a Natanael Fernando Gatti Brentano e com o link para a obra original no site.'
     },
     {
       question: 'Como receber novos poemas?',
@@ -69,12 +69,12 @@ export function renderAboutMarkup({
           <div class="about-header">
             <div class="about-avatar-container">
               <div class="about-avatar">
-                <img id="profile-img" alt="Natanael Brentano, poeta" src="${escapeHtml(avatarUrl)}" width="140" height="140" />
+                <img id="profile-img" alt="Natanael Fernando Gatti Brentano, poeta" src="${escapeHtml(avatarUrl)}" width="140" height="140" />
                 <div id="admin-avatar-controls"></div>
               </div>
             </div>
             <div class="about-intro">
-              <h1>Natanael Brentano</h1>
+              <h1>Natanael Fernando Gatti Brentano</h1>
               <p class="about-tagline">Poeta e observador do cotidiano</p>
               <div class="social-links">
                 <a href="https://instagram.com/nfgbrentano" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 6px;">

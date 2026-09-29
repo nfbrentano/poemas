@@ -136,4 +136,4 @@ Para reportar vulnerabilidades, consulte nossa [política de segurança](SECURIT
 
 ---
 
-Feito com 💜 por [Natanael Brentano](https://github.com/nfbrentano)
+Feito com 💜 por [Natanael Fernando Gatti Brentano](https://github.com/nfbrentano)

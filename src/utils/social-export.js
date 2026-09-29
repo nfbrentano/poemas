@@ -55,7 +55,7 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
 
   const authorEl = document.createElement('div');
   authorEl.className = 'card-author';
-  authorEl.textContent = 'Natanael Brentano';
+  authorEl.textContent = 'Natanael Fernando Gatti Brentano';
 
   footerEl.appendChild(authorEl);
   renderEl.appendChild(titleEl);

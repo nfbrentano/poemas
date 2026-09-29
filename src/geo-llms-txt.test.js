@@ -96,7 +96,7 @@ describe('{GEO} llms.txt e llms-full.txt (SDD 2026-09-24)', () => {
       });
 
       // H1 e blockquote (RF02, RF04)
-      expect(llmsTxt).toContain('# Poemas — Natanael Brentano');
+      expect(llmsTxt).toContain('# Poemas — Natanael Fernando Gatti Brentano');
       expect(llmsTxt).toContain('> Poesia brasileira contemporânea em língua portuguesa por Natanael Fernando Gatti Brentano.');
       expect(llmsTxt).toContain(`> ${ATTRIBUTION_NOTICE}`);
 
@@ -195,7 +195,7 @@ describe('{GEO} llms.txt e llms-full.txt (SDD 2026-09-24)', () => {
         collectionPoems: mockCollectionPoems
       });
 
-      expect(llmsFullTxt).toContain('# Poemas — Natanael Brentano (Acervo Completo)');
+      expect(llmsFullTxt).toContain('# Poemas — Natanael Fernando Gatti Brentano (Acervo Completo)');
       expect(llmsFullTxt).toContain('## Aurora Efêmera');
       expect(llmsFullTxt).toContain(`URL: ${SITE_URL}poema/aurora-efemera/ | Publicado em: 2026-06-01 | Coleções: Luz & Sombra | Sentimentos: Amor, Esperança`);
       expect(llmsFullTxt).toContain('Primeiro raio de sol');
@@ -280,7 +280,7 @@ describe('{GEO} llms.txt e llms-full.txt (SDD 2026-09-24)', () => {
         expect(fs.existsSync(path.join(tempOutDir, 'llms-full.txt'))).toBe(true);
 
         const generatedLlms = fs.readFileSync(path.join(tempOutDir, 'llms.txt'), 'utf-8');
-        expect(generatedLlms).toContain('# Poemas — Natanael Brentano');
+        expect(generatedLlms).toContain('# Poemas — Natanael Fernando Gatti Brentano');
         expect(generatedLlms).toContain('> Poesia brasileira contemporânea em língua portuguesa por Natanael Fernando Gatti Brentano.');
         expect(generatedLlms).toContain('## Coleções');
         expect(generatedLlms).toContain('## Optional');
@@ -321,7 +321,7 @@ describe('{GEO} llms.txt e llms-full.txt (SDD 2026-09-24)', () => {
       expect(byteLength).toBeLessThan(100 * 1024);
 
       // llmstxt.org: Começa com H1 seguido imediatamente por blockquote
-      expect(llmsTxt.startsWith('# Poemas — Natanael Brentano\n\n> ')).toBe(true);
+      expect(llmsTxt.startsWith('# Poemas — Natanael Fernando Gatti Brentano\n\n> ')).toBe(true);
 
       // Contém H2s válidos
       const h2Matches = llmsTxt.match(/^## .+/gm);

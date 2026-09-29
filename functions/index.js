@@ -35,7 +35,7 @@ exports.sendNewsletter = onCall(
 
     const GMAIL_USER = gmailUser.value();
     const GMAIL_APP_PASSWORD = gmailAppPassword.value();
-    const SENDER_NAME = senderName.value() || "Natanael Brentano";
+    const SENDER_NAME = senderName.value() || "Natanael Fernando Gatti Brentano";
 
     try {
       // 2. Buscar Poema
@@ -107,7 +107,7 @@ exports.sendNewsletter = onCall(
           </tr>
           <tr>
             <td style="text-align: center; padding: 40px 20px; border-top: 1px solid #1a1a1a;">
-              <p style="margin: 0 0 8px; font-size: 16px; font-style: italic; color: #666666;">Natanael Brentano</p>
+              <p style="margin: 0 0 8px; font-size: 16px; font-style: italic; color: #666666;">Natanael Fernando Gatti Brentano</p>
               <p style="margin: 20px 0 0; font-size: 12px; color: #444444;">
                 <a href="${siteUrl}/unsubscribe?token=${unsubscribeToken}" style="color: #666666; text-decoration: underline;">Não quer mais receber estes e-mails? Cancelar inscrição</a>
               </p>

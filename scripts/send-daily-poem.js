@@ -94,7 +94,7 @@ async function sendDailyPoem() {
           </tr>
           <tr>
             <td style="text-align: center; padding: 40px 20px; border-top: 1px solid #1a1a1a;">
-              <p style="margin: 0 0 8px; font-size: 16px; font-style: italic; color: #666666;">Natanael Brentano</p>
+              <p style="margin: 0 0 8px; font-size: 16px; font-style: italic; color: #666666;">Natanael Fernando Gatti Brentano</p>
             </td>
           </tr>
         </table>

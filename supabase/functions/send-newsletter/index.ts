@@ -25,7 +25,7 @@ Deno.serve(async (req: any) => {
     // Secrets
     const GMAIL_USER = Deno.env.get('GMAIL_USER');
     const GMAIL_APP_PASSWORD = Deno.env.get('GMAIL_APP_PASSWORD');
-    const SENDER_NAME = Deno.env.get('SENDER_NAME') || 'Natanael Brentano';
+    const SENDER_NAME = Deno.env.get('SENDER_NAME') || 'Natanael Fernando Gatti Brentano';
 
     if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
       throw new Error('Configuração ausente (GMAIL_USER ou GMAIL_APP_PASSWORD)');
@@ -148,7 +148,7 @@ Deno.serve(async (req: any) => {
           </tr>
           <tr>
             <td style="text-align: center; padding: 40px 20px; border-top: 1px solid #1a1a1a;">
-              <p style="margin: 0 0 8px; font-size: 16px; font-style: italic; color: #666666;">Natanael Brentano</p>
+              <p style="margin: 0 0 8px; font-size: 16px; font-style: italic; color: #666666;">Natanael Fernando Gatti Brentano</p>
               <p style="margin: 20px 0 0; font-size: 12px; color: #444444;">
                 <a href="${siteUrl}/unsubscribe?token=${unsubscribeToken}" style="color: #666666; text-decoration: underline;">Não quer mais receber estes e-mails? Cancelar inscrição</a>
               </p>

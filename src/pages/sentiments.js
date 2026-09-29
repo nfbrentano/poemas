@@ -8,8 +8,8 @@ import { getSentimentName } from '../data/sentiments.js';
 
 export const sentiments = {
   meta: {
-    title: 'Poemas por Sentimento — Natanael Brentano',
-    description: 'Explore todos os sentimentos e temas dos poemas de Natanael Brentano.'
+    title: 'Poemas por Sentimento — Natanael Fernando Gatti Brentano',
+    description: 'Explore todos os sentimentos e temas dos poemas de Natanael Fernando Gatti Brentano.'
   },
   async render(container) {
     container.innerHTML = `
@@ -64,7 +64,7 @@ export const sentiments = {
       { name: 'Sentimentos', url: canonicalUrl }
     ];
 
-    const pageTitle = 'Poemas por Sentimento — Natanael Brentano';
+    const pageTitle = 'Poemas por Sentimento — Natanael Fernando Gatti Brentano';
     const pageDesc = 'Navegue pelos poemas organizados por sentimentos e temas, descobrindo versos sobre amor, saudade, efêmero e vida.';
 
     sentiments.meta = {

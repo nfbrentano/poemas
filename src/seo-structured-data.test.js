@@ -22,7 +22,7 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
   beforeEach(() => {
     document.head.innerHTML = '';
     document.body.innerHTML = '<main id="main-content"></main>';
-    document.title = 'Poemas Brasileiros - Natanael Brentano';
+    document.title = 'Poemas Brasileiros - Natanael Fernando Gatti Brentano';
   });
 
   describe('CA01 & CT01: Schema de Poema e BreadcrumbList', () => {
@@ -52,7 +52,7 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
       expect(pSchema.headline).toBe('Aurora Boreal');
       expect(pSchema.keywords).toEqual(['noite', 'frio']);
       expect(pSchema.author['@id']).toBe(AUTHOR_ID);
-      expect(pSchema.author.name).toBe('Natanael Brentano');
+      expect(pSchema.author.name).toBe('Natanael Fernando Gatti Brentano');
       expect(pSchema.author.url).toBe('https://nfgbrentano.art.br/sobre/');
       expect(pSchema.copyrightHolder['@id']).toBe(AUTHOR_ID);
       expect(pSchema.copyrightYear).toBe(2026);
@@ -92,7 +92,7 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
       const person = profile.mainEntity;
       expect(person['@type']).toBe('Person');
       expect(person['@id']).toBe('https://nfgbrentano.art.br/sobre/#autor');
-      expect(person.name).toBe('Natanael Brentano');
+      expect(person.name).toBe('Natanael Fernando Gatti Brentano');
       expect(person.url).toBe('https://nfgbrentano.art.br/sobre/');
       expect(person.image).toBe(DEFAULT_AUTHOR_PHOTO);
       expect(person.nationality).toEqual({ '@type': 'Country', name: 'Brasil' });
@@ -309,7 +309,7 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
     it('CA02 & CT02: autor autocontido no Poem com @id, name e url', () => {
       const poem = poemSchema({ title: 'Verso Livre', slug: 'verso-livre' });
       expect(poem.author['@id']).toBe(AUTHOR_ID);
-      expect(poem.author.name).toBe('Natanael Brentano');
+      expect(poem.author.name).toBe('Natanael Fernando Gatti Brentano');
       expect(poem.author.url).toBe('https://nfgbrentano.art.br/sobre/');
     });
 

@@ -45,12 +45,12 @@ const existingMain = document.getElementById('main-content');
 if (!existingMain && appEl) {
   appEl.innerHTML = `
   ${header.render()}
-  <div id="mobile-brand" class="mobile-brand"><a href="${import.meta.env.BASE_URL}" data-link>Natanael Brentano</a></div>
+  <div id="mobile-brand" class="mobile-brand"><a href="${import.meta.env.BASE_URL}" data-link>Natanael Fernando Gatti Brentano</a></div>
   <main id="main-content" class="site-content container"></main>
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-info">
-        &copy; ${new Date().getFullYear()} Natanael Brentano. Todos os direitos reservados.
+        &copy; ${new Date().getFullYear()} Natanael Fernando Gatti Brentano. Todos os direitos reservados.
       </div>
       <div class="footer-social">
         <a href="${import.meta.env.BASE_URL}sentimentos/" data-link class="footer-social-link">

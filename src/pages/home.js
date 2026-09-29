@@ -11,11 +11,11 @@ import { getPoemOfDay } from '../utils/poemOfDay.js';
 
 export default {
   meta: {
-    title: 'Poemas Brasileiros — Natanael Brentano'
+    title: 'Poemas Brasileiros — Natanael Fernando Gatti Brentano'
   },
   cleanup() {
     this.meta = {
-      title: 'Poemas Brasileiros — Natanael Brentano'
+      title: 'Poemas Brasileiros — Natanael Fernando Gatti Brentano'
     };
   },
   async render(container, params = {}) {
@@ -37,21 +37,21 @@ export default {
       searchParams.has('page');
 
     this.meta = {
-      title: 'Poemas Brasileiros — Natanael Brentano',
+      title: 'Poemas Brasileiros — Natanael Fernando Gatti Brentano',
       robots: hasFilterOrSearch ? 'noindex, follow' : null
     };
 
-    let seoTitle = 'Poemas Brasileiros — Natanael Brentano';
+    let seoTitle = 'Poemas Brasileiros — Natanael Fernando Gatti Brentano';
     if (tags.length > 0 || activeCols.length > 0) {
       const parts = [];
       if (tags.length > 0) parts.push(`Sentimentos: ${tags.join(', ')}`);
       if (activeCols.length > 0) parts.push(`Coleções: ${activeCols.join(', ')}`);
-      seoTitle = `${parts.join(' | ')} — Natanael Brentano`;
+      seoTitle = `${parts.join(' | ')} — Natanael Fernando Gatti Brentano`;
     }
 
     updateSEO({
       title: seoTitle,
-      description: 'Poemas e poesia brasileira contemporânea de Natanael Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.',
+      description: 'Poemas e poesia contemporânea de Natanael Fernando Gatti Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.',
       url: 'https://nfgbrentano.art.br/',
       type: 'website',
       robots: hasFilterOrSearch ? 'noindex, follow' : null,
@@ -64,7 +64,7 @@ export default {
 
     const heroHtml = `
       <section class="home-hero fade-in">
-        <h1 class="home-title">Poemas de Natanael Brentano</h1>
+        <h1 class="home-title">Poemas de Natanael Fernando Gatti Brentano</h1>
         <p class="home-description">
           Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. O acervo reúne mais de 200 poemas publicados em coleções temáticas. Conheça as <a href="${BASE_URL}colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="${BASE_URL}sobre/" data-link>sobre o autor</a>.
         </p>
@@ -328,7 +328,7 @@ export default {
           e.preventDefault();
           const { platform, slug, title } = newBtn.dataset;
           const shareUrl = `${window.location.origin}${import.meta.env.BASE_URL}poema/${slug}`;
-          const shareText = `Leia "${title}", de Natanael Brentano:`;
+          const shareText = `Leia "${title}", de Natanael Fernando Gatti Brentano:`;
           
           let url = '';
           if (platform === 'whatsapp') url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;

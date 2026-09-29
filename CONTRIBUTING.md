@@ -44,7 +44,7 @@ Adoramos sugestões! Abra uma [Issue](https://github.com/nfbrentano/poemas/issue
 
 ### 📝 Contribuindo com Conteúdo
 
-> **Nota importante:** Os poemas publicados neste site são obras autorais de Natanael Brentano e estão protegidos sob licença CC BY-NC-ND 4.0. Contribuições de conteúdo poético não são aceitas — apenas contribuições técnicas ao código e à infraestrutura.
+> **Nota importante:** Os poemas publicados neste site são obras autorais de Natanael Fernando Gatti Brentano e estão protegidos sob licença CC BY-NC-ND 4.0. Contribuições de conteúdo poético não são aceitas — apenas contribuições técnicas ao código e à infraestrutura.
 
 ## Configurando o Ambiente
 

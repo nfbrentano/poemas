@@ -46,7 +46,7 @@ describe('structured-data.js', () => {
       expect(schema.datePublished).toBe('2026-01-15T12:00:00.000Z');
       expect(schema.dateModified).toBe('2026-02-01T10:00:00.000Z');
       expect(schema.author['@id']).toBe(AUTHOR_ID);
-      expect(schema.author.name).toBe('Natanael Brentano');
+      expect(schema.author.name).toBe('Natanael Fernando Gatti Brentano');
       expect(schema.author.url).toBe('https://nfgbrentano.art.br/sobre/');
       expect(schema.license).toBe('https://creativecommons.org/licenses/by-nc-nd/4.0/');
       expect(schema.copyrightHolder['@id']).toBe(AUTHOR_ID);
@@ -151,7 +151,7 @@ describe('structured-data.js', () => {
     it('personSchema deve conter @id fixo, name, url, image real, nationality, knowsLanguage, sameAs e knowsAbout', () => {
       const person = personSchema();
       expect(person['@id']).toBe('https://nfgbrentano.art.br/sobre/#autor');
-      expect(person.name).toBe('Natanael Brentano');
+      expect(person.name).toBe('Natanael Fernando Gatti Brentano');
       expect(person.url).toBe('https://nfgbrentano.art.br/sobre/');
       expect(person.image).toBe(DEFAULT_AUTHOR_PHOTO);
       expect(person.nationality).toEqual({ '@type': 'Country', name: 'Brasil' });

@@ -30,7 +30,7 @@ describe('GEO Conteúdo Citável — SDD: 2026-09-24_geo-conteudo-citavel-sobre-
       expect(faqs.length).toBeGreaterThanOrEqual(4);
 
       const requiredQuestions = [
-        'Quem é Natanael Brentano?',
+        'Quem é Natanael Fernando Gatti Brentano?',
         'Sobre quais temas ele escreve?',
         'Quantos poemas estão publicados no site?',
         'Como os poemas estão organizados?',
@@ -175,7 +175,7 @@ describe('GEO Conteúdo Citável — SDD: 2026-09-24_geo-conteudo-citavel-sobre-
 
       // Autor com rel="author" e link para /sobre/
       expect(html).toMatch(/<dt>\s*Autor\s*<\/dt>/);
-      expect(html).toMatch(/<a\s+href="\/sobre\/"\s+rel="author"[^>]*>Natanael Brentano<\/a>/);
+      expect(html).toMatch(/<a\s+href="\/sobre\/"\s+rel="author"[^>]*>Natanael Fernando Gatti Brentano<\/a>/);
 
       // Data de publicação com <time datetime="AAAA-MM-DD">
       expect(html).toMatch(/<dt>\s*Publicado em\s*<\/dt>/);

@@ -8,7 +8,7 @@ import { escapeHtml, sanitizeUrl } from '../utils/html.js';
 
 export const collections = {
   meta: {
-    title: 'Coleções e Sentimentos — Natanael Brentano'
+    title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano'
   },
   async render(container, params = {}) {
     try {
@@ -23,7 +23,7 @@ export const collections = {
       ];
 
       updateSEO({
-        title: 'Coleções e Sentimentos — Natanael Brentano',
+        title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano',
         description: 'Explore poemas organizados por séries temáticas e sentimentos.',
         url: canonicalCollectionsUrl,
         type: 'website',
@@ -87,7 +87,7 @@ export const collections = {
 
           if (cols.length > 0) {
             updateSEO({
-              title: 'Coleções e Sentimentos — Natanael Brentano',
+              title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano',
               description: 'Explore poemas organizados por séries temáticas e sentimentos.',
               url: canonicalCollectionsUrl,
               type: 'website',

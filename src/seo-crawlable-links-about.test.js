@@ -185,7 +185,7 @@ describe('{SEO} Links rastreáveis e página Sobre (SDD 2026-09-24)', () => {
       expect(canonical.getAttribute('href')).toBe(`${SITE_URL}/sobre/`);
 
       // RF03: Title e Description próprios
-      expect(document.title).toBe('Sobre Natanael Brentano — Poeta');
+      expect(document.title).toBe('Sobre Natanael Fernando Gatti Brentano — Poeta');
       expect(document.querySelector('meta[name="description"]').getAttribute('content')).toBe(
         'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.'
       );
@@ -222,12 +222,12 @@ describe('{SEO} Links rastreáveis e página Sobre (SDD 2026-09-24)', () => {
       expect(img).not.toBeNull();
       expect(img.getAttribute('src')).toBe(DEFAULT_AVATAR_URL);
       expect(img.getAttribute('src')).not.toContain('data:image/gif');
-      expect(img.getAttribute('alt')).toBe('Natanael Brentano, poeta');
+      expect(img.getAttribute('alt')).toBe('Natanael Fernando Gatti Brentano, poeta');
       expect(img.getAttribute('width')).toBe('140');
       expect(img.getAttribute('height')).toBe('140');
 
       // H1 e Bio presentes no HTML estático
-      expect(div.querySelector('h1').textContent).toBe('Natanael Brentano');
+      expect(div.querySelector('h1').textContent).toBe('Natanael Fernando Gatti Brentano');
       expect(div.querySelector('#bio-content').textContent.trim()).toBe('Texto da biografia do autor.');
       expect(div.querySelector('#total-poems-count').textContent).toBe('222');
     });

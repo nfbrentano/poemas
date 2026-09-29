@@ -102,7 +102,7 @@ export function renderPoemMarkup({
         <header>
           <h1>${escapeHtml(poem.title)}</h1>
           <div class="poem-meta">
-            <span>Por <a href="${baseUrl}sobre/" rel="author" data-link>Natanael Brentano</a></span>
+            <span>Por <a href="${baseUrl}sobre/" rel="author" data-link>Natanael Fernando Gatti Brentano</a></span>
             <span>•</span>
             <span><time datetime="${publishedIso}">${publishedFormatted}</time></span>
             <span>•</span>
@@ -198,7 +198,7 @@ export function renderPoemMarkup({
           <dl class="poem-metadata-list">
             <div class="poem-metadata-item">
               <dt>Autor</dt>
-              <dd><a href="${baseUrl}sobre/" rel="author" data-link>Natanael Brentano</a></dd>
+              <dd><a href="${baseUrl}sobre/" rel="author" data-link>Natanael Fernando Gatti Brentano</a></dd>
             </div>
             <div class="poem-metadata-item">
               <dt>Publicado em</dt>

@@ -9,7 +9,7 @@ describe('updateSEO', () => {
 
   it('updates the page title', () => {
     updateSEO({ title: 'Test Poem' });
-    expect(document.title).toBe('Test Poem — Natanael Brentano');
+    expect(document.title).toBe('Test Poem — Natanael Fernando Gatti Brentano');
   });
 
   it('sets meta description', () => {
@@ -29,17 +29,17 @@ describe('updateSEO', () => {
     expect(ogType.getAttribute('content')).toBe('article');
   });
 
-  it('does not duplicate brand suffix when title already contains Natanael Brentano (CT05)', () => {
-    updateSEO({ title: 'Poemas Brasileiros — Natanael Brentano' });
-    expect(document.title).toBe('Poemas Brasileiros — Natanael Brentano');
+  it('does not duplicate brand suffix when title already contains Natanael Fernando Gatti Brentano (CT05)', () => {
+    updateSEO({ title: 'Poemas Brasileiros — Natanael Fernando Gatti Brentano' });
+    expect(document.title).toBe('Poemas Brasileiros — Natanael Fernando Gatti Brentano');
 
-    updateSEO({ title: 'Sobre Natanael Brentano' });
-    expect(document.title).toBe('Sobre Natanael Brentano');
+    updateSEO({ title: 'Sobre Natanael Fernando Gatti Brentano' });
+    expect(document.title).toBe('Sobre Natanael Fernando Gatti Brentano');
   });
 
   it('uses default title with brand suffix and length <= 60 chars', () => {
     updateSEO({});
-    expect(document.title).toBe('Poemas Brasileiros — Natanael Brentano');
+    expect(document.title).toBe('Poemas Brasileiros — Natanael Fernando Gatti Brentano');
     expect(document.title.length).toBeLessThanOrEqual(60);
   });
 

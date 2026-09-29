@@ -139,7 +139,7 @@ self.addEventListener('fetch', (event) => {
 
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : { 
-    title: 'Natanael Brentano', 
+    title: 'Natanael Fernando Gatti Brentano', 
     body: 'Uma nova obra foi publicada. Venha ler.',
     url: '/'
   };

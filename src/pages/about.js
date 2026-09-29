@@ -8,7 +8,7 @@ import { renderAboutMarkup, getAboutFaq, DEFAULT_AVATAR_URL, DEFAULT_AUTHOR_BIO 
 
 export default {
   meta: {
-    title: 'Sobre Natanael Brentano — Poeta',
+    title: 'Sobre Natanael Fernando Gatti Brentano — Poeta',
     description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.'
   },
   async render(container) {
@@ -19,7 +19,7 @@ export default {
     ];
 
     updateSEO({
-      title: 'Sobre Natanael Brentano — Poeta',
+      title: 'Sobre Natanael Fernando Gatti Brentano — Poeta',
       description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.',
       url: canonicalAboutUrl,
       type: 'profile',

@@ -113,7 +113,7 @@ export const sentiment = {
       description: metaDescription,
       robots
     };
-    document.title = `${pageTitle} — Natanael Brentano`;
+    document.title = `${pageTitle} — Natanael Fernando Gatti Brentano`;
 
     updateSEO({
       title: pageTitle,

@@ -67,7 +67,7 @@ export function getSentimentIntro(name, slug) {
     return customSentiments[cleanSlug].intro;
   }
   const formattedName = name || getSentimentName(cleanSlug);
-  return `Uma seleção de poemas e versos contemporâneos sobre ${formattedName.toLowerCase()}, explorando emoções, reflexões e vivências através da poesia de Natanael Brentano.`;
+  return `Uma seleção de poemas e versos contemporâneos sobre ${formattedName.toLowerCase()}, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.`;
 }
 
 /**

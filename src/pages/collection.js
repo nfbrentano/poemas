@@ -116,7 +116,7 @@ export const collection = {
     });
     
     collection.meta.title = finalTitle;
-    document.title = `${finalTitle} — Natanael Brentano`;
+    document.title = `${finalTitle} — Natanael Fernando Gatti Brentano`;
 
     const isPrerendered = container.getAttribute('data-prerendered') === `/colecao/${col.slug}`;
     if (isPrerendered) {

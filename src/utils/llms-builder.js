@@ -6,7 +6,7 @@ import { getSentimentName, getSentimentIntro } from '../data/sentiments.js';
 
 export { SITE_URL };
 
-export const ATTRIBUTION_NOTICE = '© Natanael Brentano. Citações permitidas com crédito e link para a URL do poema.';
+export const ATTRIBUTION_NOTICE = '© Natanael Fernando Gatti Brentano. Citações permitidas com crédito e link para a URL do poema.';
 
 const ENTITY_MAP = {
   '&nbsp;': ' ',
@@ -194,7 +194,7 @@ export function buildLlmsTxt({
   const sections = [];
 
   // Header and blockquote summary (RF02, RF04)
-  sections.push('# Poemas — Natanael Brentano\n');
+  sections.push('# Poemas — Natanael Fernando Gatti Brentano\n');
   sections.push(
     `> Poesia brasileira contemporânea em língua portuguesa por Natanael Fernando Gatti Brentano. Acervo com ${publishedPoems.length} poemas publicados sobre amor, tempo, efêmero e o cotidiano.\n` +
     `> ${ATTRIBUTION_NOTICE}\n`
@@ -218,7 +218,7 @@ export function buildLlmsTxt({
     sections.push(colLines.join('\n') + '\n');
   } else {
     sections.push(
-      `## Coleções\n\n- [Coleções](${cleanBase}colecoes/): Séries temáticas e livros catalogados de Natanael Brentano.\n`
+      `## Coleções\n\n- [Coleções](${cleanBase}colecoes/): Séries temáticas e livros catalogados de Natanael Fernando Gatti Brentano.\n`
     );
   }
 
@@ -302,7 +302,7 @@ export function buildLlmsFullTxt({
   const parts = [];
 
   // Header and attribution (RF04)
-  parts.push('# Poemas — Natanael Brentano (Acervo Completo)\n');
+  parts.push('# Poemas — Natanael Fernando Gatti Brentano (Acervo Completo)\n');
   parts.push(
     `> Poesia brasileira contemporânea em língua portuguesa por Natanael Fernando Gatti Brentano. Acervo completo com ${publishedPoems.length} poemas publicados.\n` +
     `> ${ATTRIBUTION_NOTICE}\n`

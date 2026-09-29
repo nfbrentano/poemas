@@ -311,7 +311,7 @@ export default {
 
     // Sharing Logic
     const shareUrl = window.location.href;
-    const shareText = `Leia "${poem.title}", um poema de Natanael Brentano:`;
+    const shareText = `Leia "${poem.title}", um poema de Natanael Fernando Gatti Brentano:`;
 
     document.querySelectorAll('[data-platform]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -502,12 +502,12 @@ export default {
         try {
           await navigator.share({
             title: poem.title,
-            text: `"${selectedText}" — Natanael Brentano`,
+            text: `"${selectedText}" — Natanael Fernando Gatti Brentano`,
             url: window.location.href
           });
         } catch (err) {}
       } else {
-        const textToShare = `"${selectedText}" — Natanael Brentano\n${window.location.href}`;
+        const textToShare = `"${selectedText}" — Natanael Fernando Gatti Brentano\n${window.location.href}`;
         navigator.clipboard.writeText(textToShare).then(() => {
           toast.show('Trecho copiado!', 'success');
         });
@@ -525,7 +525,7 @@ export default {
     });
 
     document.getElementById('highlight-share-btn')?.addEventListener('click', () => {
-      const textToShare = `"${selectedText}" — Natanael Brentano\n${window.location.href}`;
+      const textToShare = `"${selectedText}" — Natanael Fernando Gatti Brentano\n${window.location.href}`;
       const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}`;
       window.open(url, '_blank', 'noopener,noreferrer');
       window.getSelection().removeAllRanges();

@@ -33,7 +33,7 @@ describe('Open Graph: fb:app_id', () => {
 describe('Open Graph: tags estáticas do template', () => {
   it('RF04: og:locale e og:site_name estão no HTML estático', () => {
     expect(indexHtml).toContain('<meta property="og:locale" content="pt_BR" />');
-    expect(indexHtml).toContain('<meta property="og:site_name" content="Poemas — Natanael Brentano" />');
+    expect(indexHtml).toContain('<meta property="og:site_name" content="Poemas — Natanael Fernando Gatti Brentano" />');
   });
 
   it('template tem uma única ocorrência de cada og:image:*', () => {

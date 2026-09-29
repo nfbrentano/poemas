@@ -3,7 +3,7 @@ import { SITE_URL, cleanCanonicalUrl } from './url.js';
 import { sanitizeUrl } from './html.js';
 
 export function setNotFoundSEO() {
-  document.title = 'Página não encontrada — Natanael Brentano';
+  document.title = 'Página não encontrada — Natanael Fernando Gatti Brentano';
 
   let robotsTag = document.querySelector('meta[name="robots"]');
   if (!robotsTag) {
@@ -23,9 +23,9 @@ export function setNotFoundSEO() {
 }
 
 export function updateSEO({ title, description, url, imageUrl, type = 'website', publishedTime, tags, robots, structuredData }) {
-  const brandSuffix = 'Natanael Brentano';
+  const brandSuffix = 'Natanael Fernando Gatti Brentano';
   const defaultTitle = `Poemas Brasileiros — ${brandSuffix}`;
-  const defaultDesc = 'Poemas e poesia brasileira contemporânea de Natanael Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.';
+  const defaultDesc = 'Poemas e poesia contemporânea de Natanael Fernando Gatti Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.';
   const defaultImage = `${window.location.origin}${import.meta.env.BASE_URL}og-default.jpg`;
   
   // Set document title without duplicating brand suffix
@@ -100,7 +100,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   
   // Open Graph
   setMeta('meta[property="og:locale"]', 'content', 'pt_BR');
-  setMeta('meta[property="og:site_name"]', 'content', 'Poemas — Natanael Brentano');
+  setMeta('meta[property="og:site_name"]', 'content', 'Poemas — Natanael Fernando Gatti Brentano');
   setMeta('meta[property="og:title"]', 'content', finalTitle);
   setMeta('meta[property="og:description"]', 'content', finalDesc);
   setMeta('meta[property="og:url"]', 'content', canonicalUrl);

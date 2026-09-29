@@ -48,7 +48,7 @@ describe('{SEO} Home: h1, título sem duplicação, canonical limpo e conteúdo 
 
   beforeEach(() => {
     document.head.innerHTML = `
-      <title>Poemas Brasileiros — Natanael Brentano</title>
+      <title>Poemas Brasileiros — Natanael Fernando Gatti Brentano</title>
       <link rel="canonical" href="https://nfgbrentano.art.br/" />
     `;
     document.body.innerHTML = '<main id="main-content"></main>';
@@ -61,7 +61,7 @@ describe('{SEO} Home: h1, título sem duplicação, canonical limpo e conteúdo 
       await homePage.render(container, {});
       const h1List = document.querySelectorAll('h1');
       expect(h1List.length).toBe(1);
-      expect(h1List[0].textContent).toContain('Poemas de Natanael Brentano');
+      expect(h1List[0].textContent).toContain('Poemas de Natanael Fernando Gatti Brentano');
     });
 
     it('deve manter exatamente um <h1> no DOM mesmo quando houver filtros ativos', async () => {
@@ -72,10 +72,10 @@ describe('{SEO} Home: h1, título sem duplicação, canonical limpo e conteúdo 
   });
 
   describe('CA02 & CT02: Título da home sem duplicação', () => {
-    it('document.title da home deve ser "Poemas Brasileiros — Natanael Brentano" com a marca aparecendo uma única vez', async () => {
+    it('document.title da home deve ser "Poemas Brasileiros — Natanael Fernando Gatti Brentano" com a marca aparecendo uma única vez', async () => {
       await homePage.render(container, {});
-      expect(document.title).toBe('Poemas Brasileiros — Natanael Brentano');
-      const matches = document.title.match(/Natanael Brentano/g);
+      expect(document.title).toBe('Poemas Brasileiros — Natanael Fernando Gatti Brentano');
+      const matches = document.title.match(/Natanael Fernando Gatti Brentano/g);
       expect(matches?.length).toBe(1);
       expect(document.title.length).toBeLessThanOrEqual(60);
     });
@@ -131,7 +131,7 @@ describe('{SEO} Home: h1, título sem duplicação, canonical limpo e conteúdo 
       // Contagem de h1 deve ser 1
       const h1Matches = html.match(/<h1[^>]*>/gi);
       expect(h1Matches?.length).toBe(1);
-      expect(html).toContain('Poemas de Natanael Brentano');
+      expect(html).toContain('Poemas de Natanael Fernando Gatti Brentano');
 
       // Parágrafo de apresentação e links internos
       expect(html).toContain('home-description');
@@ -156,7 +156,7 @@ describe('{SEO} Home: h1, título sem duplicação, canonical limpo e conteúdo 
       expect(desc.length).toBeGreaterThanOrEqual(140);
       expect(desc.length).toBeLessThanOrEqual(160);
       expect(desc.toLowerCase()).toContain('poema');
-      expect(desc.toLowerCase()).toContain('natanael brentano');
+      expect(desc.toLowerCase()).toContain('natanael fernando gatti brentano');
     });
   });
 });

@@ -174,9 +174,9 @@ export async function router() {
           const currentTitle = document.title;
           const metaTitle = component.meta.title;
           if (!currentTitle.includes(metaTitle)) {
-             document.title = metaTitle.includes('Natanael Brentano')
+             document.title = metaTitle.includes('Natanael Fernando Gatti Brentano')
                ? metaTitle
-               : `${metaTitle} — Natanael Brentano`;
+               : `${metaTitle} — Natanael Fernando Gatti Brentano`;
           }
         }
 
@@ -201,8 +201,8 @@ export async function router() {
         if (currentCanonical !== expectedCanonicalUrl) {
           const metaTitle = component.meta?.title;
           const defaultPageTitle = metaTitle
-            ? (metaTitle.includes('Natanael Brentano') ? metaTitle : `${metaTitle} — Natanael Brentano`)
-            : 'Poemas Brasileiros — Natanael Brentano';
+            ? (metaTitle.includes('Natanael Fernando Gatti Brentano') ? metaTitle : `${metaTitle} — Natanael Fernando Gatti Brentano`)
+            : 'Poemas Brasileiros — Natanael Fernando Gatti Brentano';
 
           updateSEO({
             title: defaultPageTitle,

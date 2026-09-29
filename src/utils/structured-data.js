@@ -34,11 +34,10 @@ export function personSchema(imageUrl = DEFAULT_AUTHOR_PHOTO) {
     "@context": "https://schema.org",
     "@type": "Person",
     "@id": AUTHOR_ID,
-    "name": "Natanael Brentano",
-    "alternateName": "Natanael Fernando Gatti Brentano",
+    "name": "Natanael Fernando Gatti Brentano",
     "url": `${SITE_URL}/sobre/`,
     "image": imageUrl || DEFAULT_AUTHOR_PHOTO,
-    "description": "Natanael Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.",
+    "description": "Natanael Fernando Gatti Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.",
     "jobTitle": "Poeta",
     "nationality": {
       "@type": "Country",
@@ -65,7 +64,7 @@ export function profilePageSchema(imageUrl = DEFAULT_AUTHOR_PHOTO) {
     "@type": "ProfilePage",
     "@id": `${SITE_URL}/sobre/`,
     "url": `${SITE_URL}/sobre/`,
-    "name": "Sobre Natanael Brentano",
+    "name": "Sobre Natanael Fernando Gatti Brentano",
     "inLanguage": "pt-BR",
     "mainEntity": personSchema(imageUrl)
   };
@@ -100,7 +99,7 @@ export function websiteSchema() {
     "@type": "WebSite",
     "@id": WEBSITE_ID,
     "url": `${SITE_URL}/`,
-    "name": "Poemas — Natanael Brentano",
+    "name": "Poemas — Natanael Fernando Gatti Brentano",
     "inLanguage": "pt-BR",
     "description": "Coleção de poemas originais em português por Natanael Fernando Gatti Brentano. Temas de amor, natureza e reflexões cotidianas.",
     "publisher": {
@@ -188,7 +187,7 @@ export function poemSchema(poem, collections = []) {
     "author": {
       "@type": "Person",
       "@id": AUTHOR_ID,
-      "name": "Natanael Brentano",
+      "name": "Natanael Fernando Gatti Brentano",
       "url": `${SITE_URL}/sobre/`
     },
     "wordCount": wordCount,
@@ -245,8 +244,8 @@ export function collectionsListSchema(collections = []) {
     "@type": "CollectionPage",
     "@id": colUrl,
     "url": colUrl,
-    "name": "Coleções e Sentimentos — Natanael Brentano",
-    "description": "Explore as coleções e séries temáticas de poemas de Natanael Brentano.",
+    "name": "Coleções e Sentimentos — Natanael Fernando Gatti Brentano",
+    "description": "Explore as coleções e séries temáticas de poemas de Natanael Fernando Gatti Brentano.",
     "inLanguage": "pt-BR",
     "isPartOf": {
       "@id": WEBSITE_ID
@@ -281,7 +280,7 @@ export function sentimentSchema(sentimentName, slug, poems = [], description = '
     "@id": sentUrl,
     "url": sentUrl,
     "name": `Poemas sobre ${sentimentName}`,
-    "description": description || `Poemas sobre ${sentimentName.toLowerCase()} de Natanael Brentano.`,
+    "description": description || `Poemas sobre ${sentimentName.toLowerCase()} de Natanael Fernando Gatti Brentano.`,
     "inLanguage": "pt-BR",
     "isPartOf": {
       "@id": WEBSITE_ID
@@ -312,8 +311,8 @@ export function sentimentsListSchema(sentiments = []) {
     "@type": "CollectionPage",
     "@id": sentUrl,
     "url": sentUrl,
-    "name": "Poemas por Sentimento — Natanael Brentano",
-    "description": "Explore os poemas de Natanael Brentano organizados por sentimentos e temas.",
+    "name": "Poemas por Sentimento — Natanael Fernando Gatti Brentano",
+    "description": "Explore os poemas de Natanael Fernando Gatti Brentano organizados por sentimentos e temas.",
     "inLanguage": "pt-BR",
     "isPartOf": {
       "@id": WEBSITE_ID

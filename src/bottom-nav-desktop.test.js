@@ -53,12 +53,12 @@ describe('Barra de navegação inferior (Bottom Nav) e Cabeçalho no Desktop (SD
     `;
   });
 
-  it('CA01: renderiza o nome do autor "Natanael Brentano" no cabeçalho com link para a home', () => {
+  it('CA01: renderiza o nome do autor "Natanael Fernando Gatti Brentano" no cabeçalho com link para a home', () => {
     const headerEl = document.querySelector('.site-header');
     expect(headerEl).not.toBeNull();
     const logoEl = headerEl.querySelector('.logo');
     expect(logoEl).not.toBeNull();
-    expect(logoEl.textContent.trim()).toBe('Natanael Brentano');
+    expect(logoEl.textContent.trim()).toBe('Natanael Fernando Gatti Brentano');
     expect(logoEl.getAttribute('href')).toBe('/');
   });
 

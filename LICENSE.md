@@ -2,7 +2,7 @@
 
 ## Conteúdo (Poemas e Textos)
 
-Os poemas e textos publicados neste site são obras autorais de **Natanael Brentano** e estão licenciados sob a:
+Os poemas e textos publicados neste site são obras autorais de **Natanael Fernando Gatti Brentano** e estão licenciados sob a:
 
 ### Creative Commons Atribuição-NãoComercial-SemDerivações 4.0 Internacional (CC BY-NC-ND 4.0)
 
@@ -35,7 +35,7 @@ O código-fonte deste projeto (JavaScript, CSS, HTML, scripts de build e configu
 
 ### MIT License
 
-Copyright (c) 2024–presente Natanael Brentano
+Copyright (c) 2024–presente Natanael Fernando Gatti Brentano
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

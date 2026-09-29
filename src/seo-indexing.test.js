@@ -9,7 +9,7 @@ describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs l
   beforeEach(() => {
     document.head.innerHTML = '';
     document.body.innerHTML = '<main id="main-content"></main>';
-    document.title = 'Poemas Brasileiros - Natanael Brentano';
+    document.title = 'Poemas Brasileiros - Natanael Fernando Gatti Brentano';
   });
 
   describe('CT01: noindex em páginas privadas prerenderizadas (CA01)', () => {
@@ -56,7 +56,7 @@ describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs l
 
       setNotFoundSEO();
 
-      expect(document.title).toBe('Página não encontrada — Natanael Brentano');
+      expect(document.title).toBe('Página não encontrada — Natanael Fernando Gatti Brentano');
       const robots = document.querySelector('meta[name="robots"]');
       expect(robots).toBeTruthy();
       expect(robots?.getAttribute('content')).toBe('noindex');
@@ -74,7 +74,7 @@ describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs l
         url: 'https://nfgbrentano.art.br/poema/poema-valido'
       });
 
-      expect(document.title).toBe('Poema Válido — Natanael Brentano');
+      expect(document.title).toBe('Poema Válido — Natanael Fernando Gatti Brentano');
       expect(document.querySelector('meta[name="robots"]')).toBeNull();
       const canonical = document.querySelector('link[rel="canonical"]');
       expect(canonical).toBeTruthy();
@@ -99,7 +99,7 @@ describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs l
       expect(fs.existsSync(html404Path)).toBe(true);
       const content = fs.readFileSync(html404Path, 'utf-8');
       expect(content).toMatch(/<meta\s+name=["']robots["']\s+content=["']noindex["']/i);
-      expect(content).toContain('Página não encontrada — Natanael Brentano');
+      expect(content).toContain('Página não encontrada — Natanael Fernando Gatti Brentano');
       expect(content).toContain('href="/"');
       expect(content).toMatch(/href="\/colecoes\/?"/);
       expect(content).toContain('href="/?busca=1"');

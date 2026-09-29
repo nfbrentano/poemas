@@ -156,7 +156,7 @@ ${categories ? `${categories}\n` : ''}    </item>`;
   xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Poemas Brasileiros — Natanael Brentano</title>
+    <title>Poemas Brasileiros — Natanael Fernando Gatti Brentano</title>
     <link>${cleanBase}</link>
     <description>Coleção de poemas originais em português por Natanael Fernando Gatti Brentano.</description>
     <language>pt-BR</language>
@@ -164,7 +164,7 @@ ${categories ? `${categories}\n` : ''}    </item>`;
     <atom:link href="${cleanBase}feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>${cleanBase}og-default.png</url>
-      <title>Poemas Brasileiros — Natanael Brentano</title>
+      <title>Poemas Brasileiros — Natanael Fernando Gatti Brentano</title>
       <link>${cleanBase}</link>
     </image>
 ${itemsXml}
