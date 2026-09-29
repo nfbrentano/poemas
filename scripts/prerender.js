@@ -137,17 +137,22 @@ button { cursor: pointer; font-family: var(--font-ui); font-size: var(--btn-font
 .site-footer { border-top: 1px solid var(--border-subtle); padding: var(--space-2xl) 0; margin-top: var(--space-4xl); font-size: 0.85rem; color: var(--text-muted); }
 .footer-grid { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); }
 .footer-social { display: flex; align-items: center; gap: var(--space-sm); }
-.bottom-nav, .mobile-brand, .bottom-sheet-overlay, .bottom-sheet { display: none; }
+.site-header { display: flex; align-items: center; justify-content: flex-start; height: var(--header-height); position: sticky; top: 0; z-index: var(--z-overlay); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.site-header.scrolled { opacity: 0; pointer-events: none; transform: translateY(-6px); }
+.site-header:focus-within { opacity: 1; pointer-events: auto; transform: translateY(0); }
+#header-controls { display: none !important; }
+.mobile-brand, .bottom-sheet-overlay, .bottom-sheet { display: none; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 56px; background: var(--bg-elevated); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border-subtle); display: flex; justify-content: center; align-items: center; z-index: var(--z-nav, 500); }
+.bottom-nav-inner { display: flex; width: 100%; max-width: 680px; height: 100%; margin: 0 auto; align-items: center; justify-content: space-around; }
+.bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.65rem; color: var(--text-muted); gap: 4px; text-decoration: none; }
 .home-hero { text-align: center; padding: var(--space-xl) 0 var(--space-lg); max-width: var(--container-main); margin: 0 auto; }
 .home-title { font-family: var(--font-display); font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 300; color: var(--text-primary); margin-bottom: var(--space-xs); letter-spacing: -0.01em; line-height: 1.25; }
 .home-description { font-family: var(--font-poem); font-size: 1rem; color: var(--text-secondary); line-height: 1.7; max-width: 580px; margin: 0 auto; }
 .home-description a { color: var(--accent-subtle); text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 768px) {
-  .site-header { display: none; }
+  .site-header { display: none !important; }
   .mobile-brand { display: block; text-align: center; padding: var(--space-md) 0; font-family: var(--font-display); font-size: 1.2rem; }
   .site-content { padding-top: var(--space-md); padding-bottom: 70px; }
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--bg-primary); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-around; align-items: center; z-index: var(--z-header, 500); }
-  .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-muted); gap: 2px; }
   .home-hero { padding: var(--space-lg) 0 var(--space-md); }
   .home-title { font-size: 1.6rem; }
   .home-description { font-size: 0.95rem; padding: 0 var(--space-sm); }
@@ -240,27 +245,29 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
       </div>
     </div>
   </footer>
-  <nav class="bottom-nav" aria-label="Navegação móvel principal">
-    <a href="/" class="bottom-nav-item" data-link>
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      <span>Poemas</span>
-    </a>
-    <a href="/colecoes/" class="bottom-nav-item" data-link>
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-      <span>Coleções</span>
-    </a>
-    <button class="bottom-nav-item bottom-nav-search" id="bottom-search-btn" type="button" aria-label="Buscar poemas">
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <span>Buscar</span>
-    </button>
-    <a href="/sobre/" class="bottom-nav-item" data-link>
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-      <span>Sobre</span>
-    </a>
-    <button class="bottom-nav-item" id="bottom-settings-btn" type="button" aria-label="Ajustes">
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      <span>Ajustes</span>
-    </button>
+  <nav class="bottom-nav" aria-label="Navegação principal">
+    <div class="bottom-nav-inner">
+      <a href="/" class="bottom-nav-item" data-link>
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span>Poemas</span>
+      </a>
+      <a href="/colecoes/" class="bottom-nav-item" data-link>
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span>Coleções</span>
+      </a>
+      <button class="bottom-nav-item bottom-nav-search" id="bottom-search-btn" type="button" aria-label="Buscar poemas">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Buscar</span>
+      </button>
+      <a href="/sobre/" class="bottom-nav-item" data-link>
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <span>Sobre</span>
+      </a>
+      <button class="bottom-nav-item" id="bottom-settings-btn" type="button" aria-label="Ajustes">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span>Ajustes</span>
+      </button>
+    </div>
   </nav>
 
   <div class="bottom-sheet-overlay" id="global-settings-overlay"></div>

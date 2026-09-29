@@ -1,78 +1,93 @@
 /* components.css */
 
-/* Bottom Navigation Bar */
+/* Bottom Navigation Bar (Mobile & Desktop) */
 .bottom-nav {
-  display: none;
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-nav, 500);
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  justify-content: center;
+  align-items: center;
 }
 
-@media (max-width: 768px) {
-  .bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: var(--z-nav, 500);
-    background: var(--bg-elevated);
-    border-top: 1px solid var(--border-subtle);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    height: calc(56px + env(safe-area-inset-bottom, 0px));
-  }
+.bottom-nav-inner {
+  display: flex;
+  width: 100%;
+  max-width: 680px;
+  height: 100%;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-around;
+}
 
-  .bottom-nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    font-family: var(--font-ui);
-    font-size: 0.65rem;
-    letter-spacing: 0.5px;
-    color: var(--text-muted);
-    text-decoration: none;
-    padding: 8px 4px;
-    transition: transform var(--transition-fast);
-    min-height: 44px;
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 8px 4px;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+  min-height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
 
-  .bottom-nav-item svg {
-    transition: transform var(--transition-fast);
-  }
+.bottom-nav-item svg {
+  transition: transform var(--transition-fast), stroke var(--transition-fast);
+}
 
-  .bottom-nav-item.active,
-  .bottom-nav-item:focus-visible {
-    color: var(--accent-subtle);
-  }
+.bottom-nav-item:hover {
+  color: var(--text-primary);
+}
 
-  .bottom-nav-item.active svg {
-    stroke: var(--accent-subtle);
-    transform: scale(1.1);
-  }
+.bottom-nav-item:hover svg {
+  stroke: var(--accent-subtle);
+  transform: translateY(-1px);
+}
 
-  /* Ajustar site-content para não sobrepor a bottom nav */
-  .site-content {
-    padding-bottom: calc(var(--space-xl) + 56px + env(safe-area-inset-bottom, 0px)) !important;
-  }
+.bottom-nav-item.active,
+.bottom-nav-item:focus-visible {
+  color: var(--accent-subtle);
+}
 
-  .mobile-brand {
-    text-align: center;
-    padding: var(--space-sm) var(--space-md) 0 var(--space-md);
-    font-family: var(--font-display);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--text-muted);
-  }
-  .mobile-brand a {
-    color: inherit;
-    text-decoration: none;
-  }
+.bottom-nav-item.active svg {
+  stroke: var(--accent-subtle);
+  transform: scale(1.1);
+}
+
+/* Ajustar site-content para não sobrepor a bottom nav */
+.site-content {
+  padding-bottom: calc(var(--space-2xl) + 56px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+.mobile-brand {
+  text-align: center;
+  padding: var(--space-sm) var(--space-md) 0 var(--space-md);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+.mobile-brand a {
+  color: inherit;
+  text-decoration: none;
 }
 
 @media (min-width: 769px) {
@@ -853,11 +868,11 @@ input, textarea {
 }
 
 @media (min-width: 769px) {
-  .bottom-sheet-overlay {
+  .bottom-sheet-overlay:not(#global-settings-overlay) {
     display: none !important;
   }
   
-  .poem-settings-panel.bottom-sheet {
+  .poem-settings-panel.bottom-sheet:not(#global-settings-sheet) {
     display: none;
     background: var(--bg-elevated);
     border: 1px solid var(--border-subtle);
@@ -867,7 +882,7 @@ input, textarea {
     max-width: 600px;
   }
   
-  .poem-settings-panel.bottom-sheet.active {
+  .poem-settings-panel.bottom-sheet.active:not(#global-settings-sheet) {
     display: flex;
     flex-direction: column;
   }
@@ -900,6 +915,37 @@ input, textarea {
   }
 }
 
+/* Global Settings Sheet & Overlay (Desktop & Mobile) */
+#global-settings-sheet {
+  position: fixed;
+  bottom: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-elevated);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  border-bottom: none;
+  padding: var(--space-md) var(--space-lg) calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+  z-index: calc(var(--z-overlay, 1000) + 1);
+  display: flex;
+  flex-direction: column;
+  transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.45);
+  overflow-y: auto;
+}
+
+#global-settings-sheet.active {
+  bottom: 0 !important;
+  display: flex !important;
+}
+
+#global-settings-overlay.active {
+  display: block !important;
+  opacity: 1 !important;
+}
 
 .poem-container {
   padding-bottom: var(--space-xl);
@@ -911,51 +957,29 @@ input, textarea {
   }
 }
 
-/* Navigation */
+/* Navigation between poems (Static block at end of poem) */
 .poem-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  background: transparent;
+  border-top: none;
+  border-bottom: none;
+  padding: var(--space-lg) 0;
+  margin: var(--space-xl) 0 var(--space-md) 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: var(--z-nav, 1000);
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.3s ease;
+  gap: var(--space-sm);
   font-family: var(--font-ui);
   font-size: 0.9rem;
-  padding: 12px 20px;
-  background: var(--bg-primary);
-  border-top: 1px solid var(--border-subtle);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .poem-nav.visible {
   opacity: 1;
   pointer-events: auto;
-}
-
-@media (max-width: 768px) {
-  .poem-nav {
-    position: static;
-    opacity: 1;
-    pointer-events: auto;
-    background: transparent;
-    border-top: none;
-    border-bottom: none;
-    padding: var(--space-lg) 0;
-    margin: var(--space-xl) 0 var(--space-md) 0;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    gap: var(--space-sm);
-  }
-  
-  .poem-nav.visible {
-    opacity: 1;
-  }
 }
 
 .nav-btn {
@@ -2878,7 +2902,7 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
 /* Back to Top Button */
 .back-to-top-btn {
   position: fixed;
-  bottom: var(--space-xl);
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px) + var(--space-md));
   right: var(--space-lg);
   width: 48px;
   height: 48px;

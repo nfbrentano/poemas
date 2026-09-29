@@ -1,6 +1,6 @@
 export const themeToggle = {
   currentMode: localStorage.getItem('site-mode') || 
-    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+    (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
 
   apply(mode) {
     document.documentElement.removeAttribute('data-theme');
@@ -82,12 +82,14 @@ export const themeToggle = {
     const btn = document.getElementById('mode-toggle');
 
     // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      // Only auto-update if the user hasn't explicitly set a preference in this session/localStorage
-      if (!localStorage.getItem('site-mode')) {
-        this.apply(e.matches ? 'dark' : 'light');
-      }
-    });
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        // Only auto-update if the user hasn't explicitly set a preference in this session/localStorage
+        if (!localStorage.getItem('site-mode')) {
+          this.apply(e.matches ? 'dark' : 'light');
+        }
+      });
+    }
 
     if (btn) {
       btn.addEventListener('click', () => {

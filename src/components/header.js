@@ -189,12 +189,14 @@ export const header = {
 
 
     // Header scroll effect
-    window.addEventListener('scroll', () => {
+    const updateHeaderScroll = () => {
       const headerEl = document.querySelector('.site-header');
       if (headerEl) {
-        headerEl.classList.toggle('scrolled', window.scrollY > 10);
+        headerEl.classList.toggle('scrolled', window.scrollY > 20);
       }
-    }, { passive: true });
+    };
+    window.addEventListener('scroll', updateHeaderScroll, { passive: true });
+    updateHeaderScroll();
 
     // Handle resize to clear mobile nav state on desktop
     window.addEventListener('resize', () => {
