@@ -137,10 +137,7 @@ button { cursor: pointer; font-family: var(--font-ui); font-size: var(--btn-font
 .site-footer { border-top: 1px solid var(--border-subtle); padding: var(--space-2xl) 0; margin-top: var(--space-4xl); font-size: 0.85rem; color: var(--text-muted); }
 .footer-grid { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); }
 .footer-social { display: flex; align-items: center; gap: var(--space-sm); }
-.site-header { display: flex; align-items: center; justify-content: flex-start; height: var(--header-height); position: sticky; top: 0; z-index: var(--z-overlay); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-.site-header.scrolled { opacity: 0; pointer-events: none; transform: translateY(-6px); }
-.site-header:focus-within { opacity: 1; pointer-events: auto; transform: translateY(0); }
-#header-controls { display: none !important; }
+.site-header { display: none !important; }
 .mobile-brand, .bottom-sheet-overlay, .bottom-sheet { display: none; }
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 56px; background: var(--bg-elevated); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border-subtle); display: flex; justify-content: center; align-items: center; z-index: var(--z-nav, 500); }
 .bottom-nav-inner { display: flex; width: 100%; max-width: 680px; height: 100%; margin: 0 auto; align-items: center; justify-content: space-around; }

@@ -153,14 +153,14 @@ describe('Barra de navegação inferior (Bottom Nav) e Cabeçalho no Desktop (SD
     expect(overlay.classList.contains('active')).toBe(false);
   });
 
-  it('CA06: estilos CSS ocultam #header-controls e mantêm a barra inferior fixa com padding compensatório', () => {
+  it('CA06: estilos CSS ocultam .site-header e mantêm a barra inferior fixa com padding compensatório', () => {
     const globalCssPath = path.resolve(__dirname, 'styles/global.css');
     const componentsCssPath = path.resolve(__dirname, 'styles/components.css');
     const globalCss = fs.readFileSync(globalCssPath, 'utf8');
     const componentsCss = fs.readFileSync(componentsCssPath, 'utf8');
 
-    // #header-controls oculto
-    expect(globalCss).toMatch(/#header-controls\s*\{\s*display:\s*none\s*!important/);
+    // .site-header oculto
+    expect(globalCss).toMatch(/\.site-header\s*\{[^}]*display:\s*none\s*!important/);
 
     // .bottom-nav habilitada com position: fixed
     expect(componentsCss).toMatch(/\.bottom-nav\s*\{[^}]*position:\s*fixed/);
@@ -177,39 +177,11 @@ describe('Barra de navegação inferior (Bottom Nav) e Cabeçalho no Desktop (SD
     expect(componentsCss).toMatch(/#global-settings-sheet\.active\s*\{[^}]*bottom:\s*0/);
   });
 
-  it('SDD 2026-09-29 (CA01, CA02, CA03, CA04): alterna classe .scrolled ao rolar e define regras CSS para opacidade 0 e pointer-events none', () => {
-    header.init();
-    const headerEl = document.querySelector('.site-header');
-    expect(headerEl).not.toBeNull();
-
-    // No topo (scrollY = 0)
-    Object.defineProperty(window, 'scrollY', { value: 0, writable: true });
-    window.dispatchEvent(new Event('scroll'));
-    expect(headerEl.classList.contains('scrolled')).toBe(false);
-
-    // Rolando para baixo (scrollY = 50 > 20)
-    window.scrollY = 50;
-    window.dispatchEvent(new Event('scroll'));
-    expect(headerEl.classList.contains('scrolled')).toBe(true);
-
-    // Voltando ao topo (scrollY = 0 <= 20)
-    window.scrollY = 0;
-    window.dispatchEvent(new Event('scroll'));
-    expect(headerEl.classList.contains('scrolled')).toBe(false);
-
-    // Validação das regras CSS em global.css
+  it('SDD 2026-09-29 (Remover menu superior - CA01, CA04): valida que o menu superior (.site-header) está oculto com display: none !important', () => {
     const globalCssPath = path.resolve(__dirname, 'styles/global.css');
     const globalCss = fs.readFileSync(globalCssPath, 'utf8');
 
-    // Transição suave no .site-header
-    expect(globalCss).toMatch(/\.site-header\s*\{[^}]*transition:[^}]*opacity/);
-
-    // .site-header.scrolled com opacity: 0 e pointer-events: none
-    expect(globalCss).toMatch(/\.site-header\.scrolled\s*\{[^}]*opacity:\s*0/);
-    expect(globalCss).toMatch(/\.site-header\.scrolled\s*\{[^}]*pointer-events:\s*none/);
-
-    // .site-header:focus-within para acessibilidade de navegação por teclado
-    expect(globalCss).toMatch(/\.site-header:focus-within\s*\{[^}]*opacity:\s*1/);
-    expect(globalCss).toMatch(/\.site-header:focus-within\s*\{[^}]*pointer-events:\s*auto/);
+    // .site-header com display: none !important
+    expect(globalCss).toMatch(/\.site-header\s*\{[^}]*display:\s*none\s*!important/);
   });
 });
