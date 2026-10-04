@@ -1,5 +1,12 @@
 import { db, getFirebaseAuth } from './firebase.js';
-import { collection, addDoc, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { setDoc, deleteDoc, doc } from 'firebase/firestore';
+
+// O ID do documento é o SHA-256 do endpoint: permite cancelar sem listar (a leitura é restrita a admin).
+export async function subscriptionDocId(endpoint) {
+  const bytes = new TextEncoder().encode(endpoint);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+}
 
 export const pushManager = {
   isSupported() {
@@ -51,10 +58,16 @@ export const pushManager = {
     // Save to Firebase
     const auth = await getFirebaseAuth();
     const user = auth.currentUser;
-    await addDoc(collection(db, 'push_subscriptions'), {
-      user_id: user?.uid || null,
-      subscription: subscription.toJSON()
-    });
+    const subJson = subscription.toJSON();
+    try {
+      await setDoc(doc(db, 'push_subscriptions', await subscriptionDocId(subJson.endpoint)), {
+        user_id: user?.uid || null,
+        subscription: subJson
+      });
+    } catch (e) {
+      // Reinscrição do mesmo endpoint vira update (negado a anônimos): já está registrado.
+      if (e?.code !== 'permission-denied') throw e;
+    }
 
     return subscription;
   },
@@ -66,14 +79,8 @@ export const pushManager = {
       await subscription.unsubscribe();
       
       // Remove from Firebase
-      const subJson = subscription.toJSON();
-      const endpoint = subJson.endpoint;
-      
-      const q = query(collection(db, 'push_subscriptions'), where('subscription.endpoint', '==', endpoint));
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach(async (d) => {
-        await deleteDoc(doc(db, 'push_subscriptions', d.id));
-      });
+      const endpoint = subscription.toJSON().endpoint;
+      await deleteDoc(doc(db, 'push_subscriptions', await subscriptionDocId(endpoint)));
     }
   },
 

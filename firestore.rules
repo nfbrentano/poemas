@@ -30,18 +30,39 @@ service cloud.firestore {
       allow update, delete: if request.auth != null;
     }
 
-    // Reações aos poemas: leitura, criação e remoção públicas (baseadas em sessionId)
+    // Reações aos poemas: leitura pública (contagem), criação validada e remoção pública (baseadas em sessionId)
     match /poem_reactions/{document=**} {
-      allow read, create, delete: if true;
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['poem_id', 'emoji', 'session_id'])
+                    && request.resource.data.keys().hasAll(['poem_id', 'emoji', 'session_id'])
+                    && request.resource.data.poem_id is string
+                    && request.resource.data.poem_id.size() > 0
+                    && request.resource.data.poem_id.size() <= 128
+                    && request.resource.data.emoji in ['🕯️', '💧', '🌿', '🌙', '✨', '❤️']
+                    && request.resource.data.session_id is string
+                    && request.resource.data.session_id.size() > 0
+                    && request.resource.data.session_id.size() <= 64;
+      allow delete: if true;
       allow update: if request.auth != null;
     }
 
-    // Notificações push
-    match /push_subscriptions/{document=**} {
-      allow read, create, delete: if true;
-      allow update: if request.auth != null;
+    // Notificações push: somente admin lê. O ID do documento é o SHA-256 (hex) do endpoint,
+    // o que permite ao cliente cancelar a própria inscrição sem precisar listar as demais.
+    match /push_subscriptions/{subId} {
+      allow read, update: if request.auth != null;
+      allow create: if subId.matches('^[0-9a-f]{64}$')
+                    && request.resource.data.keys().hasOnly(['user_id', 'subscription'])
+                    && request.resource.data.keys().hasAll(['subscription'])
+                    && (!('user_id' in request.resource.data) || request.resource.data.user_id == null || request.resource.data.user_id is string)
+                    && request.resource.data.subscription is map
+                    && request.resource.data.subscription.keys().hasOnly(['endpoint', 'expirationTime', 'keys'])
+                    && request.resource.data.subscription.keys().hasAll(['endpoint', 'keys'])
+                    && request.resource.data.subscription.endpoint is string
+                    && request.resource.data.subscription.endpoint.matches('^https://.*')
+                    && request.resource.data.subscription.endpoint.size() <= 1000;
+      allow delete: if true;
     }
-    
+
     // Page views e Inscritos: qualquer um pode criar, só admin pode ler/editar
     match /page_views/{document=**} {
       allow create: if true;
