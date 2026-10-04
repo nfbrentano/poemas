@@ -62,10 +62,10 @@ describe('push.js unsubscribe', () => {
 });
 
 describe('deploy.yml', () => {
-  it('executa os testes antes do build', () => {
+  it('executa os testes após o build e antes de publicar', () => {
     const y = readFileSync('.github/workflows/deploy.yml', 'utf8');
     const t = y.indexOf('npm test -- --run');
-    expect(t).toBeGreaterThan(-1);
-    expect(t).toBeLessThan(y.indexOf('npm run build'));
+    expect(t).toBeGreaterThan(y.indexOf('npm run build'));
+    expect(t).toBeLessThan(y.indexOf('upload-pages-artifact'));
   });
 });

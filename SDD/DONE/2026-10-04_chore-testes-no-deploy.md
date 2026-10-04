@@ -5,7 +5,7 @@
 
 ## Detalhes da Atividade
 
-- **O que precisa ser feito:** Adicionar ao `.github/workflows/deploy.yml` uma etapa `npm test -- --run` entre a instalação das dependências e o build.
+- **O que precisa ser feito:** Adicionar ao `.github/workflows/deploy.yml` uma etapa `npm test -- --run` depois do build (os testes de SEO e segurança leem `dist/` e importam o `prerender.js`, que exige as variáveis do Firebase) e antes do upload do artefato.
 - **Problema e evidência:** O projeto tem 228 testes (SEO, segurança, comentários), mas o workflow de deploy publica sem executá-los.
 - **Impacto de não fazer:** Uma regressão coberta por teste pode ir para produção sem aviso.
 - **Para quem é destinado:** Mantenedores.
@@ -18,13 +18,13 @@
 
 | ID | Descrição | Prioridade | CAs |
 |----|-----------|------------|-----|
-| RF01 | Etapa de testes executa antes do `Build` | P0 | CA01, CA02 |
+| RF01 | Etapa de testes executa após o `Build` e antes do upload | P0 | CA01, CA02 |
 
 ### Requisitos não-funcionais
 
 | ID | Descrição | Prioridade | CAs |
 |----|-----------|------------|-----|
-| RNF01 | Etapa roda em modo não interativo (`--run`) e sem secrets | P0 | CA03 |
+| RNF01 | Etapa roda em modo não interativo (`--run`) com as mesmas variáveis do build | P0 | CA03 |
 
 ### Dependências técnicas
 
@@ -36,7 +36,7 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [x] **CA01:** Dado o workflow, quando um push na `main` ocorre, então `npm test -- --run` executa antes do build.
+- [x] **CA01:** Dado o workflow, quando um push na `main` ocorre, então `npm test -- --run` executa após o build, com as mesmas variáveis de ambiente, e antes do upload.
 - [x] **CA02:** Dado que algum teste falha, quando o workflow roda, então ele termina com erro e não publica.
 - [x] **CA03:** Dado que o vitest roda localmente com `--run`, então termina sem modo watch e com todos os testes passando.
 
@@ -59,7 +59,7 @@
 
 | # | Cenário | Tipo | Cobre | Passos | Resultado esperado |
 |---|---------|------|-------|--------|--------------------|
-| CT01 | Ordem das etapas | unit | CA01 | Teste lê o YAML e compara posição de `npm test` e `npm run build` | Teste vem antes |
+| CT01 | Ordem das etapas | unit | CA01 | Teste lê o YAML e compara posição de `npm test` e `npm run build` | Teste vem após o build e antes do upload |
 | CT02 | Suíte local | manual | CA03 | `npm test -- --run` | 100% verde |
 
 ## URL Complementar
