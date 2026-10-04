@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../utils/motion.js';
 import { db } from '../utils/firebase.js';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { navigateTo } from '../router.js';
@@ -109,7 +110,7 @@ export const filterChips = {
         const chipRect = activeChip.getBoundingClientRect();
         const scrollOffset = chipRect.left - containerRect.left - 20;
         if (scrollOffset !== 0 && typeof tagsContainer.scrollBy === 'function') {
-          tagsContainer.scrollBy({ left: scrollOffset, behavior: 'smooth' });
+          tagsContainer.scrollBy({ left: scrollOffset, behavior: scrollBehavior() });
         }
       }, 50);
     }
