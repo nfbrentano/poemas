@@ -1,3 +1,5 @@
+import { scrollBehavior } from '../utils/motion.js';
+
 export const backToTop = {
   init() {
     if (document.getElementById('back-to-top-btn')) return;
@@ -28,7 +30,7 @@ export const backToTop = {
     btn.addEventListener('click', () => {
       window.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: scrollBehavior()
       });
     });
   }
