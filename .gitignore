@@ -37,3 +37,6 @@ supabase/functions/*/node_modules
 supabase/functions/*/.deno
 .env.local
 .env
+
+# Exports gerados (backup dos poemas)
+exports/
