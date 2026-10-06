@@ -77,6 +77,7 @@ poemas/
 │   ├── main.js           # Ponto de entrada
 │   └── router.js         # Roteamento SPA
 ├── scripts/              # Scripts de build (sitemap, RSS, prerender, e-mail)
+│   └── dev/              # Scripts de manutenção pontual (migrações, importação, análises)
 ├── public/               # Arquivos estáticos
 ├── functions/            # Firebase Cloud Functions
 ├── .github/workflows/    # CI/CD (deploy + e-mail diário)

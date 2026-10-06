@@ -5,7 +5,7 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const poems = JSON.parse(fs.readFileSync('scripts/poems_dump.json', 'utf8'));
+const poems = JSON.parse(fs.readFileSync('scripts/dev/poems_dump.json', 'utf8'));
 
 // Core tag mappings
 const tagGroups = {

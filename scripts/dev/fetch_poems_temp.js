@@ -16,8 +16,8 @@ async function run() {
   }
   
   import('fs').then(fs => {
-    fs.writeFileSync('scripts/poems_dump.json', JSON.stringify(poems, null, 2));
-    console.log('Saved ' + poems.length + ' poems to scripts/poems_dump.json');
+    fs.writeFileSync('scripts/dev/poems_dump.json', JSON.stringify(poems, null, 2));
+    console.log('Saved ' + poems.length + ' poems to scripts/dev/poems_dump.json');
   });
 }
 
