@@ -1,4 +1,4 @@
-import { supabase } from './compat-client.js';
+import { listDocs, callFunction } from './data.js';
 import { escapeHtml } from '../../utils/html.js';
 import { debounce } from './debounce.js';
 
@@ -7,14 +7,8 @@ export async function renderEmailHistory(container) {
     
     try {
       const [logsRes, poemsRes] = await Promise.all([
-        supabase
-          .from('email_campaign_logs')
-          .select('id, created_at, sent_at, status, details, poem_id, poems(title)')
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('poems')
-          .select('id, title')
-          .eq('status', 'published')
+        listDocs('email_campaign_logs', { orderBy: ['created_at', 'desc'] }),
+        listDocs('poems', { where: [['status', '==', 'published']] })
       ]);
       
       if (logsRes.error) throw logsRes.error;
@@ -265,9 +259,7 @@ export async function renderEmailHistory(container) {
         buttonEl.style.opacity = '0.5';
         
         try {
-          const { data, error: fnError } = await supabase.functions.invoke('sendNewsletter', {
-            body: { poemId }
-          });
+          const { data, error: fnError } = await callFunction('sendNewsletter', { poemId });
           
           if (fnError) throw fnError;
           
@@ -506,9 +498,7 @@ export async function renderEmailHistory(container) {
             bodyPayload.targetEmail = targetEmail;
           }
           
-          const { data, error: fnError } = await supabase.functions.invoke('sendNewsletter', {
-            body: bodyPayload
-          });
+          const { data, error: fnError } = await callFunction('sendNewsletter', bodyPayload);
           
           if (fnError) throw fnError;
           

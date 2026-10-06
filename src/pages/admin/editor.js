@@ -1,4 +1,4 @@
-import { supabase } from './compat-client.js';
+import { listDocs, insertDocs, updateDocById, uploadFile, getPublicFileUrl, callFunction } from './data.js';
 import { navigateTo } from '../../router.js';
 import { escapeHtml, stripHtml, sanitizeUrl } from '../../utils/html.js';
 import { debounce } from './debounce.js';
@@ -8,7 +8,7 @@ export async function renderEditor(container, id) {
     
     if (id) {
       container.innerHTML = '<div class="loading">Carregando poema...</div>';
-      const { data } = await supabase.from('poems').select('*').eq('id', id).single();
+      const { data } = await listDocs('poems', { where: [['id', '==', id]], single: true });
       if (data) {
         poem = data;
         // Clean imported HTML tags so the editor is always pure natural text
@@ -225,24 +225,17 @@ export async function renderEditor(container, id) {
         try {
           const fileName = `narration_${Date.now()}${ext}`;
           
-          let upRes = await supabase.storage.from('audios').upload(fileName, file, {
-            contentType: detectedContentType,
-            upsert: true
-          });
+          let upRes = await uploadFile('audios', fileName, file);
           let bucketName = 'audios';
           if (upRes.error) {
             console.warn('Bucket audios retornou erro, tentando fallback para avatars:', upRes.error);
-            upRes = await supabase.storage.from('avatars').upload(fileName, file, {
-              contentType: detectedContentType,
-              upsert: true
-            });
+            upRes = await uploadFile('avatars', fileName, file);
             bucketName = 'avatars';
           }
 
           if (upRes.error) throw upRes.error;
 
-          const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(fileName);
-          const publicUrl = urlData.publicUrl;
+          const publicUrl = getPublicFileUrl(bucketName, fileName);
 
           audioUrlInput.value = publicUrl;
           audioPreviewPlayer.src = sanitizeUrl(publicUrl);
@@ -325,12 +318,12 @@ export async function renderEditor(container, id) {
       let error = null;
       if (id) {
         payload.updated_at = new Date().toISOString();
-        const res = await supabase.from('poems').update(payload).eq('id', id);
+        const res = await updateDocById('poems', id, payload);
         error = res.error;
       } else {
         payload.created_at = new Date().toISOString();
         payload.updated_at = payload.published_at || payload.created_at;
-        const res = await supabase.from('poems').insert([payload]);
+        const res = await insertDocs('poems', [payload]);
         error = res.error;
       }
       
@@ -384,11 +377,11 @@ export async function renderEditor(container, id) {
         let error = null;
         
         if (id) {
-          const res = await supabase.from('poems').update(payload).eq('id', id);
+          const res = await updateDocById('poems', id, payload);
           error = res.error;
         } else {
           payload.created_at = new Date().toISOString();
-          const res = await supabase.from('poems').insert(payload);
+          const res = await insertDocs('poems', payload);
           error = res.error;
           if (res.data) poemId = res.data.id;
         }
@@ -401,14 +394,12 @@ export async function renderEditor(container, id) {
           return;
         }
         
-        // Trigger Supabase Edge Function Newsletter
+        // Trigger Cloud Function Newsletter
         if (poemId) {
           try {
             publishBtn.innerText = 'Enviando newsletter...';
             
-            const { data, error: fnError } = await supabase.functions.invoke('sendNewsletter', {
-              body: { poemId }
-            });
+            const { data, error: fnError } = await callFunction('sendNewsletter', { poemId });
 
             if (fnError) throw fnError;
 

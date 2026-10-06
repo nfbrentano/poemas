@@ -1,13 +1,11 @@
-import { supabase } from './compat-client.js';
+import { listDocs, insertDocs, updateDocById, deleteDocById, deleteDocsWhere, uploadFile, getPublicFileUrl } from './data.js';
 import { escapeHtml, sanitizeUrl } from '../../utils/html.js';
 
 export async function renderCollections(container) {
     const renderList = async () => {
       container.innerHTML = '<div class="loading">Carregando coleções...</div>';
       
-      const { data: cols, error } = await supabase
-        .from('collections')
-        .select('*, collection_poems(count)');
+      const { data: cols, error } = await listDocs('collections');
         
       if (error) {
         container.innerHTML = `<div class="error">Erro ao carregar coleções: ${error.message}</div>`;
@@ -93,7 +91,7 @@ export async function renderCollections(container) {
           
           btn.innerText = 'Excluindo...';
           btn.disabled = true;
-          const { error: delErr } = await supabase.from('collections').delete().eq('id', btn.dataset.id);
+          const { error: delErr } = await deleteDocById('collections', btn.dataset.id);
           if (delErr) {
             alert('Erro ao excluir coleção: ' + delErr.message);
           }
@@ -110,9 +108,9 @@ export async function renderCollections(container) {
       
       try {
         const [poemsRes, colRes, assocRes] = await Promise.all([
-          supabase.from('poems').select('id, title, status').order('title', { ascending: true }),
-          colId ? supabase.from('collections').select('*').eq('id', colId).single() : Promise.resolve({ data: null }),
-          colId ? supabase.from('collection_poems').select('poem_id').eq('collection_id', colId) : Promise.resolve({ data: [] })
+          listDocs('poems', { orderBy: ['title', 'asc'] }),
+          colId ? listDocs('collections', { where: [['id', '==', colId]], single: true }) : Promise.resolve({ data: null }),
+          colId ? listDocs('collection_poems', { where: [['collection_id', '==', colId]] }) : Promise.resolve({ data: [] })
         ]);
         
         if (poemsRes.error) throw poemsRes.error;
@@ -279,17 +277,11 @@ export async function renderCollections(container) {
             const ext = file.name.split('.').pop().toLowerCase();
             const fileName = `col_cover_${Date.now()}.${ext}`;
             
-            const { data, error: upErr } = await supabase.storage
-              .from('avatars')
-              .upload(fileName, file);
+            const { data, error: upErr } = await uploadFile('avatars', fileName, file);
               
             if (upErr) throw upErr;
             
-            const { data: urlData } = supabase.storage
-              .from('avatars')
-              .getPublicUrl(fileName);
-              
-            const publicUrl = urlData.publicUrl;
+            const publicUrl = getPublicFileUrl('avatars', fileName);
             imgUrlInput.value = publicUrl;
             updateImgPreview(publicUrl);
             statusSpan.textContent = 'Sucesso!';
@@ -325,11 +317,11 @@ export async function renderCollections(container) {
           let colError = null;
           
           if (colId) {
-            const res = await supabase.from('collections').update(payload).eq('id', colId);
+            const res = await updateDocById('collections', colId, payload);
             colError = res.error;
           } else {
             payload.created_at = new Date().toISOString();
-            const res = await supabase.from('collections').insert(payload);
+            const res = await insertDocs('collections', payload);
             colError = res.error;
             if (res.data) colIdToUse = res.data.id;
           }
@@ -344,14 +336,14 @@ export async function renderCollections(container) {
           const checkedCheckboxes = container.querySelectorAll('input[name="associated-poems"]:checked');
           const checkedIds = Array.from(checkedCheckboxes).map(cb => cb.value);
           
-          await supabase.from('collection_poems').delete().eq('collection_id', colIdToUse);
+          await deleteDocsWhere('collection_poems', 'collection_id', colIdToUse);
           
           if (checkedIds.length > 0) {
             const relations = checkedIds.map(poemId => ({
               collection_id: colIdToUse,
               poem_id: poemId
             }));
-            const { error: relError } = await supabase.from('collection_poems').insert(relations);
+            const { error: relError } = await insertDocs('collection_poems', relations);
             if (relError) {
               alert('Coleção salva, mas houve um erro ao associar poemas: ' + relError.message);
             }

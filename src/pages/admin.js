@@ -1,4 +1,4 @@
-import { supabase } from './admin/compat-client.js';
+import { getAdminSession, signOutAdmin } from './admin/data.js';
 import { navigateTo } from '../router.js';
 
 export { attachPoemsToComments, formatCommentPoemHtml } from './admin/comment-helpers.js';
@@ -10,7 +10,7 @@ export default {
     // Check Auth
     const urlParams = new URLSearchParams(window.location.search);
     const bypassAuth = urlParams.get('bypass_auth') === 'true';
-    const { data: { session } } = await supabase.auth.getSession();
+    const session = await getAdminSession();
     if (!session && !bypassAuth) {
       navigateTo('/login');
       return;
@@ -50,7 +50,7 @@ export default {
     });
     
     document.getElementById('logout-btn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
+      await signOutAdmin();
       navigateTo('/login');
     });
     

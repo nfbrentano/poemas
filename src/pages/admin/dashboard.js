@@ -1,4 +1,4 @@
-import { supabase } from './compat-client.js';
+import { listDocs } from './data.js';
 import { escapeHtml } from '../../utils/html.js';
 
 export async function renderDashboard(container) {
@@ -14,15 +14,15 @@ export async function renderDashboard(container) {
       
       try {
         const [poemsRes, commentsRes, subscribersRes, viewsRes] = await Promise.all([
-          supabase.from('poems').select('id, title, slug, status, scheduled_at, created_at'),
-          supabase.from('poem_comments').select('id').eq('approved', false),
-          supabase.from('subscribers').select('email, created_at, active').order('created_at', { ascending: false }).limit(5),
-          supabase.from('page_views').select('created_at').gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          listDocs('poems'),
+          listDocs('poem_comments', { where: [['approved', '==', false]] }),
+          listDocs('subscribers', { orderBy: ['created_at', 'desc'], limit: 5 }),
+          listDocs('page_views', { where: [['created_at', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()]] })
         ]);
         
         if (poemsRes.error || commentsRes.error || subscribersRes.error || viewsRes.error) {
           if (bypassAuth) {
-            throw new Error('Supabase query error, fallback to mock data');
+            throw new Error('Firestore query error, fallback to mock data');
           }
           if (poemsRes.error) throw poemsRes.error;
           if (commentsRes.error) throw commentsRes.error;

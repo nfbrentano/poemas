@@ -1,4 +1,4 @@
-import { supabase } from './compat-client.js';
+import { listDocs, updateDocById, deleteDocById } from './data.js';
 import { escapeHtml } from '../../utils/html.js';
 import { attachPoemsToComments, formatCommentPoemHtml } from './comment-helpers.js';
 
@@ -7,13 +7,8 @@ export async function renderComments(container) {
     
     try {
       const [commentsRes, poemsRes] = await Promise.all([
-        supabase
-          .from('poem_comments')
-          .select('id, poem_id, author_name, content, approved, created_at')
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('poems')
-          .select('id, title, slug')
+        listDocs('poem_comments', { orderBy: ['created_at', 'desc'] }),
+        listDocs('poems')
       ]);
       
       if (commentsRes.error) {
@@ -72,7 +67,7 @@ export async function renderComments(container) {
       container.querySelectorAll('.approve-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const id = btn.dataset.id;
-          const { error } = await supabase.from('poem_comments').update({ approved: true }).eq('id', id);
+          const { error } = await updateDocById('poem_comments', id, { approved: true });
           if (error) alert('Erro ao aprovar: ' + error.message);
           else renderComments(container);
         });
@@ -82,7 +77,7 @@ export async function renderComments(container) {
         btn.addEventListener('click', async () => {
           if (!confirm('Excluir este comentário?')) return;
           const id = btn.dataset.id;
-          const { error } = await supabase.from('poem_comments').delete().eq('id', id);
+          const { error } = await deleteDocById('poem_comments', id);
           if (error) alert('Erro ao excluir: ' + error.message);
           else renderComments(container);
         });
