@@ -35,7 +35,7 @@ describe('Security & Public Query Constraints', () => {
       return results;
     }
 
-    const files = getFiles(srcDir).filter(f => !f.endsWith('admin.js')); // Admin is authenticated
+    const files = getFiles(srcDir).filter(f => !f.endsWith('admin.js') && !f.includes('/pages/admin/')); // Admin is authenticated
 
     files.forEach(file => {
       const code = fs.readFileSync(file, 'utf-8');
