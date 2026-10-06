@@ -1,17 +1,24 @@
 import { listDocs, insertDocs, updateDocById, deleteDocById, deleteDocsWhere, uploadFile, getPublicFileUrl } from './data.js';
 import { escapeHtml, sanitizeUrl } from '../../utils/html.js';
+import { countPoemsByCollection, formatPoemCount } from './collection-counts.js';
 
 export async function renderCollections(container) {
     const renderList = async () => {
       container.innerHTML = '<div class="loading">Carregando coleções...</div>';
       
-      const { data: cols, error } = await listDocs('collections');
+      const [{ data: cols, error }, relationsRes] = await Promise.all([
+        listDocs('collections'),
+        listDocs('collection_poems')
+      ]);
         
       if (error) {
         container.innerHTML = `<div class="error">Erro ao carregar coleções: ${error.message}</div>`;
         return;
       }
       
+      // Se as relações não puderem ser lidas, o selo mostra "—" e a lista segue funcionando.
+      const poemCounts = relationsRes.error ? null : countPoemsByCollection(relationsRes.data);
+
       const colCards = cols.map(c => {
         const safeImg = sanitizeUrl(c.image_url);
         return `
@@ -26,7 +33,7 @@ export async function renderCollections(container) {
               <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
                 <h4 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 400; margin: 0; color: var(--text-primary);">${escapeHtml(c.name)}</h4>
                 <span style="font-size: 0.75rem; color: var(--accent-subtle); border: 1px solid var(--accent-subtle); padding: 0.1rem 0.4rem; border-radius: 2px; font-family: var(--font-ui); font-weight: 500; white-space: nowrap;">
-                  ${c.collection_poems?.[0]?.count || 0} obras
+                  ${formatPoemCount(poemCounts, c.id)}
                 </span>
               </div>
               <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-ui); margin-top: 4px;">Slug: ${escapeHtml(c.slug)}</div>
