@@ -1,12 +1,9 @@
-import { supabase } from './compat-client.js';
+import { listDocs, insertDocs, updateDocById } from './data.js';
 
 export async function renderSubscribers(container) {
     container.innerHTML = '<div class="loading">Carregando assinantes...</div>';
     
-    const { data: subs, error } = await supabase
-      .from('subscribers')
-      .select('id, email, active, created_at, unsubscribed_at')
-      .order('created_at', { ascending: false });
+    const { data: subs, error } = await listDocs('subscribers', { orderBy: ['created_at', 'desc'] });
       
     if (error) {
       container.innerHTML = `<div class="error">Erro ao carregar: ${error.message}</div>`;
@@ -121,7 +118,7 @@ export async function renderSubscribers(container) {
         created_at: new Date().toISOString()
       };
       
-      const { error } = await supabase.from('subscribers').insert(payload);
+      const { error } = await insertDocs('subscribers', payload);
       if (error) {
         alert("Erro ao cadastrar assinante: " + error.message);
       } else {
@@ -148,7 +145,7 @@ export async function renderSubscribers(container) {
           payload.unsubscribed_at = null; // Clear unsubscription date if reactivated
         }
         
-        const { error } = await supabase.from('subscribers').update(payload).eq('id', id);
+        const { error } = await updateDocById('subscribers', id, payload);
         if (error) {
           alert('Erro ao atualizar status: ' + error.message);
           btn.disabled = false;

@@ -1,4 +1,4 @@
-import { supabase } from './compat-client.js';
+import { listDocs, deleteDocById } from './data.js';
 import { navigateTo } from '../../router.js';
 import { escapeHtml } from '../../utils/html.js';
 import { debounce } from './debounce.js';
@@ -8,8 +8,8 @@ export async function renderList(container) {
     
     try {
       const [poemsRes, viewsRes] = await Promise.all([
-        supabase.from('poems').select('id, title, slug, status, published_at, scheduled_at, tags, created_at'),
-        supabase.from('page_views').select('poem_id')
+        listDocs('poems'),
+        listDocs('page_views')
       ]);
       
       if (poemsRes.error) throw poemsRes.error;
@@ -162,7 +162,7 @@ export async function renderList(container) {
             btn.innerText = 'Excluindo...';
             btn.disabled = true;
             
-            const { error } = await supabase.from('poems').delete().eq('id', id);
+            const { error } = await deleteDocById('poems', id);
             
             if (error) {
               console.error(error);
