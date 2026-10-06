@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-const poems = JSON.parse(fs.readFileSync('scripts/poems_dump.json', 'utf8'));
+const poems = JSON.parse(fs.readFileSync('scripts/dev/poems_dump.json', 'utf8'));
 
 const tagCounts = {};
 

@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Setup Supabase Client
 // You must run this script with env variables:
-// SUPABASE_URL=xxx SUPABASE_SERVICE_ROLE_KEY=xxx node scripts/import_wp.js path/to/export.xml
+// SUPABASE_URL=xxx SUPABASE_SERVICE_ROLE_KEY=xxx node scripts/dev/import_wp.js path/to/export.xml
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

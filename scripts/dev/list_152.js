@@ -31,7 +31,7 @@ function removeHtmlComments(input) {
   return result.trim();
 }
 
-const xmlData = fs.readFileSync('scripts/poemasdenatanael.WordPress.2026-04-25.xml', 'utf8');
+const xmlData = fs.readFileSync('scripts/dev/poemasdenatanael.WordPress.2026-04-25.xml', 'utf8');
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
 const result = parser.parse(xmlData);
 const items = result.rss.channel.item;
@@ -52,5 +52,5 @@ for (const poem of poems) {
   }
 }
 
-fs.writeFileSync('scripts/152_poems.json', JSON.stringify(changed, null, 2));
+fs.writeFileSync('scripts/dev/152_poems.json', JSON.stringify(changed, null, 2));
 console.log(`Found ${changed.length} changed poems.`);
