@@ -241,7 +241,7 @@ describe('GEO Conteúdo Citável — SDD: 2026-09-24_geo-conteudo-citavel-sobre-
   describe('Admin — Campo de Descrição de Coleção (RF05, CA06)', () => {
     it('CA06: Tela de edição de coleções no admin possui campo de descrição e o persiste', async () => {
       const fs = await import('fs');
-      const adminCode = fs.readFileSync('src/pages/admin.js', 'utf-8');
+      const adminCode = fs.readFileSync('src/pages/admin/collections.js', 'utf-8');
 
       // Verifica campo de descrição no formulário da coleção
       expect(adminCode).toContain('id="col-description"');
