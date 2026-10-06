@@ -2,6 +2,7 @@ import { listDocs, deleteDocById } from './data.js';
 import { navigateTo } from '../../router.js';
 import { escapeHtml } from '../../utils/html.js';
 import { debounce } from './debounce.js';
+import { exportPoemsXml } from './export-xml.js';
 
 export async function renderList(container) {
     container.innerHTML = '<div class="loading">Carregando obras...</div>';
@@ -60,6 +61,7 @@ export async function renderList(container) {
             <div>
               Mostrando <strong id="results-count" style="color: var(--text-primary);">0</strong> de <strong>${poems.length}</strong> obras
             </div>
+            <button type="button" id="export-xml-btn" ${poems.length ? '' : 'disabled'} title="Baixa um XML (formato WordPress) com todas as obras, inclusive rascunhos e agendadas" style="font-size: 0.8rem; padding: 0.35rem 0.8rem; border: 1px solid var(--border-strong); border-radius: 2px; background: transparent; color: var(--text-primary); cursor: pointer; font-family: var(--font-ui);">Exportar XML</button>
           </div>
           
           <div style="overflow-x: auto;">
@@ -220,6 +222,13 @@ export async function renderList(container) {
         renderRows(filtered);
       };
       
+      const exportBtn = container.querySelector('#export-xml-btn');
+      exportBtn.addEventListener('click', () => {
+        const count = exportPoemsXml(poems);
+        exportBtn.textContent = `Baixado: ${count} obras`;
+        setTimeout(() => { exportBtn.textContent = 'Exportar XML'; }, 3000);
+      });
+
       searchInput.addEventListener('input', debounce(filterList, 150));
       statusSelect.addEventListener('change', filterList);
       tagSelect.addEventListener('change', filterList);
