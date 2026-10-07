@@ -21,7 +21,7 @@ Toda nova feature, correção ou atividade deve ter uma especificação escrita 
 6. A implementação só deve começar depois que a especificação estiver criada e, se possível, revisada.
 7. **Sempre** que concluir uma feature (implementada e validada com os casos de teste), **mova** o arquivo `.md` da especificação de `SDD/` para a pasta [`SDD/DONE/`](SDD/DONE/), mantendo o mesmo nome de arquivo. Crie a pasta `SDD/DONE/` caso ela ainda não exista. Na raiz de `SDD/` devem ficar apenas o modelo e as especificações pendentes ou em andamento.
 
-### Nomenclatura dos arquivos
+### Nomenclatura dos arquivos de especificação
 
 Use o padrão `AAAA-MM-DD_nome-da-feature.md`, em minúsculas e com hífens, por exemplo:
 
@@ -30,10 +30,36 @@ SDD/2026-09-23_busca-de-poemas.md
 SDD/2026-09-23_modo-escuro.md
 ```
 
-### Fluxo
+## Controle de Versão (Git: Branches e Pull Requests)
 
-1. Copiar `SDD/modelo_feature.md` para `SDD/AAAA-MM-DD_nome-da-feature.md`.
-2. Preencher todas as seções.
+Toda tarefa deve ser desenvolvida em uma branch isolada e integrada via Pull Request.
+
+### Regras de Branch e PR
+
+1. **Nunca** faça commits ou implementações diretamente na branch `main`.
+2. **Sempre** crie uma branch a partir da `main` atualizada antes de iniciar a especificação e o código:
+   - `git checkout main && git pull`
+   - `git checkout -b <tipo>/<nome-da-tarefa>`
+3. **Padrão de nomenclatura das branches**:
+   - `feat/<nome-da-feature>` para novas funcionalidades (ex.: `feat/modo-escuro`).
+   - `fix/<nome-do-bug>` para correções de defeitos (ex.: `fix/soft-404-e-noindex`).
+   - `refactor/<nome-do-refactor>` para refatorações de código.
+   - `chore/<nome-da-tarefa>` para manutenção, limpeza ou infraestrutura.
+4. **Commits semânticos**: use mensagens descritivas seguindo Conventional Commits (ex.: `feat: adicionar modo escuro`, `fix: corrigir noindex em coleções`).
+5. **Abertura de Pull Request (PR)**:
+   - Ao concluir a implementação e passar em todos os testes (`npm test`), envie a branch para o remoto (`git push -u origin <branch>`).
+   - Abra um Pull Request para merge na branch `main`, detalhando o que foi feito, os testes executados e referenciando a especificação em `SDD/DONE/`.
+
+### Fluxo Completo de Trabalho
+
+1. Atualizar a branch principal e criar a branch de trabalho:
+   ```bash
+   git checkout main && git pull
+   git checkout -b <tipo>/<nome-da-tarefa>
+   ```
+2. Criar a especificação SDD copiando o modelo:
+   `cp SDD/modelo_feature.md SDD/AAAA-MM-DD_nome-da-feature.md` e preencher todas as seções.
 3. Implementar seguindo os requisitos e critérios de aceitação.
-4. Validar com os casos de teste sugeridos antes de concluir.
-5. Após concluir, mover o arquivo para `SDD/DONE/AAAA-MM-DD_nome-da-feature.md` (ex.: `mv SDD/2026-09-23_modo-escuro.md SDD/DONE/`, ou `git mv` se o arquivo já estiver versionado).
+4. Validar com os testes automatizados (`npm test`) antes de concluir.
+5. Após concluir, mover a especificação para `SDD/DONE/AAAA-MM-DD_nome-da-feature.md`.
+6. Criar o commit, fazer push e abrir o Pull Request (PR) para a branch `main`.
