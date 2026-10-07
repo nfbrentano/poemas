@@ -844,7 +844,12 @@ async function prerender() {
             .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${metaDescAttr(desc)}" />`)
             .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${ogImage}" />`);
 
-          html = html.replace(/<\/head>/i, `${structuredDataHtml}\n</head>`);
+          const colDataPayload = {
+            col,
+            poemsList: colPoems
+          };
+          const colDataScriptTag = `\n    <script type="application/json" id="__DATA__">${JSON.stringify(colDataPayload)}</script>`;
+          html = html.replace(/<\/head>/i, `${structuredDataHtml}${colDataScriptTag}\n</head>`);
 
           const colMarkup = renderCollectionMarkup({
             col,
@@ -1064,6 +1069,14 @@ async function prerender() {
           // RF07 & CA02 & CT02: < 3 poemas recebe noindex, follow
           sentHtml = sentHtml.replace(/<\/head>/i, `  <meta name="robots" content="noindex, follow" />\n</head>`);
         }
+
+        const sentDataPayload = {
+          name: s.name,
+          slug: s.slug,
+          poems: sortedPoems
+        };
+        const sentDataScriptTag = `\n    <script type="application/json" id="__DATA__">${JSON.stringify(sentDataPayload)}</script>`;
+        sentHtml = sentHtml.replace(/<\/head>/i, `${sentDataScriptTag}\n</head>`);
 
         fs.writeFileSync(path.join(sentDir, 'index.html'), sentHtml, 'utf-8');
 

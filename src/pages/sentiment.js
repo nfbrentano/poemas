@@ -13,75 +13,101 @@ export const sentiment = {
   async render(container, params) {
     const rawSlug = typeof params === 'object' ? params.slug : params;
     const slug = slugifyTag(rawSlug || '');
-
-    container.innerHTML = `
-      <section class="collection-detail fade-in">
-        <header class="collection-header">
-          <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>
-          <div class="skeleton" style="width: 60%; max-width: 400px; height: 40px; margin-bottom: 1rem;"></div>
-          <div class="skeleton" style="width: 80%; height: 20px;"></div>
-        </header>
-        <div class="poems-list">
-          <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
-          <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
-          <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
-        </div>
-      </section>
-    `;
-
-    if (!slug) {
-      this.renderNotFound(container);
-      return;
-    }
+    const currentRoute = `/sentimento/${slug}`;
+    const isPrerendered = container.getAttribute('data-prerendered') === currentRoute;
 
     let matchingPoems = [];
     let detectedName = '';
     const relatedCounts = {};
 
-    try {
-      // 1 single Firestore query to fetch published poems (RNF02: <= 2 queries)
-      const q = query(collection(db, 'poems'), where('status', '==', 'published'));
-      const snapshot = await getDocs(q);
-
-      snapshot.forEach(doc => {
-        const p = { id: doc.id, ...doc.data() };
-        const tags = Array.isArray(p.tags) ? p.tags : [];
-        let hasTag = false;
-
-        tags.forEach(t => {
-          if (slugifyTag(t) === slug) {
-            hasTag = true;
-            if (!detectedName) {
-              detectedName = formatTag(t);
-            }
+    if (isPrerendered) {
+      const dataScript = document.getElementById('__DATA__');
+      if (dataScript) {
+        try {
+          const parsed = JSON.parse(dataScript.textContent);
+          if (parsed && Array.isArray(parsed.poems)) {
+            matchingPoems = parsed.poems;
+            detectedName = parsed.name || '';
           }
-        });
+        } catch (e) {
+          console.warn('[Sentiment] Failed to parse __DATA__:', e);
+        }
+      }
+      container.removeAttribute('data-prerendered');
+    }
 
-        if (hasTag) {
-          matchingPoems.push(p);
+    if (!slug) {
+      if (isPrerendered) return;
+      this.renderNotFound(container);
+      return;
+    }
 
-          // Co-occurring tags for related sentiments (CT06)
+    // Se NÃO for pré-renderizado ou não carregou do script, exibe skeleton e busca no Firestore
+    if (matchingPoems.length === 0 && !isPrerendered) {
+      container.innerHTML = `
+        <section class="collection-detail fade-in">
+          <header class="collection-header">
+            <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 60%; max-width: 400px; height: 40px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 80%; height: 20px;"></div>
+          </header>
+          <div class="poems-list">
+            <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
+            <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
+            <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
+          </div>
+        </section>
+      `;
+
+      try {
+        // 1 single Firestore query to fetch published poems (RNF02: <= 2 queries)
+        const q = query(collection(db, 'poems'), where('status', '==', 'published'));
+        const snapshot = await getDocs(q);
+
+        snapshot.forEach(doc => {
+          const p = { id: doc.id, ...doc.data() };
+          const tags = Array.isArray(p.tags) ? p.tags : [];
+          let hasTag = false;
+
           tags.forEach(t => {
-            const relatedSlug = slugifyTag(t);
-            if (relatedSlug && relatedSlug !== slug) {
-              if (!relatedCounts[relatedSlug]) {
-                relatedCounts[relatedSlug] = {
-                  slug: relatedSlug,
-                  name: formatTag(t),
-                  count: 0
-                };
+            if (slugifyTag(t) === slug) {
+              hasTag = true;
+              if (!detectedName) {
+                detectedName = formatTag(t);
               }
-              relatedCounts[relatedSlug].count += 1;
             }
           });
-        }
-      });
-    } catch (e) {
-      console.error('[Sentiment] Error fetching poems:', e);
+
+          if (hasTag) {
+            matchingPoems.push(p);
+
+            // Co-occurring tags for related sentiments (CT06)
+            tags.forEach(t => {
+              const relatedSlug = slugifyTag(t);
+              if (relatedSlug && relatedSlug !== slug) {
+                if (!relatedCounts[relatedSlug]) {
+                  relatedCounts[relatedSlug] = {
+                    slug: relatedSlug,
+                    name: formatTag(t),
+                    count: 0
+                  };
+                }
+                relatedCounts[relatedSlug].count += 1;
+              }
+            });
+          }
+        });
+      } catch (e) {
+        console.error('[Sentiment] Error fetching poems:', e);
+      }
     }
 
     // CT05: Se não houver poemas publicados com esse sentimento, retorna 404
     if (matchingPoems.length === 0) {
+      if (isPrerendered) {
+        console.warn('[Sentiment] Preserving prerendered view on network failure');
+        return;
+      }
       this.renderNotFound(container);
       return;
     }
@@ -145,34 +171,36 @@ export const sentiment = {
       </div>
     ` : '';
 
-    container.innerHTML = `
-      <section class="collection-detail sentiment-detail fade-in">
-        <header class="collection-header">
-          ${renderBreadcrumbsHtml(breadcrumbItems)}
-          <a href="${import.meta.env.BASE_URL}sentimentos/" class="back-link" data-link>← Ver todos os sentimentos</a>
-          <h1 class="collection-title">${escapeHtml(pageTitle)}</h1>
-          <p class="collection-meta" style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">
-            ${count} poema${count !== 1 ? 's' : ''}
-          </p>
-          <p class="collection-desc-large" style="margin-top: 1rem;">${escapeHtml(introText)}</p>
-          ${relatedHtml}
-        </header>
+    if (!isPrerendered) {
+      container.innerHTML = `
+        <section class="collection-detail sentiment-detail fade-in">
+          <header class="collection-header">
+            ${renderBreadcrumbsHtml(breadcrumbItems)}
+            <a href="${import.meta.env.BASE_URL}sentimentos/" class="back-link" data-link>← Ver todos os sentimentos</a>
+            <h1 class="collection-title">${escapeHtml(pageTitle)}</h1>
+            <p class="collection-meta" style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">
+              ${count} poema${count !== 1 ? 's' : ''}
+            </p>
+            <p class="collection-desc-large" style="margin-top: 1rem;">${escapeHtml(introText)}</p>
+            ${relatedHtml}
+          </header>
 
-        <div class="poems-list">
-          ${matchingPoems.map(poem => {
-            const year = new Date(poem.published_at).getFullYear();
-            return `
-              <article class="poem-row">
-                <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
-                  <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
-                  <span class="poem-row-year">${year}</span>
-                </a>
-              </article>
-            `;
-          }).join('')}
-        </div>
-      </section>
-    `;
+          <div class="poems-list">
+            ${matchingPoems.map(poem => {
+              const year = new Date(poem.published_at).getFullYear();
+              return `
+                <article class="poem-row">
+                  <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
+                    <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                    <span class="poem-row-year">${year}</span>
+                  </a>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        </section>
+      `;
+    }
   },
 
   renderNotFound(container) {

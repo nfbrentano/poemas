@@ -114,7 +114,9 @@ export default {
           </article>
         </div>
       `;
-      container.innerHTML = skeletonHtml;
+      if (!isPrerendered) {
+        container.innerHTML = skeletonHtml;
+      }
 
       console.log('[Poem] Fetching slug:', slug);
       let error = null;
@@ -162,6 +164,10 @@ export default {
 
       if (error || !poem) {
         console.warn('[Poem] Poem not found or error occurred');
+        if (isPrerendered) {
+          console.warn('[Poem] Network error on prerendered poem, preserving static view');
+          return;
+        }
         setNotFoundSEO();
         container.innerHTML = `
           <div class="not-found-page fade-in">
