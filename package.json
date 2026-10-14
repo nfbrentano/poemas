@@ -19,17 +19,17 @@
     "@resvg/resvg-js": "^2.6.2",
     "fast-xml-parser": "^5.11.2",
     "gh-pages": "^6.3.0",
-    "jsdom": "^30.1.1",
-    "satori": "^0.33.5",
+    "jsdom": "^30.1.2",
+    "satori": "^0.57.2",
     "satori-html": "^0.3.2",
-    "vite": "^8.3.1",
-    "vitest": "^5.0.2"
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
   },
   "dependencies": {
     "@microsoft/clarity": "^1.0.2",
-    "@zumer/snapdom": "^3.2.0",
-    "dotenv": "^18.0.4",
-    "firebase": "^12.19.0",
-    "nodemailer": "^10.0.14"
+    "@zumer/snapdom": "^3.3.4",
+    "dotenv": "^18.0.8",
+    "firebase": "^13.0.0",
+    "nodemailer": "^10.1.1"
   }
 }
