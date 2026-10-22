@@ -50,7 +50,8 @@ export function personSchema(imageUrl = DEFAULT_AUTHOR_PHOTO) {
       "Poesia Contemporânea"
     ],
     "sameAs": [
-      "https://instagram.com/nfgbrentano"
+      "https://instagram.com/nfgbrentano",
+      "https://github.com/nfbrentano"
     ]
   };
 }
@@ -165,7 +166,7 @@ export function poemSchema(poem, collections = []) {
     return term;
   });
 
-  return {
+  const result = {
     "@context": "https://schema.org",
     "@type": ["CreativeWork", "Poem"],
     "@id": `${poemUrl}#poema`,
@@ -175,6 +176,8 @@ export function poemSchema(poem, collections = []) {
     "text": plainText,
     "genre": "Poetry",
     "inLanguage": "pt-BR",
+    "isAccessibleForFree": true,
+    "copyrightNotice": "© Natanael Fernando Gatti Brentano",
     "keywords": keywords,
     "about": about,
     "datePublished": publishedDate,
@@ -194,8 +197,27 @@ export function poemSchema(poem, collections = []) {
     "isPartOf": isPartOf,
     "mainEntityOfPage": poemUrl,
     "image": imageUrl,
-    "url": poemUrl
+    "url": poemUrl,
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": ["#poem-text", ".single-poem header h1"]
+    }
   };
+
+  if (poem.audio_url) {
+    const audioUrl = sanitizeUrl(poem.audio_url);
+    const lowerAudio = poem.audio_url.toLowerCase();
+    const mime = lowerAudio.includes('.m4a') ? 'audio/mp4' : lowerAudio.includes('.wav') ? 'audio/wav' : 'audio/mpeg';
+    result.audio = {
+      "@type": "AudioObject",
+      "name": `Narração de ${poem.title || 'Poema'}`,
+      "contentUrl": audioUrl,
+      "encodingFormat": mime,
+      "description": `Narração em áudio do poema ${poem.title || ''} na voz do autor Natanael Fernando Gatti Brentano.`
+    };
+  }
+
+  return result;
 }
 
 /**

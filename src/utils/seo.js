@@ -20,9 +20,20 @@ export function setNotFoundSEO() {
 
   // Remove any structured data on 404 pages
   setStructuredData([]);
+
+  // Remove article and citation tags
+  document.querySelector('meta[property="article:published_time"]')?.remove();
+  document.querySelector('meta[property="article:modified_time"]')?.remove();
+  document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
+  document.querySelector('meta[name="citation_title"]')?.remove();
+  document.querySelector('meta[name="citation_author"]')?.remove();
+  document.querySelector('meta[name="citation_language"]')?.remove();
+  document.querySelector('meta[name="citation_fulltext_html_url"]')?.remove();
+  document.querySelector('meta[name="citation_publication_date"]')?.remove();
+  document.querySelector('meta[name="citation_online_date"]')?.remove();
 }
 
-export function updateSEO({ title, description, url, imageUrl, type = 'website', publishedTime, tags, robots, structuredData }) {
+export function updateSEO({ title, description, url, imageUrl, type = 'website', publishedTime, modifiedTime, tags, robots, structuredData, poemTitle }) {
   const brandSuffix = 'Natanael Fernando Gatti Brentano';
   const defaultTitle = `Poemas Brasileiros — ${brandSuffix}`;
   const defaultDesc = 'Poemas e poesia contemporânea de Natanael Fernando Gatti Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.';
@@ -143,6 +154,11 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
     if (publishedTime) {
       setMeta('meta[property="article:published_time"]', 'content', new Date(publishedTime).toISOString());
     }
+    if (modifiedTime) {
+      setMeta('meta[property="article:modified_time"]', 'content', new Date(modifiedTime).toISOString());
+    } else {
+      document.querySelector('meta[property="article:modified_time"]')?.remove();
+    }
     if (tags && Array.isArray(tags)) {
       document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
       tags.forEach(tag => {
@@ -161,9 +177,35 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
       setMeta('meta[property="og:image:type"]', 'content', 'image/png');
       setMeta('meta[name="twitter:image"]', 'content', dynamicOgUrl);
     }
+
+    // Academic / GEO Citation Meta Tags (Google Scholar, Perplexity, ChatGPT Search)
+    const rawPoemTitle = poemTitle || title?.replace(/\s*—\s*Natanael Fernando Gatti Brentano.*$/, '') || title;
+    if (rawPoemTitle) {
+      setMeta('meta[name="citation_title"]', 'content', rawPoemTitle.trim());
+      setMeta('meta[name="citation_author"]', 'content', 'Brentano, Natanael Fernando Gatti');
+      setMeta('meta[name="citation_language"]', 'content', 'pt');
+      setMeta('meta[name="citation_fulltext_html_url"]', 'content', canonicalUrl);
+      if (publishedTime) {
+        const pubDateYmd = new Date(publishedTime).toISOString().slice(0, 10).replace(/-/g, '/');
+        setMeta('meta[name="citation_publication_date"]', 'content', pubDateYmd);
+      }
+      if (modifiedTime) {
+        const modDateYmd = new Date(modifiedTime).toISOString().slice(0, 10).replace(/-/g, '/');
+        setMeta('meta[name="citation_online_date"]', 'content', modDateYmd);
+      } else {
+        document.querySelector('meta[name="citation_online_date"]')?.remove();
+      }
+    }
   } else {
     document.querySelector('meta[property="article:published_time"]')?.remove();
+    document.querySelector('meta[property="article:modified_time"]')?.remove();
     document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
+    document.querySelector('meta[name="citation_title"]')?.remove();
+    document.querySelector('meta[name="citation_author"]')?.remove();
+    document.querySelector('meta[name="citation_language"]')?.remove();
+    document.querySelector('meta[name="citation_fulltext_html_url"]')?.remove();
+    document.querySelector('meta[name="citation_publication_date"]')?.remove();
+    document.querySelector('meta[name="citation_online_date"]')?.remove();
   }
 }
 

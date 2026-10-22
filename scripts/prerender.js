@@ -523,7 +523,11 @@ async function prerender() {
       const generatedOgPath = await generatePoemOgImage(poem);
       const ogImage = `${baseUrl.replace(/\/$/, '')}${generatedOgPath}`;
       poem.image = ogImage; // Inject into poem object so structured-data uses it
-      const publishedIso = new Date(poem.published_at).toISOString();
+      const publishedDateObj = new Date(poem.published_at);
+      const publishedIso = !isNaN(publishedDateObj.getTime()) ? publishedDateObj.toISOString() : new Date().toISOString();
+      const publishedDateYmd = publishedIso.slice(0, 10).replace(/-/g, '/');
+      const modifiedIso = poem.updated_at ? new Date(poem.updated_at).toISOString() : null;
+      const modifiedDateYmd = modifiedIso ? modifiedIso.slice(0, 10).replace(/-/g, '/') : null;
 
       // JSON-LD Structured Data (RF04 & RF07)
       const primaryCol = collectionsData && collectionsData.length > 0 ? collectionsData[0] : null;
@@ -544,12 +548,25 @@ async function prerender() {
       // Tags meta dinâmicas adicionais
       let articleMeta = `
     <meta property="article:published_time" content="${publishedIso}" />
-    <meta property="article:author" content="Natanael Fernando Gatti Brentano" />
-      `;
+    <meta property="article:author" content="Natanael Fernando Gatti Brentano" />`;
+      if (modifiedIso) {
+        articleMeta += `\n    <meta property="article:modified_time" content="${modifiedIso}" />`;
+      }
       if (poem.tags && Array.isArray(poem.tags)) {
         poem.tags.forEach(tag => {
           articleMeta += `\n    <meta property="article:tag" content="${escapeHtml(tag)}" />`;
         });
+      }
+
+      // Academic / GEO Citation Meta Tags (Google Scholar, Perplexity, AI Bots)
+      let citationMeta = `
+    <meta name="citation_title" content="${escapeHtml(poem.title || '')}" />
+    <meta name="citation_author" content="Brentano, Natanael Fernando Gatti" />
+    <meta name="citation_publication_date" content="${publishedDateYmd}" />
+    <meta name="citation_fulltext_html_url" content="${url}" />
+    <meta name="citation_language" content="pt" />`;
+      if (modifiedDateYmd) {
+        citationMeta += `\n    <meta name="citation_online_date" content="${modifiedDateYmd}" />`;
       }
 
       // CA01 & CA02: Pre-render full poem DOM and embed __DATA__ payload
@@ -639,7 +656,7 @@ async function prerender() {
       // 6. Inserir metadados extras, JSON-LD e __DATA__ antes de </head>
       modifiedHtml = modifiedHtml.replace(
         /<\/head>/i,
-        `${articleMeta}${jsonLdScript}${dataScriptTag}\n  </head>`
+        `${articleMeta}${citationMeta}${jsonLdScript}${dataScriptTag}\n  </head>`
       );
 
       // 7. Injetar o shell completo do poema no <div id="app"></div>
