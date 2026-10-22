@@ -1,3 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <text y="0.9em" font-size="90">📜</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="104" fill="#050505"/>
+  <rect x="24" y="24" width="464" height="464" rx="88" fill="none" stroke="#c5a880" stroke-opacity="0.35" stroke-width="4"/>
+  <g fill="none" stroke="#c5a880" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Open Book -->
+    <path d="M120 370 C180 340 230 350 256 370 C282 350 332 340 392 370 V190 C332 160 282 170 256 190 C230 170 180 160 120 190 Z" fill="#121212" stroke-width="16"/>
+    <path d="M256 190 V370" stroke-width="16"/>
+    <!-- Book lines -->
+    <path d="M156 240 C186 226 216 228 236 238" stroke-width="10" stroke-opacity="0.7"/>
+    <path d="M156 280 C186 266 216 268 236 278" stroke-width="10" stroke-opacity="0.7"/>
+    <path d="M276 238 C296 228 326 226 356 240" stroke-width="10" stroke-opacity="0.7"/>
+    <path d="M276 278 C296 268 326 266 356 280" stroke-width="10" stroke-opacity="0.7"/>
+    <!-- Poetry Quill -->
+    <path d="M374 116 C364 166 304 226 224 296 L212 328 L238 312 C294 266 374 196 394 126 C398 112 388 102 374 116 Z" fill="#c5a880" stroke="#050505" stroke-width="3"/>
+    <path d="M224 296 L324 186" stroke="#050505" stroke-width="3"/>
+  </g>
 </svg>

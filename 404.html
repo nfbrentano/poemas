@@ -2,19 +2,139 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Poemas — Redirecionando...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Página não encontrada — Natanael Fernando Gatti Brentano</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --text: #e2e2e2;
+      --text-muted: #888888;
+      --accent: #d4a373;
+      --accent-hover: #faedcd;
+      --border: #222222;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    .not-found-container {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .not-found-label {
+      font-size: 0.85rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+    .not-found-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+    }
+    .not-found-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+    .not-found-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .not-found-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--accent);
+      padding-bottom: 3px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .not-found-link:hover {
+      color: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+    .sep {
+      color: var(--border);
+    }
+  </style>
   <script type="text/javascript">
     (function() {
       var basePath = '/';
       var pathname = window.location.pathname;
-      var fullPath = pathname + window.location.search + window.location.hash;
+      var search = window.location.search;
+      var hash = window.location.hash;
+      var fullPath = pathname + search + hash;
       
       var isAsset = /\.(js|css|png|jpg|jpeg|webp|gif|svg|ico|json|woff2?|map|xml|txt)$/i.test(pathname) || pathname.indexOf('/assets/') !== -1;
       if (isAsset) {
         return;
       }
 
-      // Se não estiver na raiz, armazena para redirecionar no SPA
+      var cleanPath = '/' + pathname.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+
+      // Check legacy redirects
+      var legacyRedirects = window.__LEGACY_REDIRECTS__ || {};
+      var fullPathWithQuery = cleanPath + search;
+      var legacyTarget = legacyRedirects[fullPathWithQuery] || legacyRedirects[search] || legacyRedirects[cleanPath] || legacyRedirects[pathname];
+      if (legacyTarget) {
+        window.location.replace(legacyTarget);
+        return;
+      }
+
+      // RF09 & CT04: Check legacy tag redirects (/tag/<slug> or ?tag=<slug>)
+      if (cleanPath.indexOf('/tag/') === 0) {
+        var tagSlug = cleanPath.replace(/^\/tag\/?/, '').replace(/\/$/, '');
+        if (tagSlug) {
+          window.location.replace('/sentimento/' + tagSlug + '/');
+          return;
+        }
+      }
+      var tagParamMatch = search.match(/[?&]tag=([^&]+)/);
+      if (tagParamMatch && tagParamMatch[1]) {
+        window.location.replace('/sentimento/' + decodeURIComponent(tagParamMatch[1]) + '/');
+        return;
+      }
+
+      // Check known routes injected during build
+      var knownRoutes = window.__KNOWN_ROUTES__ || [];
+      var isKnown = false;
+      for (var i = 0; i < knownRoutes.length; i++) {
+        if (knownRoutes[i] === cleanPath || knownRoutes[i] === pathname) {
+          isKnown = true;
+          break;
+        }
+      }
+
+      // If not a known route, stay on static 404 page (do NOT redirect to '/')
+      if (!isKnown) {
+        return;
+      }
+
+      // If it IS a known route that wasn't prerendered, redirect to SPA
       if (pathname !== basePath && pathname !== basePath + 'index.html') {
         var stored = false;
         try {
@@ -22,7 +142,6 @@
           stored = true;
         } catch (e) {}
 
-        // Se sessionStorage estiver desabilitado/bloqueado, usa query parameter como fallback seguro
         if (!stored) {
           window.location.replace(basePath + '?redirect=' + encodeURIComponent(fullPath));
           return;
@@ -31,9 +150,20 @@
       window.location.replace(basePath);
     })();
   </script>
+  <script id="__ROUTES__">window.__KNOWN_ROUTES__ = ["/","/sobre","/colecoes","/admin","/login","/unsubscribe","/cancelar-inscricao","/sentimentos","/sentimento/amor","/sentimento/intensidade","/sentimento/olhos","/sentimento/segredo","/sentimento/sentimentos","/sentimento/conquista","/sentimento/inspiracao","/sentimento/desejo","/sentimento/abraco","/sentimento/tempo","/sentimento/mar","/sentimento/saudade","/sentimento/lembranca","/sentimento/esperanca","/sentimento/felicidade","/sentimento/sorriso","/sentimento/emocao","/sentimento/lembrancas","/sentimento/vida","/sentimento/palavras","/sentimento/emocoes","/sentimento/expressoes","/sentimento/significado","/sentimento/viver","/sentimento/oportunidade","/sentimento/espera","/sentimento/paixao","/sentimento/carinho","/sentimento/sinceridade","/sentimento/presenca","/sentimento/distancia","/sentimento/mae","/sentimento/conselhos","/sentimento/alegria","/sentimento/pensamento","/sentimento/nostalgia","/sentimento/beijo","/sentimento/querer","/sentimento/cativar","/sentimento/razao","/sentimento/reflexao","/sentimento/tormentos","/sentimento/futuro","/sentimento/sonhos","/sentimento/realidade","/sentimento/sonho","/sentimento/solidao","/sentimento/vazio","/sentimento/tecnologia","/sentimento/mundo-virtual","/sentimento/olhar","/sentimento/coracao","/sentimento/devaneio","/sentimento/anseio","/sentimento/amar","/sentimento/chorar","/sentimento/resiliencia","/sentimento/sorrir","/sentimento/escolhas","/sentimento/acoes","/sentimento/sobreviver","/sentimento/desafios","/sentimento/positividade","/sentimento/aprendizado","/sentimento/experiencia","/sentimento/crescimento","/sentimento/inflexao","/sentimento/mentiras","/sentimento/verdade","/sentimento/segredos","/sentimento/medo","/sentimento/falha","/sentimento/atitude","/sentimento/comunicacao","/sentimento/confusao","/sentimento/silencio","/sentimento/gatilhos","/sentimento/transformacao","/sentimento/consciente","/sentimento/risco","/sentimento/conexao","/sentimento/reciprocidade","/sentimento/sentir","/sentimento/pensamentos","/sentimento/decisoes","/sentimento/erros","/sentimento/desabafo","/sentimento/sofrimento","/sentimento/versos","/sentimento/familia","/sentimento/superacao","/sentimento/mudancas","/sentimento/ressignificar","/sentimento/filha","/sentimento/paz","/sentimento/encontro","/sentimento/reconexao","/sentimento/pai","/sentimento/lar","/sentimento/abracos","/sentimento/memorias","/sentimento/eternidade","/sentimento/amor-proprio","/sentimento/zelo","/sentimento/sagrado","/sentimento/puro","/sentimento/dor","/sentimento/instantes","/sentimento/perspectivas","/sentimento/respeito","/sentimento/vida-coletiva","/sentimento/desnorteio","/sentimento/ausencia","/sentimento/passado","/sentimento/alma","/sentimento/fe","/sentimento/recomeco","/sentimento/inverno","/sentimento/primavera","/sentimento/colaboracao","/sentimento/proposito","/sentimento/coragem","/sentimento/mente","/sentimento/essencia","/sentimento/caos","/sentimento/luz","/sentimento/aceitacao","/sentimento/lagrimas","/sentimento/mudanca","/sentimento/cuidado","/sentimento/perdao","/sentimento/cura","/sentimento/reatar","/sentimento/chance","/sentimento/surpresa","/sentimento/paciencia","/sentimento/presente","/sentimento/confianca","/sentimento/cumplicidade","/sentimento/destino","/sentimento/virtual","/sentimento/sintonia","/sentimento/afeto","/sentimento/detalhes","/sentimento/noite","/sentimento/sacrificio","/sentimento/historias","/sentimento/momentos","/sentimento/equilibrio","/sentimento/relacionamento","/sentimento/seguranca","/sentimento/refugio","/sentimento/compromisso","/sentimento/axe","/sentimento/casa","/sentimento/protecao","/sentimento/gestacao","/sentimento/entrega","/sentimento/celebracao","/sentimento/historia","/sentimento/exemplo","/sentimento/plenitude","/sentimento/exu","/sentimento/caminhos","/sentimento/melodia","/sentimento/casamento","/sentimento/potencial","/sentimento/energia","/sentimento/acao","/sentimento/caricia","/sentimento/genuino","/sentimento/compreensao","/sentimento/sincronia","/sentimento/filho","/sentimento/ciclos","/sentimento/ancestralidade","/sentimento/reconstrucao","/sentimento/acolhimento","/sentimento/oracao","/sentimento/paternidade","/sentimento/gratidao","/sentimento/valor","/sentimento/prazer","/sentimento/simplicidade","/sentimento/apoio","/sentimento/mulher","/sentimento/florescer","/sentimento/calma","/sentimento/harmonia","/sentimento/ritmo","/sentimento/dialogo","/sentimento/quietude","/sentimento/transparencia","/sentimento/expressao","/sentimento/boas-acoes","/sentimento/lei-do-retorno","/sentimento/orixas","/sentimento/alento","/sentimento/desacelerar","/sentimento/espiritualidade","/sentimento/renovacao","/sentimento/musica","/sentimento/leveza","/sentimento/brilho","/sentimento/complemento","/sentimento/ilusao","/sentimento/inconsciente","/sentimento/fases","/sentimento/poesia","/sentimento/duvida","/sentimento/escuridao","/sentimento/autenticidade","/sentimento/racionalizacao","/sentimento/vulnerabilidade","/sentimento/lealdade","/sentimento/promessas","/sentimento/passos","/sentimento/sol","/sentimento/fogo","/sentimento/espirito","/sentimento/conciencia","/sentimento/sombra","/sentimento/psique","/sentimento/autoconhecimento","/sentimento/evolucao","/sentimento/nascimento","/sentimento/realizacoes","/sentimento/porto-seguro","/sentimento/sorrisos","/sentimento/dia","/sentimento/existencia","/sentimento/pertencimento","/sentimento/arte","/sentimento/jornada","/sentimento/escrita","/sentimento/entardecer","/sentimento/sensacoes","/sentimento/bencao","/sentimento/persistencia","/sentimento/insano","/sentimento/debate","/sentimento/indiferenca","/sentimento/escuta","/sentimento/defensiva","/sentimento/aconchego","/sentimento/apego","/sentimento/identidade","/sentimento/erro","/sentimento/insonia","/sentimento/caminho","/sentimento/certeza","/sentimento/consequencia","/sentimento/domingo","/sentimento/inteireza","/sentimento/ressaca-moral","/sentimento/tentativa","/sentimento/abertura","/sentimento/descontrole","/sentimento/digital","/sentimento/tristeza","/sentimento/trajetoria","/sentimento/nos","/sentimento/percurso","/sentimento/ciclo","/sentimento/reiniciar","/sentimento/reescrever","/sentimento/intentos","/sentimento/metas","/sentimento/processo","/sentimento/insurgencia","/sentimento/lamento","/sentimento/alicerce","/sentimento/permanencia","/sentimento/luto","/sentimento/viagem","/sentimento/equidade","/sentimento/decisao","/sentimento/agora","/sentimento/espaco","/sentimento/sentido","/sentimento/heranca","/sentimento/ensinamentos","/sentimento/universo","/sentimento/justica","/sentimento/melancolia","/sentimento/dualidade","/sentimento/eu","/sentimento/autorretrato","/sentimento/solitude","/sentimento/dani","/sentimento/dois-coracoes","/sentimento/atom","/sentimento/sentimento","/sentimento/umamor","/sentimento/conhecendo","/sentimento/calmaria","/aleatorio","/poema/como-falar","/poema/carinho","/poema/acasos","/poema/felicidade","/poema/amor-pra-vida-inteira","/poema/palavras","/poema/tempo","/poema/se-o-amor-e-pra-acontecer","/poema/o-tempo-ao-seu-lado","/poema/teu-minuto-pra-mim","/poema/mae","/poema/amor-chegando","/poema/saudade","/poema/amor","/poema/dia-a-dia","/poema/tic-tac","/poema/realidade-es-tu-meu-amor","/poema/tao-perto-mas-tao-distante","/poema/devaneios","/poema/nota-se","/poema/sera","/poema/sentimentos","/poema/resiliencia","/poema/ponto-de-inflexao","/poema/277","/poema/preciso-temer-se-em-algo-eu-falhar","/poema/saiu-errado","/poema/gatilhos","/poema/percebe-se","/poema/reciproco","/poema/abraco","/poema/rascunho","/poema/carinho-2","/poema/saudade-2","/poema/desabafo","/poema/estrela-de-luz","/poema/ressignificar","/poema/lara","/poema/quando-te-vi","/poema/lar-de-abracos","/poema/caminho-de-felicidade","/poema/amar-se","/poema/sorrir","/poema/silencio-que-espera","/poema/mar-de-instantes","/poema/ponto-de-fuga-espelho-das-emocoes","/poema/bolha-de-sentimentos","/poema/abraco-vazio","/poema/quando-o-amor-acontece-ou-nao","/poema/a-porta-da-espera","/poema/morada-de-sentimentos","/poema/carta-de-despedida","/poema/recomecos-da-alma","/poema/iverno-da-alma","/poema/silencio","/poema/colaborar-e-conquistar","/poema/a-essencia-do-eu","/poema/o-sentido-do-sentir","/poema/tudo-mudou","/poema/portas-internas","/poema/o-amor-que-transforma","/poema/reatar-a-poesia-do-recomeco","/poema/ressonancia-da-saudade","/poema/a-semente-do-amor","/poema/a-harmonia-do-ser","/poema/o-que-e-o-amor","/poema/alem-das-telas","/poema/o-despertar-do-afeto","/poema/abraco-que-transcende","/poema/o-legado-de-um-pai","/poema/cinquenta-a-cinquenta","/poema/pista-de-pouso-para-dois","/poema/ecos-do-coracao-sobre-o-amor","/poema/ventos-de-axe","/poema/para-nossa-filha","/poema/ela-nossos-sonhos-nossa-familia","/poema/amor-aclamado","/poema/uma-vida-celebrada","/poema/em-teu-sentir","/poema/laroye-exu-o-mensageiro-da-lei","/poema/crescente-melodia","/poema/nosso-vislumbre-de-felicidade","/poema/desperte-o-gigante-em-voce","/poema/amor-genuino","/poema/carroca-de-sentimentos","/poema/melodia-de-nos","/poema/essencia-do-amor","/poema/do-fundo-do-coracao","/poema/meu-lar-de-amor","/poema/o-melhor-esta-por-vir","/poema/meus-ciclos-meu-caminho","/poema/anistia","/poema/oracao-a-exu","/poema/minha-princesinha","/poema/desenvolve","/poema/meu-maior-ensinamento","/poema/simplesmente-voce","/poema/tempo-de-amor","/poema/primavera-em-ti","/poema/melodia-do-coracao","/poema/dialogo-interior","/poema/cancao-do-peito","/poema/em-torno-do-silencio","/poema/meio-ou-inteiro","/poema/a-voz-do-silencio","/poema/o-bem-que-volta","/poema/entregar-meu-axe","/poema/do-silencio-a-voz","/poema/so-quero-um-abraco","/poema/renovado-recarregado","/poema/amar-ser-ativo-presente","/poema/a-escolha-do-ritmo","/poema/fe-no-amor","/poema/a-recusa-do-eclipse","/poema/solitaria-tendencia","/poema/longe-de-melancolias","/poema/amor-ao-lado","/poema/o-que-sou","/poema/em-ambos-os-lados-da-luz","/poema/o-muro-do-racional","/poema/nosso-jeitinho-de-amar","/poema/os-passos","/poema/a-certeza-que-flui","/poema/sol-na-minha-janela-hoje","/poema/conexao-em-um-segundo","/poema/fogo-que-medeia","/poema/sombra-que-carregamos","/poema/a-estrofe-que-faltava","/poema/porto-seguro","/poema/metamorfose-da-luz","/poema/a-promessa-do-sol","/poema/o-vazio-que-floresce","/poema/pertencimento-em-verso","/poema/entardecer","/poema/persistencia-do-coracao","/poema/insano-de-dentro","/poema/coracao-solene","/poema/a-balanca-do-afeto","/poema/oposto-real","/poema/posicao-defensiva","/poema/versos-dispersos","/poema/quem-esta-por-voce","/poema/tente-outra-vez","/poema/insonia-e-escolhas","/poema/depois-da-curtida","/poema/de-coracao-aberto","/poema/coracao-que-grita","/poema/cartografia-do-nos","/poema/refatoracao-interna","/poema/intento","/poema/insurgencia-interna","/poema/arquitetura-do-afeto","/poema/arquitetura-do-luto","/poema/viagem-da-vida","/poema/lado-de-fora","/poema/arquitetura-do-agora","/poema/heranca-do-amanha","/poema/o-aprendizado-das-entrelinhas","/poema/do-lado-de-dentro","/poema/aprendiz-de-amor","/poema/debug-da-alma","/poema/manifesto-do-agora","/poema/ciclos-de-luz","/poema/espelho-da-alma","/poema/a-porta-entreaberta","/poema/entre-linhas-e-abracos","/poema/penhasco-de-sentimentos","/poema/apaixonidade","/poema/impermanencia","/poema/linha-do-tempo","/poema/simulacro","/poema/presenca","/poema/o-amor-cura","/poema/entre-caos-e-rimas","/poema/dia-das-maes","/poema/conexao-incomum","/poema/doce-constancia","/poema/autorretrato","/poema/transicoes","/poema/o-silencio-denso","/poema/descompasso","/poema/calibragem","/poema/raizes-do-afeto","/poema/celebracao-da-solitude","/poema/mares-internas","/poema/com-um-abraco-te-espero","/poema/nem","/poema/refugio","/poema/o-mago-de-si-mesmo","/poema/fazer-parte","/poema/o-abraco","/poema/inerente","/poema/sanidade-enfim","/poema/dois-coracoes","/poema/coracao-emocionado","/poema/vazio","/poema/ser-porto","/poema/juras","/poema/caverna-de-sonhos","/poema/trilha-sonora-do-agora","/poema/existencia","/poema/colors","/poema/a-vida-e-mais","/poema/eu-livro-aberto","/poema/simples-pra-quem-ve","/poema/print-de-um-sentimento","/poema/vem-a-vida","/poema/natural","/poema/reflexos-de-luz","/poema/melodia-da-vida","/poema/lado-escuro-da-alma","/poema/contemplacao","/poema/a-transicao-para-a-calmaria","/poema/vontade-de-existir","/poema/branco","/poema/toque-no-coracao","/poema/em-admiracao","/poema/sol-de-nos-dois","/poema/para-minha-filha","/poema/particularidades","/poema/sois-a-contemplar","/poema/o-amor-ainda-e-tudo","/poema/amor-e-poesia","/poema/raro-e-surreal","/poema/leveza-do-sentir","/poema/seu-par","/poema/amanhecer-em-nos","/poema/sintonia-em-ti","/poema/partilhar","/poema/com-voce","/poema/labirinto-da-vida","/poema/so-viajo-na-mente","/poema/o-que-cabe-no-tempo","/poema/coracao-de-pai","/poema/lugar-de-existir","/poema/habitar-em-mim","/poema/amor-em-atos","/poema/encontro-de-almas","/poema/amor-desnudo","/colecao/reflexoes-e-tempo","/colecao/amor","/colecao/amor-e-conexao","/colecao/familia-e-afeto","/colecao/paz-e-esperanca"]; window.__LEGACY_REDIRECTS__ = {"/?p=277":"/poema/277","/2021/02/18/277":"/poema/277","/2021/02/18/277/":"/poema/277","/sobre-mim":"/sobre","/sobre-mim/":"/sobre"};</script>
 </head>
 <body>
-  Redirecionando...
+  <div class="not-found-container">
+    <p class="not-found-label">404</p>
+    <h1 class="not-found-title">Página não encontrada</h1>
+    <p class="not-found-desc">A página ou poema que você procura pode ter mudado de endereço ou nunca existiu.</p>
+    <nav class="not-found-actions">
+      <a href="/" class="not-found-link">Início</a>
+      <span class="sep">•</span>
+      <a href="/colecoes/" class="not-found-link">Coleções</a>
+      <span class="sep">•</span>
+      <a href="/?busca=1" class="not-found-link">Buscar</a>
+    </nav>
+  </div>
 </body>
 </html>
-
