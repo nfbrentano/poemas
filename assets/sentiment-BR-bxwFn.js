@@ -1,4 +1,4 @@
-import{_ as e,b as t,i as n,m as r,o as i,p as a,r as o,s,y as c}from"./index-3IBTfuIH.js";import{_ as l,g as u,p as d,u as f}from"./vendor-firebase-vW9DHoZS.js";import{t as p}from"./firebase-DJUlHAWI.js";import{n as m,t as h}from"./sentiments-CYLzB1bl.js";var g={meta:{title:`Sentimento`},async render(o,_){let v=typeof _==`object`?_.slug:_,y=c(v||``);if(o.innerHTML=`
+import{_ as e,b as t,i as n,m as r,o as i,p as a,r as o,s,y as c}from"./index-fdOadyoa.js";import{_ as l,g as u,p as d,u as f}from"./vendor-firebase-vW9DHoZS.js";import{t as p}from"./firebase-B_dJRC60.js";import{n as m,t as h}from"./sentiments-2sfSWUex.js";var g={meta:{title:`Sentimento`},async render(o,_){let v=typeof _==`object`?_.slug:_,y=c(v||``);if(o.innerHTML=`
       <section class="collection-detail fade-in">
         <header class="collection-header">
           <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>

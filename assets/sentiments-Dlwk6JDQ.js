@@ -1,4 +1,4 @@
-import{_ as e,b as t,h as n,i as r,o as i,p as a,s as o,y as s}from"./index-3IBTfuIH.js";import{_ as c,g as l,p as u,u as d}from"./vendor-firebase-vW9DHoZS.js";import{t as f}from"./firebase-DJUlHAWI.js";import{n as p}from"./sentiments-CYLzB1bl.js";var m={meta:{title:`Poemas por Sentimento — Natanael Fernando Gatti Brentano`,description:`Explore todos os sentimentos e temas dos poemas de Natanael Fernando Gatti Brentano.`},async render(h){h.innerHTML=`
+import{_ as e,b as t,h as n,i as r,o as i,p as a,s as o,y as s}from"./index-fdOadyoa.js";import{_ as c,g as l,p as u,u as d}from"./vendor-firebase-vW9DHoZS.js";import{t as f}from"./firebase-B_dJRC60.js";import{n as p}from"./sentiments-2sfSWUex.js";var m={meta:{title:`Poemas por Sentimento — Natanael Fernando Gatti Brentano`,description:`Explore todos os sentimentos e temas dos poemas de Natanael Fernando Gatti Brentano.`},async render(h){h.innerHTML=`
       <section class="sentiments-page fade-in">
         <header class="page-header" style="margin-bottom: var(--space-2xl);">
           <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>

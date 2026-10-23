@@ -1,4 +1,4 @@
-import{C as e,S as t,b as n,n as r}from"./index-3IBTfuIH.js";import{a as i,l as a,o,s,t as c,u as l}from"./data-C7fAQ5he.js";import{t as u}from"./debounce-C89F3TY9.js";async function d(d,f){let p={title:``,slug:``,content:``,excerpt:``,tags:[],status:`draft`,audio_url:``};if(f){d.innerHTML=`<div class="loading">Carregando poema...</div>`;let{data:t}=await s(`poems`,{where:[[`id`,`==`,f]],single:!0});t&&(p=t,p.content=e(p.content))}d.innerHTML=`
+import{C as e,S as t,b as n,n as r}from"./index-fdOadyoa.js";import{a as i,l as a,o,s,t as c,u as l}from"./data-BTLoZLnW.js";import{t as u}from"./debounce-C89F3TY9.js";async function d(d,f){let p={title:``,slug:``,content:``,excerpt:``,tags:[],status:`draft`,audio_url:``};if(f){d.innerHTML=`<div class="loading">Carregando poema...</div>`;let{data:t}=await s(`poems`,{where:[[`id`,`==`,f]],single:!0});t&&(p=t,p.content=e(p.content))}d.innerHTML=`
       <form id="editor-form" style="font-family: var(--font-ui);">
         <div class="editor-layout">
           <div class="editor-pane">
