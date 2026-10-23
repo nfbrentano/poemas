@@ -1,4 +1,4 @@
-import{b as e,c as t,i as n,o as r,p as i,r as a,s as o}from"./index-DadoRXS-.js";import{_ as s,g as c,p as l,u,y as d}from"./vendor-firebase-vW9DHoZS.js";import{t as f}from"./firebase-D6obsgpN.js";function p({col:t,poemsList:n=[],baseUrl:a=`/`}={}){let o=`${r}/colecao/${t.slug}/`,s=[{name:`Início`,url:a},{name:`Coleções`,url:`${a}colecoes/`},{name:t.name,url:o}],c=(t.description||``).trim(),l=c?`<p class="collection-desc-large" style="margin-top: 1rem;">${e(c)}</p>`:``;return`
+import{b as e,c as t,i as n,o as r,p as i,r as a,s as o}from"./index-3IBTfuIH.js";import{_ as s,g as c,p as l,u,y as d}from"./vendor-firebase-vW9DHoZS.js";import{t as f}from"./firebase-DJUlHAWI.js";function p({col:t,poemsList:n=[],baseUrl:a=`/`}={}){let o=`${r}/colecao/${t.slug}/`,s=[{name:`Início`,url:a},{name:`Coleções`,url:`${a}colecoes/`},{name:t.name,url:o}],c=(t.description||``).trim(),l=c?`<p class="collection-desc-large" style="margin-top: 1rem;">${e(c)}</p>`:``;return`
       <section class="collection-detail fade-in">
         <header class="collection-header">
           ${i(s)}
