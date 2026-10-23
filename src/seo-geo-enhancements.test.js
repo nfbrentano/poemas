@@ -147,6 +147,7 @@ describe('{SEO} e {GEO} Melhorias Avançadas — SDD: 2026-10-22_melhorias-seo-e
       };
 
       const schema = poemSchema(poem);
+      expect(schema['@type']).toEqual(['CreativeWork', 'Poem', 'Article']);
       expect(schema.isAccessibleForFree).toBe(true);
       expect(schema.copyrightNotice).toBe('© Natanael Fernando Gatti Brentano');
       expect(schema.speakable).toEqual({

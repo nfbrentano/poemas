@@ -40,7 +40,7 @@ describe('structured-data.js', () => {
       const schema = poemSchema(mockPoem, mockCollections);
 
       expect(schema['@context']).toBe('https://schema.org');
-      expect(schema['@type']).toEqual(['CreativeWork', 'Poem']);
+      expect(schema['@type']).toEqual(['CreativeWork', 'Poem', 'Article']);
       expect(schema.headline).toBe('Cântico do Silêncio');
       expect(schema.keywords).toEqual(['amor', 'tempo']);
       expect(schema.datePublished).toBe('2026-01-15T12:00:00.000Z');

@@ -168,7 +168,7 @@ export function poemSchema(poem, collections = []) {
 
   const result = {
     "@context": "https://schema.org",
-    "@type": ["CreativeWork", "Poem"],
+    "@type": ["CreativeWork", "Poem", "Article"],
     "@id": `${poemUrl}#poema`,
     "headline": poem.title || '',
     "name": poem.title || '',

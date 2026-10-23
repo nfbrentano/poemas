@@ -48,7 +48,7 @@ describe('{SEO} Dados estruturados (JSON-LD) completos e Breadcrumbs', () => {
       ]);
 
       // Validações do poema (RF02 & RF04)
-      expect(pSchema['@type']).toEqual(['CreativeWork', 'Poem']);
+      expect(pSchema['@type']).toEqual(['CreativeWork', 'Poem', 'Article']);
       expect(pSchema.headline).toBe('Aurora Boreal');
       expect(pSchema.keywords).toEqual(['noite', 'frio']);
       expect(pSchema.author['@id']).toBe(AUTHOR_ID);
