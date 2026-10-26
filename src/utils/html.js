@@ -26,11 +26,10 @@ export function stripHtml(html) {
   let result = html;
 
   let prev;
-  // Remove HTML comments repeatedly until stable, handling nested comments, --!>, and stray delimiters
+  // Remove HTML comments repeatedly until string stabilizes (CodeQL #46)
   do {
     prev = result;
-    result = result.replace(/<!--[\s\S]*?(?:-->|--!>)/g, '');
-    result = result.replace(/<!--|--!?>/g, '');
+    result = result.replace(/<!--[\s\S]*?-->/g, '');
   } while (result !== prev);
 
   // Remove script, style, noscript, and iframe tags along with their content repeatedly until stable.

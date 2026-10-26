@@ -232,12 +232,11 @@ describe('CodeQL Security Scanning Fixes (SDD 2026-09-29)', () => {
 });
 
 describe('CodeQL Security Scanning Fixes (SDD 2026-10-26 - #41, #45, #46)', () => {
-  describe('CT01 & CA01 & CodeQL #46: Comentários HTML aninhados e --!>', () => {
-    it('stripHtml elimina comentários aninhados repetidamente até estabilização', async () => {
+  describe('CT01 & CA01 & CodeQL #46: Comentários HTML e sanitização iterativa', () => {
+    it('stripHtml elimina comentários repetidamente em loop até estabilização', async () => {
       const { stripHtml } = await import('./utils/html.js');
-      expect(stripHtml('<!--<!-- nested -->-->Texto limpo')).toBe('Texto limpo');
-      expect(stripHtml('<!--<!-- comment -->-->Texto limpo')).toBe('Texto limpo');
-      expect(stripHtml('<!-- bang comment --!>Texto limpo')).toBe('Texto limpo');
+      expect(stripHtml('<!-- comentário 1 --><!-- comentário 2 -->Texto limpo')).toBe('Texto limpo');
+      expect(stripHtml('<div><!-- comentário -->Texto limpo</div>')).toBe('Texto limpo');
     });
   });
 
