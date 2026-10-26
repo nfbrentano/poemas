@@ -23,18 +23,28 @@ export function escapeHtml(str) {
  */
 export function stripHtml(html) {
   if (typeof html !== 'string' || !html) return '';
-  let result = html
-    .replace(/<!--[\s\S]*?-->/g, '')
+  let result = html;
+
+  let prev;
+  // Remove HTML comments repeatedly until stable, handling nested comments, --!>, and stray delimiters
+  do {
+    prev = result;
+    result = result.replace(/<!--[\s\S]*?(?:-->|--!>)/g, '');
+    result = result.replace(/<!--|--!?>/g, '');
+  } while (result !== prev);
+
+  // Remove script, style, noscript, and iframe tags along with their content repeatedly until stable.
+  // Support whitespace or attributes in closing tags (e.g. </script >) to prevent parser bypass.
+  do {
+    prev = result;
+    result = result.replace(/<(?:script|style|noscript|iframe)\b[^>]*>[\s\S]*?<\/(?:script|style|noscript|iframe)\s*[^>]*>/gi, '');
+  } while (result !== prev);
+
+  // Convert block formatting to preserved line breaks
+  result = result
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p\s*>/gi, '\n\n')
     .replace(/<\/div\s*>/gi, '\n');
-
-  let prev;
-  // Remove script, style, noscript, and iframe tags along with their content
-  do {
-    prev = result;
-    result = result.replace(/<(?:script|style|noscript|iframe)\b[^>]*>[\s\S]*?<\/(?:script|style|noscript|iframe)>/gi, '');
-  } while (result !== prev);
 
   // Strip all remaining tags until string stabilizes
   do {

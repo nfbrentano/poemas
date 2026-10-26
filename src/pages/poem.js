@@ -10,6 +10,8 @@ import { ImmersiveReader } from '../components/immersive-reader.js';
 import { PoemComments } from '../components/poem-comments.js';
 import { renderPoemMarkup, EMOJIS } from '../utils/poem-template.js';
 
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 function throttle(func, limit) {
   let inThrottle;
   return function() {
@@ -209,7 +211,11 @@ export default {
     trackPageView('/poema/' + poem.slug, poem.id);
 
     // Update SEO dynamically
-    const canonicalPoemUrl = `${SITE_URL}/poema/${poem.slug}/`;
+    const rawPoemSlug = poem.slug || poemId || '';
+    const safePoemSlug = typeof rawPoemSlug === 'string' && SLUG_REGEX.test(rawPoemSlug)
+      ? rawPoemSlug
+      : encodeURIComponent(String(rawPoemSlug));
+    const canonicalPoemUrl = `${SITE_URL}/poema/${safePoemSlug}/`;
     const cleanExcerpt = stripHtml(poem.excerpt || poem.content || '')
       .replace(/\s+/g, ' ')
       .trim()
@@ -897,7 +903,6 @@ export default {
     }
 
     // Prefetch adjacent routes (RF04)
-    const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
     const prefetchRoutes = () => {
       const BASE_URL = import.meta.env.BASE_URL;
       const slugsToPrefetch = [prevSlug, nextSlug].filter(s => typeof s === 'string' && SLUG_REGEX.test(s));
