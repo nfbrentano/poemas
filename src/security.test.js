@@ -230,3 +230,40 @@ describe('CodeQL Security Scanning Fixes (SDD 2026-09-29)', () => {
     });
   });
 });
+
+describe('CodeQL Security Scanning Fixes (SDD 2026-10-26 - #41, #45, #46)', () => {
+  describe('CT01 & CA01 & CodeQL #46: Comentários HTML aninhados e --!>', () => {
+    it('stripHtml elimina comentários aninhados repetidamente até estabilização', async () => {
+      const { stripHtml } = await import('./utils/html.js');
+      expect(stripHtml('<!--<!-- nested -->-->Texto limpo')).toBe('Texto limpo');
+      expect(stripHtml('<!--<!-- comment -->-->Texto limpo')).toBe('Texto limpo');
+      expect(stripHtml('<!-- bang comment --!>Texto limpo')).toBe('Texto limpo');
+    });
+  });
+
+  describe('CT02 & CA02 & CodeQL #45: Script e tags perigosas com fechamento flexível', () => {
+    it('stripHtml remove tags com espaços ou atributos na tag de fechamento', async () => {
+      const { stripHtml } = await import('./utils/html.js');
+      expect(stripHtml('Texto <script>alert(1)</script >limpo')).toBe('Texto limpo');
+      expect(stripHtml('Texto <script src="x">alert(1)</script foo="bar">limpo')).toBe('Texto limpo');
+      expect(stripHtml('Texto <style>body{color:red;}</style >limpo')).toBe('Texto limpo');
+      expect(stripHtml('Texto <iframe src="x">frame</iframe >limpo')).toBe('Texto limpo');
+    });
+  });
+
+  describe('CT03 & CA03 & CodeQL #41: Sanitização e encodeURI da URL canônica no SEO', () => {
+    it('updateSEO aplica encodeURI e sanitizeUrl ao link rel="canonical"', async () => {
+      const { updateSEO } = await import('./utils/seo.js');
+      updateSEO({
+        url: 'https://nfgbrentano.art.br/poema/coração-e-poesia/'
+      });
+
+      const canonical = document.querySelector('link[rel="canonical"]');
+      expect(canonical).not.toBeNull();
+      const href = canonical.getAttribute('href');
+      expect(href).toBe('https://nfgbrentano.art.br/poema/cora%C3%A7%C3%A3o-e-poesia/');
+      expect(href).not.toContain('<');
+      expect(href).not.toContain('>');
+    });
+  });
+});

@@ -88,6 +88,12 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   }
   const rawCanonical = cleanCanonicalUrl(pathname, SITE_URL);
   const canonicalUrl = sanitizeUrl(rawCanonical) || SITE_URL;
+  let safeCanonicalHref;
+  try {
+    safeCanonicalHref = encodeURI(decodeURI(canonicalUrl));
+  } catch (_) {
+    safeCanonicalHref = encodeURI(canonicalUrl);
+  }
   const finalImage = imageUrl || defaultImage;
 
   // Canonical URL (RF05)
@@ -97,7 +103,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
     canonical.setAttribute('rel', 'canonical');
     document.head.appendChild(canonical);
   }
-  canonical.setAttribute('href', canonicalUrl);
+  canonical.setAttribute('href', safeCanonicalHref);
 
   // Meta Robots
   if (robots) {
@@ -114,7 +120,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   setMeta('meta[property="og:site_name"]', 'content', 'Poemas — Natanael Fernando Gatti Brentano');
   setMeta('meta[property="og:title"]', 'content', finalTitle);
   setMeta('meta[property="og:description"]', 'content', finalDesc);
-  setMeta('meta[property="og:url"]', 'content', canonicalUrl);
+  setMeta('meta[property="og:url"]', 'content', safeCanonicalHref);
   setMeta('meta[property="og:type"]', 'content', type);
   setMeta('meta[property="og:image"]', 'content', finalImage);
   setMeta('meta[property="og:image:width"]', 'content', '1200');
@@ -184,7 +190,7 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
       setMeta('meta[name="citation_title"]', 'content', rawPoemTitle.trim());
       setMeta('meta[name="citation_author"]', 'content', 'Brentano, Natanael Fernando Gatti');
       setMeta('meta[name="citation_language"]', 'content', 'pt');
-      setMeta('meta[name="citation_fulltext_html_url"]', 'content', canonicalUrl);
+      setMeta('meta[name="citation_fulltext_html_url"]', 'content', safeCanonicalHref);
       if (publishedTime) {
         const pubDateYmd = new Date(publishedTime).toISOString().slice(0, 10).replace(/-/g, '/');
         setMeta('meta[name="citation_publication_date"]', 'content', pubDateYmd);

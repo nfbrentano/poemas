@@ -32,6 +32,16 @@ describe('html utils', () => {
       expect(stripHtml(input)).toBe('Poema seguro');
     });
 
+    it('strips nested comments and comments ending with --!> (CodeQL #46)', () => {
+      const input = '<div><!--<!-- nested -->-->Texto seguro<!-- bang --!></div>';
+      expect(stripHtml(input)).toBe('Texto seguro');
+    });
+
+    it('strips script and style tags with whitespace or attributes in closing tags (CodeQL #45)', () => {
+      const input = '<div><script>alert(1)</script >Texto seguro<script>alert(2)</script foo="bar"><style>body{color:red}</style ></div>';
+      expect(stripHtml(input)).toBe('Texto seguro');
+    });
+
     it('handles empty or non-string inputs', () => {
       expect(stripHtml('')).toBe('');
       expect(stripHtml(null)).toBe('');
