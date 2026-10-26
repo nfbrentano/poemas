@@ -7,6 +7,24 @@ import { renderBreadcrumbsHtml } from './structured-data.js';
 export const EMOJIS = ['🕯️', '💧', '🌿', '🌙', '✨', '❤️'];
 
 /**
+ * Builds standard ABNT citation string for a poem (RF02, CA03).
+ * Format: BRENTANO, Natanael Fernando Gatti. [Título]. In: Poemas Brasileiros, [Ano]. Disponível em: <[URL]>. Acesso em: [Data].
+ * @param {object} poem
+ * @param {Date|string} [accessDate]
+ * @returns {string}
+ */
+export function buildAbntCitation(poem, accessDate = new Date()) {
+  if (!poem) return '';
+  const title = poem.title || 'Sem título';
+  const pubDate = poem.published_at ? new Date(poem.published_at) : new Date();
+  const pubYear = !isNaN(pubDate.getTime()) ? pubDate.getFullYear() : new Date().getFullYear();
+  const canonicalUrl = `https://nfgbrentano.art.br/poema/${poem.slug || ''}/`;
+  const accessD = accessDate instanceof Date ? accessDate : new Date(accessDate);
+  const accessStr = !isNaN(accessD.getTime()) ? accessD.toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+  return `BRENTANO, Natanael Fernando Gatti. ${title}. In: Poemas Brasileiros, ${pubYear}. Disponível em: <${canonicalUrl}>. Acesso em: ${accessStr}.`;
+}
+
+/**
  * Renders the poem container markup.
  * Can be used both in client-side router and server/build-time prerender.
  */
@@ -27,6 +45,7 @@ export function renderPoemMarkup({
 
   const formattedContent = formatPoemForAnimation(poem.content);
   const safeAudioUrl = poem.audio_url ? sanitizeUrl(poem.audio_url) : '';
+  const abntCitation = buildAbntCitation(poem);
 
   let collectionsHtml = '';
   if (collectionsData && collectionsData.length > 0) {
@@ -217,6 +236,17 @@ export function renderPoemMarkup({
               <dd>${readingLabel}</dd>
             </div>
           </dl>
+        </section>
+
+        <section class="poem-citation-box" aria-label="Como citar este poema">
+          <div class="citation-header">
+            <span class="citation-label">Como citar esta obra (ABNT)</span>
+            <button type="button" class="btn-copy-citation" id="copy-citation-btn" aria-label="Copiar citação para área de transferência" data-citation="${escapeHtml(abntCitation)}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span class="copy-citation-text">Copiar citação</span>
+            </button>
+          </div>
+          <p class="citation-text" id="citation-text-block">${escapeHtml(abntCitation)}</p>
         </section>
 
         <div id="related-poems-section" style="${relatedHtml ? '' : 'display: none; '}margin-top: var(--space-2xl); margin-bottom: var(--space-2xl);">

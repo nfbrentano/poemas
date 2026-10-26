@@ -234,6 +234,8 @@ export default {
       imageUrl: fallbackImageUrl,
       type: 'article',
       publishedTime: poem.published_at,
+      modifiedTime: poem.updated_at,
+      poemTitle: poem.title,
       tags: poem.tags,
       structuredData: [
         poemSchema(poem, collectionsData),
@@ -545,6 +547,28 @@ export default {
       }
     };
     document.getElementById('highlight-card-btn')?.addEventListener('click', showCardPreview);
+
+    // Botão de copiar citação ABNT
+    const copyCitationBtn = document.getElementById('copy-citation-btn');
+    if (copyCitationBtn) {
+      copyCitationBtn.addEventListener('click', async () => {
+        const citation = copyCitationBtn.getAttribute('data-citation') || '';
+        try {
+          await navigator.clipboard.writeText(citation);
+          const textSpan = copyCitationBtn.querySelector('.copy-citation-text');
+          const originalText = textSpan ? textSpan.textContent : 'Copiar citação';
+          if (textSpan) textSpan.textContent = 'Copiado!';
+          copyCitationBtn.classList.add('copied');
+          toast.show('Citação copiada para a área de transferência!', 'success');
+          setTimeout(() => {
+            if (textSpan) textSpan.textContent = originalText;
+            copyCitationBtn.classList.remove('copied');
+          }, 2500);
+        } catch (err) {
+          toast.show('Não foi possível copiar automaticamente.', 'error');
+        }
+      });
+    }
 
     // Atalhos de teclado
     handleKeydown = (e) => {

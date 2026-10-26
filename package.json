@@ -23,7 +23,7 @@
     "satori": "^0.57.2",
     "satori-html": "^0.3.2",
     "vite": "^8.3.4",
-    "vitest": "^5.0.4"
+    "vitest": "^5.0.5"
   },
   "dependencies": {
     "@microsoft/clarity": "^1.0.2",
@@ -31,5 +31,8 @@
     "dotenv": "^18.0.8",
     "firebase": "^13.0.0",
     "nodemailer": "^10.1.1"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.5"
   }
 }

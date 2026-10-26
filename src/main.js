@@ -6,33 +6,6 @@ import { header } from './components/header.js';
 import { backToTop } from './components/back-to-top.js';
 import { getRandomPoem } from './utils/navigation.js';
 
-// Initialize Microsoft Clarity deferred after load/LCP
-const initClarity = () => {
-  const run = () => {
-    import('@microsoft/clarity')
-      .then(m => {
-        const Clarity = m.default || m;
-        Clarity.init('y5mmw0thvu');
-      })
-      .catch(err => console.debug?.('[clarity]', err));
-  };
-
-  const schedule = () => {
-    if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(run, { timeout: 3000 });
-    } else {
-      setTimeout(run, 1500);
-    }
-  };
-
-  if (document.readyState === 'complete') {
-    schedule();
-  } else {
-    window.addEventListener('load', schedule, { once: true });
-    setTimeout(run, 3000);
-  }
-};
-initClarity();
 
 // Setup Initial Page Classes
 if (window.location.pathname.includes('/poema/')) {
