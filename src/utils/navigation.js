@@ -56,25 +56,14 @@ export async function getRandomPoem(event) {
 
     let availableSlugs = [];
 
-    const { searchOverlay } = await import('../components/search-overlay.js');
-    if (searchOverlay && searchOverlay.allPoemsCache) {
-      availableSlugs = searchOverlay.allPoemsCache.map(p => p.slug);
-      cachedPublishedSlugs = availableSlugs;
-    } else if (cachedPublishedSlugs) {
+    if (cachedPublishedSlugs) {
       availableSlugs = cachedPublishedSlugs;
     } else {
-      const { db } = await import('./firebase.js');
-      const { collection, getDocs, query, where } = await import('firebase/firestore');
-      
-      const q = query(collection(db, 'poems'), where('status', '==', 'published'));
-      const querySnapshot = await getDocs(q);
-      const poems = [];
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.slug) poems.push(data.slug);
-      });
-      cachedPublishedSlugs = poems;
-      availableSlugs = poems;
+      const { getPublishedPoems } = await import('./poems-store.js');
+      const poemsData = await getPublishedPoems();
+      const slugs = poemsData.map(p => p.slug).filter(Boolean);
+      cachedPublishedSlugs = slugs;
+      availableSlugs = slugs;
     }
 
     if (availableSlugs.length > 1 && currentSlug) {

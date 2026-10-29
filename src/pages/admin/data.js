@@ -2,6 +2,7 @@ import { db, getFirebaseAuth, getFirebaseStorage, getFirebaseFunctions } from '.
 import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
+import { invalidatePoemsCache } from '../../utils/poems-store.js';
 
 // Acesso a dados do painel admin. As funções assíncronas devolvem { data, error }
 // (sem lançar exceção) para que cada tela trate o erro como sempre tratou.
@@ -59,6 +60,9 @@ export async function insertDocs(collectionName, payload) {
       }
       results.push({ id: docRef.id, ...item });
     }
+    if (collectionName === 'poems' || collectionName === 'collection_poems') {
+      invalidatePoemsCache();
+    }
     return { data: Array.isArray(payload) ? results : results[0], error: null };
   } catch (error) {
     return { error };
@@ -68,6 +72,9 @@ export async function insertDocs(collectionName, payload) {
 export async function updateDocById(collectionName, id, payload) {
   try {
     await updateDoc(doc(db, collectionName, id), payload);
+    if (collectionName === 'poems' || collectionName === 'collection_poems') {
+      invalidatePoemsCache();
+    }
     return { error: null };
   } catch (error) {
     return { error };
@@ -77,6 +84,9 @@ export async function updateDocById(collectionName, id, payload) {
 export async function deleteDocById(collectionName, id) {
   try {
     await deleteDoc(doc(db, collectionName, id));
+    if (collectionName === 'poems' || collectionName === 'collection_poems') {
+      invalidatePoemsCache();
+    }
     return { error: null };
   } catch (error) {
     return { error };
@@ -88,6 +98,9 @@ export async function deleteDocsWhere(collectionName, field, value) {
   try {
     const snapshot = await getDocs(query(collection(db, collectionName), where(field, '==', value)));
     await Promise.all(snapshot.docs.map(d => deleteDoc(doc(db, collectionName, d.id))));
+    if (collectionName === 'poems' || collectionName === 'collection_poems') {
+      invalidatePoemsCache();
+    }
     return { error: null };
   } catch (error) {
     return { error };

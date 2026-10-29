@@ -1,10 +1,11 @@
 import { db } from '../utils/firebase.js';
-import { collection, query, orderBy, getDocs, where } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import { filterChips } from '../components/filter-chips.js';
 import { updateSEO } from '../utils/seo.js';
 import { collectionsListSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
 import { normalizeTag } from '../utils/tags.js';
 import { escapeHtml, sanitizeUrl } from '../utils/html.js';
+import { getPublishedPoems } from '../utils/poems-store.js';
 
 export const collections = {
   meta: {
@@ -142,31 +143,30 @@ export const collections = {
       // Fetch and Filter Poems
       const fetchPoems = async () => {
         let data = [];
-        let error = null;
         try {
-          const q = query(collection(db, 'poems'), where('status', '==', 'published'), orderBy('published_at', 'desc'));
-          const snapshot = await getDocs(q);
+          const [publishedPoems, colsSnapshot, cpSnapshot] = await Promise.all([
+            getPublishedPoems(),
+            getDocs(collection(db, 'collections')),
+            getDocs(collection(db, 'collection_poems'))
+          ]);
           
-          const colsSnapshot = await getDocs(collection(db, 'collections'));
           const colsMap = {};
           colsSnapshot.forEach(d => { colsMap[d.id] = d.data(); });
           
-          const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
           const cpData = [];
           cpSnapshot.forEach(d => cpData.push(d.data()));
           
-          snapshot.forEach(doc => {
-            const poemData = doc.data();
+          publishedPoems.forEach(poemData => {
             const poemRelations = cpData
-               .filter(cp => cp.poem_id === doc.id)
+               .filter(cp => cp.poem_id === poemData.id)
                .map(cp => ({
                  collection_id: cp.collection_id,
                  collections: colsMap[cp.collection_id] ? { slug: colsMap[cp.collection_id].slug } : null
                }));
-            data.push({ id: doc.id, ...poemData, collection_poems: poemRelations });
+            data.push({ ...poemData, collection_poems: poemRelations });
           });
         } catch (err) {
-          error = err;
+          console.error('Error fetching poems for collections:', err);
         }
         allPoems = data || [];
         

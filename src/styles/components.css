@@ -78,9 +78,9 @@
 
 .mobile-brand {
   text-align: center;
-  padding: var(--space-sm) var(--space-md) 0 var(--space-md);
+  padding: var(--space-md) var(--space-md) 0 var(--space-md);
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--text-muted);
@@ -88,12 +88,10 @@
 .mobile-brand a {
   color: inherit;
   text-decoration: none;
+  transition: color var(--transition-fast);
 }
-
-@media (min-width: 769px) {
-  .mobile-brand {
-    display: none !important;
-  }
+.mobile-brand a:hover {
+  color: var(--accent-subtle);
 }
 
 /* Floating Heart Particle (Double-tap to save) */
@@ -2748,16 +2746,75 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
 
 /* Typography Customization utilities */
 .font-family-serif {
-  font-family: 'Cormorant Garamond', serif !important;
+  font-family: 'Cormorant Garamond', 'Cormorant-Fallback', Georgia, serif !important;
 }
 
 .font-family-sans {
-  font-family: 'Inter', sans-serif !important;
+  font-family: var(--font-ui) !important;
 }
 
 .font-family-hand {
-  font-family: 'Caveat', cursive !important;
-  font-size: 1.35em !important;
+  font-family: 'Merriweather', 'Cormorant Garamond', Georgia, serif !important;
+  font-style: italic !important;
+}
+
+/* Sentiments Hub Page */
+.sentiments-header {
+  margin-bottom: var(--space-2xl);
+}
+
+.sentiments-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  margin-bottom: 0.75rem;
+}
+
+.sentiments-description {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  max-width: 650px;
+  line-height: 1.6;
+}
+
+.sentiments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.sentiment-card {
+  padding: 1.25rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  text-decoration: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-elevated);
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.sentiment-card:hover,
+.sentiment-card:focus-visible {
+  border-color: var(--accent-subtle);
+  transform: translateY(-2px);
+}
+
+.sentiment-name {
+  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.sentiment-badge {
+  color: var(--accent-subtle);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  background: var(--accent-muted);
+  border: 1px solid var(--border-subtle);
+  padding: 3px 10px;
+  border-radius: 12px;
 }
 
 .line-height-normal {

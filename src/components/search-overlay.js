@@ -1,7 +1,6 @@
-import { db } from '../utils/firebase.js';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { navigateTo } from '../router.js';
 import { normalizeForSearch, escapeHtml, stripHtml } from '../utils/html.js';
+import { getPublishedPoems } from '../utils/poems-store.js';
 
 export const searchOverlay = {
   overlay: null,
@@ -11,26 +10,16 @@ export const searchOverlay = {
   async loadAllPoems() {
     if (this.allPoemsCache) return this.allPoemsCache;
     try {
-      const q = query(
-        collection(db, 'poems'),
-        where('status', '==', 'published'),
-        orderBy('published_at', 'desc')
-      );
-      const querySnapshot = await getDocs(q);
-      const data = [];
-      querySnapshot.forEach((doc) => {
-        const docData = doc.data();
-        data.push({ 
-          id: doc.id, 
-          ...docData,
-          _normalized: {
-            title: normalizeForSearch(docData.title || ''),
-            excerpt: normalizeForSearch(docData.excerpt || ''),
-            content: normalizeForSearch(docData.content || ''),
-            tags: (docData.tags || []).map(normalizeForSearch)
-          }
-        });
-      });
+      const poems = await getPublishedPoems();
+      const data = poems.map((docData) => ({
+        ...docData,
+        _normalized: {
+          title: normalizeForSearch(docData.title || ''),
+          excerpt: normalizeForSearch(docData.excerpt || ''),
+          content: normalizeForSearch(docData.content || ''),
+          tags: (docData.tags || []).map(normalizeForSearch)
+        }
+      }));
       this.allPoemsCache = data;
       return this.allPoemsCache;
     } catch (error) {

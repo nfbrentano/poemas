@@ -1,8 +1,7 @@
 import { scrollBehavior } from '../utils/motion.js';
-import { db } from '../utils/firebase.js';
-import { collection, query, where, getDocs } from 'firebase/firestore';
 import { navigateTo } from '../router.js';
 import { formatTag } from '../utils/tags.js';
+import { getPublishedPoems } from '../utils/poems-store.js';
 
 let cachedTags = null;
 
@@ -15,14 +14,7 @@ export const filterChips = {
     let poems = initialPoems;
     if (!poems) {
       try {
-        const q = query(collection(db, 'poems'), where('status', '==', 'published'));
-        const querySnapshot = await getDocs(q);
-        const data = [];
-        querySnapshot.forEach(doc => {
-          const docData = doc.data();
-          data.push({ tags: docData.tags });
-        });
-        poems = data;
+        poems = await getPublishedPoems();
       } catch (err) {
         poems = [];
       }

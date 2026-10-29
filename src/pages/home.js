@@ -1,5 +1,3 @@
-import { db } from '../utils/firebase.js';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { updateSEO } from '../utils/seo.js';
 import { websiteSchema } from '../utils/structured-data.js';
 import { newsletter } from '../components/newsletter.js';
@@ -8,6 +6,7 @@ import { filterChips } from '../components/filter-chips.js';
 import { normalizeTag, formatTag } from '../utils/tags.js';
 import { stripHtml, escapeHtml } from '../utils/html.js';
 import { getPoemOfDay } from '../utils/poemOfDay.js';
+import { getPublishedPoems } from '../utils/poems-store.js';
 
 export default {
   meta: {
@@ -113,17 +112,11 @@ export default {
       container.innerHTML = skeletonHtml;
     }
     
-    // Fetch published poems with collections
+    // Fetch published poems via shared store
     let poems = [];
     let error = null;
     try {
-      const q = query(
-        collection(db, 'poems'),
-        where('status', '==', 'published'),
-        orderBy('published_at', 'desc')
-      );
-      const snapshot = await getDocs(q);
-      poems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      poems = await getPublishedPoems();
     } catch (err) {
       error = err;
     }

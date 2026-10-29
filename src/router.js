@@ -19,8 +19,24 @@ export const routes = {
 };
 
 let currentViewComponent = null;
+const scrollPositions = new Map();
 
-export async function router() {
+function normalizeRouteKey(rawPath) {
+  const basePath = import.meta.env.BASE_URL;
+  let path = rawPath || '/';
+  const cleanBasePath = basePath.replace(/\/$/, '');
+  if (cleanBasePath && (path.startsWith(cleanBasePath + '/') || path === cleanBasePath)) {
+    path = path.slice(cleanBasePath.length) || '/';
+  }
+  return '/' + path.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+}
+
+export async function router(eventOrOptions = null) {
+  const isPopState = Boolean(
+    (eventOrOptions && typeof PopStateEvent !== 'undefined' && eventOrOptions instanceof PopStateEvent) ||
+    eventOrOptions?.type === 'popstate' ||
+    eventOrOptions?.isPopState === true
+  );
   const basePath = import.meta.env.BASE_URL; // e.g. "/" or "/poemas/"
   let path = window.location.pathname;
   
@@ -76,8 +92,10 @@ export async function router() {
   const view = document.getElementById('main-content');
   
   const updateView = async () => {
-    // Scroll to top on navigation
-    window.scrollTo(0, 0);
+    const targetScrollY = isPopState ? (scrollPositions.get(path) ?? 0) : 0;
+    if (!isPopState) {
+      window.scrollTo(0, 0);
+    }
 
     // Cleanup previous component if it exists
     if (currentViewComponent && typeof currentViewComponent.cleanup === 'function') {
@@ -164,6 +182,9 @@ export async function router() {
         const combinedParams = { ...params, ...searchParams };
         
         await component.render(view, combinedParams);
+        if (isPopState) {
+          window.scrollTo(0, targetScrollY);
+        }
         try { sessionStorage.removeItem('chunk_retry'); } catch (_) {}
         
         // Update active nav state
@@ -341,6 +362,9 @@ export async function router() {
 }
 
 export function navigateTo(url) {
+  const currentKey = normalizeRouteKey(window.location.pathname);
+  scrollPositions.set(currentKey, window.scrollY || 0);
+
   const basePath = import.meta.env.BASE_URL;
   let finalUrl = url;
   

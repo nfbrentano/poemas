@@ -1,10 +1,9 @@
-import { db } from '../utils/firebase.js';
-import { collection, query, where, getDocs } from 'firebase/firestore';
 import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
 import { sentimentSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
 import { escapeHtml } from '../utils/html.js';
 import { slugifyTag, formatTag } from '../utils/tags.js';
 import { getSentimentIntro, getSentimentName } from '../data/sentiments.js';
+import { getPublishedPoems } from '../utils/poems-store.js';
 
 export const sentiment = {
   meta: {
@@ -39,12 +38,9 @@ export const sentiment = {
     const relatedCounts = {};
 
     try {
-      // 1 single Firestore query to fetch published poems (RNF02: <= 2 queries)
-      const q = query(collection(db, 'poems'), where('status', '==', 'published'));
-      const snapshot = await getDocs(q);
+      const poems = await getPublishedPoems();
 
-      snapshot.forEach(doc => {
-        const p = { id: doc.id, ...doc.data() };
+      poems.forEach(p => {
         const tags = Array.isArray(p.tags) ? p.tags : [];
         let hasTag = false;
 
