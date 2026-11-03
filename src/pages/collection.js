@@ -1,8 +1,9 @@
 import { db } from '../utils/firebase.js';
-import { collection as firestoreCollection, query, where, getDocs, documentId } from 'firebase/firestore';
+import { collection as firestoreCollection, query, where, getDocs } from 'firebase/firestore';
 import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
 import { collectionSchema, breadcrumbSchema, SITE_URL } from '../utils/structured-data.js';
 import { renderCollectionMarkup } from '../utils/collection-template.js';
+import { getPublishedPoems } from '../utils/poems-store.js';
 
 export const collection = {
   meta: {
@@ -40,43 +41,33 @@ export const collection = {
         const colDoc = snapshot.docs[0];
         col = { id: colDoc.id, ...colDoc.data() };
         
-        // Manual join for poems
+        // Busca relações e poemas publicados simultaneamente
         const cpQ = query(firestoreCollection(db, 'collection_poems'), where('collection_id', '==', col.id));
-        const cpSnap = await getDocs(cpQ);
+        const [cpSnap, allPublished] = await Promise.all([
+          getDocs(cpQ),
+          getPublishedPoems()
+        ]);
         
         const cpMap = {};
         cpSnap.forEach(d => {
           const data = d.data();
-          cpMap[data.poem_id] = typeof data.order === 'number' ? data.order : 0;
+          if (data && data.poem_id) {
+            cpMap[data.poem_id] = typeof data.order === 'number' ? data.order : 0;
+          }
         });
-        const poemIds = Object.keys(cpMap);
         
-        if (poemIds.length > 0) {
-           const batches = [];
-           for (let i = 0; i < poemIds.length; i += 30) {
-             batches.push(poemIds.slice(i, i + 30));
-           }
-           
-           for (const batch of batches) {
-             const allPoemsQ = query(
-               firestoreCollection(db, 'poems'),
-               where(documentId(), 'in', batch),
-               where('status', '==', 'published')
-             );
-             const allPoemsSnap = await getDocs(allPoemsQ);
-             allPoemsSnap.forEach(p => {
-               poemsList.push({ id: p.id, ...p.data(), _order: cpMap[p.id] });
-             });
-           }
-           
-           // Critério de ordenação: usa 'order' se existir, senão por 'published_at' do mais antigo para o mais recente
-           poemsList.sort((a, b) => {
-             if (a._order !== undefined && b._order !== undefined && a._order !== b._order) {
-               return a._order - b._order;
-             }
-             return new Date(a.published_at) - new Date(b.published_at);
-           });
-        }
+        // Filtra poemas vinculados à coleção por relação ou por collection_slugs
+        poemsList = allPublished
+          .filter(p => cpMap[p.id] !== undefined || (Array.isArray(p.collection_slugs) && p.collection_slugs.includes(col.slug)))
+          .map(p => ({ ...p, _order: cpMap[p.id] }));
+
+        // Ordenação poética: respeita 'order' se definido, senão ordenação cronológica
+        poemsList.sort((a, b) => {
+          if (a._order !== undefined && b._order !== undefined && a._order !== b._order) {
+            return a._order - b._order;
+          }
+          return new Date(a.published_at) - new Date(b.published_at);
+        });
       } else {
         error = new Error('Not found');
       }

@@ -1,16 +1,16 @@
 import { db } from '../utils/firebase.js';
 import { collection, query, getDocs } from 'firebase/firestore';
-import { filterChips } from '../components/filter-chips.js';
 import { updateSEO } from '../utils/seo.js';
 import { collectionsListSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
 import { normalizeTag } from '../utils/tags.js';
 import { escapeHtml, sanitizeUrl } from '../utils/html.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { getPoemRowExcerpt } from '../utils/collection-template.js';
+import { renderCollectionsPageMarkup } from '../utils/collections-template.js';
 
 export const collections = {
   meta: {
-    title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano'
+    title: 'Coleções — Natanael Fernando Gatti Brentano'
   },
   async render(container, params = {}) {
     try {
@@ -27,8 +27,8 @@ export const collections = {
 
       if (!isPrerendered) {
         updateSEO({
-          title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano',
-          description: 'Explore poemas organizados por séries temáticas e sentimentos.',
+          title: 'Coleções — Natanael Fernando Gatti Brentano',
+          description: 'Explore poemas organizados por séries temáticas e agrupamentos poéticos.',
           url: canonicalCollectionsUrl,
           type: 'website',
           structuredData: [
@@ -37,34 +37,30 @@ export const collections = {
           ]
         });
 
+        // Skeleton inicial elegante
         container.innerHTML = `
           <section class="collections-page fade-in">
-            <header class="page-header" style="text-align: center; margin-bottom: var(--space-2xl);">
+            <header class="page-header" style="text-align: center; margin-bottom: var(--space-xl);">
               ${renderBreadcrumbsHtml(breadcrumbItems)}
-              <h1 class="page-title">Explorar</h1>
-              <p class="page-subtitle">Séries temáticas, livros e sentimentos catalogados</p>
+              <h1 class="page-title">Coleções</h1>
+              <p class="page-subtitle">Séries temáticas e agrupamentos poéticos</p>
             </header>
 
-            <div class="discovery-filters" style="margin-bottom: var(--space-2xl);">
-              ${filterChips.render(activeTags)}
-              <div style="margin-top: var(--space-sm);">
-                <a href="${import.meta.env.BASE_URL}sentimentos/" data-link style="font-size: 0.9rem; color: var(--accent-subtle); text-decoration: underline;">Explorar páginas de sentimentos →</a>
-              </div>
-            </div>
-
-            <div id="collections-section" class="discovery-section" style="${isFiltering ? 'display: none;' : ''}">
-              <h2 class="section-title" style="margin-bottom: var(--space-lg);">Coleções em Destaque</h2>
+            <div id="collections-section" class="discovery-section">
+              <h2 class="section-title" style="margin-bottom: var(--space-md);">Séries em Destaque</h2>
               <div id="collections-grid" class="collections-grid">
-                <div class="loading">Carregando coleções...</div>
+                <div class="skeleton-row" style="height: 220px; border-radius: 6px;"></div>
+                <div class="skeleton-row" style="height: 220px; border-radius: 6px;"></div>
+                <div class="skeleton-row" style="height: 220px; border-radius: 6px;"></div>
               </div>
             </div>
 
-            <div id="poems-filtered-section" class="discovery-section" style="margin-top: var(--space-2xl);">
-              <h2 class="section-title" id="poems-list-title" style="margin-bottom: var(--space-lg);">
-                ${isFiltering ? 'Poemas Encontrados' : 'Obras Recentes'}
-              </h2>
+            <div id="poems-filtered-section" class="discovery-section" style="margin-top: var(--space-3xl);">
+              <h2 class="section-title" id="poems-list-title" style="margin-bottom: var(--space-md);">Obras do Acervo</h2>
               <div id="filtered-poems-list" class="list-container">
-                <div class="loading">Carregando poemas...</div>
+                <div class="skeleton-row" style="height: 60px; margin-bottom: 0.75rem; border-radius: 4px;"></div>
+                <div class="skeleton-row" style="height: 60px; margin-bottom: 0.75rem; border-radius: 4px;"></div>
+                <div class="skeleton-row" style="height: 60px; margin-bottom: 0.75rem; border-radius: 4px;"></div>
               </div>
             </div>
           </section>
@@ -77,159 +73,148 @@ export const collections = {
       const poemsList = container.querySelector('#filtered-poems-list');
       const BASE_URL = import.meta.env.BASE_URL;
 
-      // Fetch Collections
-      const fetchCollections = async () => {
-        let cols = [];
-        let error = null;
-        try {
-          const q = query(collection(db, 'collections'));
-          const snapshot = await getDocs(q);
-          
-          const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
-          const cpData = [];
-          cpSnapshot.forEach(d => cpData.push(d.data()));
-
-          snapshot.forEach(doc => {
-            const colData = doc.data();
-            const count = cpData.filter(cp => cp.collection_id === doc.id).length;
-            cols.push({ id: doc.id, ...colData, collection_poems: [{ count }] });
-          });
-
-          if (cols.length > 0) {
-            updateSEO({
-              title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano',
-              description: 'Explore poemas organizados por séries temáticas e sentimentos.',
-              url: canonicalCollectionsUrl,
-              type: 'website',
-              structuredData: [
-                collectionsListSchema(cols),
-                breadcrumbSchema(breadcrumbItems)
-              ]
-            });
-          }
-        } catch (err) {
-          error = err;
-        }
-
-        if (grid) {
-          if (error) {
-            console.error('Error fetching collections:', error);
-            if (isPrerendered) return;
-          }
-          if (!cols || cols.length === 0) {
-            if (!isPrerendered) {
-              grid.innerHTML = '<p class="empty-msg">Nenhuma coleção encontrada.</p>';
-            }
-          } else {
-            grid.innerHTML = cols.map((col, index) => {
-              const safeImg = sanitizeUrl(col.image_url);
-              const imgAttr = index === 0 
-                ? 'fetchpriority="high" width="360" height="180" decoding="async"' 
-                : 'loading="lazy" decoding="async" width="360" height="180"';
-              const count = col.collection_poems?.[0]?.count || 0;
-              return `
-              <a href="${BASE_URL}colecao/${escapeHtml(col.slug)}/" class="collection-card" data-link>
-                ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="${escapeHtml(col.name)}" class="collection-img" ${imgAttr} onerror="this.onerror=null; const p=document.createElement('div'); p.className='collection-img-placeholder'; this.replaceWith(p);">` : '<div class="collection-img-placeholder"></div>'}
-                <div class="collection-info">
-                  <h2 class="collection-name">${escapeHtml(col.name)}</h2>
-                  <span class="collection-count">${count} poema${count !== 1 ? 's' : ''}</span>
-                </div>
-              </a>
-            `;
-            }).join('');
-
-            grid.querySelectorAll('.collection-img').forEach(img => {
-              img.addEventListener('error', () => {
-                if (img.isConnected) {
-                  const placeholder = document.createElement('div');
-                  placeholder.className = 'collection-img-placeholder';
-                  img.replaceWith(placeholder);
-                }
-              }, { once: true });
-            });
-          }
-        }
-      };
-
+      let cols = [];
       let allPoems = [];
 
-      // Fetch and Filter Poems
-      const fetchPoems = async () => {
-        let data = [];
-        try {
-          const [publishedPoems, colsSnapshot, cpSnapshot] = await Promise.all([
-            getPublishedPoems(),
-            getDocs(collection(db, 'collections')),
-            getDocs(collection(db, 'collection_poems'))
-          ]);
-          
-          const colsMap = {};
-          colsSnapshot.forEach(d => { colsMap[d.id] = d.data(); });
-          
-          const cpData = [];
-          cpSnapshot.forEach(d => cpData.push(d.data()));
-          
-          publishedPoems.forEach(poemData => {
-            const poemRelations = cpData
-               .filter(cp => cp.poem_id === poemData.id)
-               .map(cp => ({
-                 collection_id: cp.collection_id,
-                 collections: colsMap[cp.collection_id] ? { slug: colsMap[cp.collection_id].slug } : null
-               }));
-            data.push({ ...poemData, collection_poems: poemRelations });
+      try {
+        const [snapshot, cpSnapshot, publishedPoems] = await Promise.all([
+          getDocs(query(collection(db, 'collections'))),
+          getDocs(collection(db, 'collection_poems')),
+          getPublishedPoems()
+        ]);
+
+        allPoems = publishedPoems || [];
+        const publishedIdSet = new Set(allPoems.map(p => p.id));
+        const cpData = [];
+        cpSnapshot.forEach(d => cpData.push(d.data()));
+
+        snapshot.forEach(doc => {
+          const colData = doc.data();
+          // Contagem precisa de poemas publicados únicos
+          const associatedPoemIds = new Set(
+            cpData
+              .filter(cp => cp.collection_id === doc.id && publishedIdSet.has(cp.poem_id))
+              .map(cp => cp.poem_id)
+          );
+          allPoems.forEach(p => {
+            if (Array.isArray(p.collection_slugs) && p.collection_slugs.includes(colData.slug)) {
+              associatedPoemIds.add(p.id);
+            }
           });
-        } catch (err) {
-          console.error('Error fetching poems for collections:', err);
-          if (isPrerendered) return;
+
+          const count = associatedPoemIds.size;
+          cols.push({
+            id: doc.id,
+            ...colData,
+            poemCount: count,
+            collection_poems: [{ count }]
+          });
+        });
+
+        // Ordenar coleções por quantidade de poemas (maior primeiro) e desempate por nome
+        cols.sort((a, b) => b.poemCount - a.poemCount || (a.name || '').localeCompare(b.name || ''));
+
+        if (cols.length > 0) {
+          updateSEO({
+            title: 'Coleções — Natanael Fernando Gatti Brentano',
+            description: 'Explore poemas organizados por séries temáticas e agrupamentos poéticos.',
+            url: canonicalCollectionsUrl,
+            type: 'website',
+            structuredData: [
+              collectionsListSchema(cols),
+              breadcrumbSchema(breadcrumbItems)
+            ]
+          });
         }
-        allPoems = data || [];
-        if (allPoems.length === 0 && isPrerendered) return;
-        
+      } catch (err) {
+        console.error('Error fetching collections data:', err);
+        if (isPrerendered) return;
+      }
+
+      // Renderiza grid de coleções
+      if (grid && cols.length > 0) {
+        grid.innerHTML = cols.map((col, index) => {
+          const safeImg = sanitizeUrl(col.image_url);
+          const imgAttr = index === 0
+            ? 'fetchpriority="high" width="360" height="160" decoding="async"'
+            : 'loading="lazy" decoding="async" width="360" height="160"';
+          const count = col.poemCount || 0;
+          const desc = (col.description || '').trim();
+
+          return `
+            <a href="${BASE_URL}colecao/${escapeHtml(col.slug)}/" class="collection-card" data-link>
+              ${safeImg ? `
+                <img src="${escapeHtml(safeImg)}" alt="${escapeHtml(col.name)}" class="collection-img" ${imgAttr}>
+              ` : `
+                <div class="collection-card-cover">
+                  <span class="collection-card-icon" aria-hidden="true">❦</span>
+                  <span class="collection-card-category">Coleção Temática</span>
+                </div>
+              `}
+              <div class="collection-info">
+                <h2 class="collection-name">${escapeHtml(col.name)}</h2>
+                <span class="collection-count">${count} poema${count !== 1 ? 's' : ''}</span>
+                ${desc ? `<p class="collection-desc-preview">${escapeHtml(desc)}</p>` : ''}
+              </div>
+            </a>
+          `;
+        }).join('');
+
+        grid.querySelectorAll('.collection-img').forEach(img => {
+          img.addEventListener('error', () => {
+            if (img.isConnected) {
+              const cover = document.createElement('div');
+              cover.className = 'collection-card-cover';
+              cover.innerHTML = `
+                <span class="collection-card-icon" aria-hidden="true">❦</span>
+                <span class="collection-card-category">Coleção Temática</span>
+              `;
+              img.replaceWith(cover);
+            }
+          }, { once: true });
+        });
+      }
+
+      // Renderiza lista de poemas (com filtros se houver)
+      if (poemsList) {
         let filtered = allPoems;
 
         if (activeTags.length > 0) {
           const normalizedActiveTags = activeTags.map(at => decodeURIComponent(at).trim().toLowerCase());
-          
-          filtered = filtered.filter(p => 
-            p.tags && p.tags.some(t => {
+          filtered = filtered.filter(p =>
+            Array.isArray(p.tags) && p.tags.some(t => {
               const normalizedTag = normalizeTag(t).toLowerCase();
               return normalizedActiveTags.includes(normalizedTag);
             })
           );
         }
 
-
         if (activeCols.length > 0) {
-          filtered = filtered.filter(p => 
-            p.collection_poems && p.collection_poems.some(cp => cp.collections && activeCols.includes(cp.collections.slug))
+          filtered = filtered.filter(p =>
+            Array.isArray(p.collection_slugs) && p.collection_slugs.some(cs => activeCols.includes(cs))
           );
         }
 
-        if (poemsList) {
-          if (filtered.length === 0) {
-            poemsList.innerHTML = '<p class="empty-state-desc" style="text-align: center; padding: 2rem;">Nenhum poema corresponde aos filtros selecionados.</p>';
-          } else {
-            poemsList.innerHTML = filtered.map(poem => {
-              const year = new Date(poem.published_at).getFullYear();
-              const excerpt = getPoemRowExcerpt(poem, 140);
-              return `
-                <article class="poem-row fade-in">
-                  <a href="${BASE_URL}poema/${escapeHtml(poem.slug)}/" data-link class="poem-row-link">
-                    <div class="poem-row-main" style="flex: 1; min-width: 0;">
-                      <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
-                      ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
-                    </div>
-                    <span class="poem-row-year">${year}</span>
-                  </a>
-                </article>
-              `;
-            }).join('');
-          }
+        if (filtered.length === 0) {
+          poemsList.innerHTML = '<p class="empty-state-desc" style="text-align: center; padding: 2rem;">Nenhum poema corresponde aos filtros selecionados.</p>';
+        } else {
+          poemsList.innerHTML = filtered.map(poem => {
+            const year = poem.published_at ? new Date(poem.published_at).getFullYear() : '';
+            const excerpt = getPoemRowExcerpt(poem, 140);
+            return `
+              <article class="poem-row fade-in">
+                <a href="${BASE_URL}poema/${escapeHtml(poem.slug)}/" data-link class="poem-row-link">
+                  <div class="poem-row-main" style="flex: 1; min-width: 0;">
+                    <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                    ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
+                  </div>
+                  ${year ? `<span class="poem-row-year">${year}</span>` : ''}
+                </a>
+              </article>
+            `;
+          }).join('');
         }
-      };
-
-      await Promise.all([fetchCollections(), fetchPoems()]);
-      filterChips.init(container, activeTags, allPoems).catch(e => console.error('FilterChips init error:', e));
+      }
     } catch (err) {
       console.error('Collections render error:', err);
       container.innerHTML = `

@@ -571,7 +571,7 @@ async function prerender() {
       const poemIdSet = new Set(associatedRelations.map(r => r.poem_id));
       const colPoemsCount = poems.filter(p => poemIdSet.has(p.id) || (p.collection_slugs && p.collection_slugs.includes(col.slug))).length;
       return { ...col, poemCount: colPoemsCount, collection_poems: [{ count: colPoemsCount }] };
-    });
+    }).sort((a, b) => b.poemCount - a.poemCount || (a.name || '').localeCompare(b.name || ''));
 
     console.log(`Found ${poems.length} poems to pre-render.`);
     let originalHtml = fs.readFileSync(templatePath, 'utf-8');

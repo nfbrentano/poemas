@@ -136,7 +136,7 @@ describe('{SEO} Otimização de Rastreamento (Click Depth), Hidratação Resilie
       const html = renderCollectionsPageMarkup({ collections, sentiments, poems });
       container.innerHTML = html;
 
-      expect(container.querySelector('h1')?.textContent).toContain('Explorar');
+      expect(container.querySelector('h1')?.textContent).toMatch(/(Coleções|Explorar)/);
       expect(container.querySelector('a[href="/colecao/amor-e-tempo/"]')).not.toBeNull();
       expect(container.querySelector('a[href="/sentimento/saudade/"]')).not.toBeNull();
       expect(container.querySelector('a[href="/sentimentos/"]')).not.toBeNull();
@@ -218,7 +218,7 @@ describe('{SEO} Otimização de Rastreamento (Click Depth), Hidratação Resilie
       getDocs.mockRejectedValueOnce(new Error('Network error in WRS'));
 
       await collectionsPage.render(container);
-      expect(container.querySelector('h1')?.textContent).toContain('Explorar');
+      expect(container.querySelector('h1')?.textContent).toMatch(/(Coleções|Explorar)/);
       expect(container.querySelector('a[href="/colecao/amor/"]')).not.toBeNull();
       expect(document.querySelector('meta[name="robots"][content*="noindex"]')).toBeNull();
     });

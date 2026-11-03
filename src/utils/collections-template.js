@@ -3,7 +3,7 @@ import { renderBreadcrumbsHtml, SITE_URL } from './structured-data.js';
 import { getPoemRowExcerpt } from './collection-template.js';
 
 /**
- * Renders the HTML markup for the /colecoes/ (Explorar) hub page.
+ * Renders the HTML markup for the /colecoes/ hub page.
  * Used both at build-time in scripts/prerender.js and client-side in src/pages/collections.js.
  */
 export function renderCollectionsPageMarkup({
@@ -22,37 +22,41 @@ export function renderCollectionsPageMarkup({
   const colsHtml = validCols.length > 0 ? validCols.map((col, index) => {
     const safeImg = sanitizeUrl(col.image_url);
     const imgAttr = index === 0
-      ? 'fetchpriority="high" width="360" height="180" decoding="async"'
-      : 'loading="lazy" decoding="async" width="360" height="180"';
+      ? 'fetchpriority="high" width="360" height="160" decoding="async"'
+      : 'loading="lazy" decoding="async" width="360" height="160"';
     const count = col.poemCount ?? col.collection_poems?.[0]?.count ?? 0;
+    const desc = (col.description || '').trim();
+
     return `
       <a href="${baseUrl}colecao/${escapeHtml(col.slug)}/" class="collection-card" data-link>
-        ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="${escapeHtml(col.name)}" class="collection-img" ${imgAttr}>` : '<div class="collection-img-placeholder"></div>'}
+        ${safeImg ? `
+          <img src="${escapeHtml(safeImg)}" alt="${escapeHtml(col.name)}" class="collection-img" ${imgAttr}>
+        ` : `
+          <div class="collection-card-cover">
+            <span class="collection-card-icon" aria-hidden="true">❦</span>
+            <span class="collection-card-category">Coleção Temática</span>
+          </div>
+        `}
         <div class="collection-info">
           <h2 class="collection-name">${escapeHtml(col.name)}</h2>
           <span class="collection-count">${count} poema${count !== 1 ? 's' : ''}</span>
+          ${desc ? `<p class="collection-desc-preview">${escapeHtml(desc)}</p>` : ''}
         </div>
       </a>
     `;
   }).join('') : '<p class="empty-msg">Nenhuma coleção encontrada.</p>';
 
-  const sentimentsLinksHtml = sentiments.length > 0 ? `
-    <div class="sentiments-index-links" style="margin-top: var(--space-md);">
-      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-xs); flex-wrap: wrap; gap: 0.5rem;">
-        <span class="filter-label" style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Páginas de Sentimentos:</span>
-        <a href="${baseUrl}sentimentos/" data-link style="font-size: 0.85rem; color: var(--accent-subtle); text-decoration: underline;">Ver todos os sentimentos (${sentiments.length}) →</a>
-      </div>
-      <div class="filter-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-        ${sentiments.map(s => `
-          <a href="${baseUrl}sentimento/${escapeHtml(s.slug)}/" class="filter-chip" data-link>
-            ${escapeHtml(s.name)} <span class="chip-count" style="opacity: 0.6; font-size: 0.85em;">(${s.count ?? s.poems?.length ?? 0})</span>
-          </a>
-        `).join('')}
-      </div>
+  const sentimentsHintHtml = sentiments.length > 0 ? `
+    <div class="collections-subnav-hint" style="margin-top: var(--space-sm); font-size: 0.9rem; color: var(--text-secondary);">
+      Explore também por sentimentos:
+      ${sentiments.slice(0, 5).map(s => `
+        <a href="${baseUrl}sentimento/${escapeHtml(s.slug)}/" data-link style="color: var(--accent-subtle); text-decoration: underline; margin: 0 4px;">${escapeHtml(s.name || s.slug)}</a>
+      `).join('•')}
+      • <a href="${baseUrl}sentimentos/" data-link style="color: var(--accent-subtle); text-decoration: underline;">Ver todos (${sentiments.length}) →</a>
     </div>
   ` : `
-    <div style="margin-top: var(--space-sm);">
-      <a href="${baseUrl}sentimentos/" data-link style="font-size: 0.9rem; color: var(--accent-subtle); text-decoration: underline;">Explorar poemas por sentimento →</a>
+    <div class="collections-subnav-hint" style="margin-top: var(--space-sm); font-size: 0.9rem; color: var(--text-secondary);">
+      Explore também os poemas organizados por <a href="${baseUrl}sentimentos/" data-link style="color: var(--accent-subtle); text-decoration: underline;">Sentimentos e Emoções →</a>
     </div>
   `;
 
@@ -74,35 +78,25 @@ export function renderCollectionsPageMarkup({
 
   return `
     <section class="collections-page fade-in">
-      <header class="page-header" style="text-align: center; margin-bottom: var(--space-2xl);">
+      <header class="page-header" style="text-align: center; margin-bottom: var(--space-xl);">
         ${renderBreadcrumbsHtml(breadcrumbItems)}
-        <h1 class="page-title">Explorar</h1>
-        <p class="page-subtitle">Séries temáticas, livros e sentimentos catalogados</p>
+        <h1 class="page-title">Coleções</h1>
+        <p class="page-subtitle">Séries temáticas e agrupamentos poéticos</p>
+        ${sentimentsHintHtml}
       </header>
 
-      <div class="discovery-filters" style="margin-bottom: var(--space-2xl);">
-        <div class="filter-section fade-in">
-          <div class="filter-group">
-            <span class="filter-label">Sentimentos:</span>
-            <div class="filter-chips" id="tag-filters">
-              <div id="dynamic-tags" class="filter-chips-scroll">
-                <button class="filter-chip active" data-type="tag" data-value="all">Todos</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        ${sentimentsLinksHtml}
-      </div>
-
       <div id="collections-section" class="discovery-section">
-        <h2 class="section-title" style="margin-bottom: var(--space-lg);">Coleções em Destaque</h2>
+        <h2 class="section-title" style="margin-bottom: var(--space-md);">Séries em Destaque</h2>
         <div id="collections-grid" class="collections-grid">
           ${colsHtml}
         </div>
       </div>
 
-      <div id="poems-filtered-section" class="discovery-section" style="margin-top: var(--space-2xl);">
-        <h2 class="section-title" id="poems-list-title" style="margin-bottom: var(--space-lg);">Obras Recentes</h2>
+      <div id="poems-filtered-section" class="discovery-section" style="margin-top: var(--space-3xl);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: var(--space-xs); margin-bottom: var(--space-md); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-xs);">
+          <h2 class="section-title" id="poems-list-title" style="margin: 0;">Obras do Acervo</h2>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">${poems.length} poemas catalogados</span>
+        </div>
         <div id="filtered-poems-list" class="list-container">
           ${poemsHtml}
         </div>

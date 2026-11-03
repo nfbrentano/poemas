@@ -1,9 +1,17 @@
 /** Mapa `collection_id → quantidade de obras`, a partir das relações de `collection_poems`. */
 export function countPoemsByCollection(relations) {
   const counts = {};
+  const seen = new Set();
   (relations || []).forEach(rel => {
-    const id = rel && rel.collection_id;
-    if (id) counts[id] = (counts[id] || 0) + 1;
+    const colId = rel && rel.collection_id;
+    const poemId = rel && rel.poem_id;
+    if (colId) {
+      const key = poemId ? `${colId}::${poemId}` : null;
+      if (!key || !seen.has(key)) {
+        if (key) seen.add(key);
+        counts[colId] = (counts[colId] || 0) + 1;
+      }
+    }
   });
   return counts;
 }
