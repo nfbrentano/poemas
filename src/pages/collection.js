@@ -4,6 +4,7 @@ import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
 import { collectionSchema, breadcrumbSchema, SITE_URL } from '../utils/structured-data.js';
 import { renderCollectionMarkup } from '../utils/collection-template.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
+import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../data/collections.js';
 
 export const collection = {
   meta: {
@@ -37,20 +38,39 @@ export const collection = {
     try {
       const q = query(firestoreCollection(db, 'collections'), where('slug', '==', slug));
       const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        const colDoc = snapshot.docs[0];
-        col = { id: colDoc.id, ...colDoc.data() };
+      let colDoc = !snapshot.empty ? snapshot.docs[0] : null;
+      let colData = colDoc ? { id: colDoc.id, ...colDoc.data() } : null;
+
+      if (!colData) {
+        const curated = enrichCollectionsWithCurated([]).find(c => c.slug === slug);
+        if (curated) {
+          colData = curated;
+        }
+      }
+
+      if (colData) {
+        col = colData;
         
         // Busca relações e poemas publicados simultaneamente
         const cpQ = query(firestoreCollection(db, 'collection_poems'), where('collection_id', '==', col.id));
         const [cpSnap, allPublished] = await Promise.all([
-          getDocs(cpQ),
+          getDocs(cpQ).catch(() => ({ docs: [], forEach: () => {} })),
           getPublishedPoems()
         ]);
         
+        const rawCp = [];
+        if (cpSnap && typeof cpSnap.forEach === 'function') {
+          cpSnap.forEach(d => {
+            const data = d.data ? d.data() : d;
+            if (data) {
+              rawCp.push({ collection_id: col.id, ...data });
+            }
+          });
+        }
+        const mergedRelations = mergeRelationsWithCurated(rawCp, allPublished, [col]);
+
         const cpMap = {};
-        cpSnap.forEach(d => {
-          const data = d.data();
+        mergedRelations.forEach(data => {
           if (data && data.poem_id) {
             cpMap[data.poem_id] = typeof data.order === 'number' ? data.order : 0;
           }

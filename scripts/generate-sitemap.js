@@ -3,6 +3,7 @@ import { getFirestore, collection, getDocs, query, where, orderBy } from 'fireba
 import fs from 'fs';
 import path from 'path';
 import { generateAllSitemaps, formatDateToYMD, SITE_URL } from '../src/utils/sitemap-builder.js';
+import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../src/data/collections.js';
 
 // Note: Run this with node --env-file=.env.local scripts/generate-sitemap.js
 const firebaseConfig = {
@@ -47,16 +48,19 @@ export async function runGenerateSitemap(outputDirectory) {
 
   console.log('Fetching collections from Firestore...');
   const colSnapshot = await getDocs(collection(db, 'collections'));
-  const collections = colSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(col => col.slug);
-  console.log(`Found ${collections.length} collections.`);
+  const rawCollections = colSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(col => col.slug);
+  const collections = enrichCollectionsWithCurated(rawCollections);
+  console.log(`Found ${collections.length} collections (including curated).`);
 
   console.log('Fetching collection_poems relations from Firestore...');
   let collectionPoems = [];
   try {
     const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
-    collectionPoems = cpSnapshot.docs.map(doc => doc.data());
+    const rawCp = cpSnapshot.docs.map(doc => doc.data());
+    collectionPoems = mergeRelationsWithCurated(rawCp, poems, collections);
   } catch (e) {
     console.warn('Could not fetch collection_poems:', e.message);
+    collectionPoems = mergeRelationsWithCurated([], poems, collections);
   }
 
   const staticPages = [

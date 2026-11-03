@@ -8,6 +8,7 @@ import { renderPoemMarkup } from '../src/utils/poem-template.js';
 import { renderAboutMarkup, getAboutFaq, DEFAULT_AVATAR_URL, DEFAULT_AUTHOR_BIO } from '../src/utils/about-template.js';
 import { renderCollectionMarkup, getPoemRowExcerpt } from '../src/utils/collection-template.js';
 import { renderCollectionsPageMarkup } from '../src/utils/collections-template.js';
+import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../src/data/collections.js';
 import { getPoemOfDay } from '../src/utils/poemOfDay.js';
 import {
   poemSchema,
@@ -523,12 +524,14 @@ async function prerender() {
       return { id: doc.id, ...data };
     });
 
-    const allCollections = collectionsSnapshot.docs.map(doc => ({
+    const rawCollections = collectionsSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
+    const allCollections = enrichCollectionsWithCurated(rawCollections);
 
-    const collectionPoems = collectionPoemsSnapshot.docs ? collectionPoemsSnapshot.docs.map(doc => doc.data()) : [];
+    const rawCollectionPoems = collectionPoemsSnapshot.docs ? collectionPoemsSnapshot.docs.map(doc => doc.data()) : [];
+    const collectionPoems = mergeRelationsWithCurated(rawCollectionPoems, poems, allCollections);
     const poemToColsMap = new Map();
     const colToPoemsMap = new Map();
     collectionPoems.forEach(cp => {

@@ -3,6 +3,7 @@ import { getFirestore, collection, getDocs, query, where, orderBy } from 'fireba
 import fs from 'fs';
 import path from 'path';
 import { buildAllLlmsFiles, SITE_URL } from '../src/utils/llms-builder.js';
+import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../src/data/collections.js';
 
 // Note: Run this with node --env-file=.env.local scripts/generate-llms.js
 const firebaseConfig = {
@@ -41,18 +42,22 @@ export async function runGenerateLlms(outputDirectory) {
       console.log('Buscando coleções no Firestore...');
       try {
         const colSnapshot = await getDocs(collection(db, 'collections'));
-        collections = colSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(col => col.slug);
+        const rawCollections = colSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(col => col.slug);
+        collections = enrichCollectionsWithCurated(rawCollections);
         console.log(`Encontradas ${collections.length} coleções.`);
       } catch (colErr) {
         console.warn('Aviso: Não foi possível obter coleções do Firestore:', colErr.message);
+        collections = enrichCollectionsWithCurated([]);
       }
 
       console.log('Buscando vínculos collection_poems no Firestore...');
       try {
         const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
-        collectionPoems = cpSnapshot.docs.map(doc => doc.data());
+        const rawCp = cpSnapshot.docs.map(doc => doc.data());
+        collectionPoems = mergeRelationsWithCurated(rawCp, poems, collections);
       } catch (cpErr) {
         console.warn('Aviso: Não foi possível obter vínculos collection_poems:', cpErr.message);
+        collectionPoems = mergeRelationsWithCurated([], poems, collections);
       }
     } catch (err) {
       // RNF04 & CA06: Se o Firestore falhar, o build não pode quebrar

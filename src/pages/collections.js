@@ -7,6 +7,7 @@ import { escapeHtml, sanitizeUrl } from '../utils/html.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { getPoemRowExcerpt } from '../utils/collection-template.js';
 import { renderCollectionsPageMarkup } from '../utils/collections-template.js';
+import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../data/collections.js';
 
 export const collections = {
   meta: {
@@ -85,15 +86,17 @@ export const collections = {
 
         allPoems = publishedPoems || [];
         const publishedIdSet = new Set(allPoems.map(p => p.id));
-        const cpData = [];
-        cpSnapshot.forEach(d => cpData.push(d.data()));
+        const rawCols = snapshot.docs ? snapshot.docs.map(d => ({ id: d.id, ...d.data() })) : [];
+        const baseCols = enrichCollectionsWithCurated(rawCols);
 
-        snapshot.forEach(doc => {
-          const colData = doc.data();
+        const rawCp = cpSnapshot.docs ? cpSnapshot.docs.map(d => d.data()) : [];
+        const mergedCp = mergeRelationsWithCurated(rawCp, allPoems, baseCols);
+
+        baseCols.forEach(colData => {
           // Contagem precisa de poemas publicados únicos
           const associatedPoemIds = new Set(
-            cpData
-              .filter(cp => cp.collection_id === doc.id && publishedIdSet.has(cp.poem_id))
+            mergedCp
+              .filter(cp => cp.collection_id === colData.id && publishedIdSet.has(cp.poem_id))
               .map(cp => cp.poem_id)
           );
           allPoems.forEach(p => {
@@ -104,7 +107,6 @@ export const collections = {
 
           const count = associatedPoemIds.size;
           cols.push({
-            id: doc.id,
             ...colData,
             poemCount: count,
             collection_poems: [{ count }]
