@@ -11,20 +11,24 @@ export const sentiments = {
     description: 'Explore todos os sentimentos e temas dos poemas de Natanael Fernando Gatti Brentano.'
   },
   async render(container) {
-    container.innerHTML = `
-      <section class="sentiments-page fade-in">
-        <header class="page-header sentiments-header">
-          <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>
-          <div class="skeleton" style="width: 60%; max-width: 400px; height: 40px; margin-bottom: 1rem;"></div>
-          <div class="skeleton" style="width: 80%; height: 20px;"></div>
-        </header>
-        <div class="sentiments-grid">
-          <div class="skeleton-row" style="height: 70px; border-radius: 8px;"></div>
-          <div class="skeleton-row" style="height: 70px; border-radius: 8px;"></div>
-          <div class="skeleton-row" style="height: 70px; border-radius: 8px;"></div>
-        </div>
-      </section>
-    `;
+    const isPrerendered = container.getAttribute('data-prerendered') === '/sentimentos';
+
+    if (!isPrerendered) {
+      container.innerHTML = `
+        <section class="sentiments-page fade-in">
+          <header class="page-header sentiments-header">
+            <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 60%; max-width: 400px; height: 40px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 80%; height: 20px;"></div>
+          </header>
+          <div class="sentiments-grid">
+            <div class="skeleton-row" style="height: 70px; border-radius: 8px;"></div>
+            <div class="skeleton-row" style="height: 70px; border-radius: 8px;"></div>
+            <div class="skeleton-row" style="height: 70px; border-radius: 8px;"></div>
+          </div>
+        </section>
+      `;
+    }
 
     const sentimentMap = new Map();
 
@@ -55,6 +59,11 @@ export const sentiments = {
       .filter(s => s.count >= 3)
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
+    if (list.length === 0 && isPrerendered) {
+      container.removeAttribute('data-prerendered');
+      return;
+    }
+
     const canonicalUrl = `${SITE_URL}/sentimentos/`;
     const breadcrumbItems = [
       { name: 'Início', url: `${SITE_URL}/` },
@@ -80,6 +89,11 @@ export const sentiments = {
         breadcrumbSchema(breadcrumbItems)
       ]
     });
+
+    if (isPrerendered) {
+      container.removeAttribute('data-prerendered');
+      return;
+    }
 
     container.innerHTML = `
       <section class="sentiments-page fade-in">

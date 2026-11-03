@@ -24,6 +24,7 @@ export const header = {
               <ul>
                 <li><a href="${import.meta.env.BASE_URL}" data-link>Poemas</a></li>
                 <li><a href="${import.meta.env.BASE_URL}colecoes/" data-link>Coleções</a></li>
+                <li><a href="${import.meta.env.BASE_URL}sentimentos/" data-link>Sentimentos</a></li>
                 <li><a href="${import.meta.env.BASE_URL}sobre/" data-link>Sobre</a></li>
               </ul>
             </nav>

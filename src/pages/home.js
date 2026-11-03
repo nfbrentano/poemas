@@ -3,10 +3,11 @@ import { websiteSchema } from '../utils/structured-data.js';
 import { newsletter } from '../components/newsletter.js';
 import { getRandomPoem } from '../utils/navigation.js';
 import { filterChips } from '../components/filter-chips.js';
-import { normalizeTag, formatTag } from '../utils/tags.js';
+import { normalizeTag, formatTag, slugifyTag } from '../utils/tags.js';
 import { stripHtml, escapeHtml } from '../utils/html.js';
 import { getPoemOfDay } from '../utils/poemOfDay.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
+import { getSentimentName } from '../data/sentiments.js';
 
 export default {
   meta: {
@@ -65,7 +66,7 @@ export default {
       <section class="home-hero fade-in">
         <h1 class="home-title">Poemas de Natanael Fernando Gatti Brentano</h1>
         <p class="home-description">
-          Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. O acervo reúne mais de 200 poemas publicados em coleções temáticas. Conheça as <a href="${BASE_URL}colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="${BASE_URL}sobre/" data-link>sobre o autor</a>.
+          Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. O acervo reúne mais de 200 poemas publicados em coleções temáticas. Conheça as <a href="${BASE_URL}colecoes/" data-link>coleções temáticas</a>, explore por <a href="${BASE_URL}sentimentos/" data-link>sentimentos</a> e saiba mais <a href="${BASE_URL}sobre/" data-link>sobre o autor</a>.
         </p>
       </section>
     `;
@@ -123,6 +124,10 @@ export default {
       
     if (error) {
       console.error(error);
+      if (isPrerendered) {
+        container.removeAttribute('data-prerendered');
+        return;
+      }
       container.innerHTML = `
         <div class="empty-state fade-in">
           <p class="empty-state-label">!</p>
@@ -134,6 +139,10 @@ export default {
     }
     
     if (!poems || poems.length === 0) {
+      if (isPrerendered) {
+        container.removeAttribute('data-prerendered');
+        return;
+      }
       container.innerHTML = `
         <div class="empty-state fade-in">
           <p class="empty-state-label">—</p>
@@ -146,14 +155,30 @@ export default {
     
     // Collect and count tags (unifying sentiments)
     const tagCounts = {};
+    const sentimentSlugMap = new Map();
     poems.forEach(p => {
       (p.tags || []).forEach(t => {
         const normalized = formatTag(t);
         if (normalized) {
           tagCounts[normalized] = (tagCounts[normalized] || 0) + 1;
         }
+        const slug = slugifyTag(t);
+        if (slug) {
+          if (!sentimentSlugMap.has(slug)) {
+            sentimentSlugMap.set(slug, {
+              slug,
+              name: getSentimentName(slug, normalized || formatTag(t)),
+              count: 0
+            });
+          }
+          sentimentSlugMap.get(slug).count += 1;
+        }
       });
     });
+
+    const qualifyingSentiments = Array.from(sentimentSlugMap.values())
+      .filter(s => s.count >= 3)
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
     // Sort tags by frequency and take top 5
     let topTags = Object.entries(tagCounts)
@@ -265,6 +290,34 @@ export default {
       });
       return html;
     };
+
+    const renderArchiveIndex = () => {
+      if (isFiltering || poems.length === 0) return '';
+      return `
+        <details class="home-archive-index" style="margin-top: var(--space-2xl); border-top: 1px solid var(--border-subtle); padding-top: var(--space-lg);">
+          <summary style="cursor: pointer; font-family: var(--font-ui); font-size: 0.9rem; color: var(--text-muted); text-align: center; list-style: none;">
+            Explorar índice completo do acervo (${poems.length} poemas${qualifyingSentiments.length > 0 ? ` e ${qualifyingSentiments.length} sentimentos` : ''})
+          </summary>
+          <div class="archive-index-body" style="margin-top: var(--space-lg);">
+            ${qualifyingSentiments.length > 0 ? `
+            <div class="archive-sentiments-block" style="margin-bottom: var(--space-xl);">
+              <h2 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: var(--space-sm);">Sentimentos e Temas</h2>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                <a href="${BASE_URL}sentimentos/" data-link class="filter-chip">Todos os sentimentos</a>
+                ${qualifyingSentiments.map(s => `<a href="${BASE_URL}sentimento/${escapeHtml(s.slug)}/" data-link class="filter-chip">${escapeHtml(s.name)} (${s.count})</a>`).join('')}
+              </div>
+            </div>
+            ` : ''}
+            <div class="archive-poems-block">
+              <h2 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: var(--space-sm);">Todos os Poemas Publicados</h2>
+              <ul style="list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.5rem 1rem; padding: 0;">
+                ${poems.map(p => `<li><a href="${BASE_URL}poema/${escapeHtml(p.slug)}/" data-link style="font-size: 0.9rem; color: var(--text-secondary);">${escapeHtml(p.title)}</a></li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        </details>
+      `;
+    };
     
     const podExcerpt = podPoem ? (podPoem.excerpt || stripHtml(podPoem.content || '').replace(/\s+/g, ' ').trim().slice(0, 160) + '...') : '';
 
@@ -284,6 +337,9 @@ export default {
         <section class="poems-list fade-in" style="padding-top: var(--space-xl);">
           <div class="discovery-filters" style="margin-bottom: var(--space-xl);">
             ${filterChips.render(tags)}
+            <div style="margin-top: var(--space-xs); text-align: right;">
+              <a href="${BASE_URL}sentimentos/" data-link style="font-size: 0.85rem; color: var(--text-muted); text-decoration: underline;">Ver todos os sentimentos →</a>
+            </div>
           </div>
           
           ${isFiltering ? `<h2 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: var(--space-lg); color: var(--text-primary); text-align: center; opacity: 0.7;">Resultados filtrados</h2>` : ''}
@@ -297,14 +353,13 @@ export default {
           <div class="random-home-container">
             <button id="random-home-btn" class="random-home-link">→ Poema aleatório</button>
           </div>
+          ${renderArchiveIndex()}
         </section>
         
         ${newsletter.render()}
       </div>
     `;
 
-
-    
     container.removeAttribute('data-prerendered');
     
     newsletter.init();

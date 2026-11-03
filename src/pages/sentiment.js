@@ -4,6 +4,7 @@ import { escapeHtml } from '../utils/html.js';
 import { slugifyTag, formatTag } from '../utils/tags.js';
 import { getSentimentIntro, getSentimentName } from '../data/sentiments.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
+import { getPoemRowExcerpt } from '../utils/collection-template.js';
 
 export const sentiment = {
   meta: {
@@ -12,21 +13,24 @@ export const sentiment = {
   async render(container, params) {
     const rawSlug = typeof params === 'object' ? params.slug : params;
     const slug = slugifyTag(rawSlug || '');
+    const isPrerendered = Boolean(slug && container.getAttribute('data-prerendered') === `/sentimento/${slug}`);
 
-    container.innerHTML = `
-      <section class="collection-detail fade-in">
-        <header class="collection-header">
-          <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>
-          <div class="skeleton" style="width: 60%; max-width: 400px; height: 40px; margin-bottom: 1rem;"></div>
-          <div class="skeleton" style="width: 80%; height: 20px;"></div>
-        </header>
-        <div class="poems-list">
-          <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
-          <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
-          <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
-        </div>
-      </section>
-    `;
+    if (!isPrerendered) {
+      container.innerHTML = `
+        <section class="collection-detail fade-in">
+          <header class="collection-header">
+            <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 60%; max-width: 400px; height: 40px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 80%; height: 20px;"></div>
+          </header>
+          <div class="poems-list">
+            <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
+            <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
+            <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
+          </div>
+        </section>
+      `;
+    }
 
     if (!slug) {
       this.renderNotFound(container);
@@ -63,7 +67,7 @@ export const sentiment = {
               if (!relatedCounts[relatedSlug]) {
                 relatedCounts[relatedSlug] = {
                   slug: relatedSlug,
-                  name: formatTag(t),
+                  name: getSentimentName(relatedSlug, formatTag(t)),
                   count: 0
                 };
               }
@@ -76,8 +80,12 @@ export const sentiment = {
       console.error('[Sentiment] Error fetching poems:', e);
     }
 
-    // CT05: Se não houver poemas publicados com esse sentimento, retorna 404
+    // CT05: Se não houver poemas publicados com esse sentimento, retorna 404 (exceto se já pré-renderizado no build)
     if (matchingPoems.length === 0) {
+      if (isPrerendered) {
+        container.removeAttribute('data-prerendered');
+        return;
+      }
       this.renderNotFound(container);
       return;
     }
@@ -123,6 +131,11 @@ export const sentiment = {
       ] : []
     });
 
+    if (isPrerendered) {
+      container.removeAttribute('data-prerendered');
+      return;
+    }
+
     // Top related sentiments (sorted by frequency)
     const relatedList = Object.values(relatedCounts)
       .sort((a, b) => b.count - a.count)
@@ -157,10 +170,14 @@ export const sentiment = {
         <div class="poems-list">
           ${matchingPoems.map(poem => {
             const year = new Date(poem.published_at).getFullYear();
+            const excerpt = getPoemRowExcerpt(poem, 140);
             return `
               <article class="poem-row">
                 <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
-                  <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                  <div class="poem-row-main" style="flex: 1; min-width: 0;">
+                    <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                    ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
+                  </div>
                   <span class="poem-row-year">${year}</span>
                 </a>
               </article>

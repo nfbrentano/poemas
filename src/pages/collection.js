@@ -1,8 +1,7 @@
 import { db } from '../utils/firebase.js';
 import { collection as firestoreCollection, query, where, getDocs, documentId } from 'firebase/firestore';
 import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
-import { collectionSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
-import { escapeHtml } from '../utils/html.js';
+import { collectionSchema, breadcrumbSchema, SITE_URL } from '../utils/structured-data.js';
 import { renderCollectionMarkup } from '../utils/collection-template.js';
 
 export const collection = {
@@ -11,20 +10,24 @@ export const collection = {
   },
   async render(container, params) {
     const slug = typeof params === 'object' ? params.slug : params;
-    container.innerHTML = `
-      <section class="collection-detail fade-in">
-        <header class="collection-header">
-          <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>
-          <div class="skeleton" style="width: 60%; max-width: 400px; height: 40px; margin-bottom: 1rem;"></div>
-          <div class="skeleton" style="width: 80%; height: 20px;"></div>
-        </header>
-        <div class="poems-list">
-          <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
-          <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
-          <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
-        </div>
-      </section>
-    `;
+    const isPrerendered = container.getAttribute('data-prerendered') === `/colecao/${slug}`;
+
+    if (!isPrerendered) {
+      container.innerHTML = `
+        <section class="collection-detail fade-in">
+          <header class="collection-header">
+            <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 60%; max-width: 400px; height: 40px; margin-bottom: 1rem;"></div>
+            <div class="skeleton" style="width: 80%; height: 20px;"></div>
+          </header>
+          <div class="poems-list">
+            <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
+            <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
+            <div class="skeleton-row" style="height: 60px; margin-bottom: 1rem; border-radius: 4px;"></div>
+          </div>
+        </section>
+      `;
+    }
 
     let col = null;
     let error = null;
@@ -82,6 +85,10 @@ export const collection = {
     }
 
     if (error || !col) {
+      if (isPrerendered) {
+        container.removeAttribute('data-prerendered');
+        return;
+      }
       setNotFoundSEO();
       container.innerHTML = `
         <div class="not-found-page fade-in">
@@ -118,7 +125,6 @@ export const collection = {
     collection.meta.title = finalTitle;
     document.title = `${finalTitle} — Natanael Fernando Gatti Brentano`;
 
-    const isPrerendered = container.getAttribute('data-prerendered') === `/colecao/${col.slug}`;
     if (isPrerendered) {
       container.removeAttribute('data-prerendered');
     } else {

@@ -6,7 +6,8 @@ import path from 'path';
 import { stripHtml, escapeHtml } from '../src/utils/html.js';
 import { renderPoemMarkup } from '../src/utils/poem-template.js';
 import { renderAboutMarkup, getAboutFaq, DEFAULT_AVATAR_URL, DEFAULT_AUTHOR_BIO } from '../src/utils/about-template.js';
-import { renderCollectionMarkup } from '../src/utils/collection-template.js';
+import { renderCollectionMarkup, getPoemRowExcerpt } from '../src/utils/collection-template.js';
+import { renderCollectionsPageMarkup } from '../src/utils/collections-template.js';
 import { getPoemOfDay } from '../src/utils/poemOfDay.js';
 import {
   poemSchema,
@@ -58,14 +59,6 @@ export function removeJsonLdScripts(html) {
 
 const baseUrl = 'https://nfgbrentano.art.br/'; 
 
-if (!firebaseConfig.apiKey) {
-  console.error('Environment variables for Firebase are required.');
-  process.exit(1);
-}
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
 // Remove og:image:* herdadas do template antes de inserir as da página (evita duplicatas conflitantes).
 const OG_IMAGE_EXTRAS_RE = /\s*<meta property="og:image:(?:width|height|type|alt)" content="[^"]*"\s*\/?>/gi;
 
@@ -76,13 +69,71 @@ function metaDescAttr(text, max = 200) {
   return escapeHtml(clean);
 }
 
-function getExcerpt(poem, limit = 160) {
+export function getExcerpt(poem, limit = 160) {
   if (poem.excerpt && poem.excerpt.trim()) {
     return poem.excerpt.trim();
   }
   const cleanContent = stripHtml(poem.content || '');
   if (cleanContent.length <= limit) return cleanContent;
   return cleanContent.slice(0, limit - 3) + '...';
+}
+
+/**
+ * Selects related poems with deterministic rotation within equal-score tiers (RF06, CA08).
+ * Ensures internal links are distributed across all poems rather than clustering on the first 3.
+ * @param {object} poem
+ * @param {object[]} allPoems
+ * @param {number} [poemIndex=0]
+ * @param {object[]} [collectionsData=[]]
+ * @param {number} [maxCount=4]
+ * @returns {Array<{ id: string, slug: string, title: string, excerpt: string }>}
+ */
+export function selectRelatedPoems(poem, allPoems = [], poemIndex = undefined, collectionsData = [], maxCount = 4) {
+  const resolvedIndex = typeof poemIndex === 'number'
+    ? poemIndex
+    : Math.max(0, allPoems.findIndex(p => p && (p.id === poem.id || p.slug === poem.slug)));
+  const poemTagSlugs = new Set((poem.tags || []).map(t => slugifyTag(t)).filter(Boolean));
+  const poemCols = new Set([...(poem.collection_slugs || []), ...(Array.isArray(collectionsData) ? collectionsData : []).map(c => c.slug).filter(Boolean)]);
+  const otherPoems = allPoems.filter(p => p && p.id !== poem.id && p.slug !== poem.slug);
+
+  const tiersMap = new Map();
+  otherPoems.forEach(p => {
+    let score = 0;
+    if (Array.isArray(p.tags)) {
+      p.tags.forEach(t => {
+        const s = slugifyTag(t);
+        if (s && poemTagSlugs.has(s)) score += 2;
+      });
+    }
+    if (Array.isArray(p.collection_slugs)) {
+      p.collection_slugs.forEach(c => {
+        if (c && poemCols.has(c)) score += 3;
+      });
+    }
+    if (!tiersMap.has(score)) tiersMap.set(score, []);
+    tiersMap.get(score).push(p);
+  });
+
+  const sortedScores = Array.from(tiersMap.keys()).sort((a, b) => b - a);
+  const selected = [];
+
+  for (const score of sortedScores) {
+    if (selected.length >= maxCount) break;
+    const tier = tiersMap.get(score);
+    const offset = tier.length > 0 ? ((resolvedIndex * 3) % tier.length) : 0;
+    const rotated = [...tier.slice(offset), ...tier.slice(0, offset)];
+    for (const candidate of rotated) {
+      if (selected.length >= maxCount) break;
+      selected.push({
+        id: candidate.id,
+        slug: candidate.slug,
+        title: candidate.title,
+        excerpt: getExcerpt(candidate, 120)
+      });
+    }
+  }
+
+  return selected;
 }
 
 function getCriticalCss() {
@@ -190,6 +241,7 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
           <ul>
             <li><a href="/" data-link>Poemas</a></li>
             <li><a href="/colecoes/" data-link>Coleções</a></li>
+            <li><a href="/sentimentos/" data-link>Sentimentos</a></li>
             <li><a href="/sobre/" data-link>Sobre</a></li>
           </ul>
         </nav>
@@ -293,11 +345,10 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
   `;
 }
 
-function renderHomeMarkup({ poems, podPoem, allCollections = [] }) {
+export function renderHomeMarkup({ poems, podPoem, allCollections = [], qualifyingSentiments = [] }) {
   const podExcerpt = podPoem ? getExcerpt(podPoem, 160) : '';
   const displayPoems = podPoem ? poems.filter(p => p.id !== podPoem.id) : poems;
   const recentPoems = displayPoems.slice(0, 20);
-  
   const featuredPoem = recentPoems[0];
   const featuredExcerpt = featuredPoem ? getExcerpt(featuredPoem, 160) : '';
   const featuredDateStr = featuredPoem ? new Date(featuredPoem.published_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : '';
@@ -334,12 +385,37 @@ function renderHomeMarkup({ poems, podPoem, allCollections = [] }) {
     .slice(0, 5)
     .map(e => e[0]);
 
+  const archiveIndexHtml = poems.length > 0 ? `
+    <details class="home-archive-index" style="margin-top: var(--space-2xl); border-top: 1px solid var(--border-subtle); padding-top: var(--space-lg);">
+      <summary style="cursor: pointer; font-family: var(--font-ui); font-size: 0.9rem; color: var(--text-muted); text-align: center; list-style: none;">
+        Explorar índice completo do acervo (${poems.length} poemas${qualifyingSentiments.length > 0 ? ` e ${qualifyingSentiments.length} sentimentos` : ''})
+      </summary>
+      <div class="archive-index-body" style="margin-top: var(--space-lg);">
+        ${qualifyingSentiments.length > 0 ? `
+        <div class="archive-sentiments-block" style="margin-bottom: var(--space-xl);">
+          <h2 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: var(--space-sm);">Sentimentos e Temas</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <a href="/sentimentos/" data-link class="filter-chip">Todos os sentimentos</a>
+            ${qualifyingSentiments.map(s => `<a href="/sentimento/${escapeHtml(s.slug)}/" data-link class="filter-chip">${escapeHtml(s.name)} (${s.poems ? s.poems.length : (s.count || 0)})</a>`).join('')}
+          </div>
+        </div>
+        ` : ''}
+        <div class="archive-poems-block">
+          <h2 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: var(--space-sm);">Todos os Poemas Publicados</h2>
+          <ul style="list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.5rem 1rem; padding: 0;">
+            ${poems.map(p => `<li><a href="/poema/${escapeHtml(p.slug)}/" data-link style="font-size: 0.9rem; color: var(--text-secondary);">${escapeHtml(p.title)}</a></li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </details>
+  ` : '';
+
   return `
   <div class="home-layout">
     <section class="home-hero">
       <h1 class="home-title">Poemas de Natanael Fernando Gatti Brentano</h1>
       <p class="home-description">
-        Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. O acervo reúne atualmente ${poems.length} poemas publicados em ${allCollections.length} coleções temáticas. Conheça as <a href="/colecoes/" data-link>coleções temáticas</a> e saiba mais <a href="/sobre/" data-link>sobre o autor</a>.
+        Poesia brasileira contemporânea em língua portuguesa. Reflexões sobre o tempo, o amor, a efemeridade e a beleza das coisas simples do cotidiano. O acervo reúne atualmente ${poems.length} poemas publicados em ${allCollections.length} coleções temáticas. Conheça as <a href="/colecoes/" data-link>coleções temáticas</a>, explore por <a href="/sentimentos/" data-link>sentimentos</a> e saiba mais <a href="/sobre/" data-link>sobre o autor</a>.
       </p>
     </section>
 
@@ -361,6 +437,7 @@ function renderHomeMarkup({ poems, podPoem, allCollections = [] }) {
             <div class="filter-chips">
               <a href="/" data-link class="filter-chip active">Todos</a>
               ${topTags.map(tag => `<a href="/sentimento/${tagToSlug(tag)}/" data-link class="filter-chip">${escapeHtml(tag)}</a>`).join('')}
+              <a href="/sentimentos/" data-link class="filter-chip">Ver todos →</a>
             </div>
           </div>
         </div>
@@ -393,6 +470,8 @@ function renderHomeMarkup({ poems, podPoem, allCollections = [] }) {
       <div class="random-home-container">
         <a href="/aleatorio" data-link class="random-home-link">→ Poema aleatório</a>
       </div>
+
+      ${archiveIndexHtml}
     </section>
 
     <section class="newsletter-section">
@@ -411,6 +490,14 @@ function renderHomeMarkup({ poems, podPoem, allCollections = [] }) {
 
 async function prerender() {
   try {
+    if (!firebaseConfig.apiKey) {
+      console.error('Environment variables for Firebase are required.');
+      process.exit(1);
+    }
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     const distDir = path.resolve(process.cwd(), 'dist');
     const templatePath = path.join(distDir, 'index.html');
 
@@ -454,6 +541,37 @@ async function prerender() {
 
     // Sort published poems by date published ascending for previous/next calculation
     poems.sort((a, b) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime());
+    const sortedPoemsDesc = [...poems].sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+
+    // Build sentiment map early so it is available for /colecoes/ and Home pre-rendering
+    const sentimentMap = new Map();
+    poems.forEach(poem => {
+      const tags = Array.isArray(poem.tags) ? poem.tags : [];
+      tags.forEach(t => {
+        const slug = slugifyTag(t);
+        if (!slug) return;
+        if (!sentimentMap.has(slug)) {
+          sentimentMap.set(slug, {
+            slug,
+            name: getSentimentName(slug, formatTag(t)),
+            poems: []
+          });
+        }
+        sentimentMap.get(slug).poems.push(poem);
+      });
+    });
+
+    const allSentiments = Array.from(sentimentMap.values());
+    const qualifyingSentiments = allSentiments
+      .filter(s => s.poems.length >= 3)
+      .sort((a, b) => b.poems.length - a.poems.length || a.name.localeCompare(b.name));
+
+    const collectionsWithCounts = allCollections.map(col => {
+      const associatedRelations = colToPoemsMap.get(col.id) || [];
+      const poemIdSet = new Set(associatedRelations.map(r => r.poem_id));
+      const colPoemsCount = poems.filter(p => poemIdSet.has(p.id) || (p.collection_slugs && p.collection_slugs.includes(col.slug))).length;
+      return { ...col, poemCount: colPoemsCount, collection_poems: [{ count: colPoemsCount }] };
+    });
 
     console.log(`Found ${poems.length} poems to pre-render.`);
     let originalHtml = fs.readFileSync(templatePath, 'utf-8');
@@ -498,24 +616,8 @@ async function prerender() {
         associatedColIds.has(c.id) || (poem.collection_slugs && poem.collection_slugs.includes(c.slug))
       );
 
-      // Find related poems (share tags or collections, up to 3)
-      const poemTags = new Set(poem.tags || []);
-      const poemCols = new Set([...(poem.collection_slugs || []), ...collectionsData.map(c => c.slug)]);
-      const otherPoems = poems.filter(p => p.id !== poem.id);
-      
-      const scoredPoems = otherPoems.map(p => {
-        let score = 0;
-        if (p.tags) p.tags.forEach(t => { if (poemTags.has(t)) score += 2; });
-        if (p.collection_slugs) p.collection_slugs.forEach(c => { if (poemCols.has(c)) score += 3; });
-        return { poem: p, score };
-      });
-      scoredPoems.sort((a, b) => b.score - a.score);
-      const relatedPoems = scoredPoems.slice(0, 3).map(s => ({
-        id: s.poem.id,
-        slug: s.poem.slug,
-        title: s.poem.title,
-        excerpt: getExcerpt(s.poem, 120)
-      }));
+      // RF06 & CA08: Select related poems with deterministic rotation across equal-score tiers (up to 4)
+      const relatedPoems = selectRelatedPoems(poem, poems, i, collectionsData, 4);
 
       const excerpt = getExcerpt(poem);
       const title = `${poem.title} — Natanael Fernando Gatti Brentano`;
@@ -785,6 +887,22 @@ async function prerender() {
           /<div id="app"><\/div>/i,
           `<div id="app">${aboutShell}</div>`
         );
+      } else if (sr.route === 'colecoes') {
+        // RF03 & CA03: Pre-renderizar DOM estático completo da página /colecoes/
+        const renderedCollectionsMarkup = renderCollectionsPageMarkup({
+          collections: collectionsWithCounts,
+          poems: sortedPoemsDesc,
+          sentiments: qualifyingSentiments.map(s => ({ slug: s.slug, name: s.name, count: s.poems.length })),
+          baseUrl: '/'
+        });
+        const collectionsShell = renderBaseLayout({
+          mainContent: renderedCollectionsMarkup,
+          dataPrerendered: '/colecoes'
+        });
+        html = html.replace(
+          /<div id="app"><\/div>/i,
+          `<div id="app">${collectionsShell}</div>`
+        );
       }
 
       fs.writeFileSync(path.join(targetDir, 'index.html'), html, 'utf-8');
@@ -884,27 +1002,6 @@ async function prerender() {
 
     // Pre-render sentiment routes and /sentimentos/ hub (RF04, RF07, RF08, RF09, CA01, CA02, CA05, CA06)
     console.log('Generating pre-rendered content for sentiments and tag redirects...');
-    const sentimentMap = new Map();
-    poems.forEach(poem => {
-      const tags = Array.isArray(poem.tags) ? poem.tags : [];
-      tags.forEach(t => {
-        const slug = slugifyTag(t);
-        if (!slug) return;
-        if (!sentimentMap.has(slug)) {
-          sentimentMap.set(slug, {
-            slug,
-            name: getSentimentName(slug, formatTag(t)),
-            poems: []
-          });
-        }
-        sentimentMap.get(slug).poems.push(poem);
-      });
-    });
-
-    const allSentiments = Array.from(sentimentMap.values());
-    const qualifyingSentiments = allSentiments
-      .filter(s => s.poems.length >= 3)
-      .sort((a, b) => b.poems.length - a.poems.length || a.name.localeCompare(b.name));
 
     // 1. Render /sentimentos/ hub
     try {
@@ -1042,10 +1139,14 @@ async function prerender() {
           <div class="poems-list">
             ${sortedPoems.map(poem => {
               const year = new Date(poem.published_at).getFullYear();
+              const excerpt = getPoemRowExcerpt(poem, 140);
               return `
                 <article class="poem-row">
                   <a href="/poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
-                    <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                    <div class="poem-row-main" style="flex: 1; min-width: 0;">
+                      <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                      ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
+                    </div>
                     <span class="poem-row-year">${year}</span>
                   </a>
                 </article>
@@ -1111,9 +1212,8 @@ async function prerender() {
 
     // Pre-render home page in dist/index.html (RF05)
     console.log('Generating pre-rendered content for home page (dist/index.html)...');
-    const sortedPoemsDesc = [...poems].sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
     const podPoem = getPoemOfDay(poems);
-    const homeMainMarkup = renderHomeMarkup({ poems: sortedPoemsDesc, podPoem, allCollections });
+    const homeMainMarkup = renderHomeMarkup({ poems: sortedPoemsDesc, podPoem, allCollections, qualifyingSentiments });
     const homeShell = renderBaseLayout({
       mainContent: homeMainMarkup,
       dataPrerendered: '/'
@@ -1261,4 +1361,6 @@ async function prerender() {
   }
 }
 
-prerender();
+if (process.argv[1] && process.argv[1].endsWith('prerender.js')) {
+  prerender();
+}

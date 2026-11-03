@@ -6,6 +6,7 @@ import { collectionsListSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_UR
 import { normalizeTag } from '../utils/tags.js';
 import { escapeHtml, sanitizeUrl } from '../utils/html.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
+import { getPoemRowExcerpt } from '../utils/collection-template.js';
 
 export const collections = {
   meta: {
@@ -16,6 +17,7 @@ export const collections = {
       const activeTags = params.tags ? params.tags.split(',') : [];
       const activeCols = params.cols ? params.cols.split(',') : [];
       const isFiltering = activeTags.length > 0 || activeCols.length > 0;
+      const isPrerendered = container.getAttribute('data-prerendered') === '/colecoes' && !isFiltering;
 
       const canonicalCollectionsUrl = `${SITE_URL}/colecoes/`;
       const breadcrumbItems = [
@@ -23,46 +25,53 @@ export const collections = {
         { name: 'Coleções', url: canonicalCollectionsUrl }
       ];
 
-      updateSEO({
-        title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano',
-        description: 'Explore poemas organizados por séries temáticas e sentimentos.',
-        url: canonicalCollectionsUrl,
-        type: 'website',
-        structuredData: [
-          collectionsListSchema([]),
-          breadcrumbSchema(breadcrumbItems)
-        ]
-      });
+      if (!isPrerendered) {
+        updateSEO({
+          title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano',
+          description: 'Explore poemas organizados por séries temáticas e sentimentos.',
+          url: canonicalCollectionsUrl,
+          type: 'website',
+          structuredData: [
+            collectionsListSchema([]),
+            breadcrumbSchema(breadcrumbItems)
+          ]
+        });
 
-      container.innerHTML = `
-        <section class="collections-page fade-in">
-          <header class="page-header" style="text-align: center; margin-bottom: var(--space-2xl);">
-            ${renderBreadcrumbsHtml(breadcrumbItems)}
-            <h1 class="page-title">Explorar</h1>
-            <p class="page-subtitle">Séries temáticas, livros e sentimentos catalogados</p>
-          </header>
+        container.innerHTML = `
+          <section class="collections-page fade-in">
+            <header class="page-header" style="text-align: center; margin-bottom: var(--space-2xl);">
+              ${renderBreadcrumbsHtml(breadcrumbItems)}
+              <h1 class="page-title">Explorar</h1>
+              <p class="page-subtitle">Séries temáticas, livros e sentimentos catalogados</p>
+            </header>
 
-          <div class="discovery-filters" style="margin-bottom: var(--space-2xl);">
-            ${filterChips.render(activeTags)}
-          </div>
-
-          <div id="collections-section" class="discovery-section" style="${isFiltering ? 'display: none;' : ''}">
-            <h2 class="section-title" style="margin-bottom: var(--space-lg);">Coleções em Destaque</h2>
-            <div id="collections-grid" class="collections-grid">
-              <div class="loading">Carregando coleções...</div>
+            <div class="discovery-filters" style="margin-bottom: var(--space-2xl);">
+              ${filterChips.render(activeTags)}
+              <div style="margin-top: var(--space-sm);">
+                <a href="${import.meta.env.BASE_URL}sentimentos/" data-link style="font-size: 0.9rem; color: var(--accent-subtle); text-decoration: underline;">Explorar páginas de sentimentos →</a>
+              </div>
             </div>
-          </div>
 
-          <div id="poems-filtered-section" class="discovery-section" style="margin-top: var(--space-2xl);">
-            <h2 class="section-title" id="poems-list-title" style="margin-bottom: var(--space-lg);">
-              ${isFiltering ? 'Poemas Encontrados' : 'Obras Recentes'}
-            </h2>
-            <div id="filtered-poems-list" class="list-container">
-              <div class="loading">Carregando poemas...</div>
+            <div id="collections-section" class="discovery-section" style="${isFiltering ? 'display: none;' : ''}">
+              <h2 class="section-title" style="margin-bottom: var(--space-lg);">Coleções em Destaque</h2>
+              <div id="collections-grid" class="collections-grid">
+                <div class="loading">Carregando coleções...</div>
+              </div>
             </div>
-          </div>
-        </section>
-      `;
+
+            <div id="poems-filtered-section" class="discovery-section" style="margin-top: var(--space-2xl);">
+              <h2 class="section-title" id="poems-list-title" style="margin-bottom: var(--space-lg);">
+                ${isFiltering ? 'Poemas Encontrados' : 'Obras Recentes'}
+              </h2>
+              <div id="filtered-poems-list" class="list-container">
+                <div class="loading">Carregando poemas...</div>
+              </div>
+            </div>
+          </section>
+        `;
+      } else {
+        container.removeAttribute('data-prerendered');
+      }
 
       const grid = container.querySelector('#collections-grid');
       const poemsList = container.querySelector('#filtered-poems-list');
@@ -105,21 +114,25 @@ export const collections = {
         if (grid) {
           if (error) {
             console.error('Error fetching collections:', error);
+            if (isPrerendered) return;
           }
           if (!cols || cols.length === 0) {
-            grid.innerHTML = '<p class="empty-msg">Nenhuma coleção encontrada.</p>';
+            if (!isPrerendered) {
+              grid.innerHTML = '<p class="empty-msg">Nenhuma coleção encontrada.</p>';
+            }
           } else {
             grid.innerHTML = cols.map((col, index) => {
               const safeImg = sanitizeUrl(col.image_url);
               const imgAttr = index === 0 
                 ? 'fetchpriority="high" width="360" height="180" decoding="async"' 
                 : 'loading="lazy" decoding="async" width="360" height="180"';
+              const count = col.collection_poems?.[0]?.count || 0;
               return `
               <a href="${BASE_URL}colecao/${escapeHtml(col.slug)}/" class="collection-card" data-link>
                 ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="${escapeHtml(col.name)}" class="collection-img" ${imgAttr} onerror="this.onerror=null; const p=document.createElement('div'); p.className='collection-img-placeholder'; this.replaceWith(p);">` : '<div class="collection-img-placeholder"></div>'}
                 <div class="collection-info">
                   <h2 class="collection-name">${escapeHtml(col.name)}</h2>
-                  <span class="collection-count">${col.collection_poems?.[0]?.count || 0} poemas</span>
+                  <span class="collection-count">${count} poema${count !== 1 ? 's' : ''}</span>
                 </div>
               </a>
             `;
@@ -167,8 +180,10 @@ export const collections = {
           });
         } catch (err) {
           console.error('Error fetching poems for collections:', err);
+          if (isPrerendered) return;
         }
         allPoems = data || [];
+        if (allPoems.length === 0 && isPrerendered) return;
         
         let filtered = allPoems;
 
@@ -196,10 +211,14 @@ export const collections = {
           } else {
             poemsList.innerHTML = filtered.map(poem => {
               const year = new Date(poem.published_at).getFullYear();
+              const excerpt = getPoemRowExcerpt(poem, 140);
               return `
                 <article class="poem-row fade-in">
                   <a href="${BASE_URL}poema/${escapeHtml(poem.slug)}/" data-link class="poem-row-link">
-                    <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                    <div class="poem-row-main" style="flex: 1; min-width: 0;">
+                      <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                      ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
+                    </div>
                     <span class="poem-row-year">${year}</span>
                   </a>
                 </article>
