@@ -58,6 +58,24 @@ export async function router(eventOrOptions = null) {
     return;
   }
 
+  // Redirecionamento dinâmico de permalinks do WordPress: /YYYY/MM/DD/:slug
+  const wpDateMatch = path.match(/^\/\d{4}\/\d{2}\/\d{2}\/([^/]+)\/?$/);
+  if (wpDateMatch && wpDateMatch[1]) {
+    const slug = wpDateMatch[1];
+    navigateTo(`/poema/${slug}/`);
+    return;
+  }
+
+  // Redirecionamento de ID do WordPress: /?p=:id
+  const pParam = new URLSearchParams(window.location.search).get('p');
+  if (pParam && path === '/') {
+    const pTarget = legacyRedirects[`/?p=${pParam}`];
+    if (pTarget) {
+      navigateTo(pTarget);
+      return;
+    }
+  }
+
   // RF09 & CT04: Redirecionar /tag/<slug> e /?tag=<slug> para /sentimento/<slug>/
   if (path.startsWith('/tag/')) {
     const tagSlug = path.replace(/^\/tag\/?/, '').replace(/\/$/, '');

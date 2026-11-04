@@ -1265,7 +1265,9 @@ async function prerender() {
           if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true });
           }
-          const fullDest = destination.startsWith('http') ? destination : `${baseUrl}${cleanDest}`;
+          const fullDest = destination.startsWith('http') 
+            ? destination 
+            : (destination.endsWith('/') ? `${baseUrl}${cleanDest}/` : `${baseUrl}${cleanDest}`);
           const redirectHtml = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>

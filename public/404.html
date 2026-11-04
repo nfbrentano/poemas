@@ -105,6 +105,22 @@
         return;
       }
 
+      // Check dynamic WordPress date permalinks: /YYYY/MM/DD/:slug
+      var wpDateMatch = cleanPath.match(/^\/\d{4}\/\d{2}\/\d{2}\/([^/]+)\/?$/);
+      if (wpDateMatch && wpDateMatch[1]) {
+        window.location.replace('/poema/' + wpDateMatch[1] + '/');
+        return;
+      }
+
+      var pMatch = search.match(/[?&]p=(\d+)/);
+      if (pMatch && pMatch[1]) {
+        var pTarget = legacyRedirects['/?p=' + pMatch[1]];
+        if (pTarget) {
+          window.location.replace(pTarget);
+          return;
+        }
+      }
+
       // RF09 & CT04: Check legacy tag redirects (/tag/<slug> or ?tag=<slug>)
       if (cleanPath.indexOf('/tag/') === 0) {
         var tagSlug = cleanPath.replace(/^\/tag\/?/, '').replace(/\/$/, '');
