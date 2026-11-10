@@ -1,9 +1,8 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 import { generateAllSitemaps, formatDateToYMD, SITE_URL } from '../src/utils/sitemap-builder.js';
 import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../src/data/collections.js';
+import { loadFallbackPoems } from './fallback-data.js';
 
 // Note: Run this with node --env-file=.env.local scripts/generate-sitemap.js
 const firebaseConfig = {
@@ -17,50 +16,64 @@ const firebaseConfig = {
 
 const baseUrl = process.env.SITE_URL || SITE_URL;
 
-if (!firebaseConfig.apiKey) {
-  console.error('Environment variables for Firebase are required.');
-  process.exit(1);
-}
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
 function getFileMTime(relativePath) {
   try {
     const fullPath = path.resolve(process.cwd(), relativePath);
     if (fs.existsSync(fullPath)) {
       return formatDateToYMD(fs.statSync(fullPath).mtime);
     }
-  } catch (e) {}
+  } catch (_e) {}
   return null;
 }
 
 export async function runGenerateSitemap(outputDirectory) {
-  console.log('Fetching published poems from Firestore...');
-  const poemsQuery = query(
-    collection(db, 'poems'),
-    where('status', '==', 'published'),
-    orderBy('published_at', 'desc')
-  );
-  const poemSnapshot = await getDocs(poemsQuery);
-  const poems = poemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  console.log(`Found ${poems.length} published poems.`);
-
-  console.log('Fetching collections from Firestore...');
-  const colSnapshot = await getDocs(collection(db, 'collections'));
-  const rawCollections = colSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(col => col.slug);
-  const collections = enrichCollectionsWithCurated(rawCollections);
-  console.log(`Found ${collections.length} collections (including curated).`);
-
-  console.log('Fetching collection_poems relations from Firestore...');
+  let poems = [];
+  let collections = [];
   let collectionPoems = [];
-  try {
-    const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
-    const rawCp = cpSnapshot.docs.map(doc => doc.data());
-    collectionPoems = mergeRelationsWithCurated(rawCp, poems, collections);
-  } catch (e) {
-    console.warn('Could not fetch collection_poems:', e.message);
+
+  if (!firebaseConfig.apiKey) {
+    console.warn('[Sitemap] Firebase apiKey missing, using local fallback poems.');
+    poems = loadFallbackPoems();
+    collections = enrichCollectionsWithCurated([]);
     collectionPoems = mergeRelationsWithCurated([], poems, collections);
+  } else {
+    const { initializeApp } = await import('firebase/app');
+    const { getFirestore, collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    console.log('Fetching published poems from Firestore...');
+    const poemsQuery = query(
+      collection(db, 'poems'),
+      where('status', '==', 'published'),
+      orderBy('published_at', 'desc')
+    );
+    const poemSnapshot = await getDocs(poemsQuery);
+    poems = poemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log(`Found ${poems.length} published poems.`);
+
+    console.log('Fetching collections from Firestore...');
+    const colSnapshot = await getDocs(collection(db, 'collections'));
+    const rawCollections = colSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(col => col.slug);
+    collections = enrichCollectionsWithCurated(rawCollections);
+    console.log(`Found ${collections.length} collections (including curated).`);
+
+    console.log('Fetching collection_poems relations from Firestore...');
+    try {
+      const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
+      const rawCp = cpSnapshot.docs.map(doc => doc.data());
+      collectionPoems = mergeRelationsWithCurated(rawCp, poems, collections);
+    } catch (e) {
+      console.warn('Could not fetch collection_poems:', e.message);
+      collectionPoems = mergeRelationsWithCurated([], poems, collections);
+    }
+
+    if (poems.length === 0) {
+      console.warn('[Sitemap] No poems found from Firestore (offline mode). Using local fallback poems.');
+      poems = loadFallbackPoems();
+      collections = enrichCollectionsWithCurated(collections.length ? collections : []);
+      collectionPoems = mergeRelationsWithCurated([], poems, collections);
+    }
   }
 
   const staticPages = [

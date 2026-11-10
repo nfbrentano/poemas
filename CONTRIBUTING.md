@@ -80,10 +80,12 @@ Adoramos sugestões! Abra uma [Issue](https://github.com/nfbrentano/poemas/issue
 
 2. Faça suas alterações seguindo o [estilo de código](#estilo-de-código)
 
-3. Rode os testes:
+3. Valide suas alterações localmente (lint, build e testes):
 
    ```bash
-   npm run test
+   npm run lint   # Verificação estática e regras de segurança (XSS/innerHTML)
+   npm run build  # Compilação e geração estática/prerender
+   npm run test   # Suíte de testes automatizados com Vitest
    ```
 
 4. Commit suas alterações (veja [Commits](#commits))
@@ -94,13 +96,14 @@ Adoramos sugestões! Abra uma [Issue](https://github.com/nfbrentano/poemas/issue
    git push origin feature/minha-contribuicao
    ```
 
-6. Abra um **Pull Request** para a branch `main` do repositório original
+6. Abra um **Pull Request** para a branch `main` do repositório original. O fluxo de CI executará automaticamente o lint, build e testes.
 
 ## Estilo de Código
 
 - **JavaScript**: Vanilla JS (ES Modules). Sem frameworks.
 - **CSS**: Vanilla CSS. Sem pré-processadores.
 - **HTML**: Semântico e acessível.
+- **Segurança e XSS**: Nunca atribua strings não sanitizadas a `innerHTML` ou `outerHTML`. Utilize sempre os utilitários de escape de `src/utils/html.js` (`escapeHtml`, `stripHtml`, `sanitizeUrl` ou `unwrapSafeHTML`). O linter (`npm run lint`) valida essas regras estritamente via `eslint-plugin-no-unsanitized`.
 - **Nomes de variáveis e funções**: em inglês, descritivos e em camelCase.
 - **Comentários**: em português quando explicam lógica de negócio; em inglês para comentários técnicos genéricos.
 - **Sem dependências desnecessárias**: avalie se a funcionalidade pode ser implementada nativamente antes de adicionar um pacote.

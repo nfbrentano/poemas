@@ -1,3 +1,5 @@
+import { escapeHtml } from '../utils/html.js';
+
 export const toast = {
   init() {
     if (!document.getElementById('toast-container')) {
@@ -23,7 +25,7 @@ export const toast = {
     if (type === 'info') icon = 'ℹ ';
     if (type === 'heart') icon = '♥ ';
     
-    toastEl.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${message}</span>`;
+    toastEl.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${escapeHtml(message)}</span>`;
     
     container.appendChild(toastEl);
     

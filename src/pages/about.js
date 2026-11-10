@@ -3,7 +3,7 @@ import { collection, getDocs, doc, setDoc, getCountFromServer, query, where } fr
 import { pushToggle } from '../components/push-toggle.js';
 import { updateSEO } from '../utils/seo.js';
 import { profilePageSchema, breadcrumbSchema, faqPageSchema, SITE_URL } from '../utils/structured-data.js';
-import { escapeHtml } from '../utils/html.js';
+import { escapeHtml, unwrapSafeHTML } from '../utils/html.js';
 import { renderAboutMarkup, getAboutFaq, DEFAULT_AVATAR_URL, DEFAULT_AUTHOR_BIO } from '../utils/about-template.js';
 
 export default {
@@ -39,10 +39,10 @@ export default {
         cachedAvatar = localStorage.getItem('profilePhotoURL') || DEFAULT_AVATAR_URL;
       } catch (_) {}
 
-      container.innerHTML = renderAboutMarkup({
+      container.innerHTML = unwrapSafeHTML(renderAboutMarkup({
         avatarUrl: cachedAvatar,
         baseUrl: import.meta.env.BASE_URL
-      });
+      }));
     }
 
     const imgEl = container.querySelector('#profile-img');
@@ -67,7 +67,7 @@ export default {
           }
           if (bio && bioContent) {
             currentBioText = typeof bio.value === 'string' ? bio.value : '';
-            bioContent.innerHTML = escapeHtml(currentBioText).replace(/\n/g, '<br>');
+            bioContent.innerHTML = unwrapSafeHTML(escapeHtml(currentBioText).replace(/\n/g, '<br>'));
           }
         }
       } catch (err) {
@@ -185,7 +185,7 @@ export default {
               try {
                 await setDoc(doc(db, 'site_settings', 'author_bio'), { value: newValue });
                 currentBioText = newValue;
-                bioContent.innerHTML = escapeHtml(newValue).replace(/\n/g, '<br>');
+                bioContent.innerHTML = unwrapSafeHTML(escapeHtml(newValue).replace(/\n/g, '<br>'));
                 modal.style.display = 'none';
               } catch (err) {
                 alert('Erro ao salvar bio');

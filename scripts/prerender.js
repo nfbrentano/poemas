@@ -28,6 +28,7 @@ import { slugifyTag, formatTag, tagToSlug } from '../src/utils/tags.js';
 import { getSentimentIntro, getSentimentName } from '../src/data/sentiments.js';
 
 import { loadFonts, generatePoemOgImage, generateCollectionOgImage, generateDefaultOgImage } from './generate-og-images.js';
+import { loadFallbackPoems } from './fallback-data.js';
 
 
 // Note: Run this with node --env-file=.env.local scripts/prerender.js
@@ -491,14 +492,6 @@ export function renderHomeMarkup({ poems, podPoem, allCollections = [], qualifyi
 
 async function prerender() {
   try {
-    if (!firebaseConfig.apiKey) {
-      console.error('Environment variables for Firebase are required.');
-      process.exit(1);
-    }
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
     const distDir = path.resolve(process.cwd(), 'dist');
     const templatePath = path.join(distDir, 'index.html');
 
@@ -508,30 +501,52 @@ async function prerender() {
       process.exit(1);
     }
 
-    console.log('Fetching published poems, collections and relations for pre-rendering...');
-    const poemsQuery = query(
-      collection(db, 'poems'),
-      where('status', '==', 'published')
-    );
-    const [poemsSnapshot, collectionsSnapshot, collectionPoemsSnapshot] = await Promise.all([
-      getDocs(poemsQuery),
-      getDocs(collection(db, 'collections')).catch(() => ({ docs: [] })),
-      getDocs(collection(db, 'collection_poems')).catch(() => ({ docs: [] }))
-    ]);
+    let db = null;
+    let poems = [];
+    let allCollections = [];
+    let collectionPoems = [];
 
-    const poems = poemsSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return { id: doc.id, ...data };
-    });
+    if (!firebaseConfig.apiKey) {
+      console.warn('[Prerender] Firebase apiKey missing, using local fallback poems.');
+      poems = loadFallbackPoems();
+      allCollections = enrichCollectionsWithCurated([]);
+      collectionPoems = mergeRelationsWithCurated([], poems, allCollections);
+    } else {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
 
-    const rawCollections = collectionsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    const allCollections = enrichCollectionsWithCurated(rawCollections);
+      console.log('Fetching published poems, collections and relations for pre-rendering...');
+      const poemsQuery = query(
+        collection(db, 'poems'),
+        where('status', '==', 'published')
+      );
+      const [poemsSnapshot, collectionsSnapshot, collectionPoemsSnapshot] = await Promise.all([
+        getDocs(poemsQuery),
+        getDocs(collection(db, 'collections')).catch(() => ({ docs: [] })),
+        getDocs(collection(db, 'collection_poems')).catch(() => ({ docs: [] }))
+      ]);
 
-    const rawCollectionPoems = collectionPoemsSnapshot.docs ? collectionPoemsSnapshot.docs.map(doc => doc.data()) : [];
-    const collectionPoems = mergeRelationsWithCurated(rawCollectionPoems, poems, allCollections);
+      poems = poemsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return { id: doc.id, ...data };
+      });
+
+      const rawCollections = collectionsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      allCollections = enrichCollectionsWithCurated(rawCollections);
+
+      const rawCollectionPoems = collectionPoemsSnapshot.docs ? collectionPoemsSnapshot.docs.map(doc => doc.data()) : [];
+      collectionPoems = mergeRelationsWithCurated(rawCollectionPoems, poems, allCollections);
+
+      if (poems.length === 0) {
+        console.warn('[Prerender] Nenhum poema obtido do Firestore (modo offline/sandbox). Usando fallback local.');
+        poems = loadFallbackPoems();
+        allCollections = enrichCollectionsWithCurated(allCollections.length ? allCollections : []);
+        collectionPoems = mergeRelationsWithCurated([], poems, allCollections);
+      }
+    }
     const poemToColsMap = new Map();
     const colToPoemsMap = new Map();
     collectionPoems.forEach(cp => {
@@ -787,20 +802,22 @@ async function prerender() {
 
     let authorAvatarUrl = DEFAULT_AVATAR_URL;
     let authorBioText = DEFAULT_AUTHOR_BIO;
-    try {
-      const settingsSnap = await getDocs(collection(db, 'site_settings'));
-      settingsSnap.forEach(d => {
-        const data = d.data();
-        const key = data.key || d.id;
-        if (key === 'avatar_url' && data.value) {
-          authorAvatarUrl = data.value;
-        }
-        if (key === 'author_bio' && data.value) {
-          authorBioText = data.value;
-        }
-      });
-    } catch (err) {
-      console.warn('Could not fetch site_settings in prerender:', err);
+    if (db) {
+      try {
+        const settingsSnap = await getDocs(collection(db, 'site_settings'));
+        settingsSnap.forEach(d => {
+          const data = d.data();
+          const key = data.key || d.id;
+          if (key === 'avatar_url' && data.value) {
+            authorAvatarUrl = data.value;
+          }
+          if (key === 'author_bio' && data.value) {
+            authorBioText = data.value;
+          }
+        });
+      } catch (err) {
+        console.warn('Could not fetch site_settings in prerender:', err);
+      }
     }
 
     const staticRoutes = [

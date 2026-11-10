@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, stripHtml, sanitizeUrl, normalizeForSearch } from './html.js';
+import { escapeHtml, stripHtml, sanitizeUrl, normalizeForSearch, unwrapSafeHTML } from './html.js';
 
 describe('html utils', () => {
   describe('escapeHtml', () => {
@@ -101,6 +101,18 @@ describe('html utils', () => {
       expect(normalizeForSearch('')).toBe('');
       expect(normalizeForSearch(null)).toBe('');
       expect(normalizeForSearch(undefined)).toBe('');
+    });
+  });
+
+  describe('unwrapSafeHTML', () => {
+    it('returns valid html strings unchanged', () => {
+      expect(unwrapSafeHTML('<p>Texto seguro</p>')).toBe('<p>Texto seguro</p>');
+    });
+
+    it('handles non-string inputs safely', () => {
+      expect(unwrapSafeHTML(null)).toBe('');
+      expect(unwrapSafeHTML(undefined)).toBe('');
+      expect(unwrapSafeHTML(123)).toBe('');
     });
   });
 });

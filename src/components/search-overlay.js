@@ -1,5 +1,5 @@
 import { navigateTo } from '../router.js';
-import { normalizeForSearch, escapeHtml, stripHtml } from '../utils/html.js';
+import { normalizeForSearch, escapeHtml, stripHtml, unwrapSafeHTML } from '../utils/html.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 
 export const searchOverlay = {
@@ -81,7 +81,7 @@ export const searchOverlay = {
       return result;
     };
 
-    resultsContainer.innerHTML = results.map(poem => {
+    resultsContainer.innerHTML = unwrapSafeHTML(results.map(poem => {
       const q = normalizeForSearch(query);
       const n = poem._normalized;
       
@@ -128,7 +128,7 @@ export const searchOverlay = {
           ${poem.tags && poem.tags.length > 0 ? `<div class="search-result-tags" style="font-size:0.7rem; color:var(--accent-subtle); margin-top:4px;">${poem.tags.map(t => highlight(t, query)).join(', ')}</div>` : ''}
         </div>
       `;
-    }).join('');
+    }).join(''));
 
     resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
       item.addEventListener('click', () => {

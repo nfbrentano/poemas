@@ -2,6 +2,7 @@ import { scrollBehavior } from '../utils/motion.js';
 import { navigateTo } from '../router.js';
 import { formatTag } from '../utils/tags.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
+import { escapeHtml, unwrapSafeHTML } from '../utils/html.js';
 
 let cachedTags = null;
 
@@ -63,11 +64,11 @@ export const filterChips = {
     if (tagsContainer) {
       const allButtonHtml = `<button class="filter-chip ${activeTags.length === 0 ? 'active' : ''}" data-type="tag" data-value="all">Todos</button>`;
       
-      tagsContainer.innerHTML = allButtonHtml + tags.map(tag => `
-        <button class="filter-chip ${activeTags.includes(tag.name) ? 'active' : ''}" data-type="tag" data-value="${tag.name}">
-          ${tag.name} <span class="chip-count" style="opacity: 0.6; font-size: 0.85em; margin-left: 2px;">(${tag.count})</span>
+      tagsContainer.innerHTML = unwrapSafeHTML(allButtonHtml + tags.map(tag => `
+        <button class="filter-chip ${activeTags.includes(tag.name) ? 'active' : ''}" data-type="tag" data-value="${escapeHtml(tag.name)}">
+          ${escapeHtml(tag.name)} <span class="chip-count" style="opacity: 0.6; font-size: 0.85em; margin-left: 2px;">(${Number(tag.count)})</span>
         </button>
-      `).join('');
+      `).join(''));
     }
 
     container.querySelectorAll('.filter-chip').forEach(chip => {

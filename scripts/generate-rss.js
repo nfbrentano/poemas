@@ -1,8 +1,7 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 import { buildRssFeed, SITE_URL } from '../src/utils/rss-builder.js';
+import { loadFallbackPoems } from './fallback-data.js';
 
 // Note: Run this with node --env-file=.env.local scripts/generate-rss.js
 const firebaseConfig = {
@@ -16,23 +15,32 @@ const firebaseConfig = {
 
 const baseUrl = process.env.SITE_URL || SITE_URL;
 
-if (!firebaseConfig.apiKey) {
-  console.error('Environment variables for Firebase are required.');
-  process.exit(1);
-}
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
 export async function runGenerateRss(outputDirectory) {
-  console.log('Fetching published poems from Firestore for RSS feed...');
-  const q = query(
-    collection(db, 'poems'),
-    where('status', '==', 'published'),
-    orderBy('published_at', 'desc')
-  );
-  const snapshot = await getDocs(q);
-  const poems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  let poems = [];
+
+  if (!firebaseConfig.apiKey) {
+    console.warn('[RSS] Firebase apiKey missing, using local fallback poems.');
+    poems = loadFallbackPoems();
+  } else {
+    const { initializeApp } = await import('firebase/app');
+    const { getFirestore, collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    console.log('Fetching published poems from Firestore for RSS feed...');
+    const q = query(
+      collection(db, 'poems'),
+      where('status', '==', 'published'),
+      orderBy('published_at', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    poems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    if (poems.length === 0) {
+      console.warn('[RSS] No poems found from Firestore (offline mode). Using local fallback poems.');
+      poems = loadFallbackPoems();
+    }
+  }
 
   console.log(`Found ${poems.length} published poems. Generating RSS XML (limited to 50 latest)...`);
 

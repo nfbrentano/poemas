@@ -3,7 +3,7 @@ import { collection, query, getDocs } from 'firebase/firestore';
 import { updateSEO } from '../utils/seo.js';
 import { collectionsListSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
 import { normalizeTag } from '../utils/tags.js';
-import { escapeHtml, sanitizeUrl } from '../utils/html.js';
+import { escapeHtml, sanitizeUrl, unwrapSafeHTML } from '../utils/html.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { getPoemRowExcerpt } from '../utils/collection-template.js';
 import { renderCollectionsPageMarkup } from '../utils/collections-template.js';
@@ -39,7 +39,7 @@ export const collections = {
         });
 
         // Skeleton inicial elegante
-        container.innerHTML = `
+        container.innerHTML = unwrapSafeHTML(`
           <section class="collections-page fade-in">
             <header class="page-header" style="text-align: center; margin-bottom: var(--space-xl);">
               ${renderBreadcrumbsHtml(breadcrumbItems)}
@@ -65,7 +65,7 @@ export const collections = {
               </div>
             </div>
           </section>
-        `;
+        `);
       } else {
         container.removeAttribute('data-prerendered');
       }
@@ -135,7 +135,7 @@ export const collections = {
 
       // Renderiza grid de coleções
       if (grid && cols.length > 0) {
-        grid.innerHTML = cols.map((col, index) => {
+        grid.innerHTML = unwrapSafeHTML(cols.map((col, index) => {
           const safeImg = sanitizeUrl(col.image_url);
           const imgAttr = index === 0
             ? 'fetchpriority="high" width="360" height="160" decoding="async"'
@@ -160,7 +160,7 @@ export const collections = {
               </div>
             </a>
           `;
-        }).join('');
+        }).join(''));
 
         grid.querySelectorAll('.collection-img').forEach(img => {
           img.addEventListener('error', () => {
@@ -200,7 +200,7 @@ export const collections = {
         if (filtered.length === 0) {
           poemsList.innerHTML = '<p class="empty-state-desc" style="text-align: center; padding: 2rem;">Nenhum poema corresponde aos filtros selecionados.</p>';
         } else {
-          poemsList.innerHTML = filtered.map(poem => {
+          poemsList.innerHTML = unwrapSafeHTML(filtered.map(poem => {
             const year = poem.published_at ? new Date(poem.published_at).getFullYear() : '';
             const excerpt = getPoemRowExcerpt(poem, 140);
             return `
@@ -214,17 +214,17 @@ export const collections = {
                 </a>
               </article>
             `;
-          }).join('');
+          }).join(''));
         }
       }
     } catch (err) {
       console.error('Collections render error:', err);
-      container.innerHTML = `
+      container.innerHTML = unwrapSafeHTML(`
         <div style="padding: 2rem; color: #ff5555; background: #222; border-radius: 8px; margin: 2rem;">
           <h3>Erro interno em collections.js</h3>
-          <pre style="font-size: 12px; overflow-x: auto; margin-top: 1rem;">${err.stack || err.message}</pre>
+          <pre style="font-size: 12px; overflow-x: auto; margin-top: 1rem;">${escapeHtml(err.stack || err.message)}</pre>
         </div>
-      `;
+      `);
     }
   }
 };

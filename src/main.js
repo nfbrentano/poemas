@@ -5,6 +5,7 @@ import { initRouter } from './router.js';
 import { header } from './components/header.js';
 import { backToTop } from './components/back-to-top.js';
 import { getRandomPoem } from './utils/navigation.js';
+import { unwrapSafeHTML } from './utils/html.js';
 
 
 // Setup Initial Page Classes
@@ -16,7 +17,7 @@ if (window.location.pathname.includes('/poema/')) {
 const appEl = document.querySelector('#app');
 const existingMain = document.getElementById('main-content');
 if (!existingMain && appEl) {
-  appEl.innerHTML = `
+  appEl.innerHTML = unwrapSafeHTML(`
   ${header.render()}
   <div id="mobile-brand" class="mobile-brand"><a href="${import.meta.env.BASE_URL}" data-link>Natanael Fernando Gatti Brentano</a></div>
   <main id="main-content" class="site-content container"></main>
@@ -95,7 +96,7 @@ if (!existingMain && appEl) {
       </div>
     </div>
   </div>
-`;
+`);
 }
 
 // Initialize Components

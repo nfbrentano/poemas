@@ -1,9 +1,8 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 import { buildAllLlmsFiles, SITE_URL } from '../src/utils/llms-builder.js';
 import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../src/data/collections.js';
+import { loadFallbackPoems } from './fallback-data.js';
 
 // Note: Run this with node --env-file=.env.local scripts/generate-llms.js
 const firebaseConfig = {
@@ -23,9 +22,14 @@ export async function runGenerateLlms(outputDirectory) {
   let collectionPoems = [];
 
   if (!firebaseConfig.apiKey) {
-    console.warn('⚠️  Aviso: Credenciais do Firebase ausentes. Gerando llms.txt com seções estáticas.');
+    console.warn('⚠️  Aviso: Credenciais do Firebase ausentes. Usando poemas locais de fallback.');
+    poems = loadFallbackPoems();
+    collections = enrichCollectionsWithCurated([]);
+    collectionPoems = mergeRelationsWithCurated([], poems, collections);
   } else {
     try {
+      const { initializeApp } = await import('firebase/app');
+      const { getFirestore, collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
@@ -57,6 +61,12 @@ export async function runGenerateLlms(outputDirectory) {
         collectionPoems = mergeRelationsWithCurated(rawCp, poems, collections);
       } catch (cpErr) {
         console.warn('Aviso: Não foi possível obter vínculos collection_poems:', cpErr.message);
+        collectionPoems = mergeRelationsWithCurated([], poems, collections);
+      }
+      if (poems.length === 0) {
+        console.warn('[LLMs] Nenhum poema obtido do Firestore (modo offline/sandbox). Usando fallback local.');
+        poems = loadFallbackPoems();
+        collections = enrichCollectionsWithCurated(collections.length ? collections : []);
         collectionPoems = mergeRelationsWithCurated([], poems, collections);
       }
     } catch (err) {

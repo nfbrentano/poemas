@@ -1,6 +1,6 @@
 import { updateSEO, setNotFoundSEO } from '../utils/seo.js';
 import { sentimentSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
-import { escapeHtml } from '../utils/html.js';
+import { escapeHtml, unwrapSafeHTML } from '../utils/html.js';
 import { slugifyTag, formatTag } from '../utils/tags.js';
 import { getSentimentIntro, getSentimentName } from '../data/sentiments.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
@@ -154,7 +154,7 @@ export const sentiment = {
       </div>
     ` : '';
 
-    container.innerHTML = `
+    container.innerHTML = unwrapSafeHTML(`
       <section class="collection-detail sentiment-detail fade-in">
         <header class="collection-header">
           ${renderBreadcrumbsHtml(breadcrumbItems)}
@@ -185,7 +185,7 @@ export const sentiment = {
           }).join('')}
         </div>
       </section>
-    `;
+    `);
   },
 
   renderNotFound(container) {
@@ -194,14 +194,14 @@ export const sentiment = {
       robots: 'noindex, follow'
     };
     setNotFoundSEO();
-    container.innerHTML = `
+    container.innerHTML = unwrapSafeHTML(`
       <div class="not-found-page fade-in">
         <p class="not-found-label">404</p>
         <h2 class="not-found-title">Sentimento não encontrado</h2>
         <p class="not-found-desc">Não encontramos poemas para o sentimento solicitado.</p>
         <a href="${import.meta.env.BASE_URL}sentimentos/" data-link class="not-found-link">← Ver todos os sentimentos</a>
       </div>
-    `;
+    `);
   }
 };
 

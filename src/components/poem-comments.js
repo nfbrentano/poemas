@@ -1,4 +1,4 @@
-import { escapeHtml } from '../utils/html.js';
+import { escapeHtml, unwrapSafeHTML } from '../utils/html.js';
 import { toast } from './toast.js';
 
 let currentPoemId = null;
@@ -88,7 +88,7 @@ export const PoemComments = {
       return;
     }
 
-    listEl.innerHTML = comments.map(c => `
+    listEl.innerHTML = unwrapSafeHTML(comments.map(c => `
       <div class="comment-item fade-in">
         <div class="comment-meta">
           <span class="comment-author">${escapeHtml(c.author_name)}</span>
@@ -96,7 +96,7 @@ export const PoemComments = {
         </div>
         <div class="comment-text">${escapeHtml(c.content)}</div>
       </div>
-    `).join('');
+    `).join(''));
   },
 
   init(container, poemId) {

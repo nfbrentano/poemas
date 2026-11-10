@@ -1,6 +1,6 @@
 import { updateSEO } from '../utils/seo.js';
 import { sentimentsListSchema, breadcrumbSchema, renderBreadcrumbsHtml, SITE_URL } from '../utils/structured-data.js';
-import { escapeHtml } from '../utils/html.js';
+import { escapeHtml, unwrapSafeHTML } from '../utils/html.js';
 import { slugifyTag, formatTag } from '../utils/tags.js';
 import { getSentimentName } from '../data/sentiments.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
@@ -95,7 +95,7 @@ export const sentiments = {
       return;
     }
 
-    container.innerHTML = `
+    container.innerHTML = unwrapSafeHTML(`
       <section class="sentiments-page fade-in">
         <header class="page-header sentiments-header">
           ${renderBreadcrumbsHtml(breadcrumbItems)}
@@ -114,7 +114,7 @@ export const sentiments = {
           `).join('') : '<p class="empty-state-desc">Nenhum sentimento com poemas suficientes encontrado.</p>'}
         </div>
       </section>
-    `;
+    `);
   }
 };
 

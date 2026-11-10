@@ -3,7 +3,7 @@ import { poemSchema, breadcrumbSchema, SITE_URL } from '../utils/structured-data
 import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
-import { escapeHtml, stripHtml, sanitizeUrl } from '../utils/html.js';
+import { escapeHtml, stripHtml, sanitizeUrl, unwrapSafeHTML } from '../utils/html.js';
 import { toast } from '../components/toast.js';
 import { AudioPlayer } from '../components/audio-player.js';
 import { ImmersiveReader } from '../components/immersive-reader.js';
@@ -116,7 +116,7 @@ export default {
           </article>
         </div>
       `;
-      container.innerHTML = skeletonHtml;
+      container.innerHTML = unwrapSafeHTML(skeletonHtml);
 
       console.log('[Poem] Fetching slug:', slug);
       let error = null;
@@ -165,14 +165,14 @@ export default {
       if (error || !poem) {
         console.warn('[Poem] Poem not found or error occurred');
         setNotFoundSEO();
-        container.innerHTML = `
+        container.innerHTML = unwrapSafeHTML(`
           <div class="not-found-page fade-in">
             <p class="not-found-label">404</p>
             <h2 class="not-found-title">Página não encontrada</h2>
             <p class="not-found-desc">O poema que você procura pode ter mudado de endereço ou ainda não foi publicado.</p>
             <a href="${import.meta.env.BASE_URL}" data-link class="not-found-link">← Voltar ao sumário</a>
           </div>
-        `;
+        `);
         return;
       }
 
@@ -195,7 +195,7 @@ export default {
       }
 
       // Render DOM
-      container.innerHTML = renderPoemMarkup({
+      container.innerHTML = unwrapSafeHTML(renderPoemMarkup({
         poem,
         prevSlug,
         nextSlug,
@@ -204,14 +204,14 @@ export default {
         collectionsData,
         relatedPoems,
         baseUrl: import.meta.env.BASE_URL
-      });
+      }));
     }
 
     // Rastrear visualização do poema
     trackPageView('/poema/' + poem.slug, poem.id);
 
     // Update SEO dynamically
-    const rawPoemSlug = poem.slug || poemId || '';
+    const rawPoemSlug = poem.slug || slug || '';
     const safePoemSlug = typeof rawPoemSlug === 'string' && SLUG_REGEX.test(rawPoemSlug)
       ? rawPoemSlug
       : encodeURIComponent(String(rawPoemSlug));
@@ -878,12 +878,12 @@ export default {
               if (top3.length > 0) {
                 const relatedList = document.getElementById('related-poems-list');
                 if (relatedList) {
-                  relatedList.innerHTML = top3.map(r => `
+                  relatedList.innerHTML = unwrapSafeHTML(top3.map(r => `
                     <a href="${import.meta.env.BASE_URL}poema/${r.slug}/" class="related-poem-card" style="padding: var(--space-md); border: 1px solid var(--border-subtle); border-radius: 4px; display: block; text-decoration: none; color: var(--text-primary); transition: background-color var(--transition-fast);" data-link onmouseover="this.style.backgroundColor='var(--border-subtle)'" onmouseout="this.style.backgroundColor='transparent'">
                       <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 4px;">${escapeHtml(r.title)}</h3>
                       ${r.excerpt ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">${escapeHtml(stripHtml(r.excerpt).substring(0, 100))}...</p>` : ''}
                     </a>
-                  `).join('');
+                  `).join(''));
                   const sec = document.getElementById('related-poems-section');
                   if (sec) sec.style.display = 'block';
                 }

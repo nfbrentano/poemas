@@ -13,13 +13,17 @@
     "migrate:updated-at": "node --env-file=.env.local scripts/migrate-updated-at.js",
     "build": "vite build && npm run sitemap && npm run rss && npm run llms && (node --env-file=.env.local scripts/prerender.js || node scripts/prerender.js)",
     "deploy": "npm run build && gh-pages -d dist",
+    "lint": "eslint src scripts functions",
     "preview": "vite preview",
     "test": "vitest"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
+    "eslint": "^10.14.0",
+    "eslint-plugin-no-unsanitized": "^4.1.5",
     "fast-xml-parser": "^5.12.0",
     "gh-pages": "^6.3.0",
+    "globals": "^17.14.0",
     "jsdom": "^30.1.3",
     "satori": "^0.63.2",
     "satori-html": "^0.3.2",

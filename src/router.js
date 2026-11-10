@@ -2,6 +2,7 @@ import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
 import { setNotFoundSEO, updateSEO } from './utils/seo.js';
 import { setStructuredData, SITE_URL } from './utils/structured-data.js';
 import { buildUrl } from './utils/url.js';
+import { unwrapSafeHTML } from './utils/html.js';
 import legacyRedirects from '../scripts/legacy-redirects.json';
 
 export const routes = {
@@ -321,14 +322,14 @@ export async function router(eventOrOptions = null) {
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#039;');
-        view.innerHTML = `
+        view.innerHTML = unwrapSafeHTML(`
           <div style="padding: 2rem; text-align: center; max-width: 600px; margin: 3rem auto;">
             <h2>Erro ao carregar a página.</h2>
             <p style="color: var(--text-muted); margin: 1rem 0;">Uma nova versão do site pode ter sido publicada.</p>
             <button id="chunk-reload-btn" class="btn-primary" style="margin-bottom: 1.5rem; cursor: pointer;">Recarregar página</button>
             <pre style="color: red; text-align: left; padding: 1rem; background: #222; overflow-x: auto; font-size: 12px; border-radius: 4px;">${safeErrorText}</pre>
           </div>
-        `;
+        `);
         const reloadBtn = document.getElementById('chunk-reload-btn');
         if (reloadBtn) {
           reloadBtn.addEventListener('click', async () => {
@@ -352,14 +353,14 @@ export async function router(eventOrOptions = null) {
     } else {
       currentViewComponent = null;
       setNotFoundSEO();
-      view.innerHTML = `
+      view.innerHTML = unwrapSafeHTML(`
         <div class="not-found-page fade-in">
           <p class="not-found-label">404</p>
           <h2 class="not-found-title">Página não encontrada</h2>
           <p class="not-found-desc">O poema que você procura pode ter mudado de endereço — ou nunca existiu.</p>
           <a href="${import.meta.env.BASE_URL}" data-link class="not-found-link">← Voltar para o início</a>
         </div>
-      `;
+      `);
     }
   };
 

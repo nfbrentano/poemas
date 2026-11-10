@@ -16,13 +16,17 @@ let merriweatherFontBuffer;
 
 async function loadFonts() {
   console.log('Loading fonts for OG images...');
-  // Cormorant Garamond Regular WOFF
-  const cormorantRes = await fetch('https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_v86KnTOjA.woff');
-  cormorantFontBuffer = await cormorantRes.arrayBuffer();
+  try {
+    // Cormorant Garamond Regular WOFF
+    const cormorantRes = await fetch('https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_v86KnTOjA.woff');
+    cormorantFontBuffer = await cormorantRes.arrayBuffer();
 
-  // Merriweather Italic WOFF
-  const merriweatherRes = await fetch('https://fonts.gstatic.com/s/merriweather/v33/u-4B0qyriQwlOrhSvowK_l5-eTxCVx0ZbwLvKH2Gk9hLmp0v5yA-xXPqCzLvPee1XYk_XSf-FmTCUG33Avc.woff');
-  merriweatherFontBuffer = await merriweatherRes.arrayBuffer();
+    // Merriweather Italic WOFF
+    const merriweatherRes = await fetch('https://fonts.gstatic.com/s/merriweather/v33/u-4B0qyriQwlOrhSvowK_l5-eTxCVx0ZbwLvKH2Gk9hLmp0v5yA-xXPqCzLvPee1XYk_XSf-FmTCUG33Avc.woff');
+    merriweatherFontBuffer = await merriweatherRes.arrayBuffer();
+  } catch (err) {
+    console.warn('Could not fetch fonts for OG images (offline or no network):', err.message);
+  }
 }
 
 function getCache() {
@@ -41,6 +45,10 @@ function hashContent(content) {
 }
 
 export async function generatePoemOgImage(poem) {
+  if (!cormorantFontBuffer || !merriweatherFontBuffer) {
+    return '/og-cover.jpg';
+  }
+
   if (!fs.existsSync(distOgDir)) {
     fs.mkdirSync(distOgDir, { recursive: true });
   }
@@ -112,6 +120,10 @@ export async function generatePoemOgImage(poem) {
 }
 
 export async function generateCollectionOgImage(collection) {
+  if (!cormorantFontBuffer || !merriweatherFontBuffer) {
+    return collection.image_url || '/og-cover.jpg';
+  }
+
   if (!fs.existsSync(distColDir)) {
     fs.mkdirSync(distColDir, { recursive: true });
   }
@@ -175,6 +187,10 @@ export async function generateCollectionOgImage(collection) {
 }
 
 export async function generateDefaultOgImage() {
+  if (!cormorantFontBuffer || !merriweatherFontBuffer) {
+    return '/og-cover.jpg';
+  }
+
   const publicDir = path.resolve(process.cwd(), 'public');
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });

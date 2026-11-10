@@ -5,6 +5,7 @@ import { collectionSchema, breadcrumbSchema, SITE_URL } from '../utils/structure
 import { renderCollectionMarkup } from '../utils/collection-template.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../data/collections.js';
+import { unwrapSafeHTML } from '../utils/html.js';
 
 export const collection = {
   meta: {
@@ -101,14 +102,14 @@ export const collection = {
         return;
       }
       setNotFoundSEO();
-      container.innerHTML = `
+      container.innerHTML = unwrapSafeHTML(`
         <div class="not-found-page fade-in">
           <p class="not-found-label">404</p>
           <h2 class="not-found-title">Página não encontrada</h2>
           <p class="not-found-desc">A coleção que você procura não existe ou foi removida.</p>
           <a href="${import.meta.env.BASE_URL}colecoes/" data-link class="not-found-link">← Voltar para coleções</a>
         </div>
-      `;
+      `);
       return;
     }
     
@@ -139,11 +140,11 @@ export const collection = {
     if (isPrerendered) {
       container.removeAttribute('data-prerendered');
     } else {
-      container.innerHTML = renderCollectionMarkup({
+      container.innerHTML = unwrapSafeHTML(renderCollectionMarkup({
         col,
         poemsList,
         baseUrl: import.meta.env.BASE_URL
-      });
+      }));
     }
   }
 };

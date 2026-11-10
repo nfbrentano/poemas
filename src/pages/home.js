@@ -4,7 +4,7 @@ import { newsletter } from '../components/newsletter.js';
 import { getRandomPoem } from '../utils/navigation.js';
 import { filterChips } from '../components/filter-chips.js';
 import { normalizeTag, formatTag, slugifyTag } from '../utils/tags.js';
-import { stripHtml, escapeHtml } from '../utils/html.js';
+import { stripHtml, escapeHtml, unwrapSafeHTML } from '../utils/html.js';
 import { getPoemOfDay } from '../utils/poemOfDay.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { getSentimentName } from '../data/sentiments.js';
@@ -110,7 +110,7 @@ export default {
     `;
     
     if (!isPrerendered) {
-      container.innerHTML = skeletonHtml;
+      container.innerHTML = unwrapSafeHTML(skeletonHtml);
     }
     
     // Fetch published poems via shared store
@@ -321,7 +321,7 @@ export default {
     
     const podExcerpt = podPoem ? (podPoem.excerpt || stripHtml(podPoem.content || '').replace(/\s+/g, ' ').trim().slice(0, 160) + '...') : '';
 
-    container.innerHTML = `
+    container.innerHTML = unwrapSafeHTML(`
       <div class="home-layout">
         ${heroHtml}
         ${!isFiltering && podPoem ? `
@@ -358,7 +358,7 @@ export default {
         
         ${newsletter.render()}
       </div>
-    `;
+    `);
 
     container.removeAttribute('data-prerendered');
     
@@ -399,11 +399,11 @@ export default {
           const paginationContainer = container.querySelector('.pagination-container');
           
           if (listContainer) {
-            listContainer.innerHTML = renderPoemList(displayPoems, false, '', currentLimit);
+            listContainer.innerHTML = unwrapSafeHTML(renderPoemList(displayPoems, false, '', currentLimit));
             setupFeaturedShare(); // Re-attach share events if featured poem was re-rendered
           }
           if (paginationContainer) {
-            paginationContainer.innerHTML = renderPagination(displayPoems.length, currentLimit, false);
+            paginationContainer.innerHTML = unwrapSafeHTML(renderPagination(displayPoems.length, currentLimit, false));
             setupPagination(); // re-attach event listener
           }
 
@@ -428,13 +428,13 @@ export default {
 
       if (listContainer) {
         const poemsToShow = results || displayPoems;
-        listContainer.innerHTML = renderPoemList(poemsToShow, isSearchActive, searchTerm, currentLimit);
+        listContainer.innerHTML = unwrapSafeHTML(renderPoemList(poemsToShow, isSearchActive, searchTerm, currentLimit));
         setupFeaturedShare();
       }
       
       if (paginationContainer) {
         const poemsToShow = results || displayPoems;
-        paginationContainer.innerHTML = renderPagination(poemsToShow.length, currentLimit, isSearchActive);
+        paginationContainer.innerHTML = unwrapSafeHTML(renderPagination(poemsToShow.length, currentLimit, isSearchActive));
         setupPagination();
       }
       
