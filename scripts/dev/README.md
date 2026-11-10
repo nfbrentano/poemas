@@ -6,7 +6,7 @@ Esta pasta guarda o export original do WordPress dos poemas:
 
 ## Scripts removidos
 
-Scripts de migração e correção pontual (importação do WordPress, limpeza de HTML, reclassificação de tags, migração prev/next e outros) foram removidos por já terem sido aplicados e, em sua maioria, usarem o Supabase, que não é mais o banco do projeto.
+Scripts de migração e correção pontual (importação do WordPress, limpeza de HTML, reclassificação de tags, migração prev/next e outros) foram removidos por já terem sido aplicados e usarem o banco relacional antigo, que não é mais o banco do projeto (atualmente Firebase Firestore).
 
 Eles continuam no histórico do git. O commit `582bbe0` ainda contém todos. Para recuperar um deles:
 
