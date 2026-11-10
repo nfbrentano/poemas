@@ -8,7 +8,7 @@ export async function trackPageView(page, poemId = null) {
     const ua = navigator.userAgent || '';
     if (/bot|crawler|spider|Googlebot|bingbot|facebookexternalhit/i.test(ua)) return;
 
-    // Geo lookup via public API instead of Supabase Edge Function
+    // Geo lookup via public API
     let country = null;
     try {
       if (!window._ipPromise) {

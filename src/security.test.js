@@ -266,3 +266,22 @@ describe('CodeQL Security Scanning Fixes (SDD 2026-10-26 - #41, #45, #46)', () =
     });
   });
 });
+
+describe('Remoção de resquícios do backend legado e Integridade da CSP (SDD 2026-11-10)', () => {
+  const LEGACY_BACKEND = ['supa', 'base'].join('');
+
+  it('CT04 & CA04: index.html CSP não deve permitir nenhum domínio legado', () => {
+    const indexPath = path.resolve(process.cwd(), 'index.html');
+    const html = fs.readFileSync(indexPath, 'utf-8');
+    const cspMatch = html.match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/);
+    expect(cspMatch).not.toBeNull();
+    const csp = cspMatch[1];
+
+    expect(csp.toLowerCase()).not.toContain(LEGACY_BACKEND);
+  });
+
+  it('CT02 & CA02: pasta do backend legado não deve existir no repositório', () => {
+    const legacyDir = path.resolve(process.cwd(), LEGACY_BACKEND);
+    expect(fs.existsSync(legacyDir)).toBe(false);
+  });
+});

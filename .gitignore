@@ -31,10 +31,6 @@ public/feed.xml
 *.sln
 *.sw?
 
-# Supabase
-supabase/.temp/
-supabase/functions/*/node_modules
-supabase/functions/*/.deno
 .env.local
 .env
 
