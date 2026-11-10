@@ -1,6 +1,6 @@
 # [CHORE] Corrigir vulnerabilidade de DoS no minimatch (#46)
 
-> **Status:** Em andamento
+> **Status:** Concluída
 > **Autor:** Claude · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
 
 ## Detalhes da Atividade
@@ -40,10 +40,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o arquivo `package.json`, quando inspeciono a seção `overrides`, então `minimatch` está configurado para `^11.0.1`.
-- [ ] **CA02:** Dado o repositório após a atualização, quando executo `npm ls minimatch`, então todas as instâncias no projeto raiz estão na versão $\ge 11.0.1$ e não há nenhuma versão afetada.
-- [ ] **CA03:** Dado o projeto com o `minimatch` atualizado, quando executo `npm run lint`, então o ESLint conclui com sucesso e sem erros de execução.
-- [ ] **CA04:** Dado o projeto com o `minimatch` atualizado, quando executo `npm test -- --run` e `npm run build`, então todos os 42 arquivos de teste passam e o build de produção é gerado com sucesso.
+- [x] **CA01:** Dado o arquivo `package.json`, quando inspeciono a seção `overrides`, então `minimatch` está configurado para `^11.0.1`.
+- [x] **CA02:** Dado o repositório após a atualização, quando executo `npm ls minimatch`, então todas as instâncias no projeto raiz estão na versão $\ge 11.0.1$ e não há nenhuma versão afetada.
+- [x] **CA03:** Dado o projeto com o `minimatch` atualizado, quando executo `npm run lint`, então o ESLint conclui com sucesso e sem erros de execução.
+- [x] **CA04:** Dado o projeto com o `minimatch` atualizado, quando executo `npm test -- --run` e `npm run build`, então todos os 44 arquivos de teste passam (382 testes) e o build de produção é gerado com sucesso.
 
 ## O que a atividade não inclui
 
