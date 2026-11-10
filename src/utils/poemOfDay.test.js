@@ -60,4 +60,27 @@ describe('poemOfDay', () => {
     expect(getPoemOfDay([], date)).toBeNull();
     expect(getPoemOfDay(null, date)).toBeNull();
   });
+
+  it('CT06 & CA06: Poema publicado por agendamento é elegível para sorteio do poema do dia', () => {
+    const scheduledPoemNowPublished = {
+      id: 'scheduled-promoted-1',
+      slug: 'poema-agendado-promovido',
+      title: 'Poema Promovido por Agendamento',
+      status: 'published',
+      published_at: '2026-11-10T08:00:00.000Z'
+    };
+
+    const allPoems = [...mockPoems, scheduledPoemNowPublished];
+    let selected = false;
+    const testDate = new Date('2026-01-01T12:00:00Z');
+    for (let i = 0; i < 365; i++) {
+      const picked = getPoemOfDay(allPoems, testDate);
+      if (picked && picked.slug === scheduledPoemNowPublished.slug) {
+        selected = true;
+        break;
+      }
+      testDate.setUTCDate(testDate.getUTCDate() + 1);
+    }
+    expect(selected).toBe(true);
+  });
 });

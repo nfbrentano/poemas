@@ -266,19 +266,30 @@ export async function renderDashboard(container) {
                   <p style="color: var(--text-muted); font-size: 0.85rem; padding: var(--space-sm) 0;">Nenhuma publicação agendada.</p>
                 ` : `
                   <div style="display: grid; gap: var(--space-xs);">
-                    ${upcomingScheduled.map(p => `
+                    ${upcomingScheduled.map(p => {
+                      const scheduledTime = new Date(p.scheduled_at).getTime();
+                      const isDelayed = !isNaN(scheduledTime) && scheduledTime < (Date.now() - 60 * 60 * 1000);
+                      const badgeBorder = isDelayed ? 'var(--error)' : 'var(--accent-subtle)';
+                      const badgeColor = isDelayed ? 'var(--error)' : 'var(--accent-subtle)';
+                      return `
                       <div style="padding: var(--space-xs); border: 1px solid var(--border-subtle); border-radius: 2px; background: rgba(255, 255, 255, 0.01); display: flex; justify-content: space-between; align-items: center;">
                         <div>
                           <div style="font-family: var(--font-display); font-size: 1rem; color: var(--text-primary); font-weight: 400;">${escapeHtml(p.title)}</div>
                           <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-ui); margin-top: 2px;">Slug: ${escapeHtml(p.slug)}</div>
                         </div>
-                        <div style="text-align: right;">
-                          <span style="font-size: 0.7rem; color: var(--accent-subtle); border: 1px solid var(--accent-subtle); padding: 0.15rem 0.4rem; border-radius: 2px; text-transform: uppercase; font-family: var(--font-ui); white-space: nowrap;">
+                        <div style="text-align: right; display: flex; align-items: center; gap: 4px;">
+                          ${isDelayed ? `
+                            <span class="badge-delayed" style="font-size: 0.7rem; color: var(--error); border: 1px solid var(--error); padding: 0.15rem 0.4rem; border-radius: 2px; text-transform: uppercase; font-family: var(--font-ui); white-space: nowrap; font-weight: 600;">
+                              Atrasado
+                            </span>
+                          ` : ''}
+                          <span style="font-size: 0.7rem; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 0.15rem 0.4rem; border-radius: 2px; text-transform: uppercase; font-family: var(--font-ui); white-space: nowrap;">
                             ${new Date(p.scheduled_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
                           </span>
                         </div>
                       </div>
-                    `).join('')}
+                      `;
+                    }).join('')}
                   </div>
                 `}
               </div>

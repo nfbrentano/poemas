@@ -100,16 +100,19 @@ export async function renderList(container) {
         tbody.innerHTML = filteredPoems.map(p => {
           const count = viewCounts[p.id] || 0;
           let dateInfo = '';
+          let isDelayed = false;
           if (p.status === 'scheduled') {
-            dateInfo = `Agendado • ${new Date(p.scheduled_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`;
+            const scheduledTime = p.scheduled_at ? new Date(p.scheduled_at).getTime() : NaN;
+            isDelayed = !isNaN(scheduledTime) && scheduledTime < (Date.now() - 60 * 60 * 1000);
+            dateInfo = `${isDelayed ? '<span style="color: var(--error); font-weight: 600;">Atrasado</span> • ' : ''}Agendado • ${new Date(p.scheduled_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`;
           } else if (p.status === 'published') {
             dateInfo = `Publicado • ${new Date(p.published_at).toLocaleDateString('pt-BR')}`;
           } else {
             dateInfo = `Criado • ${new Date(p.created_at).toLocaleDateString('pt-BR')}`;
           }
           
-          const badgeColor = p.status === 'published' ? 'var(--success)' : p.status === 'scheduled' ? 'var(--accent-subtle)' : 'var(--border-strong)';
-          const badgeTextColor = p.status === 'published' ? 'var(--success)' : p.status === 'scheduled' ? 'var(--accent-subtle)' : 'var(--text-muted)';
+          const badgeColor = p.status === 'published' ? 'var(--success)' : (p.status === 'scheduled' ? (isDelayed ? 'var(--error)' : 'var(--accent-subtle)') : 'var(--border-strong)');
+          const badgeTextColor = p.status === 'published' ? 'var(--success)' : (p.status === 'scheduled' ? (isDelayed ? 'var(--error)' : 'var(--accent-subtle)') : 'var(--text-muted)');
           
           return `
             <tr style="border-bottom: 1px solid var(--border-subtle); transition: background-color var(--transition-fast);">

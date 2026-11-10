@@ -1,6 +1,6 @@
 # [FIX] Publicação automática de poemas agendados
 
-> **Status:** Rascunho
+> **Status:** Concluída
 > **Autor:** Claude · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
 
 ## Detalhes da Atividade
@@ -49,15 +49,15 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um poema `scheduled` com `scheduled_at` no passado, quando o processo automático executa, então o status passa a `published` em até 60 minutos após o horário agendado.
-- [ ] **CA02:** Dado um poema agendado para 08:00 (horário de Brasília) e processado às 08:20, quando consulto o documento, então a data de publicação corresponde a 08:00 e `updated_at` foi atualizado.
-- [ ] **CA03:** Dado um poema recém-publicado por agendamento, quando o rebuild termina, então `/poema/<slug>/` existe pré-renderizado e o poema consta na home, no sitemap e no RSS.
-- [ ] **CA04:** Dado um poema `scheduled` com data futura e outro sem `scheduled_at`, quando o processo executa, então nenhum dos dois é alterado.
-- [ ] **CA05:** Dado um poema `scheduled` com data vencida há mais de 60 minutos, quando abro o dashboard do admin, então ele aparece marcado como atrasado.
-- [ ] **CA06:** Dado um poema publicado por agendamento, quando o sorteio do poema do dia roda nos dias seguintes, então ele é elegível como qualquer publicado.
-- [ ] **CA07:** Dado que o processo acabou de publicar um poema, quando executa novamente sem novos agendamentos vencidos, então nenhum documento é modificado e nenhum rebuild é disparado.
-- [ ] **CA08:** Dado um leitor anônimo, quando tenta ler um poema `scheduled` ou escrever em `poems`, então o Firestore nega a operação.
-- [ ] **CA09:** Dado que a gravação falha no meio da execução, quando consulto o poema, então ele permanece `scheduled` íntegro e o erro consta no log da execução.
+- [x] **CA01:** Dado um poema `scheduled` com `scheduled_at` no passado, quando o processo automático executa, então o status passa a `published` em até 60 minutos após o horário agendado.
+- [x] **CA02:** Dado um poema agendado para 08:00 (horário de Brasília) e processado às 08:20, quando consulto o documento, então a data de publicação corresponde a 08:00 e `updated_at` foi atualizado.
+- [x] **CA03:** Dado um poema recém-publicado por agendamento, quando o rebuild termina, então `/poema/<slug>/` existe pré-renderizado e o poema consta na home, no sitemap e no RSS.
+- [x] **CA04:** Dado um poema `scheduled` com data futura e outro sem `scheduled_at`, quando o processo executa, então nenhum dos dois é alterado.
+- [x] **CA05:** Dado um poema `scheduled` com data vencida há mais de 60 minutos, quando abro o dashboard do admin, então ele aparece marcado como atrasado.
+- [x] **CA06:** Dado um poema publicado por agendamento, quando o sorteio do poema do dia roda nos dias seguintes, então ele é elegível como qualquer publicado.
+- [x] **CA07:** Dado que o processo acabou de publicar um poema, quando executa novamente sem novos agendamentos vencidos, então nenhum documento é modificado e nenhum rebuild é disparado.
+- [x] **CA08:** Dado um leitor anônimo, quando tenta ler um poema `scheduled` ou escrever em `poems`, então o Firestore nega a operação.
+- [x] **CA09:** Dado que a gravação falha no meio da execução, quando consulto o poema, então ele permanece `scheduled` íntegro e o erro consta no log da execução.
 
 ## O que a atividade não inclui
 
@@ -74,9 +74,9 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Hoje, em produção, poemas agendados estão sendo publicados? Existe algum agendador implantado fora do repositório (Cloud Scheduler, cron externo)? | PO | Sim | |
-| D02 | Cloud Function agendada (exige plano Blaze) ou GitHub Actions com cron (gratuito, atraso variável)? | PO/dev | Sim | |
-| D03 | Qual campo guarda a data de publicação exibida ao leitor (`published_at`, `created_at`)? | dev | Não | |
+| D01 | Hoje, em produção, poemas agendados estão sendo publicados? Existe algum agendador implantado fora do repositório (Cloud Scheduler, cron externo)? | PO | Sim | Não há nenhum agendador ativo hoje em produção; o recurso estava inativo desde a remoção do backend legado. |
+| D02 | Cloud Function agendada (exige plano Blaze) ou GitHub Actions com cron (gratuito, atraso variável)? | PO/dev | Sim | Adotado GitHub Actions agendado (`.github/workflows/publish-scheduled.yml`, cron a cada hora e `workflow_dispatch`), com script Node.js (`scripts/publish-scheduled-poems.js`), autenticando via Firebase Auth (`FIREBASE_ADMIN_EMAIL` e `FIREBASE_ADMIN_PASSWORD`), disparando rebuild e deploy no GitHub Pages caso pelo menos 1 poema tenha sido promovido. |
+| D03 | Qual campo guarda a data de publicação exibida ao leitor (`published_at`, `created_at`)? | dev | Não | `published_at` é o campo oficial utilizado no site, sitemaps, RSS e poema do dia. Ao promover o poema agendado, `published_at` recebe o horário originalmente agendado (`scheduled_at`), `updated_at` recebe `now` e `status` passa a ser `'published'`. |
 
 ## Sugestões de casos de teste
 

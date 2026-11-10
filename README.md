@@ -196,6 +196,14 @@ O workflow [daily-poem.yml](.github/workflows/daily-poem.yml) é executado diari
 
 ---
 
+## ⏰ Publicação Automática de Poemas Agendados
+
+O workflow [publish-scheduled.yml](.github/workflows/publish-scheduled.yml) é executado a cada hora cheia (via cron e `workflow_dispatch`). Ele busca no Firestore poemas com status `scheduled` cuja data agendada (`scheduled_at`) já passou. Ao encontrar:
+1. Promove os poemas para `published`, preservando a data agendada em `published_at` e atualizando `updated_at`.
+2. Dispara automaticamente o workflow [deploy.yml](.github/workflows/deploy.yml) para reconstruir o site estático, garantindo a página pré-renderizada do poema, atualização da home, sitemaps, RSS e `llms.txt`.
+
+---
+
 ## 📐 Metodologia: Spec Driven Development (SDD)
 
 Todas as novas funcionalidades, correções, refatorações ou tarefas de documentação devem seguir o fluxo **Spec Driven Development (SDD)**:

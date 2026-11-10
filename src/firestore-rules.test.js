@@ -8,6 +8,27 @@ const block = (name) => {
   return rules.slice(start, rules.indexOf('\n    }\n', start));
 };
 
+describe('firestore.rules: collection_poems (CA10 & CT10)', () => {
+  const b = block('collection_poems');
+  it('leitura pública permitida para montagem de coleções', () => {
+    expect(b).toMatch(/allow read: if true;/);
+  });
+  it('escrita restrita a usuário autenticado (impede gravação anônima)', () => {
+    expect(b).toMatch(/allow write: if request\.auth != null;/);
+    expect(b).not.toMatch(/allow write[^;]*if true/);
+  });
+});
+
+describe('firestore.rules: poems', () => {
+  const b = block('poems');
+  it('CA08 & CT08: leitura anônima restrita a status published', () => {
+    expect(b).toContain("resource.data.status == 'published' || request.auth != null");
+  });
+  it('CA08 & CT08: escrita restrita a usuário autenticado', () => {
+    expect(b).toContain('allow write: if request.auth != null;');
+  });
+});
+
 describe('firestore.rules: push_subscriptions', () => {
   const b = block('push_subscriptions');
   it('leitura restrita a usuário autenticado', () => {
