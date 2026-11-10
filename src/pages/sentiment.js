@@ -5,6 +5,7 @@ import { slugifyTag, formatTag } from '../utils/tags.js';
 import { getSentimentIntro, getSentimentName } from '../data/sentiments.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { getPoemRowExcerpt } from '../utils/collection-template.js';
+import { getFavoriteSlugs } from '../utils/favorites.js';
 
 export const sentiment = {
   meta: {
@@ -168,21 +169,26 @@ export const sentiment = {
         </header>
 
         <div class="poems-list">
-          ${matchingPoems.map(poem => {
-            const year = new Date(poem.published_at).getFullYear();
-            const excerpt = getPoemRowExcerpt(poem, 140);
-            return `
-              <article class="poem-row">
-                <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
-                  <div class="poem-row-main" style="flex: 1; min-width: 0;">
-                    <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
-                    ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
-                  </div>
-                  <span class="poem-row-year">${year}</span>
-                </a>
-              </article>
-            `;
-          }).join('')}
+          ${(() => {
+            const favSlugs = getFavoriteSlugs();
+            return matchingPoems.map(poem => {
+              const year = new Date(poem.published_at).getFullYear();
+              const excerpt = getPoemRowExcerpt(poem, 140);
+              const isFav = favSlugs.has(poem.slug) || (poem.id && favSlugs.has(poem.id));
+              const favBadge = isFav ? ' <span class="favorite-badge" aria-label="Poema favoritado" title="Poema favoritado">🔖</span>' : '';
+              return `
+                <article class="poem-row">
+                  <a href="${import.meta.env.BASE_URL}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
+                    <div class="poem-row-main" style="flex: 1; min-width: 0;">
+                      <h3 class="poem-row-title">${escapeHtml(poem.title)}${favBadge}</h3>
+                      ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
+                    </div>
+                    <span class="poem-row-year">${year}</span>
+                  </a>
+                </article>
+              `;
+            }).join('');
+          })()}
         </div>
       </section>
     `);

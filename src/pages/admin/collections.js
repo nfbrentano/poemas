@@ -1,6 +1,16 @@
-import { listDocs, insertDocs, updateDocById, deleteDocById, deleteDocsWhere, uploadFile, getPublicFileUrl } from './data.js';
+import { listDocs, insertDocs, updateDocById, deleteDocById, replaceCollectionPoems, uploadFile, getPublicFileUrl } from './data.js';
 import { escapeHtml, sanitizeUrl } from '../../utils/html.js';
 import { countPoemsByCollection, formatPoemCount } from './collection-counts.js';
+import {
+  moveItem,
+  moveItemUp,
+  moveItemDown,
+  appendPoemToOrder,
+  removePoemFromOrder,
+  sortPoemsByCollectionRelations,
+  sortPoemsByAutoOrder,
+  buildCollectionPoemsPayload,
+} from '../../utils/collection-order.js';
 
 export async function renderCollections(container) {
     const renderList = async () => {
@@ -126,9 +136,16 @@ export async function renderCollections(container) {
         
         const poems = poemsRes.data || [];
         if (colRes.data) col = colRes.data;
-        if (assocRes.data) {
-          assocRes.data.forEach(a => associatedSet.add(a.poem_id));
-        }
+        const assocData = assocRes.data || [];
+        assocData.forEach(a => associatedSet.add(a.poem_id));
+
+        let isManualOrder = assocData.some(a => typeof a.order === 'number');
+        let isDirtyOrder = false;
+
+        const associatedPoems = poems.filter(p => associatedSet.has(p.id));
+        let orderedPoems = isManualOrder
+          ? sortPoemsByCollectionRelations(associatedPoems, assocData)
+          : sortPoemsByAutoOrder(associatedPoems);
         
         container.innerHTML = `
           <div style="font-family: var(--font-ui); max-width: 700px; margin: 0 auto; display: grid; gap: var(--space-md);">
@@ -200,6 +217,38 @@ export async function renderCollections(container) {
                       </label>
                     `;
                   }).join('')}
+                </div>
+              </div>
+
+              <!-- Ordem de Leitura dos Poemas -->
+              <div style="border-top: 1px solid var(--border-subtle); padding-top: var(--space-md); margin-top: var(--space-xs);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-2xs); margin-bottom: var(--space-xs);">
+                  <div>
+                    <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                      Ordem de Leitura dos Poemas (<span id="order-count">${orderedPoems.length}</span>)
+                    </label>
+                    <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">
+                      Arraste os itens ou use as setas ↑ ↓ para definir a ordem na qual os poemas aparecem nesta coleção.
+                    </p>
+                  </div>
+                  <div>
+                    <span id="order-badge" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 2px; font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid ${isManualOrder ? 'var(--accent-subtle)' : 'var(--border-strong)'}; color: ${isManualOrder ? 'var(--accent-subtle)' : 'var(--text-muted)'};">
+                      ${isManualOrder ? '✓ Ordem manual' : 'Ordem automática'}
+                    </span>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: var(--space-xs); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-xs);">
+                  <button type="button" id="save-order-btn" class="btn-secondary" style="cursor: pointer; padding: 0.4rem 0.8rem; border: 1px solid var(--border-strong); border-radius: 2px; font-size: 0.8rem; background: var(--bg-secondary); color: var(--text-primary);">
+                    Salvar ordem
+                  </button>
+                  <button type="button" id="restore-order-btn" style="cursor: pointer; padding: 0.4rem 0.8rem; border: 1px solid transparent; border-radius: 2px; font-size: 0.8rem; background: transparent; color: var(--text-secondary);">
+                    Restaurar ordem automática
+                  </button>
+                  <span id="order-feedback" style="font-size: 0.8rem; font-family: var(--font-ui);"></span>
+                </div>
+
+                <div id="order-list-container" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-strong); border-radius: 2px; padding: var(--space-2xs); background: var(--bg-secondary); display: grid; gap: 4px;">
                 </div>
               </div>
               
@@ -305,7 +354,320 @@ export async function renderCollections(container) {
           }
         });
         
-        container.querySelector('#cancel-form-btn').addEventListener('click', () => renderList());
+        // Elementos da seção de ordem de poemas
+        const orderListContainer = container.querySelector('#order-list-container');
+        const orderCountEl = container.querySelector('#order-count');
+        const orderBadge = container.querySelector('#order-badge');
+        const orderFeedback = container.querySelector('#order-feedback');
+        const saveOrderBtn = container.querySelector('#save-order-btn');
+        const restoreOrderBtn = container.querySelector('#restore-order-btn');
+
+        const updateBadge = () => {
+          if (orderBadge) {
+            orderBadge.textContent = isManualOrder ? '✓ Ordem manual' : 'Ordem automática';
+            orderBadge.style.borderColor = isManualOrder ? 'var(--accent-subtle)' : 'var(--border-strong)';
+            orderBadge.style.color = isManualOrder ? 'var(--accent-subtle)' : 'var(--text-muted)';
+          }
+          if (orderCountEl) {
+            orderCountEl.textContent = String(orderedPoems.length);
+          }
+        };
+
+        let draggedIndex = null;
+
+        const renderOrderList = () => {
+          if (!orderListContainer) return;
+          if (orderedPoems.length === 0) {
+            orderListContainer.innerHTML = `
+              <p style="color: var(--text-muted); font-size: 0.85rem; padding: 16px; margin: 0; text-align: center;">
+                Nenhum poema selecionado para esta coleção. Marque poemas na lista acima para ordená-los.
+              </p>
+            `;
+            return;
+          }
+
+          orderListContainer.innerHTML = orderedPoems.map((p, index) => `
+            <div class="poem-order-item" data-id="${p.id}" data-index="${index}" draggable="true" tabindex="0" role="listitem"
+                 style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: 2px; cursor: grab; user-select: none; transition: background-color var(--transition-fast), border-color var(--transition-fast);">
+              <span class="order-handle" title="Arraste para mover" style="color: var(--text-muted); font-size: 1rem; cursor: grab; padding: 0 4px;">⠿</span>
+              <span class="order-num" style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--text-muted); width: 22px; text-align: right; font-variant-numeric: tabular-nums;">${index + 1}.</span>
+              <span style="flex: 1; font-size: 0.85rem; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(p.title)}</span>
+              <span style="font-size: 0.68rem; color: ${p.status === 'published' ? 'var(--success)' : 'var(--text-muted)'}; border: 1px solid ${p.status === 'published' ? 'var(--success)' : 'var(--border-strong)'}; padding: 1px 4px; border-radius: 1px; font-family: var(--font-ui); text-transform: uppercase;">
+                ${p.status === 'published' ? 'Pub' : 'Rasc'}
+              </span>
+              <div style="display: flex; gap: 2px;">
+                <button type="button" class="btn-move-up" data-index="${index}" aria-label="Mover ${escapeHtml(p.title)} para cima" ${index === 0 ? 'disabled' : ''}
+                        style="background: transparent; border: 1px solid var(--border-subtle); border-radius: 2px; padding: 1px 6px; font-size: 0.75rem; color: var(--text-secondary); cursor: ${index === 0 ? 'not-allowed' : 'pointer'}; opacity: ${index === 0 ? '0.4' : '1'};">
+                  ↑
+                </button>
+                <button type="button" class="btn-move-down" data-index="${index}" aria-label="Mover ${escapeHtml(p.title)} para baixo" ${index === orderedPoems.length - 1 ? 'disabled' : ''}
+                        style="background: transparent; border: 1px solid var(--border-subtle); border-radius: 2px; padding: 1px 6px; font-size: 0.75rem; color: var(--text-secondary); cursor: ${index === orderedPoems.length - 1 ? 'not-allowed' : 'pointer'}; opacity: ${index === orderedPoems.length - 1 ? '0.4' : '1'};">
+                  ↓
+                </button>
+              </div>
+            </div>
+          `).join('');
+
+          // Ações de mover com teclado e clique
+          orderListContainer.querySelectorAll('.btn-move-up').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const idx = parseInt(btn.dataset.index, 10);
+              if (idx > 0) {
+                orderedPoems = moveItemUp(orderedPoems, idx);
+                isManualOrder = true;
+                isDirtyOrder = true;
+                updateBadge();
+                renderOrderList();
+                const nextBtn = orderListContainer.querySelector(`.btn-move-up[data-index="${idx - 1}"]`);
+                if (nextBtn) nextBtn.focus();
+              }
+            });
+          });
+
+          orderListContainer.querySelectorAll('.btn-move-down').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const idx = parseInt(btn.dataset.index, 10);
+              if (idx < orderedPoems.length - 1) {
+                orderedPoems = moveItemDown(orderedPoems, idx);
+                isManualOrder = true;
+                isDirtyOrder = true;
+                updateBadge();
+                renderOrderList();
+                const nextBtn = orderListContainer.querySelector(`.btn-move-down[data-index="${idx + 1}"]`);
+                if (nextBtn) nextBtn.focus();
+              }
+            });
+          });
+
+          // Suporte a teclado no item (Alt+ArrowUp e Alt+ArrowDown)
+          orderListContainer.querySelectorAll('.poem-order-item').forEach(item => {
+            item.addEventListener('keydown', (e) => {
+              const idx = parseInt(item.dataset.index, 10);
+              if (e.key === 'ArrowUp' && (e.altKey || e.ctrlKey)) {
+                e.preventDefault();
+                if (idx > 0) {
+                  orderedPoems = moveItemUp(orderedPoems, idx);
+                  isManualOrder = true;
+                  isDirtyOrder = true;
+                  updateBadge();
+                  renderOrderList();
+                  const targetItem = orderListContainer.querySelector(`.poem-order-item[data-index="${idx - 1}"]`);
+                  if (targetItem) targetItem.focus();
+                }
+              } else if (e.key === 'ArrowDown' && (e.altKey || e.ctrlKey)) {
+                e.preventDefault();
+                if (idx < orderedPoems.length - 1) {
+                  orderedPoems = moveItemDown(orderedPoems, idx);
+                  isManualOrder = true;
+                  isDirtyOrder = true;
+                  updateBadge();
+                  renderOrderList();
+                  const targetItem = orderListContainer.querySelector(`.poem-order-item[data-index="${idx + 1}"]`);
+                  if (targetItem) targetItem.focus();
+                }
+              }
+            });
+
+            // HTML5 Drag and drop (mouse)
+            item.addEventListener('dragstart', (e) => {
+              draggedIndex = parseInt(item.dataset.index, 10);
+              if (e.dataTransfer) {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(draggedIndex));
+              }
+              item.style.opacity = '0.4';
+            });
+
+            item.addEventListener('dragend', () => {
+              item.style.opacity = '1';
+              orderListContainer.querySelectorAll('.poem-order-item').forEach(el => {
+                el.style.borderTop = '';
+                el.style.borderBottom = '';
+              });
+            });
+
+            item.addEventListener('dragover', (e) => {
+              e.preventDefault();
+              if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+              const targetIndex = parseInt(item.dataset.index, 10);
+              if (draggedIndex !== null && draggedIndex !== targetIndex) {
+                if (draggedIndex < targetIndex) {
+                  item.style.borderBottom = '2px solid var(--accent-subtle)';
+                  item.style.borderTop = '';
+                } else {
+                  item.style.borderTop = '2px solid var(--accent-subtle)';
+                  item.style.borderBottom = '';
+                }
+              }
+            });
+
+            item.addEventListener('dragleave', () => {
+              item.style.borderTop = '';
+              item.style.borderBottom = '';
+            });
+
+            item.addEventListener('drop', (e) => {
+              e.preventDefault();
+              const targetIndex = parseInt(item.dataset.index, 10);
+              if (draggedIndex !== null && draggedIndex !== targetIndex) {
+                orderedPoems = moveItem(orderedPoems, draggedIndex, targetIndex);
+                isManualOrder = true;
+                isDirtyOrder = true;
+                updateBadge();
+                renderOrderList();
+              }
+              draggedIndex = null;
+            });
+
+            // Touch events para mobile (RNF02 & CA01)
+            let _touchStartY = 0;
+            let currentOverIndex = null;
+            item.addEventListener('touchstart', (e) => {
+              if (e.touches.length === 1) {
+                _touchStartY = e.touches[0].clientY;
+                draggedIndex = parseInt(item.dataset.index, 10);
+              }
+            }, { passive: true });
+
+            item.addEventListener('touchmove', (e) => {
+              if (draggedIndex === null || e.touches.length !== 1) return;
+              const touch = e.touches[0];
+              const elBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+              const targetItem = elBelow ? elBelow.closest('.poem-order-item') : null;
+              if (targetItem && targetItem !== item) {
+                currentOverIndex = parseInt(targetItem.dataset.index, 10);
+                orderListContainer.querySelectorAll('.poem-order-item').forEach(el => {
+                  el.style.backgroundColor = el === targetItem ? 'var(--bg-elevated)' : 'var(--bg-primary)';
+                });
+              }
+            }, { passive: true });
+
+            item.addEventListener('touchend', () => {
+              if (draggedIndex !== null && currentOverIndex !== null && draggedIndex !== currentOverIndex) {
+                orderedPoems = moveItem(orderedPoems, draggedIndex, currentOverIndex);
+                isManualOrder = true;
+                isDirtyOrder = true;
+                updateBadge();
+                renderOrderList();
+              }
+              draggedIndex = null;
+              currentOverIndex = null;
+              orderListContainer.querySelectorAll('.poem-order-item').forEach(el => {
+                el.style.backgroundColor = 'var(--bg-primary)';
+              });
+            });
+          });
+        };
+
+        // Renderiza lista inicial
+        renderOrderList();
+
+        // Atualização reativa da lista de ordem quando os checkboxes são marcados/desmarcados
+        const checkboxes = container.querySelectorAll('input[name="associated-poems"]');
+        checkboxes.forEach(cb => {
+          cb.addEventListener('change', () => {
+            const poemId = cb.value;
+            const poem = poems.find(p => p.id === poemId);
+            if (cb.checked) {
+              if (poem) {
+                orderedPoems = appendPoemToOrder(orderedPoems, poem);
+                isDirtyOrder = true;
+              }
+            } else {
+              orderedPoems = removePoemFromOrder(orderedPoems, poemId);
+              isDirtyOrder = true;
+            }
+            updateBadge();
+            renderOrderList();
+          });
+        });
+
+        // Botão Salvar Ordem (RF03, CA03, CA04)
+        if (saveOrderBtn) {
+          saveOrderBtn.addEventListener('click', async () => {
+            if (!colId) {
+              alert('Por favor, crie e salve a coleção antes de gravar a ordem individualmente.');
+              return;
+            }
+            saveOrderBtn.disabled = true;
+            saveOrderBtn.textContent = 'Salvando ordem...';
+            orderFeedback.textContent = '';
+
+            const relations = buildCollectionPoemsPayload(colId, orderedPoems, true);
+            const { error: saveErr } = await replaceCollectionPoems(colId, relations);
+
+            saveOrderBtn.disabled = false;
+            saveOrderBtn.textContent = 'Salvar ordem';
+
+            if (saveErr) {
+              orderFeedback.textContent = 'Erro ao salvar ordem: ' + (saveErr.message || 'Falha na rede');
+              orderFeedback.style.color = 'var(--error)';
+            } else {
+              isManualOrder = true;
+              isDirtyOrder = false;
+              updateBadge();
+              orderFeedback.textContent = '✓ Ordem salva com sucesso!';
+              orderFeedback.style.color = 'var(--success)';
+              setTimeout(() => {
+                if (orderFeedback.textContent.startsWith('✓')) orderFeedback.textContent = '';
+              }, 4000);
+            }
+          });
+        }
+
+        // Botão Restaurar Ordem Automática (RF07, CA08)
+        if (restoreOrderBtn) {
+          restoreOrderBtn.addEventListener('click', async () => {
+            if (!confirm('Deseja restaurar a ordem automática (cronológica) dos poemas desta coleção?')) return;
+            orderedPoems = sortPoemsByAutoOrder(orderedPoems);
+            isManualOrder = false;
+            updateBadge();
+            renderOrderList();
+
+            if (colId) {
+              restoreOrderBtn.disabled = true;
+              orderFeedback.textContent = 'Restaurando...';
+              orderFeedback.style.color = 'var(--text-muted)';
+
+              const relations = buildCollectionPoemsPayload(colId, orderedPoems, false);
+              const { error: restErr } = await replaceCollectionPoems(colId, relations);
+              restoreOrderBtn.disabled = false;
+
+              if (restErr) {
+                orderFeedback.textContent = 'Erro ao restaurar ordem: ' + (restErr.message || 'Falha');
+                orderFeedback.style.color = 'var(--error)';
+              } else {
+                isDirtyOrder = false;
+                orderFeedback.textContent = '✓ Ordem restaurada para o padrão cronológico.';
+                orderFeedback.style.color = 'var(--success)';
+                setTimeout(() => {
+                  if (orderFeedback.textContent.startsWith('✓')) orderFeedback.textContent = '';
+                }, 4000);
+              }
+            } else {
+              isDirtyOrder = true;
+            }
+          });
+        }
+
+        // Aviso ao sair da tela com alterações não salvas (RF08, CA09)
+        const beforeUnloadHandler = (e) => {
+          if (isDirtyOrder) {
+            e.preventDefault();
+            e.returnValue = '';
+          }
+        };
+        window.addEventListener('beforeunload', beforeUnloadHandler);
+
+        container.querySelector('#cancel-form-btn').addEventListener('click', () => {
+          if (isDirtyOrder && !confirm('Há alterações não salvas na ordem dos poemas. Deseja realmente sair sem salvar?')) {
+            return;
+          }
+          window.removeEventListener('beforeunload', beforeUnloadHandler);
+          renderList();
+        });
         
         container.querySelector('#col-form').addEventListener('submit', async (e) => {
           e.preventDefault();
@@ -340,20 +702,17 @@ export async function renderCollections(container) {
             return;
           }
           
-          const checkedCheckboxes = container.querySelectorAll('input[name="associated-poems"]:checked');
-          const checkedIds = Array.from(checkedCheckboxes).map(cb => cb.value);
-          
-          await deleteDocsWhere('collection_poems', 'collection_id', colIdToUse);
-          
-          if (checkedIds.length > 0) {
-            const relations = checkedIds.map(poemId => ({
-              collection_id: colIdToUse,
-              poem_id: poemId
-            }));
-            const { error: relError } = await insertDocs('collection_poems', relations);
+          window.removeEventListener('beforeunload', beforeUnloadHandler);
+
+          // Salva relações atomicamente com a ordem atualizada (RNF03)
+          if (orderedPoems.length > 0) {
+            const relations = buildCollectionPoemsPayload(colIdToUse, orderedPoems, isManualOrder);
+            const { error: relError } = await replaceCollectionPoems(colIdToUse, relations);
             if (relError) {
-              alert('Coleção salva, mas houve um erro ao associar poemas: ' + relError.message);
+              alert('Coleção salva, mas houve um erro ao associar/ordenar poemas: ' + relError.message);
             }
+          } else {
+            await replaceCollectionPoems(colIdToUse, []);
           }
           
           renderList();

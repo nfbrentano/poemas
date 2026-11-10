@@ -1,5 +1,6 @@
 import { escapeHtml, stripHtml } from './html.js';
 import { renderBreadcrumbsHtml, SITE_URL } from './structured-data.js';
+import { getFavoriteSlugs } from './favorites.js';
 
 /**
  * Extracts a short single-line excerpt for a poem in collection/sentiment listings.
@@ -52,21 +53,26 @@ export function renderCollectionMarkup({
         </header>
 
         <div class="poems-list">
-          ${poemsList.length > 0 ? poemsList.map(poem => {
-            const year = poem.published_at ? new Date(poem.published_at).getFullYear() : '';
-            const excerpt = getPoemRowExcerpt(poem, 140);
-            return `
-            <article class="poem-row">
-              <a href="${baseUrl}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
-                <div class="poem-row-main" style="flex: 1; min-width: 0;">
-                  <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
-                  ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
-                </div>
-                ${year ? `<span class="poem-row-year">${year}</span>` : ''}
-              </a>
-            </article>
-          `;
-          }).join('') : '<p class="empty-state-desc">Nenhum poema publicado nesta coleção ainda.</p>'}
+          ${(() => {
+            const favSlugs = getFavoriteSlugs();
+            return poemsList.length > 0 ? poemsList.map(poem => {
+              const year = poem.published_at ? new Date(poem.published_at).getFullYear() : '';
+              const excerpt = getPoemRowExcerpt(poem, 140);
+              const isFav = favSlugs.has(poem.slug) || (poem.id && favSlugs.has(poem.id));
+              const favBadge = isFav ? ' <span class="favorite-badge" aria-label="Poema favoritado" title="Poema favoritado">🔖</span>' : '';
+              return `
+              <article class="poem-row">
+                <a href="${baseUrl}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
+                  <div class="poem-row-main" style="flex: 1; min-width: 0;">
+                    <h3 class="poem-row-title">${escapeHtml(poem.title)}${favBadge}</h3>
+                    ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
+                  </div>
+                  ${year ? `<span class="poem-row-year">${year}</span>` : ''}
+                </a>
+              </article>
+            `;
+            }).join('') : '<p class="empty-state-desc">Nenhum poema publicado nesta coleção ainda.</p>';
+          })()}
         </div>
       </section>
   `;

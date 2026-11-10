@@ -29,6 +29,7 @@ import { getSentimentIntro, getSentimentName } from '../src/data/sentiments.js';
 
 import { loadFonts, generatePoemOgImage, generateCollectionOgImage, generateDefaultOgImage } from './generate-og-images.js';
 import { loadFallbackPoems } from './fallback-data.js';
+import { sortPoemsByCollectionRelations } from '../src/utils/collection-order.js';
 
 
 // Note: Run this with node --env-file=.env.local scripts/prerender.js
@@ -823,6 +824,7 @@ async function prerender() {
     const staticRoutes = [
       { route: 'sobre', title: 'Sobre Natanael Fernando Gatti Brentano — Poeta', description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.', type: 'profile' },
       { route: 'colecoes', title: 'Coleções e Sentimentos — Natanael Fernando Gatti Brentano', description: 'Explore poemas organizados por séries temáticas e sentimentos.' },
+      { route: 'favoritos', title: 'Poemas Favoritos — Natanael Fernando Gatti Brentano', description: 'Seus poemas favoritos salvos para reler e revisitar.', robots: 'noindex, nofollow' },
       { route: 'admin', title: 'Painel Admin — Natanael Fernando Gatti Brentano', description: 'Área administrativa para gestão de poemas e métricas.', robots: 'noindex, nofollow' },
       { route: 'login', title: 'Login Admin — Natanael Fernando Gatti Brentano', description: 'Acesso ao painel administrativo.', robots: 'noindex, nofollow' },
       { route: 'unsubscribe', title: 'Cancelar Inscrição — Natanael Fernando Gatti Brentano', description: 'Cancelamento de inscrição na newsletter de poemas.', robots: 'noindex, nofollow' },
@@ -965,16 +967,9 @@ async function prerender() {
           const ogImage = generatedOgPath.startsWith('http') ? generatedOgPath : `${baseUrl.replace(/\/$/, '')}${generatedOgPath}`;
 
           const associatedRelations = colToPoemsMap.get(col.id) || [];
-          const poemOrderMap = new Map(associatedRelations.map(r => [r.poem_id, r.order]));
-          const colPoems = poems.filter(p => poemOrderMap.has(p.id) || (p.collection_slugs && p.collection_slugs.includes(col.slug)))
-            .map(p => ({ ...p, _order: poemOrderMap.get(p.id) }));
-          
-          colPoems.sort((a, b) => {
-            if (a._order !== undefined && b._order !== undefined && a._order !== b._order) {
-              return a._order - b._order;
-            }
-            return new Date(a.published_at).getTime() - new Date(b.published_at).getTime();
-          });
+          const relSet = new Set(associatedRelations.map(r => r.poem_id));
+          const matchedPoems = poems.filter(p => relSet.has(p.id) || (p.collection_slugs && p.collection_slugs.includes(col.slug)));
+          const colPoems = sortPoemsByCollectionRelations(matchedPoems, associatedRelations);
           const colBreadcrumbs = [
             { name: 'Início', url: baseUrl },
             { name: 'Coleções', url: `${baseUrl}colecoes/` },

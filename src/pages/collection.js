@@ -6,6 +6,7 @@ import { renderCollectionMarkup } from '../utils/collection-template.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../data/collections.js';
 import { unwrapSafeHTML } from '../utils/html.js';
+import { sortPoemsByCollectionRelations } from '../utils/collection-order.js';
 
 export const collection = {
   meta: {
@@ -69,26 +70,15 @@ export const collection = {
           });
         }
         const mergedRelations = mergeRelationsWithCurated(rawCp, allPublished, [col]);
+        const relationPoemIds = new Set(mergedRelations.map(r => r.poem_id));
 
-        const cpMap = {};
-        mergedRelations.forEach(data => {
-          if (data && data.poem_id) {
-            cpMap[data.poem_id] = typeof data.order === 'number' ? data.order : 0;
-          }
-        });
-        
         // Filtra poemas vinculados à coleção por relação ou por collection_slugs
-        poemsList = allPublished
-          .filter(p => cpMap[p.id] !== undefined || (Array.isArray(p.collection_slugs) && p.collection_slugs.includes(col.slug)))
-          .map(p => ({ ...p, _order: cpMap[p.id] }));
+        const matched = allPublished.filter(
+          p => relationPoemIds.has(p.id) || (Array.isArray(p.collection_slugs) && p.collection_slugs.includes(col.slug))
+        );
 
-        // Ordenação poética: respeita 'order' se definido, senão ordenação cronológica
-        poemsList.sort((a, b) => {
-          if (a._order !== undefined && b._order !== undefined && a._order !== b._order) {
-            return a._order - b._order;
-          }
-          return new Date(a.published_at) - new Date(b.published_at);
-        });
+        // Ordenação poética: respeita 'order' manual se definido, senão ordenação cronológica
+        poemsList = sortPoemsByCollectionRelations(matched, mergedRelations);
       } else {
         error = new Error('Not found');
       }

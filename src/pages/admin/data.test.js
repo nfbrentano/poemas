@@ -15,6 +15,11 @@ const fs = {
   updateDoc: vi.fn(async (...a) => { calls.push(['updateDoc', ...a.slice(1)]); }),
   deleteDoc: vi.fn(async (...a) => { calls.push(['deleteDoc']); }),
   getDocs: vi.fn(),
+  writeBatch: vi.fn(() => ({
+    delete: vi.fn(),
+    set: vi.fn(),
+    commit: vi.fn(async () => {}),
+  })),
 };
 const auth = { currentUser: { uid: 'u1' }, signOut: vi.fn(async () => {}) };
 const callable = vi.fn(async () => ({ data: { ok: true } }));
@@ -113,6 +118,37 @@ describe('updateDocById / deleteDocById / deleteDocsWhere', () => {
     fs.getDocs.mockResolvedValueOnce(snap([]));
     await data.deleteDocsWhere('collection_poems', 'collection_id', 'c1');
     expect(fs.deleteDoc).not.toHaveBeenCalled();
+  });
+
+  it('replaceCollectionPoems substitui atomicamente via writeBatch (RNF03, CT03, CA03)', async () => {
+    const delFn = vi.fn();
+    const setFn = vi.fn();
+    const commitFn = vi.fn(async () => {});
+    fs.writeBatch.mockReturnValueOnce({ delete: delFn, set: setFn, commit: commitFn });
+    fs.getDocs.mockResolvedValueOnce(snap([{ id: 'old1' }, { id: 'old2' }]));
+
+    const res = await data.replaceCollectionPoems('c1', [
+      { poem_id: 'p1', order: 1 },
+      { poem_id: 'p2', order: 2 },
+    ]);
+
+    expect(res).toEqual({ error: null });
+    expect(delFn).toHaveBeenCalledTimes(2);
+    expect(setFn).toHaveBeenCalledTimes(2);
+    expect(commitFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('replaceCollectionPoems devolve erro se o commit falhar (CT04, CA04)', async () => {
+    const err = new Error('batch fail');
+    fs.writeBatch.mockReturnValueOnce({
+      delete: vi.fn(),
+      set: vi.fn(),
+      commit: vi.fn(async () => { throw err; }),
+    });
+    fs.getDocs.mockResolvedValueOnce(snap([{ id: 'old1' }]));
+
+    const res = await data.replaceCollectionPoems('c1', [{ poem_id: 'p1', order: 1 }]);
+    expect(res).toEqual({ error: err });
   });
 });
 

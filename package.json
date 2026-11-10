@@ -40,6 +40,7 @@
   },
   "overrides": {
     "@grpc/grpc-js": "^1.14.5",
-    "fflate": "^0.8.3"
+    "fflate": "^0.8.3",
+    "minimatch": "^11.0.1"
   }
 }

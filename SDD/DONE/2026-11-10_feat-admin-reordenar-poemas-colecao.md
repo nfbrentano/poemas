@@ -1,6 +1,6 @@
 # [FEAT] Admin: reordenar manualmente os poemas de uma coleção
 
-> **Status:** Rascunho
+> **Status:** Concluída
 > **Autor:** Claude · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
 
 ## Detalhes da Atividade
@@ -49,16 +49,16 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que estou autenticado e editando uma coleção com poemas, quando arrasto um poema da posição 5 para a posição 1 (mouse ou toque), então a lista passa a exibi-lo em primeiro e os demais se deslocam.
-- [ ] **CA02:** Dado que o foco está num item da lista, quando aciono "mover para cima" pelo teclado, então o item sobe uma posição e o foco o acompanha.
-- [ ] **CA03:** Dado que reordenei a lista, quando clico em "Salvar ordem", então recebo confirmação e, ao recarregar o admin, a ordem persiste.
-- [ ] **CA04:** Dado que a gravação falha (rede ou permissão), quando clico em "Salvar ordem", então vejo mensagem de erro, a ordem no banco permanece a anterior e minha ordenação na tela não é perdida.
-- [ ] **CA05:** Dado que salvei uma ordem manual, quando o site é reconstruído e abro a página pública da coleção, então os poemas aparecem exatamente nessa ordem, inclusive no HTML pré-renderizado.
-- [ ] **CA06:** Dado uma coleção que nunca foi ordenada manualmente, quando abro sua página pública, então a ordem é idêntica à de antes desta atividade.
-- [ ] **CA07:** Dado uma coleção com ordem manual, quando vinculo um novo poema a ela, então ele aparece na última posição.
-- [ ] **CA08:** Dado uma coleção com ordem manual, quando aciono "Restaurar ordem automática" e confirmo, então a coleção volta ao comportamento padrão.
-- [ ] **CA09:** Dado que há alterações não salvas, quando tento sair da tela, então sou avisado antes de perder as mudanças.
-- [ ] **CA10:** Dado um usuário não autenticado, quando tenta gravar a ordem diretamente no Firestore, então a escrita é negada.
+- [x] **CA01:** Dado que estou autenticado e editando uma coleção com poemas, quando arrasto um poema da posição 5 para a posição 1 (mouse ou toque), então a lista passa a exibi-lo em primeiro e os demais se deslocam.
+- [x] **CA02:** Dado que o foco está num item da lista, quando aciono "mover para cima" pelo teclado, então o item sobe uma posição e o foco o acompanha.
+- [x] **CA03:** Dado que reordenei a lista, quando clico em "Salvar ordem", então recebo confirmação e, ao recarregar o admin, a ordem persiste.
+- [x] **CA04:** Dado que a gravação falha (rede ou permissão), quando clico em "Salvar ordem", então vejo mensagem de erro, a ordem no banco permanece a anterior e minha ordenação na tela não é perdida.
+- [x] **CA05:** Dado que salvei uma ordem manual, quando o site é reconstruído e abro a página pública da coleção, então os poemas aparecem exatamente nessa ordem, inclusive no HTML pré-renderizado.
+- [x] **CA06:** Dado uma coleção que nunca foi ordenada manualmente, quando abro sua página pública, então a ordem é idêntica à de antes desta atividade.
+- [x] **CA07:** Dado uma coleção com ordem manual, quando vinculo um novo poema a ela, então ele aparece na última posição.
+- [x] **CA08:** Dado uma coleção com ordem manual, quando aciono "Restaurar ordem automática" e confirmo, então a coleção volta ao comportamento padrão.
+- [x] **CA09:** Dado que há alterações não salvas, quando tento sair da tela, então sou avisado antes de perder as mudanças.
+- [x] **CA10:** Dado um usuário não autenticado, quando tenta gravar a ordem diretamente no Firestore, então a escrita é negada.
 
 ## O que a atividade não inclui
 
@@ -75,8 +75,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | `collection_poems` já tem campo de posição? Qual é exatamente o critério de ordenação atual (data, título)? | dev | Sim | |
-| D02 | A mudança de ordem deve disparar deploy automaticamente ou esperar o próximo push? | PO | Não | |
+| D01 | `collection_poems` já tem campo de posição? Qual é exatamente o critério de ordenação atual (data, título)? | dev | Sim | O modelo de `collection_poems` suporta opcionalmente o campo numérico `order` (1-based ou 0-based), já consumido por `scripts/prerender.js` e `src/pages/collection.js`. Quando `order` não está preenchido ou é nulo, o critério de ordenação padrão é a data cronológica de publicação (`published_at asc`). |
+| D02 | A mudança de ordem deve disparar deploy automaticamente ou esperar o próximo push? | PO | Não | Não dispara deploy automaticamente; a ordem salva no Firestore é consumida dinamicamente pela SPA imediatamente em `src/pages/collection.js` e refletida no HTML pré-renderizado no próximo deploy/rebuild de `main`. |
 
 ## Sugestões de casos de teste
 

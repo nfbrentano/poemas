@@ -1,6 +1,6 @@
 # [FEAT] Favoritos: salvar poemas para reler depois
 
-> **Status:** Rascunho
+> **Status:** Concluída
 > **Autor:** Claude · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
 
 ## Detalhes da Atividade
@@ -49,16 +49,16 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que estou na página de um poema não favoritado, quando aciono "Favoritar", então o botão passa ao estado ativo e um aviso (toast) confirma a ação.
-- [ ] **CA02:** Dado que o foco está no botão de favorito, quando pressiono Enter ou Espaço, então o estado alterna e `aria-pressed` reflete o novo valor.
-- [ ] **CA03:** Dado que favoritei um poema, quando recarrego a página ou volto ao site em outro dia no mesmo navegador, então o poema continua favoritado e nenhuma escrita foi feita no Firestore.
-- [ ] **CA04:** Dado que tenho 3 poemas favoritados, quando abro `/favoritos/` pela navegação do site, então vejo os 3, com o favoritado por último no topo, e cada item leva à página do poema.
-- [ ] **CA05:** Dado que não tenho favoritos, quando abro `/favoritos/`, então vejo o estado vazio com link para o acervo, sem lista vazia nem erro.
-- [ ] **CA06:** Dado que um poema favoritado foi despublicado, quando abro `/favoritos/`, então ele não aparece e os demais são listados normalmente.
-- [ ] **CA07:** Dado que tenho um poema favoritado, quando o vejo num card da home, de uma coleção ou de um sentimento, então o card exibe o indicador de favorito.
-- [ ] **CA08:** Dado que o Clarity está carregado, quando favorito ou desfavorito um poema, então um evento personalizado correspondente é enviado.
-- [ ] **CA09:** Dado o build de produção, quando inspeciono `/favoritos/` e os sitemaps, então a página tem `noindex` e não consta em nenhum sitemap.
-- [ ] **CA10:** Dado que `localStorage` está indisponível, quando abro um poema e aciono "Favoritar", então a página segue funcionando e um aviso informa que não foi possível salvar — o botão não fica em estado ativo falso.
+- [x] **CA01:** Dado que estou na página de um poema não favoritado, quando aciono "Favoritar", então o botão passa ao estado ativo e um aviso (toast) confirma a ação.
+- [x] **CA02:** Dado que o foco está no botão de favorito, quando pressiono Enter ou Espaço, então o estado alterna e `aria-pressed` reflete o novo valor.
+- [x] **CA03:** Dado que favoritei um poema, quando recarrego a página ou volto ao site em outro dia no mesmo navegador, então o poema continua favoritado e nenhuma escrita foi feita no Firestore.
+- [x] **CA04:** Dado que tenho 3 poemas favoritados, quando abro `/favoritos/` pela navegação do site, então vejo os 3, com o favoritado por último no topo, e cada item leva à página do poema.
+- [x] **CA05:** Dado que não tenho favoritos, quando abro `/favoritos/`, então vejo o estado vazio com link para o acervo, sem lista vazia nem erro.
+- [x] **CA06:** Dado que um poema favoritado foi despublicado, quando abro `/favoritos/`, então ele não aparece e os demais são listados normalmente.
+- [x] **CA07:** Dado que tenho um poema favoritado, quando o vejo num card da home, de uma coleção ou de um sentimento, então o card exibe o indicador de favorito.
+- [x] **CA08:** Dado que o Clarity está carregado, quando favorito ou desfavorito um poema, então um evento personalizado correspondente é enviado.
+- [x] **CA09:** Dado o build de produção, quando inspeciono `/favoritos/` e os sitemaps, então a página tem `noindex` e não consta em nenhum sitemap.
+- [x] **CA10:** Dado que `localStorage` está indisponível, quando abro um poema e aciono "Favoritar", então a página segue funcionando e um aviso informa que não foi possível salvar — o botão não fica em estado ativo falso.
 
 ## O que a atividade não inclui
 
@@ -75,8 +75,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O acesso fica na barra inferior (que já tem itens definidos) ou no menu? | PO/design | Sim | |
-| D02 | Favorito e reação ❤️ convivem sem confundir o leitor? Ícone deve ser marcador em vez de coração? | design | Não | |
+| D01 | O acesso fica na barra inferior (que já tem itens definidos) ou no menu? | PO/design | Sim | O acesso fica no menu de navegação principal (header desktop e menu gaveta mobile), além de um atalho direto na folha de Ajustes no rodapé. |
+| D02 | Favorito e reação ❤️ convivem sem confundir o leitor? Ícone deve ser marcador em vez de coração? | design | Não | Adotado ícone de marcador de livro / bookmark (fita marcadora), com contorno quando inativo e preenchimento colorido quando ativo, separando claramente o ato de salvar do emoji de reação de coração ❤️. |
 
 ## Sugestões de casos de teste
 

@@ -1,5 +1,5 @@
 import { db, getFirebaseAuth, getFirebaseStorage, getFirebaseFunctions } from '../../utils/firebase.js';
-import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 import { invalidatePoemsCache } from '../../utils/poems-store.js';
@@ -101,6 +101,32 @@ export async function deleteDocsWhere(collectionName, field, value) {
     if (collectionName === 'poems' || collectionName === 'collection_poems') {
       invalidatePoemsCache();
     }
+    return { error: null };
+  } catch (error) {
+    return { error };
+  }
+}
+
+/**
+ * Substitui atomicamente todas as relações de uma coleção em `collection_poems`.
+ * Deleta as relações anteriores e insere as novas em um único writeBatch (RNF03).
+ * @param {string} collectionId
+ * @param {Array<{ poem_id: string, order?: number | null }>} relations
+ * @returns {Promise<{ error: Error | null }>}
+ */
+export async function replaceCollectionPoems(collectionId, relations = []) {
+  try {
+    const snapshot = await getDocs(query(collection(db, 'collection_poems'), where('collection_id', '==', collectionId)));
+    const batch = writeBatch(db);
+    snapshot.docs.forEach(d => {
+      batch.delete(doc(db, 'collection_poems', d.id));
+    });
+    relations.forEach(item => {
+      const docRef = doc(collection(db, 'collection_poems'));
+      batch.set(docRef, { ...item, collection_id: collectionId });
+    });
+    await batch.commit();
+    invalidatePoemsCache();
     return { error: null };
   } catch (error) {
     return { error };

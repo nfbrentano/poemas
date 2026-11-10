@@ -8,6 +8,7 @@ import { stripHtml, escapeHtml, unwrapSafeHTML } from '../utils/html.js';
 import { getPoemOfDay } from '../utils/poemOfDay.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { getSentimentName } from '../data/sentiments.js';
+import { getFavoriteSlugs } from '../utils/favorites.js';
 
 export default {
   meta: {
@@ -246,10 +247,13 @@ export default {
       }
 
       const itemsToRender = limit && !isSearchActive ? items.slice(0, limit) : items;
+      const favSlugs = getFavoriteSlugs();
       let lastYear = null;
       let html = '';
 
       itemsToRender.forEach((poem, index) => {
+        const isFav = favSlugs.has(poem.slug) || (poem.id && favSlugs.has(poem.id));
+        const favBadge = isFav ? ' <span class="favorite-badge" aria-label="Poema favoritado" title="Poema favoritado">🔖</span>' : '';
         const year = new Date(poem.published_at).getFullYear();
         const dateStr = new Date(poem.published_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
         
@@ -259,7 +263,7 @@ export default {
           html += `
           <article class="poem-featured fade-in">
             <a href="${BASE_URL}poema/${poem.slug}/" data-link>
-              <h2 class="featured-title">${escapeHtml(poem.title)}</h2>
+              <h2 class="featured-title">${escapeHtml(poem.title)}${favBadge}</h2>
               <div class="featured-excerpt">${escapeHtml(rawExcerpt)}</div>
               <div class="featured-meta">
                 <span>${dateStr}</span>
@@ -281,7 +285,7 @@ export default {
           html += `
           <article class="poem-row fade-in">
             <a href="${BASE_URL}poema/${poem.slug}/" data-link class="poem-row-link">
-              <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+              <h3 class="poem-row-title">${escapeHtml(poem.title)}${favBadge}</h3>
               <span class="poem-row-year">${year}</span>
             </a>
           </article>
@@ -320,6 +324,9 @@ export default {
     };
     
     const podExcerpt = podPoem ? (podPoem.excerpt || stripHtml(podPoem.content || '').replace(/\s+/g, ' ').trim().slice(0, 160) + '...') : '';
+    const favSlugs = getFavoriteSlugs();
+    const podIsFav = podPoem && (favSlugs.has(podPoem.slug) || (podPoem.id && favSlugs.has(podPoem.id)));
+    const podFavBadge = podIsFav ? ' <span class="favorite-badge" aria-label="Poema favoritado" title="Poema favoritado">🔖</span>' : '';
 
     container.innerHTML = unwrapSafeHTML(`
       <div class="home-layout">
@@ -328,7 +335,7 @@ export default {
         <section class="poem-of-day fade-in">
           <p class="pod-label">— poema do dia —</p>
           <a href="${BASE_URL}poema/${podPoem.slug}/" data-link class="pod-link">
-            <h2 class="pod-title">${escapeHtml(podPoem.title)}</h2>
+            <h2 class="pod-title">${escapeHtml(podPoem.title)}${podFavBadge}</h2>
             <p class="pod-excerpt">${escapeHtml(podExcerpt)}</p>
           </a>
         </section>

@@ -89,7 +89,10 @@ if (!existingMain && appEl) {
         </div>
       </div>
 
-      <div>
+      <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+        <a href="${import.meta.env.BASE_URL}favoritos/" class="btn-secondary" style="width: 100%; justify-content: center; display: flex; gap: 8px; text-decoration: none; align-items: center;" data-link>
+          🔖 Poemas Favoritos
+        </a>
         <button id="mobile-random-poem-btn" class="btn-secondary" style="width: 100%; justify-content: center; display: flex; gap: 8px;">
           ⚄ Poema Aleatório
         </button>
@@ -132,6 +135,10 @@ document.addEventListener('keydown', (e) => {
 document.getElementById('mobile-random-poem-btn')?.addEventListener('click', () => {
   closeSettings();
   getRandomPoem();
+});
+
+settingsSheet?.querySelectorAll('a[data-link]').forEach(a => {
+  a.addEventListener('click', closeSettings);
 });
 
 // Initialize Router

@@ -9,6 +9,7 @@ import { AudioPlayer } from '../components/audio-player.js';
 import { ImmersiveReader } from '../components/immersive-reader.js';
 import { PoemComments } from '../components/poem-comments.js';
 import { renderPoemMarkup, EMOJIS } from '../utils/poem-template.js';
+import { isFavorite, toggleFavorite } from '../utils/favorites.js';
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -316,6 +317,45 @@ export default {
     }, { passive: true });
 
     PoemComments.init(container, poem.id);
+
+    // Favorite Button Logic (RF01, RF02, CA01, CA02, CA10)
+    const favoriteBtn = container.querySelector('#favorite-poem-btn');
+    if (favoriteBtn) {
+      const updateFavUI = (active) => {
+        favoriteBtn.classList.toggle('active', active);
+        favoriteBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        favoriteBtn.setAttribute('aria-label', active ? 'Remover poema dos favoritos' : 'Salvar poema nos favoritos');
+        const textSpan = favoriteBtn.querySelector('.favorite-btn-text');
+        if (textSpan) {
+          textSpan.textContent = active ? 'Favoritado' : 'Favoritar';
+        }
+      };
+
+      // Estado inicial
+      updateFavUI(isFavorite(poem.slug) || (poem.id && isFavorite(poem.id)));
+
+      const handleToggle = () => {
+        const res = toggleFavorite(poem);
+        if (!res.success) {
+          toast.show('Não foi possível salvar o favorito no navegador.', 'error');
+          return;
+        }
+        updateFavUI(res.isFavorite);
+        if (res.isFavorite) {
+          toast.show('Poema salvo nos seus favoritos!', 'success');
+        } else {
+          toast.show('Poema removido dos favoritos.', 'info');
+        }
+      };
+
+      favoriteBtn.addEventListener('click', handleToggle);
+      favoriteBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          handleToggle();
+        }
+      });
+    }
 
     // Sharing Logic
     const shareUrl = window.location.href;
