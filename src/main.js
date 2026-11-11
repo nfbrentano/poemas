@@ -4,6 +4,7 @@ import './styles/components.css';
 import { initRouter } from './router.js';
 import { header } from './components/header.js';
 import { backToTop } from './components/back-to-top.js';
+import { offlineIndicator } from './components/offline-indicator.js';
 import { getRandomPoem } from './utils/navigation.js';
 import { unwrapSafeHTML } from './utils/html.js';
 
@@ -19,6 +20,7 @@ const existingMain = document.getElementById('main-content');
 if (!existingMain && appEl) {
   appEl.innerHTML = unwrapSafeHTML(`
   ${header.render()}
+  ${offlineIndicator.render()}
   <div id="mobile-brand" class="mobile-brand"><a href="${import.meta.env.BASE_URL}" data-link>Natanael Fernando Gatti Brentano</a></div>
   <main id="main-content" class="site-content container"></main>
   <footer class="site-footer">
@@ -105,6 +107,23 @@ if (!existingMain && appEl) {
 // Initialize Components
 header.init();
 backToTop.init();
+offlineIndicator.init();
+
+// Pré-aquecimento das rotas de leitura em background ocioso (CA01, CA02, CA08)
+if (typeof window !== 'undefined') {
+  const warmUpRoutes = () => {
+    import('./pages/poem.js').catch(() => {});
+    import('./pages/collection.js').catch(() => {});
+    import('./pages/sentiment.js').catch(() => {});
+    import('./pages/favorites.js').catch(() => {});
+  };
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(warmUpRoutes);
+  } else {
+    setTimeout(warmUpRoutes, 1500);
+  }
+}
 
 // Global Settings logic
 const settingsBtn = document.getElementById('bottom-settings-btn');

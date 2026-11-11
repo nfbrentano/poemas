@@ -19,7 +19,11 @@ vi.mock('./firebase.js', () => ({
 import {
     getPublishedPoems,
     invalidatePoemsCache,
-    setPoemsCacheEnabled
+    setPoemsCacheEnabled,
+    savePersistentPoems,
+    getPersistentPoems,
+    clearPersistentPoems,
+    getPoemBySlug
 } from './poems-store.js';
 
 describe('poems-store & correções técnicas/layout', () => {
@@ -146,5 +150,110 @@ describe('poems-store & correções técnicas/layout', () => {
         expect(routerSrc).toContain('scrollPositions.set(currentKey, window.scrollY || 0)');
         expect(routerSrc).toContain("eventOrOptions?.type === 'popstate'");
         expect(routerSrc).toContain('window.scrollTo(0, targetScrollY)');
+    });
+
+    it('CT09 & CA09: savePersistentPoems armazena APENAS status published, ignorando drafts e agendados', async () => {
+        await clearPersistentPoems();
+        const mixedPoems = [
+            { id: '1', title: 'Publicado 1', status: 'published', slug: 'pub-1' },
+            { id: '2', title: 'Rascunho Secreto', status: 'draft', slug: 'draft-1' },
+            { id: '3', title: 'Agendado Futuro', status: 'scheduled', slug: 'sched-1' },
+            { id: '4', title: 'Publicado 2', status: 'published', slug: 'pub-2' }
+        ];
+
+        const saved = await savePersistentPoems(mixedPoems);
+        expect(saved).toBe(true);
+
+        const loaded = await getPersistentPoems();
+        expect(loaded).toHaveLength(2);
+        expect(loaded.map(p => p.id)).toEqual(['1', '4']);
+        expect(loaded.every(p => p.status === 'published')).toBe(true);
+        expect(loaded.some(p => p.status === 'draft')).toBe(false);
+        expect(loaded.some(p => p.status === 'scheduled')).toBe(false);
+    });
+
+    it('CT01 & CA01: getPublishedPoems recorre ao acervo persistente quando o Firestore falha ou está offline', async () => {
+        await clearPersistentPoems();
+        await savePersistentPoems([
+            { id: 'local-1', title: 'Poema Offline', status: 'published', slug: 'poema-offline', published_at: '2026-05-01T00:00:00Z' }
+        ]);
+
+        // Simula falha total do Firestore (ex: offline, sem conexão)
+        mockGetDocs.mockRejectedValue(new Error('Network error: failed to fetch (offline)'));
+
+        invalidatePoemsCache();
+        const result = await getPublishedPoems();
+        expect(result).toHaveLength(1);
+        expect(result[0].slug).toBe('poema-offline');
+
+        // getPoemBySlug também localiza no acervo offline
+        const found = await getPoemBySlug('poema-offline');
+        expect(found).not.toBeNull();
+        expect(found.title).toBe('Poema Offline');
+    });
+
+    it('CT05 & CA05: quando a conexão responde, o storage local é atualizado e poemas despublicados deixam de existir', async () => {
+        await clearPersistentPoems();
+        await savePersistentPoems([
+            { id: 'removido', title: 'Poema Antigo Despublicado', status: 'published', slug: 'removido' }
+        ]);
+
+        // Nova resposta do Firestore sem o poema despublicado
+        mockGetDocs.mockResolvedValue({
+            docs: [
+                {
+                    id: 'novo-1',
+                    data: () => ({
+                        title: 'Poema Atual',
+                        status: 'published',
+                        published_at: '2026-06-01T00:00:00Z',
+                        slug: 'poema-atual'
+                    })
+                }
+            ]
+        });
+
+        invalidatePoemsCache();
+        const fresh = await getPublishedPoems({ forceRefresh: true });
+        expect(fresh).toHaveLength(1);
+        expect(fresh[0].id).toBe('novo-1');
+
+        // Persiste explicitamente a nova lista
+        await savePersistentPoems(fresh);
+        const persistent = await getPersistentPoems();
+        expect(persistent).toHaveLength(1);
+        expect(persistent[0].id).toBe('novo-1');
+        expect(persistent.some(p => p.id === 'removido')).toBe(false);
+    });
+
+    it('CT10 & CA10: falha no storage local não impede o funcionamento da consulta online', async () => {
+        // Simula localStorage quebrado / quota excedida
+        const originalSetItem = localStorage.setItem;
+        localStorage.setItem = vi.fn(() => {
+            throw new Error('QuotaExceededError: storage is full');
+        });
+
+        mockGetDocs.mockResolvedValue({
+            docs: [
+                {
+                    id: 'safe-1',
+                    data: () => ({
+                        title: 'Poema Seguro',
+                        status: 'published',
+                        published_at: '2026-07-01T00:00:00Z',
+                        slug: 'poema-seguro'
+                    })
+                }
+            ]
+        });
+
+        invalidatePoemsCache();
+        // Não deve estourar erro para o chamador
+        const result = await getPublishedPoems();
+        expect(result).toHaveLength(1);
+        expect(result[0].title).toBe('Poema Seguro');
+
+        // Restaura
+        localStorage.setItem = originalSetItem;
     });
 });

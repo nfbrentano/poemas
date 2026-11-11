@@ -38,9 +38,14 @@ export const collection = {
     let poemsList = [];
 
     try {
-      const q = query(firestoreCollection(db, 'collections'), where('slug', '==', slug));
-      const snapshot = await getDocs(q);
-      let colDoc = !snapshot.empty ? snapshot.docs[0] : null;
+      let colDoc = null;
+      try {
+        const q = query(firestoreCollection(db, 'collections'), where('slug', '==', slug));
+        const snapshot = await getDocs(q);
+        colDoc = !snapshot.empty ? snapshot.docs[0] : null;
+      } catch (colErr) {
+        console.warn('[Collection] Erro ou offline ao consultar Firestore, usando acervo local:', colErr);
+      }
       let colData = colDoc ? { id: colDoc.id, ...colDoc.data() } : null;
 
       if (!colData) {
@@ -56,7 +61,7 @@ export const collection = {
         // Busca relações e poemas publicados simultaneamente
         const cpQ = query(firestoreCollection(db, 'collection_poems'), where('collection_id', '==', col.id));
         const [cpSnap, allPublished] = await Promise.all([
-          getDocs(cpQ).catch(() => ({ docs: [], forEach: () => {} })),
+          Promise.resolve().then(() => getDocs(cpQ)).catch(() => ({ docs: [], forEach: () => {} })),
           getPublishedPoems()
         ]);
         

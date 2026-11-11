@@ -266,6 +266,10 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
       </div>
     </div>
   </header>
+  <div id="offline-indicator" class="offline-indicator" role="status" aria-live="polite" hidden>
+    <span class="offline-indicator-icon" aria-hidden="true">📡</span>
+    <span class="offline-indicator-text">Você está navegando em modo offline. O acervo local continua disponível para leitura.</span>
+  </div>
   <div id="mobile-brand" class="mobile-brand"><a href="/" data-link>Natanael Fernando Gatti Brentano</a></div>
   <main id="main-content" class="site-content container" ${mainAttrs}>
     ${mainContent}

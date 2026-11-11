@@ -163,6 +163,38 @@ export default {
         console.error('[Poem] Error:', error);
       }
 
+      // Fallback para acervo local quando offline ou em falha de rede (CA01, CA02)
+      if (!poem) {
+        try {
+          const { getPublishedPoems } = await import('../utils/poems-store.js');
+          const allPublished = await getPublishedPoems();
+          const found = allPublished.find(p => p.slug === slug);
+          if (found) {
+            poem = { ...found };
+            error = null;
+            const idx = allPublished.findIndex(p => p.slug === slug);
+            if (idx !== -1) {
+              if (idx < allPublished.length - 1 && !poem.prev_slug) {
+                poem.prev_slug = allPublished[idx + 1].slug;
+                poem.prev_title = allPublished[idx + 1].title;
+              }
+              if (idx > 0 && !poem.next_slug) {
+                poem.next_slug = allPublished[idx - 1].slug;
+                poem.next_title = allPublished[idx - 1].title;
+              }
+            }
+            if (Array.isArray(poem.tags) && poem.tags.length > 0 && relatedPoems.length === 0) {
+              const tagsSet = new Set(poem.tags);
+              relatedPoems = allPublished
+                .filter(p => p.slug !== slug && Array.isArray(p.tags) && p.tags.some(t => tagsSet.has(t)))
+                .slice(0, 3);
+            }
+          }
+        } catch (localErr) {
+          console.warn('[Poem] Falha no fallback local:', localErr);
+        }
+      }
+
       if (error || !poem) {
         console.warn('[Poem] Poem not found or error occurred');
         setNotFoundSEO();
@@ -192,6 +224,13 @@ export default {
           colsSnap.forEach(d => collectionsData.push(d.data()));
         } catch (e) {
           console.warn(e);
+        }
+        if (collectionsData.length === 0) {
+          try {
+            const { enrichCollectionsWithCurated } = await import('../data/collections.js');
+            collectionsData = enrichCollectionsWithCurated([])
+              .filter(c => poem.collection_slugs.includes(c.slug));
+          } catch {}
         }
       }
 
@@ -859,7 +898,17 @@ export default {
           btn.addEventListener('click', async () => {
             const emoji = btn.dataset.emoji;
             btn.disabled = true;
-            await toggleReaction(poem.id, emoji);
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+              toast.show('Você está offline. Conecte-se à internet para reagir.', 'info');
+              btn.disabled = false;
+              return;
+            }
+            const res = await toggleReaction(poem.id, emoji);
+            if (res === 'offline') {
+              toast.show('Você está offline. Conecte-se à internet para reagir.', 'info');
+              btn.disabled = false;
+              return;
+            }
             const { counts: newCounts, userReactions: newUR } = await loadReactions(poem.id);
             updateReactionUI(newCounts, newUR);
 

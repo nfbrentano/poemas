@@ -46,6 +46,9 @@ export async function loadReactions(poemId) {
 }
 
 export async function toggleReaction(poemId, emoji) {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return 'offline';
+  }
   const sessionId = getSessionId();
   try {
     const { db } = await import('./firebase.js');
@@ -67,6 +70,9 @@ export async function toggleReaction(poemId, emoji) {
       return 'added';
     }
   } catch (error) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      return 'offline';
+    }
     console.error('Error toggling reaction:', error);
     return null;
   }

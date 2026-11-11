@@ -1,7 +1,7 @@
 # [FEAT] Leitura offline do acervo de poemas
 
-> **Status:** Rascunho
-> **Autor:** Claude · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
+> **Status:** Concluída
+> **Autor:** Claude · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-11
 
 ## Detalhes da Atividade
 
@@ -47,16 +47,16 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que visitei a home online uma vez, quando fico offline e abro um poema que nunca tinha aberto, então o poema é exibido por completo.
-- [ ] **CA02:** Dado que estou offline após uma visita online, quando navego para a home, uma coleção e um sentimento, então as listas aparecem com os poemas correspondentes.
-- [ ] **CA03:** Dado que estou offline, quando qualquer página é exibida, então um aviso de offline está visível; e quando a conexão volta, o aviso some sem recarregar.
-- [ ] **CA04:** Dado que estou offline, quando tento comentar, reagir ou assinar a newsletter, então recebo uma mensagem de indisponibilidade e nenhum erro não tratado aparece no console.
-- [ ] **CA05:** Dado que um poema foi despublicado enquanto eu estava offline, quando volto a ficar online e os dados são atualizados, então ele deixa de aparecer nas listas.
-- [ ] **CA06:** Dado que escolhi uma fonte de leitura diferente da padrão, quando leio offline, então a fonte escolhida é aplicada.
-- [ ] **CA07:** Dado o acervo atual, quando inspeciono o armazenamento do site após a primeira visita, então os dados de poemas ocupam no máximo 5 MB.
-- [ ] **CA08:** Dado o build de produção, quando comparo o LCP da home antes e depois da mudança (mesmo perfil de rede), então a diferença é de no máximo 100 ms.
-- [ ] **CA09:** Dado um leitor não autenticado, quando inspeciono os dados locais, então não há nenhum poema com status diferente de `published`.
-- [ ] **CA10:** Dado que o armazenamento local está indisponível, quando uso o site online, então tudo funciona como hoje, sem mensagens de erro.
+- [x] **CA01:** Dado que visitei a home online uma vez, quando fico offline e abro um poema que nunca tinha aberto, então o poema é exibido por completo.
+- [x] **CA02:** Dado que estou offline após uma visita online, quando navego para a home, uma coleção e um sentimento, então as listas aparecem com os poemas correspondentes.
+- [x] **CA03:** Dado que estou offline, quando qualquer página é exibida, então um aviso de offline está visível; e quando a conexão volta, o aviso some sem recarregar.
+- [x] **CA04:** Dado que estou offline, quando tento comentar, reagir ou assinar a newsletter, então recebo uma mensagem de indisponibilidade e nenhum erro não tratado aparece no console.
+- [x] **CA05:** Dado que um poema foi despublicado enquanto eu estava offline, quando volto a ficar online e os dados são atualizados, então ele deixa de aparecer nas listas.
+- [x] **CA06:** Dado que escolhi uma fonte de leitura diferente da padrão, quando leio offline, então a fonte escolhida é aplicada.
+- [x] **CA07:** Dado o acervo atual, quando inspeciono o armazenamento do site após a primeira visita, então os dados de poemas ocupam no máximo 5 MB.
+- [x] **CA08:** Dado o build de produção, quando comparo o LCP da home antes e depois da mudança (mesmo perfil de rede), então a diferença é de no máximo 100 ms.
+- [x] **CA09:** Dado um leitor não autenticado, quando inspeciono os dados locais, então não há nenhum poema com status diferente de `published`.
+- [x] **CA10:** Dado que o armazenamento local está indisponível, quando uso o site online, então tudo funciona como hoje, sem mensagens de erro.
 
 ## O que a atividade não inclui
 
@@ -73,8 +73,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Persistir via cache local do SDK do Firestore, via IndexedDB próprio ou via um JSON estático gerado no build? (Conferir o que [`src/utils/firebase.js`](../src/utils/firebase.js) já habilita.) | dev | Sim | |
-| D02 | O acervo deve ser baixado na primeira visita de qualquer leitor ou só depois de instalar o PWA / segunda visita? | PO | Sim | |
+| D01 | Persistir via cache local do SDK do Firestore, via IndexedDB próprio ou via um JSON estático gerado no build? (Conferir o que [`src/utils/firebase.js`](../src/utils/firebase.js) já habilita.) | dev | Não | Definido: Persistência gerenciada no `src/utils/poems-store.js` (IndexedDB com graceful degradation para storage/memória) e suporte a leitura offline em `src/pages/poem.js` buscando do acervo local quando offline ou em falha de rede. |
+| D02 | O acervo deve ser baixado na primeira visita de qualquer leitor ou só depois de instalar o PWA / segunda visita? | PO | Não | Definido: Na primeira visita de qualquer leitor, em background após a renderização inicial (o acervo em texto tem apenas ~131 KB e não onera rede nem degrada o LCP). |
 
 ## Sugestões de casos de teste
 

@@ -40,7 +40,15 @@ export const AudioPlayer = {
             ambientAudio.src = soundSrc;
           }
           ambientAudio.volume = 0.5;
-          ambientAudio.play().catch(e => console.error('Audio play failed:', e));
+          ambientAudio.play().catch(e => {
+            if (typeof navigator !== 'undefined' && !navigator.onLine) {
+              import('./toast.js').then(({ toast }) => {
+                toast.show('A reprodução de som ambiente requer conexão com a internet.', 'info');
+              }).catch(() => {});
+            } else {
+              console.error('Audio play failed:', e);
+            }
+          });
         }
       });
     });
@@ -94,7 +102,21 @@ export const AudioPlayer = {
       // Play/Pause
       narrationPlayBtn.addEventListener('click', () => {
         if (narrationAudio.paused) {
-          narrationAudio.play().catch(e => console.error('Narration play error:', e));
+          if (typeof navigator !== 'undefined' && navigator.onLine === false && !narrationAudio.duration) {
+            import('./toast.js').then(({ toast }) => {
+              toast.show('A reprodução da narração requer conexão com a internet.', 'info');
+            }).catch(() => {});
+            return;
+          }
+          narrationAudio.play().catch(e => {
+            if (typeof navigator !== 'undefined' && !navigator.onLine) {
+              import('./toast.js').then(({ toast }) => {
+                toast.show('A reprodução da narração requer conexão com a internet.', 'info');
+              }).catch(() => {});
+            } else {
+              console.error('Narration play error:', e);
+            }
+          });
         } else {
           narrationAudio.pause();
         }

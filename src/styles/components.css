@@ -3916,3 +3916,34 @@ html.immersive-mode .immersive-control-panel {
   }
 }
 
+/* Offline Indicator (RF03, CA03) */
+.offline-indicator {
+  position: sticky;
+  top: 0;
+  z-index: 95;
+  background-color: var(--bg-secondary, #1f1f1f);
+  color: var(--text-secondary, #a0a0a0);
+  border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  padding: var(--space-2xs) var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.offline-indicator[hidden] {
+  display: none !important;
+}
+
+.offline-indicator-icon {
+  font-size: 0.95rem;
+}
+
+

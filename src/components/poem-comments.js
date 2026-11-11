@@ -128,6 +128,17 @@ export const PoemComments = {
         return;
       }
 
+      // Offline check (RF04 / CA04)
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        const offlineMsg = 'Você está offline. Conecte-se à internet para enviar comentários.';
+        toast.show(offlineMsg, 'error');
+        if (msgEl) {
+          msgEl.textContent = offlineMsg;
+          msgEl.style.color = 'var(--text-error, #e53e3e)';
+        }
+        return;
+      }
+
       // Rate limit check
       const lastSubmit = localStorage.getItem('last_comment_time');
       if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) {
@@ -175,7 +186,11 @@ export const PoemComments = {
         localStorage.setItem('last_comment_time', Date.now().toString());
       } catch (err) {
         error = err;
-        console.error('Error adding comment:', err);
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          console.warn('[Comments] Tentativa de envio em modo offline.');
+        } else {
+          console.error('Error adding comment:', err);
+        }
       }
 
       if (btn) {
@@ -184,7 +199,9 @@ export const PoemComments = {
       }
 
       if (error) {
-        const errorText = 'Erro ao enviar comentário.';
+        const errorText = (typeof navigator !== 'undefined' && !navigator.onLine)
+          ? 'Você está offline. Conecte-se à internet para enviar comentários.'
+          : 'Erro ao enviar comentário.';
         toast.show(errorText, 'error');
         if (msgEl) {
           msgEl.textContent = errorText;

@@ -79,8 +79,14 @@ export const collections = {
 
       try {
         const [snapshot, cpSnapshot, publishedPoems] = await Promise.all([
-          getDocs(query(collection(db, 'collections'))),
-          getDocs(collection(db, 'collection_poems')),
+          Promise.resolve().then(() => getDocs(query(collection(db, 'collections')))).catch(e => {
+            console.warn('[Collections] Firestore collections indisponível (offline):', e);
+            return { docs: [] };
+          }),
+          Promise.resolve().then(() => getDocs(collection(db, 'collection_poems'))).catch(e => {
+            console.warn('[Collections] Firestore collection_poems indisponível (offline):', e);
+            return { docs: [] };
+          }),
           getPublishedPoems()
         ]);
 

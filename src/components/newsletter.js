@@ -33,6 +33,12 @@ export const newsletter = {
         return;
       }
 
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        msgEl.innerHTML = 'Você está offline. Conecte-se à internet para assinar a newsletter.';
+        msgEl.style.color = 'var(--text-secondary)';
+        return;
+      }
+
       msgEl.innerHTML = 'Enviando...';
       msgEl.style.color = 'var(--text-secondary)';
       submitBtn.disabled = true;
@@ -48,7 +54,10 @@ export const newsletter = {
         msgEl.style.color = 'var(--success)';
         subForm.reset();
       } catch (err) {
-        if (err.code === 'permission-denied') {
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          msgEl.innerHTML = 'Você está offline. Conecte-se à internet para assinar a newsletter.';
+          msgEl.style.color = 'var(--text-secondary)';
+        } else if (err.code === 'permission-denied') {
           msgEl.innerHTML = 'Este e-mail já está inscrito.';
           msgEl.style.color = 'var(--text-secondary)';
         } else {

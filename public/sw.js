@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poemas-cache-v21';
+const CACHE_NAME = 'poemas-cache-v22';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
