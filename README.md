@@ -140,10 +140,12 @@ poemas/
 | `npm run build` | Pipeline completo de produção: **Vite → sitemap → RSS → llms → prerender**. |
 | `npm run preview` | Servidor local para pré-visualização do diretório de produção `dist/`. |
 | `npm run test` | Executa todos os testes automatizados com o Vitest. |
+| `npm run lint` | Executa a verificação estática de código com ESLint nas pastas `src`, `scripts` e `functions`. |
 | `npm run deploy` | Executa o build completo e publica o diretório `dist/` na branch `gh-pages`. |
 | `npm run sitemap` | Gera `public/sitemap.xml` a partir dos poemas publicados no Firestore. |
 | `npm run rss` | Gera o feed RSS 2.0 em `public/feed.xml`. |
 | `npm run llms` | Gera `public/llms.txt` e `public/llms-full.txt` para assistentes de IA (GEO). |
+| `npm run publish:scheduled` | Promove poemas agendados vencidos para status publicado no Firestore. |
 | `npm run redirects` | Reconstrói o mapa de redirecionamentos do WordPress em `scripts/legacy-redirects.json`. |
 | `npm run export:wxr` | Exporta o acervo de poemas do Firestore no formato WordPress eXtended RSS (WXR). |
 | `npm run migrate:updated-at` | Script de migração para padronizar timestamps `updatedAt` no Firestore. |
