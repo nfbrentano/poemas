@@ -3,7 +3,7 @@ import { offlineIndicator } from './components/offline-indicator.js';
 import { toggleReaction } from './utils/reactions.js';
 import { PoemComments } from './components/poem-comments.js';
 import { newsletter } from './components/newsletter.js';
-import { clearPersistentPoems, savePersistentPoems } from './utils/poems-store.js';
+import { clearPersistentPoems, savePersistentPoems, invalidatePoemsCache } from './utils/poems-store.js';
 import poemPage from './pages/poem.js';
 import { collection as collectionPage } from './pages/collection.js';
 import { collections as collectionsPage } from './pages/collections.js';
@@ -13,6 +13,7 @@ describe('Leitura offline do acervo e resiliência de rede (SDD 2026-11-10)', ()
 
   beforeEach(async () => {
     originalOnLine = navigator.onLine;
+    invalidatePoemsCache();
     await clearPersistentPoems();
     document.body.innerHTML = '<div id="app"><main id="main-content"></main></div>';
     offlineIndicator.cleanup();
@@ -20,6 +21,7 @@ describe('Leitura offline do acervo e resiliência de rede (SDD 2026-11-10)', ()
 
   afterEach(async () => {
     Object.defineProperty(navigator, 'onLine', { value: originalOnLine, configurable: true });
+    invalidatePoemsCache();
     await clearPersistentPoems();
     offlineIndicator.cleanup();
   });

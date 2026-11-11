@@ -145,6 +145,8 @@ export async function savePersistentPoems(poems) {
   try {
     saveToLocalStorage(publishedOnly);
     await saveToIndexedDb(publishedOnly);
+    cachedPoems = publishedOnly.map(p => ({ ...p }));
+    cacheTimestamp = Date.now();
     return true;
   } catch {
     // RNF04 & CA10: Falha no storage local não impede o uso online
@@ -177,6 +179,7 @@ export async function getPersistentPoems() {
  * Limpa o armazenamento persistente (útil em testes e resets).
  */
 export async function clearPersistentPoems() {
+  invalidatePoemsCache();
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -216,17 +219,11 @@ export async function getPoemBySlug(slug) {
 export async function getPublishedPoems({ forceRefresh = false } = {}) {
   const now = Date.now();
 
-  if (cacheEnabled && !forceRefresh && cachedPoems && (now - cacheTimestamp < DEFAULT_TTL_MS)) {
-    return cachedPoems.map(p => ({ ...p }));
-  }
-
-  if (cacheEnabled && !forceRefresh && inflightPromise) {
-    const list = await inflightPromise;
-    return list.map(p => ({ ...p }));
-  }
-
-  // Se explicitamente offline, recorre imediatamente ao storage local
+  // Se explicitamente offline, recorre imediatamente ao storage local sem tentar requisições de rede
   if (typeof navigator !== 'undefined' && navigator.onLine === false && !forceRefresh) {
+    if (cacheEnabled && cachedPoems && (now - cacheTimestamp < DEFAULT_TTL_MS)) {
+      return cachedPoems.map(p => ({ ...p }));
+    }
     const local = await getPersistentPoems();
     if (local && local.length > 0) {
       if (cacheEnabled) {
@@ -235,6 +232,16 @@ export async function getPublishedPoems({ forceRefresh = false } = {}) {
       }
       return local.map(p => ({ ...p }));
     }
+    return [];
+  }
+
+  if (cacheEnabled && !forceRefresh && cachedPoems && (now - cacheTimestamp < DEFAULT_TTL_MS)) {
+    return cachedPoems.map(p => ({ ...p }));
+  }
+
+  if (cacheEnabled && !forceRefresh && inflightPromise) {
+    const list = await inflightPromise;
+    return list.map(p => ({ ...p }));
   }
 
   const fetchTask = (async () => {

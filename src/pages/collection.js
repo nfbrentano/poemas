@@ -39,12 +39,15 @@ export const collection = {
 
     try {
       let colDoc = null;
-      try {
-        const q = query(firestoreCollection(db, 'collections'), where('slug', '==', slug));
-        const snapshot = await getDocs(q);
-        colDoc = !snapshot.empty ? snapshot.docs[0] : null;
-      } catch (colErr) {
-        console.warn('[Collection] Erro ou offline ao consultar Firestore, usando acervo local:', colErr);
+      const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+      if (!isOffline) {
+        try {
+          const q = query(firestoreCollection(db, 'collections'), where('slug', '==', slug));
+          const snapshot = await getDocs(q);
+          colDoc = !snapshot.empty ? snapshot.docs[0] : null;
+        } catch (colErr) {
+          console.warn('[Collection] Erro ou offline ao consultar Firestore, usando acervo local:', colErr);
+        }
       }
       let colData = colDoc ? { id: colDoc.id, ...colDoc.data() } : null;
 
@@ -59,20 +62,25 @@ export const collection = {
         col = colData;
         
         // Busca relações e poemas publicados simultaneamente
-        const cpQ = query(firestoreCollection(db, 'collection_poems'), where('collection_id', '==', col.id));
-        const [cpSnap, allPublished] = await Promise.all([
-          Promise.resolve().then(() => getDocs(cpQ)).catch(() => ({ docs: [], forEach: () => {} })),
-          getPublishedPoems()
-        ]);
-        
-        const rawCp = [];
-        if (cpSnap && typeof cpSnap.forEach === 'function') {
-          cpSnap.forEach(d => {
-            const data = d.data ? d.data() : d;
-            if (data) {
-              rawCp.push({ collection_id: col.id, ...data });
-            }
-          });
+        let rawCp = [];
+        let allPublished = [];
+        if (!isOffline) {
+          const cpQ = query(firestoreCollection(db, 'collection_poems'), where('collection_id', '==', col.id));
+          const [cpSnap, fetched] = await Promise.all([
+            Promise.resolve().then(() => getDocs(cpQ)).catch(() => ({ docs: [], forEach: () => {} })),
+            getPublishedPoems()
+          ]);
+          allPublished = fetched;
+          if (cpSnap && typeof cpSnap.forEach === 'function') {
+            cpSnap.forEach(d => {
+              const data = d.data ? d.data() : d;
+              if (data) {
+                rawCp.push({ collection_id: col.id, ...data });
+              }
+            });
+          }
+        } else {
+          allPublished = await getPublishedPoems();
         }
         const mergedRelations = mergeRelationsWithCurated(rawCp, allPublished, [col]);
         const relationPoemIds = new Set(mergedRelations.map(r => r.poem_id));

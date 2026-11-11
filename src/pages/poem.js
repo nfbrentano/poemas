@@ -123,38 +123,41 @@ export default {
       let error = null;
 
       try {
-        const { db } = await import('../utils/firebase.js');
-        const { collection, query, where, getDocs, limit, orderBy } = await import('firebase/firestore');
+        const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+        if (!isOffline) {
+          const { db } = await import('../utils/firebase.js');
+          const { collection, query, where, getDocs, limit, orderBy } = await import('firebase/firestore');
 
-        const q = query(collection(db, 'poems'), where('slug', '==', slug), where('status', '==', 'published'), limit(1));
-        const snapshot = await getDocs(q);
+          const q = query(collection(db, 'poems'), where('slug', '==', slug), where('status', '==', 'published'), limit(1));
+          const snapshot = await getDocs(q);
 
-        if (!snapshot.empty) {
-          const doc = snapshot.docs[0];
-          poem = { id: doc.id, ...doc.data() };
+          if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            poem = { id: doc.id, ...doc.data() };
 
-          // RF03 & CA03: Parallel queries for prev and next poems
-          if (!poem.prev_slug || !poem.next_slug) {
-            try {
-              const prevQ = query(collection(db, 'poems'), where('status', '==', 'published'), where('published_at', '<', poem.published_at), orderBy('published_at', 'desc'), limit(1));
-              const nextQ = query(collection(db, 'poems'), where('status', '==', 'published'), where('published_at', '>', poem.published_at), orderBy('published_at', 'asc'), limit(1));
-              const [prevSnap, nextSnap] = await Promise.all([
-                getDocs(prevQ).catch(e => { console.warn('Error fetching prev poem:', e); return null; }),
-                getDocs(nextQ).catch(e => { console.warn('Error fetching next poem:', e); return null; })
-              ]);
+            // RF03 & CA03: Parallel queries for prev and next poems
+            if (!poem.prev_slug || !poem.next_slug) {
+              try {
+                const prevQ = query(collection(db, 'poems'), where('status', '==', 'published'), where('published_at', '<', poem.published_at), orderBy('published_at', 'desc'), limit(1));
+                const nextQ = query(collection(db, 'poems'), where('status', '==', 'published'), where('published_at', '>', poem.published_at), orderBy('published_at', 'asc'), limit(1));
+                const [prevSnap, nextSnap] = await Promise.all([
+                  getDocs(prevQ).catch(e => { console.warn('Error fetching prev poem:', e); return null; }),
+                  getDocs(nextQ).catch(e => { console.warn('Error fetching next poem:', e); return null; })
+                ]);
 
-              if (prevSnap && !prevSnap.empty) {
-                const prevDoc = prevSnap.docs[0].data();
-                poem.prev_slug = prevDoc.slug;
-                poem.prev_title = prevDoc.title;
+                if (prevSnap && !prevSnap.empty) {
+                  const prevDoc = prevSnap.docs[0].data();
+                  poem.prev_slug = prevDoc.slug;
+                  poem.prev_title = prevDoc.title;
+                }
+                if (nextSnap && !nextSnap.empty) {
+                  const nextDoc = nextSnap.docs[0].data();
+                  poem.next_slug = nextDoc.slug;
+                  poem.next_title = nextDoc.title;
+                }
+              } catch (e) {
+                console.warn('Error in parallel prev/next query:', e);
               }
-              if (nextSnap && !nextSnap.empty) {
-                const nextDoc = nextSnap.docs[0].data();
-                poem.next_slug = nextDoc.slug;
-                poem.next_title = nextDoc.title;
-              }
-            } catch (e) {
-              console.warn('Error in parallel prev/next query:', e);
             }
           }
         }
