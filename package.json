@@ -28,12 +28,12 @@
     "jsdom": "^31.0.0",
     "satori": "^0.63.2",
     "satori-html": "^0.3.2",
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "vitest": "^5.1.0"
   },
   "dependencies": {
     "@microsoft/clarity": "^1.0.2",
-    "@zumer/snapdom": "^3.7.0",
+    "@zumer/snapdom": "^3.7.1",
     "dotenv": "^18.0.9",
     "firebase": "^13.2.0",
     "nodemailer": "^10.3.1"
