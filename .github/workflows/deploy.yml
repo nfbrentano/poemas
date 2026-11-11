@@ -63,6 +63,6 @@ jobs:
           path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       - name: Ping IndexNow
         run: node scripts/ping-indexnow.js --ping
