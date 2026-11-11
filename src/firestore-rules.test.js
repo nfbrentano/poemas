@@ -54,6 +54,21 @@ describe('firestore.rules: poem_reactions', () => {
   });
 });
 
+describe('firestore.rules: error_logs (CA13, CA14, CT13, CT14)', () => {
+  const b = block('error_logs');
+  it('CT13 & CA13: leitura, atualização e exclusão restritas a usuário autenticado', () => {
+    expect(b).toMatch(/allow read, update, delete: if request\.auth != null;/);
+    expect(b).not.toMatch(/allow read[^;]*if true/);
+  });
+  it('CT14 & CA14: create valida campos exatos, status open e limites de tamanho', () => {
+    expect(b).toContain("hasOnly(['source', 'category', 'severity', 'message', 'stack', 'route_or_task', 'fingerprint', 'context', 'user_agent', 'status', 'created_at'])");
+    expect(b).toContain("request.resource.data.status == 'open'");
+    expect(b).toContain('request.resource.data.message.size() <= 1000');
+    expect(b).toContain('request.resource.data.stack.size() <= 4000');
+    expect(b).toContain('request.resource.data.context.size() <= 2000');
+  });
+});
+
 describe('push.js unsubscribe', () => {
   const deleteDoc = vi.fn();
   const getDocs = vi.fn();

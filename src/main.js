@@ -7,6 +7,10 @@ import { backToTop } from './components/back-to-top.js';
 import { offlineIndicator } from './components/offline-indicator.js';
 import { getRandomPoem } from './utils/navigation.js';
 import { unwrapSafeHTML } from './utils/html.js';
+import { initGlobalErrorTracking, reportError } from './utils/error-reporter.js';
+
+// Inicializa observabilidade global de erros no front-end (RF01, CA01)
+initGlobalErrorTracking();
 
 
 // Setup Initial Page Classes
@@ -171,6 +175,13 @@ if ('serviceWorker' in navigator) {
         // Automatically check for SW updates
         reg.update().catch(() => {});
       })
-      .catch(err => console.log('SW registration failed:', err));
+      .catch(err => {
+        console.log('SW registration failed:', err);
+        reportError(err, {
+          category: 'sw',
+          severity: 'warning',
+          context: { phase: 'service_worker_register' }
+        });
+      });
   });
 }

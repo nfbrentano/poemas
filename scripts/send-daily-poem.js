@@ -1,7 +1,8 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, where, addDoc } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
 import { getPoemOfDay } from '../src/utils/poemOfDay.js';
+import { reportError } from '../src/utils/error-reporter.js';
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
@@ -115,6 +116,18 @@ async function sendDailyPoem() {
     process.exit(0);
   } catch (err) {
     console.error('Failed to send daily poem:', err);
+    await reportError(err, {
+      source: 'backend:scripts',
+      category: 'smtp',
+      severity: 'critical',
+      route_or_task: 'scripts/send-daily-poem.js',
+      user_agent: 'node-script/send-daily-poem',
+      context: { script: 'send-daily-poem' },
+      dbInstance: db,
+      addDocFn: addDoc,
+      collectionFn: collection,
+      skipSessionLimits: true
+    });
     process.exit(1);
   }
 }

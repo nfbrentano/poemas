@@ -36,6 +36,7 @@ export default {
             <a href="${import.meta.env.BASE_URL}admin?view=emails" data-link style="${linkStyle('emails')}">Histórico de Emails</a>
             <a href="${import.meta.env.BASE_URL}admin?view=subscribers" data-link style="${linkStyle('subscribers')}">Assinantes</a>
             <a href="${import.meta.env.BASE_URL}admin?view=comments" data-link style="${linkStyle('comments')}">Comentários</a>
+            <a href="${import.meta.env.BASE_URL}admin?view=errors" data-link style="${linkStyle('errors')}">Erros</a>
             <a href="${import.meta.env.BASE_URL}admin?view=editor" data-link style="font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: 2px; transition: border-color var(--transition-fast); text-decoration: none; color: var(--text-primary);">Nova Obra</a>
 
             <button id="logout-btn" style="font-size: 0.85rem; padding: 0.5rem 1rem; color: var(--error); border: 1px solid transparent; background: transparent; cursor: pointer;">Sair</button>
@@ -80,6 +81,9 @@ export default {
     } else if (view === 'comments') {
       const { renderComments } = await import('./admin/comments.js');
       await renderComments(contentDiv);
+    } else if (view === 'errors') {
+      const { renderErrorLogs } = await import('./admin/errors.js');
+      await renderErrorLogs(contentDiv);
     }
 
   }

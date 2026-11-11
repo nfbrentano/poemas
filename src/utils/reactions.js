@@ -1,3 +1,5 @@
+import { reportError } from './error-reporter.js';
+
 const EMOJIS = ['🕯️', '💧', '🌿', '🌙', '✨', '❤️'];
 
 function getSessionId() {
@@ -74,6 +76,11 @@ export async function toggleReaction(poemId, emoji) {
       return 'offline';
     }
     console.error('Error toggling reaction:', error);
+    reportError(error, {
+      category: 'firestore',
+      severity: 'error',
+      context: { action: 'toggleReaction', poemId }
+    });
     return null;
   }
 }

@@ -7,17 +7,19 @@ export async function renderDashboard(container) {
     try {
       let poems = [];
       let pendingCommentsCount = 0;
+      let openErrorsCount = 0;
       let lastSubscribers = [];
       let pageViews = [];
       
       const bypassAuth = new URLSearchParams(window.location.search).get('bypass_auth') === 'true';
       
       try {
-        const [poemsRes, commentsRes, subscribersRes, viewsRes] = await Promise.all([
+        const [poemsRes, commentsRes, subscribersRes, viewsRes, errorsRes] = await Promise.all([
           listDocs('poems'),
           listDocs('poem_comments', { where: [['approved', '==', false]] }),
           listDocs('subscribers', { orderBy: ['created_at', 'desc'], limit: 5 }),
-          listDocs('page_views', { where: [['created_at', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()]] })
+          listDocs('page_views', { where: [['created_at', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()]] }),
+          Promise.resolve(listDocs('error_logs', { where: [['status', '==', 'open']] })).catch(() => ({ data: [] }))
         ]);
         
         if (poemsRes.error || commentsRes.error || subscribersRes.error || viewsRes.error) {
@@ -32,6 +34,7 @@ export async function renderDashboard(container) {
         
         poems = poemsRes.data || [];
         pendingCommentsCount = commentsRes.data?.length || 0;
+        openErrorsCount = errorsRes?.data?.length || 0;
         lastSubscribers = subscribersRes.data || [];
         pageViews = viewsRes.data || [];
       } catch (err) {
@@ -195,6 +198,14 @@ export async function renderDashboard(container) {
               <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; width: 100%;">
                 <span style="font-size: 2.2rem; font-family: var(--font-display); color: ${pendingCommentsCount > 0 ? 'var(--error)' : 'var(--text-muted)'}; font-weight: 400; line-height: 1;">${pendingCommentsCount}</span>
                 ${pendingCommentsCount > 0 ? `<span style="background: rgba(204, 74, 74, 0.15); color: var(--error); padding: 0.2rem 0.5rem; border-radius: 2px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Revisar</span>` : `<span style="color: var(--success); font-size: 0.75rem; font-weight: 500;">✔ Tudo limpo</span>`}
+              </div>
+            </a>
+
+            <a href="${import.meta.env.BASE_URL}admin?view=errors" id="open-errors-kpi-card" data-link style="background: var(--bg-elevated); padding: var(--space-md); border-radius: 4px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; height: auto; box-sizing: border-box; text-decoration: none; transition: border-color var(--transition-fast);" onmouseover="this.style.borderColor='var(--border-strong)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; margin-bottom: 8px;">Erros em Aberto</div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; width: 100%;">
+                <span id="dashboard-open-errors-count" style="font-size: 2.2rem; font-family: var(--font-display); color: ${openErrorsCount > 0 ? 'var(--error)' : 'var(--text-muted)'}; font-weight: 400; line-height: 1;">${openErrorsCount}</span>
+                ${openErrorsCount > 0 ? `<span style="background: rgba(204, 74, 74, 0.15); color: var(--error); padding: 0.2rem 0.5rem; border-radius: 2px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Analisar</span>` : `<span style="color: var(--success); font-size: 0.75rem; font-weight: 500;">✔ Estável</span>`}
               </div>
             </a>
             

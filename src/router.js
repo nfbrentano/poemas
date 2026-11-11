@@ -3,6 +3,7 @@ import { setNotFoundSEO, updateSEO } from './utils/seo.js';
 import { setStructuredData, SITE_URL } from './utils/structured-data.js';
 import { buildUrl } from './utils/url.js';
 import { unwrapSafeHTML } from './utils/html.js';
+import { reportError } from './utils/error-reporter.js';
 import legacyRedirects from '../scripts/legacy-redirects.json';
 
 export const routes = {
@@ -288,6 +289,16 @@ export async function router(eventOrOptions = null) {
           errStr.includes('failed to load module script') ||
           e?.name === 'ChunkLoadError';
 
+        reportError(e, {
+          category: isChunkError ? 'chunk' : 'router',
+          severity: isChunkError ? 'warning' : 'error',
+          route_or_task: path,
+          context: {
+            isChunkError,
+            search: window.location.search || ''
+          }
+        });
+
         if (isChunkError) {
           let hasRetried = false;
           try {
@@ -410,6 +421,12 @@ export function initRouter() {
   if (!window.__vitePreloadErrorHandler) {
     window.__vitePreloadErrorHandler = (event) => {
       event.preventDefault();
+      reportError(event?.payload || new Error('vite:preloadError'), {
+        category: 'chunk',
+        severity: 'warning',
+        route_or_task: window.location.pathname || '/',
+        context: { event: 'vite:preloadError' }
+      });
       let hasRetried = false;
       try {
         hasRetried = sessionStorage.getItem('chunk_retry') === 'true';

@@ -806,6 +806,13 @@ export default {
         toast.show('Card gerado com sucesso!', 'success');
       } catch (err) {
         console.error(err);
+        import('../utils/error-reporter.js')
+          .then(({ reportError }) => reportError(err, {
+            category: 'runtime',
+            severity: 'warning',
+            context: { action: 'generateSocialCard', slug: poem?.slug }
+          }))
+          .catch(() => {});
         toast.show('Erro ao gerar card.', 'error');
       } finally {
         downloadCardBtn.innerText = 'Baixar Imagem';

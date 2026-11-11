@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { reportError } from '../src/utils/error-reporter.js';
 
 /**
  * Filtra poemas com status 'scheduled' que já passaram da data/hora agendada.
@@ -60,16 +61,19 @@ export async function publishDuePoems({
   db,
   getDocsFn,
   updateDocFn,
+  addDocFn,
   queryFn,
   collectionFn,
   whereFn,
   docFn,
+  reportErrorFn = reportError,
   now = new Date(),
   log = console.log,
   errorLog = console.error
 }) {
   let gDocs = getDocsFn;
   let uDoc = updateDocFn;
+  let aDoc = addDocFn;
   let qFn = queryFn;
   let cFn = collectionFn;
   let wFn = whereFn;
@@ -79,6 +83,7 @@ export async function publishDuePoems({
     const firestore = await import('firebase/firestore');
     gDocs = gDocs || firestore.getDocs;
     uDoc = uDoc || firestore.updateDoc;
+    aDoc = aDoc || firestore.addDoc;
     qFn = qFn || firestore.query;
     cFn = cFn || firestore.collection;
     wFn = wFn || firestore.where;
@@ -93,6 +98,18 @@ export async function publishDuePoems({
     snapshot = await gDocs(scheduledQuery);
   } catch (err) {
     errorLog('[Publish Scheduled] Erro ao consultar poemas agendados no Firestore:', err.message);
+    await reportErrorFn(err, {
+      source: 'backend:scripts',
+      category: 'script',
+      severity: 'error',
+      route_or_task: 'scripts/publish-scheduled-poems.js',
+      user_agent: 'node-script/publish-scheduled-poems',
+      context: { phase: 'query' },
+      dbInstance: db,
+      addDocFn: aDoc,
+      collectionFn: cFn,
+      skipSessionLimits: true
+    });
     return { publishedCount: 0, publishedPoems: [], errors: [{ phase: 'query', error: err.message }] };
   }
 
@@ -123,6 +140,18 @@ export async function publishDuePoems({
     } catch (err) {
       errorLog(`✗ [Publish Scheduled] Falha ao publicar "${poem.title}" (${poem.id}):`, err.message);
       errors.push({ id: poem.id, title: poem.title, error: err.message });
+      await reportErrorFn(err, {
+        source: 'backend:scripts',
+        category: 'script',
+        severity: 'error',
+        route_or_task: 'scripts/publish-scheduled-poems.js',
+        user_agent: 'node-script/publish-scheduled-poems',
+        context: { phase: 'update', poemId: poem.id, slug: poem.slug },
+        dbInstance: db,
+        addDocFn: aDoc,
+        collectionFn: cFn,
+        skipSessionLimits: true
+      });
     }
   }
 

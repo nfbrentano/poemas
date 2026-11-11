@@ -125,6 +125,14 @@ export default {
       
     if (error) {
       console.error(error);
+      import('../utils/error-reporter.js')
+        .then(({ reportError }) => reportError(error, {
+          category: 'firestore',
+          severity: 'error',
+          route_or_task: '/',
+          context: { action: 'home_getPublishedPoems' }
+        }))
+        .catch(() => {});
       if (isPrerendered) {
         container.removeAttribute('data-prerendered');
         return;
