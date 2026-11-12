@@ -109,7 +109,7 @@ describe('Observabilidade de Erros Front-end e Back-end (SDD 2026-11-11)', () =>
 
   describe('CT03 & CA03: Persistência de erro na Cloud Function (backend:functions)', () => {
     it('formata e grava erro de sendNewsletter com source: backend:functions', async () => {
-      const fnModule = await import('../functions/index.js');
+      const fnModule = await import('../functions/error-logger.js');
       const addMock = vi.fn().mockResolvedValue({ id: 'fn-err-1' });
       const mockAdminDb = {
         collection: vi.fn(() => ({ add: addMock }))
