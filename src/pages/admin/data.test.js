@@ -13,7 +13,7 @@ const fs = {
   setDoc: vi.fn(async (...a) => { calls.push(['setDoc', ...a.slice(1)]); }),
   addDoc: vi.fn(async (...a) => { calls.push(['addDoc', ...a.slice(1)]); return { id: 'auto1' }; }),
   updateDoc: vi.fn(async (...a) => { calls.push(['updateDoc', ...a.slice(1)]); }),
-  deleteDoc: vi.fn(async (...a) => { calls.push(['deleteDoc']); }),
+  deleteDoc: vi.fn(async () => { calls.push(['deleteDoc']); }),
   getDocs: vi.fn(),
   getDoc: vi.fn(),
   writeBatch: vi.fn(() => ({
@@ -36,7 +36,7 @@ vi.mock('../../utils/firebase.js', () => ({
   getFirebaseFunctions: async () => ({}),
 }));
 
-const snap = (rows) => ({ docs: rows.map(r => ({ id: r.id, data: () => { const { id, ...rest } = r; return rest; } })) });
+const snap = (rows) => ({ docs: rows.map(r => ({ id: r.id, data: () => { const { id: _id, ...rest } = r; return rest; } })) });
 let data;
 beforeEach(async () => {
   calls.length = 0;

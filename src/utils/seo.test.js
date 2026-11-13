@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { updateSEO } from './seo.js';
 
 describe('updateSEO', () => {
@@ -26,6 +26,7 @@ describe('updateSEO', () => {
     });
     const ogTitle = document.querySelector('meta[property="og:title"]');
     const ogType = document.querySelector('meta[property="og:type"]');
+    expect(ogTitle.getAttribute('content')).toContain('Test');
     expect(ogType.getAttribute('content')).toBe('article');
   });
 

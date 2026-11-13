@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import homePage from './pages/home.js';
-import { updateSEO } from './utils/seo.js';
 
 vi.mock('./utils/firebase.js', () => ({
   db: {},

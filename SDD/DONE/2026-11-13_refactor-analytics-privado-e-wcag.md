@@ -1,6 +1,6 @@
 # [REFACTOR] Resiliência de analytics (remoção de dependência ipapi.co), foco WCAG AA e lint limpo
 
-> **Status:** Rascunho
+> **Status:** Aprovado
 > **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
 
 ## Detalhes da Atividade
@@ -49,11 +49,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que navego por 3 poemas no site, quando inspeciono as requisições de rede no cliente, então nenhuma requisição vai para `ipapi.co` e os documentos de `page_views` continuam sendo aceitos pelas regras do Firestore.
-- [ ] **CA02:** Dado que o analytics administrativo ([`src/pages/analytics.js`](../src/pages/analytics.js)) é aberto com registros sem campo `country` (ou usando fallback do Clarity), quando renderiza, então não lança exceção nem exibe `"undefined"` na tabela geográfica.
-- [ ] **CA03:** Dado que navego por teclado (`Tab`) pelo overlay de busca e pelo player de áudio, quando o foco alcança o `<select>` de ordenação ou os sliders de progresso/volume, então há indicador visual de foco claro (`outline` ou `box-shadow` equivalente) nos 4 temas.
-- [ ] **CA04:** Dado o carregamento inicial de `index.html` com [`public/theme-init.js`](../public/theme-init.js), quando verifico políticas Trusted Types, então nenhuma policy `'default'` retorna strings de `<script>`/`innerHTML` arbitrariamente sem passar pelo fluxo controlado da aplicação.
-- [ ] **CA05:** Dado o comando `eslint --max-warnings 0 src scripts functions`, quando executado na CI e localmente, então finaliza com `0` erros e `0` warnings mantendo todas as proteções de `no-unsanitized` ativas inclusive no admin.
+- [x] **CA01:** Dado que navego por 3 poemas no site, quando inspeciono as requisições de rede no cliente, então nenhuma requisição vai para `ipapi.co` e os documentos de `page_views` continuam sendo aceitos pelas regras do Firestore.
+- [x] **CA02:** Dado que o analytics administrativo ([`src/pages/analytics.js`](../src/pages/analytics.js)) é aberto com registros sem campo `country` (ou usando fallback do Clarity), quando renderiza, então não lança exceção nem exibe `"undefined"` na tabela geográfica.
+- [x] **CA03:** Dado que navego por teclado (`Tab`) pelo overlay de busca e pelo player de áudio, quando o foco alcança o `<select>` de ordenação ou os sliders de progresso/volume, então há indicador visual de foco claro (`outline` ou `box-shadow` equivalente) nos 4 temas.
+- [x] **CA04:** Dado o carregamento inicial de `index.html` com [`public/theme-init.js`](../public/theme-init.js), quando verifico políticas Trusted Types, então nenhuma policy `'default'` retorna strings de `<script>`/`innerHTML` arbitrariamente sem passar pelo fluxo controlado da aplicação.
+- [x] **CA05:** Dado o comando `eslint --max-warnings 0 src scripts functions`, quando executado na CI e localmente, então finaliza com `0` erros e `0` warnings mantendo todas as proteções de `no-unsanitized` ativas inclusive no admin.
 
 ## O que a atividade não inclui
 
@@ -68,8 +68,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O card de distribuição por "Países" em [`src/pages/analytics.js`](../src/pages/analytics.js) é usado ativamente (justificando criar um endpoint leve em Cloud Functions para geolocalização anônima no servidor) ou pode ser substituído por métricas do Clarity removendo `country` do `page_views`? | PO | Sim | |
-| D02 | Ao trocar a policy `'default'` passthrough em [`theme-init.js`](../public/theme-init.js), o carregamento do script do Microsoft Clarity e Firebase SDK exige permitir `clarity.ms`/`apis.google.com` ou apenas remover `defaultPolicy` até adotar `require-trusted-types-for` na CSP? | dev | Não | |
+| D01 | O card de distribuição por "Países" em [`src/pages/analytics.js`](../src/pages/analytics.js) é usado ativamente (justificando criar um endpoint leve em Cloud Functions para geolocalização anônima no servidor) ou pode ser substituído por métricas do Clarity removendo `country` do `page_views`? | PO/dev | Sim | Remover a chamada externa a `ipapi.co` de `src/utils/analytics.js` e gerar hash efêmero de sessão diária com `crypto.subtle` no cliente. Em `page_views`, `country` fica nulo/omitido; em `src/pages/analytics.js`, o card exibe fallback limpo ("Métricas geográficas detalhadas disponíveis no Microsoft Clarity") quando não houver registros com país. |
+| D02 | Ao trocar a policy `'default'` passthrough em [`theme-init.js`](../public/theme-init.js), o carregamento do script do Microsoft Clarity e Firebase SDK exige permitir `clarity.ms`/`apis.google.com` ou apenas remover `defaultPolicy` até adotar `require-trusted-types-for` na CSP? | dev | Não | Remover a política `default` passthrough de `public/theme-init.js`. A CSP atual não impõe `require-trusted-types-for 'script'`, portanto os scripts externos não são bloqueados. Para marcação segura no app, adotar policy nomeada explícita `app-safe-html` em `src/utils/html.js` dentro de `unwrapSafeHTML()`. |
 
 ## Sugestões de casos de teste
 

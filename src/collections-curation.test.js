@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   curatedCollections,
   poemCurationMap,
-  enrichCollectionsWithCurated,
   mergeRelationsWithCurated
 } from './data/collections.js';
 import { renderCollectionsPageMarkup } from './utils/collections-template.js';

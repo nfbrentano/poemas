@@ -1,6 +1,6 @@
 import { listDocs, deleteDocById } from './data.js';
 import { navigateTo } from '../../router.js';
-import { escapeHtml } from '../../utils/html.js';
+import { escapeHtml, unwrapSafeHTML } from '../../utils/html.js';
 import { debounce } from './debounce.js';
 import { exportPoemsXml } from './export-xml.js';
 
@@ -30,7 +30,7 @@ export async function renderList(container) {
       poems.forEach(p => p.tags?.forEach(t => allTags.add(t.trim())));
       const sortedTags = Array.from(allTags).sort();
       
-      container.innerHTML = `
+      container.innerHTML = unwrapSafeHTML(`
         <div style="font-family: var(--font-ui); display: grid; gap: var(--space-md);">
           
           <!-- Filters Toolbar -->
@@ -80,7 +80,7 @@ export async function renderList(container) {
             </table>
           </div>
         </div>
-      `;
+      `);
       
       const tbody = container.querySelector('#list-tbody');
       const resultsCountEl = container.querySelector('#results-count');
@@ -88,17 +88,17 @@ export async function renderList(container) {
       const renderRows = (filteredPoems) => {
         resultsCountEl.innerText = filteredPoems.length;
         if (filteredPoems.length === 0) {
-          tbody.innerHTML = `
+          tbody.innerHTML = unwrapSafeHTML(`
             <tr>
               <td colspan="5" style="padding: var(--space-xl) 0; text-align: center; color: var(--text-muted); font-style: italic;">
                 Nenhum poema encontrado com os filtros selecionados.
               </td>
             </tr>
-          `;
+          `);
           return;
         }
         
-        tbody.innerHTML = filteredPoems.map(p => {
+        tbody.innerHTML = unwrapSafeHTML(filteredPoems.map(p => {
           const count = viewCounts[p.id] || 0;
           let dateInfo = '';
           let isDelayed = false;
@@ -134,7 +134,7 @@ export async function renderList(container) {
               </td>
             </tr>
           `;
-        }).join('');
+        }).join(''));
         
         tbody.querySelectorAll('.delete-btn').forEach(btn => {
           let confirmState = false;
@@ -242,6 +242,6 @@ export async function renderList(container) {
       
     } catch (err) {
       console.error(err);
-      container.innerHTML = `<div class="error">Erro ao carregar obras: ${err.message}</div>`;
+      container.innerHTML = unwrapSafeHTML(`<div class="error">Erro ao carregar obras: ${escapeHtml(err.message)}</div>`);
     }
 }

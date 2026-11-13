@@ -30,11 +30,8 @@ describe('[SEO] Redirecionamentos e Backlinks do WordPress (SDD 2026-11-04)', ()
   });
 
   describe('CT03: Roteamento dinâmico no router SPA', () => {
-    let navigateToMock;
-
     beforeEach(() => {
       vi.resetModules();
-      navigateToMock = vi.fn();
     });
 
     it('deve reconhecer qualquer permalink no padrão de data /YYYY/MM/DD/:slug/ e navegar para /poema/:slug/', async () => {

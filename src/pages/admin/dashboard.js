@@ -1,5 +1,5 @@
 import { listDocs } from './data.js';
-import { escapeHtml } from '../../utils/html.js';
+import { escapeHtml, unwrapSafeHTML } from '../../utils/html.js';
 
 export async function renderDashboard(container) {
     container.innerHTML = '<div class="loading">Carregando painel geral...</div>';
@@ -107,14 +107,14 @@ export async function renderDashboard(container) {
             <line id="sparkline-tracker" x1="0" y1="0" x2="0" y2="${H}" stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="2 2" style="display: none; pointer-events: none;"/>
             <circle id="sparkline-hover-dot" r="4.5" fill="var(--bg-elevated)" stroke="var(--accent-subtle)" stroke-width="2" style="display: none; pointer-events: none; filter: drop-shadow(0 0 2px var(--accent-subtle));"/>
             
-            ${points.map((p, i) => `
+            ${points.map((p) => `
               <circle cx="${p.x}" cy="${p.y}" r="2" fill="var(--accent-subtle)" opacity="0.6" />
             `).join('')}
           </svg>
         `;
       };
       
-      container.innerHTML = `
+      container.innerHTML = unwrapSafeHTML(`
         <div style="font-family: var(--font-ui); display: grid; gap: var(--space-lg); width: 100%;">
           
           <!-- Welcome / Overview row -->
@@ -275,7 +275,7 @@ export async function renderDashboard(container) {
           </div>
           
         </div>
-      `;
+      `);
       
       // Setup interactive sparkline
       const card = container.querySelector('#visits-kpi-card');
@@ -315,10 +315,10 @@ export async function renderDashboard(container) {
           const dayOfWeek = date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
           
           tooltip.style.display = 'block';
-          tooltip.innerHTML = `
-            <div style="font-weight: 500; font-size: 0.65rem; color: var(--text-secondary); text-transform: capitalize;">${dayOfWeek}, ${dateStr}</div>
+          tooltip.innerHTML = unwrapSafeHTML(`
+            <div style="font-weight: 500; font-size: 0.65rem; color: var(--text-secondary); text-transform: capitalize;">${escapeHtml(dayOfWeek)}, ${escapeHtml(dateStr)}</div>
             <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">${pt.count} ${pt.count === 1 ? 'visita' : 'visitas'}</div>
-          `;
+          `);
           
           const cardRect = card.getBoundingClientRect();
           const tx = e.clientX - cardRect.left;
@@ -353,6 +353,6 @@ export async function renderDashboard(container) {
       }
     } catch (err) {
       console.error(err);
-      container.innerHTML = `<div class="error">Erro ao carregar o dashboard: ${err.message}</div>`;
+      container.innerHTML = unwrapSafeHTML(`<div class="error">Erro ao carregar o dashboard: ${escapeHtml(err.message)}</div>`);
     }
 }

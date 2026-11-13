@@ -1,5 +1,5 @@
 export const ImmersiveReader = {
-  init(container) {
+  init(_container) {
     const immersiveBtn = document.getElementById('immersive-btn');
     const immersiveExitBtn = document.getElementById('immersive-exit-btn');
     const sizeSlider = document.getElementById('immersive-size-slider');

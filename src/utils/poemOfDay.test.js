@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getPoemOfDay, hashString } from './poemOfDay.js';
+import { getPoemOfDay } from './poemOfDay.js';
 
 describe('poemOfDay', () => {
   const mockPoems = Array.from({ length: 150 }, (_, i) => ({

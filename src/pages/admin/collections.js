@@ -1,5 +1,5 @@
 import { listDocs, getDocById, insertDocs, updateDocById, deleteDocById, replaceCollectionPoems, uploadFile, getPublicFileUrl } from './data.js';
-import { escapeHtml, sanitizeUrl } from '../../utils/html.js';
+import { escapeHtml, sanitizeUrl, unwrapSafeHTML } from '../../utils/html.js';
 import { countPoemsByCollection, formatPoemCount } from './collection-counts.js';
 import {
   moveItem,
@@ -22,7 +22,7 @@ export async function renderCollections(container) {
       ]);
         
       if (error) {
-        container.innerHTML = `<div class="error">Erro ao carregar coleções: ${error.message}</div>`;
+        container.innerHTML = unwrapSafeHTML(`<div class="error">Erro ao carregar coleções: ${escapeHtml(error.message)}</div>`);
         return;
       }
       
@@ -58,7 +58,7 @@ export async function renderCollections(container) {
         `;
       }).join('');
       
-      container.innerHTML = `
+      container.innerHTML = unwrapSafeHTML(`
         <div style="font-family: var(--font-ui); display: grid; gap: var(--space-md);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs); flex-wrap: wrap; gap: var(--space-sm);">
             <div>
@@ -76,7 +76,7 @@ export async function renderCollections(container) {
             </div>
           `}
         </div>
-      `;
+      `);
       
       container.querySelector('#new-col-btn').addEventListener('click', () => renderForm());
       
@@ -86,7 +86,7 @@ export async function renderCollections(container) {
       
       container.querySelectorAll('.delete-col-btn').forEach(btn => {
         let confirmState = false;
-        btn.addEventListener('click', async (e) => {
+        btn.addEventListener('click', async (_e) => {
           if (!confirmState) {
             btn.innerText = 'Confirmar?';
             btn.style.color = '#fff';
@@ -147,7 +147,7 @@ export async function renderCollections(container) {
           ? sortPoemsByCollectionRelations(associatedPoems, assocData)
           : sortPoemsByAutoOrder(associatedPoems);
         
-        container.innerHTML = `
+        container.innerHTML = unwrapSafeHTML(`
           <div style="font-family: var(--font-ui); max-width: 700px; margin: 0 auto; display: grid; gap: var(--space-md);">
             <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-2xs); margin-bottom: var(--space-3xs);">
               <h3 style="font-family: var(--font-display); font-size: 1.6rem; color: var(--text-primary); font-weight: 400; margin: 0;">
@@ -260,7 +260,7 @@ export async function renderCollections(container) {
               </div>
             </form>
           </div>
-        `;
+        `);
         
         const nameInput = container.querySelector('#col-name');
         const slugInput = container.querySelector('#col-slug');
@@ -333,7 +333,7 @@ export async function renderCollections(container) {
             const ext = file.name.split('.').pop().toLowerCase();
             const fileName = `col_cover_${Date.now()}.${ext}`;
             
-            const { data, error: upErr } = await uploadFile('avatars', fileName, file);
+            const { error: upErr } = await uploadFile('avatars', fileName, file);
               
             if (upErr) throw upErr;
             
@@ -378,15 +378,15 @@ export async function renderCollections(container) {
         const renderOrderList = () => {
           if (!orderListContainer) return;
           if (orderedPoems.length === 0) {
-            orderListContainer.innerHTML = `
+            orderListContainer.innerHTML = unwrapSafeHTML(`
               <p style="color: var(--text-muted); font-size: 0.85rem; padding: 16px; margin: 0; text-align: center;">
                 Nenhum poema selecionado para esta coleção. Marque poemas na lista acima para ordená-los.
               </p>
-            `;
+            `);
             return;
           }
 
-          orderListContainer.innerHTML = orderedPoems.map((p, index) => `
+          orderListContainer.innerHTML = unwrapSafeHTML(orderedPoems.map((p, index) => `
             <div class="poem-order-item" data-id="${p.id}" data-index="${index}" draggable="true" tabindex="0" role="listitem"
                  style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: 2px; cursor: grab; user-select: none; transition: background-color var(--transition-fast), border-color var(--transition-fast);">
               <span class="order-handle" title="Arraste para mover" style="color: var(--text-muted); font-size: 1rem; cursor: grab; padding: 0 4px;">⠿</span>
@@ -406,7 +406,7 @@ export async function renderCollections(container) {
                 </button>
               </div>
             </div>
-          `).join('');
+          `).join(''));
 
           // Ações de mover com teclado e clique
           orderListContainer.querySelectorAll('.btn-move-up').forEach(btn => {
@@ -720,7 +720,7 @@ export async function renderCollections(container) {
         
       } catch (err) {
         console.error(err);
-        container.innerHTML = `<div class="error">Erro ao carregar o formulário: ${err.message}</div>`;
+        container.innerHTML = unwrapSafeHTML(`<div class="error">Erro ao carregar o formulário: ${escapeHtml(err.message)}</div>`);
       }
     };
     

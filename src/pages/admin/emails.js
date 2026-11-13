@@ -1,5 +1,5 @@
 import { listDocs, callFunction } from './data.js';
-import { escapeHtml } from '../../utils/html.js';
+import { escapeHtml, unwrapSafeHTML } from '../../utils/html.js';
 import { debounce } from './debounce.js';
 
 export async function renderEmailHistory(container) {
@@ -50,7 +50,7 @@ export async function renderEmailHistory(container) {
         return date.toLocaleDateString('pt-BR');
       };
       
-      container.innerHTML = `
+      container.innerHTML = unwrapSafeHTML(`
         <div style="font-family: var(--font-ui); display: grid; gap: var(--space-md);">
           
           <!-- Header and Primary Action -->
@@ -206,7 +206,7 @@ export async function renderEmailHistory(container) {
             </div>
           </div>
         </div>
-      `;
+      `);
 
       const tbody = container.querySelector('#email-tbody');
       const resultsCountEl = container.querySelector('#results-count');
@@ -275,7 +275,7 @@ export async function renderEmailHistory(container) {
             try {
               const errBody = await err.context.json();
               detailedMsg = errBody.error || errBody.message || '';
-            } catch (e) {}
+            } catch (_e) {}
           }
           alert(`Erro ao enviar newsletter:\n${detailedMsg || err.message || 'Erro na Edge Function'}`);
           buttonEl.disabled = false;
@@ -299,17 +299,17 @@ export async function renderEmailHistory(container) {
       const renderRows = (filteredLogs) => {
         resultsCountEl.innerText = filteredLogs.length;
         if (filteredLogs.length === 0) {
-          tbody.innerHTML = `
+          tbody.innerHTML = unwrapSafeHTML(`
             <tr>
               <td colspan="6" style="padding: var(--space-xl) 0; text-align: center; color: var(--text-muted); font-style: italic;">
                 Nenhum registro de envio encontrado com os filtros aplicados.
               </td>
             </tr>
-          `;
+          `);
           return;
         }
         
-        tbody.innerHTML = filteredLogs.map(log => {
+        tbody.innerHTML = unwrapSafeHTML(filteredLogs.map(log => {
           const title = log.poems?.title || 'Desconhecido';
           const timeVal = log.created_at || log.sent_at;
           const formattedDate = timeVal ? new Date(timeVal).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A';
@@ -349,7 +349,7 @@ export async function renderEmailHistory(container) {
               </td>
             </tr>
           `;
-        }).join('');
+        }).join(''));
         
         // Add listeners for row hover micro-animations
         tbody.querySelectorAll('tr').forEach(row => {
@@ -380,9 +380,9 @@ export async function renderEmailHistory(container) {
             container.querySelector('#detail-date').innerText = timeVal ? new Date(timeVal).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'medium' }) : 'Desconhecida';
             
             const isSuccess = log.status === 'success';
-            container.querySelector('#detail-status-badge').innerHTML = isSuccess 
+            container.querySelector('#detail-status-badge').innerHTML = unwrapSafeHTML(isSuccess 
               ? `<span style="padding: 0.2rem 0.6rem; border-radius: 20px; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(58, 140, 84, 0.3); background: rgba(58, 140, 84, 0.08); color: var(--success); text-transform: uppercase;">Sucesso</span>`
-              : `<span style="padding: 0.2rem 0.6rem; border-radius: 20px; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(204, 74, 74, 0.3); background: rgba(204, 74, 74, 0.08); color: var(--error); text-transform: uppercase;">Falha</span>`;
+              : `<span style="padding: 0.2rem 0.6rem; border-radius: 20px; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(204, 74, 74, 0.3); background: rgba(204, 74, 74, 0.08); color: var(--error); text-transform: uppercase;">Falha</span>`);
             
             container.querySelector('#detail-description').innerText = log.details || 'Nenhum detalhe adicional disponível.';
             
@@ -524,7 +524,7 @@ export async function renderEmailHistory(container) {
             try {
               const errBody = await err.context.json();
               detailedMsg = errBody.error || errBody.message || '';
-            } catch (e) {}
+            } catch (_e) {}
           }
           alert(`Erro ao disparar newsletter:\n${detailedMsg || err.message || 'Erro inesperado'}`);
           
@@ -539,6 +539,6 @@ export async function renderEmailHistory(container) {
       
     } catch (err) {
       console.error(err);
-      container.innerHTML = `<div class="error">Erro ao carregar dados do histórico: ${err.message}</div>`;
+      container.innerHTML = unwrapSafeHTML(`<div class="error">Erro ao carregar dados do histórico: ${escapeHtml(err.message)}</div>`);
     }
 }

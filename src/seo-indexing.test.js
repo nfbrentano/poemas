@@ -1,8 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { setNotFoundSEO, updateSEO } from './utils/seo.js';
-import { routes } from './router.js';
 import legacyRedirects from '../scripts/legacy-redirects.json';
 
 describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs legados', () => {

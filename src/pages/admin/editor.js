@@ -1,6 +1,6 @@
-import { listDocs, getDocById, insertDocs, updateDocById, uploadFile, getPublicFileUrl, callFunction } from './data.js';
+import { getDocById, insertDocs, updateDocById, uploadFile, getPublicFileUrl, callFunction } from './data.js';
 import { navigateTo } from '../../router.js';
-import { escapeHtml, stripHtml, sanitizeUrl } from '../../utils/html.js';
+import { escapeHtml, stripHtml, sanitizeUrl, unwrapSafeHTML } from '../../utils/html.js';
 import { debounce } from './debounce.js';
 
 export async function renderEditor(container, id) {
@@ -16,7 +16,7 @@ export async function renderEditor(container, id) {
       }
     }
     
-    container.innerHTML = `
+    container.innerHTML = unwrapSafeHTML(`
       <form id="editor-form" style="font-family: var(--font-ui);">
         <div class="editor-layout">
           <div class="editor-pane">
@@ -125,7 +125,7 @@ export async function renderEditor(container, id) {
           </div>
         </div>
       </form>
-    `;
+    `);
     
     // Auto-generate slug from title if empty
     const titleInput = document.getElementById('poem-title');
@@ -205,15 +205,6 @@ export async function renderEditor(container, id) {
           audioFileInput.value = '';
           return;
         }
-
-        const mimeMap = {
-          '.m4a': 'audio/mp4',
-          '.mp3': 'audio/mpeg',
-          '.wav': 'audio/wav',
-          '.aac': 'audio/aac',
-          '.ogg': 'audio/ogg'
-        };
-        const detectedContentType = mimeMap[ext] || file.type || 'audio/mpeg';
 
         const maxSize = 10 * 1024 * 1024; // 10MB
         if (file.size > maxSize) {
@@ -417,7 +408,7 @@ export async function renderEditor(container, id) {
               try {
                 const errBody = await err.context.json();
                 detailedMsg = errBody.error || errBody.message || '';
-              } catch (e) {}
+              } catch (_e) {}
             }
             alert(`Obra publicada, mas houve um erro ao enviar a newsletter:\n${detailedMsg || err.message || 'Erro na Edge Function'}`);
           }

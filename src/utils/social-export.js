@@ -74,12 +74,6 @@ export async function generateSocialCard(poem, container, theme = 'dark', custom
     fontSize -= 1.5;
     textEl.style.fontSize = `${fontSize}px`;
   }
-
-  const bgColors = {
-    dark: '#050505',
-    light: '#fdfdfd',
-    sepia: '#eae0c7'
-  };
   
   const blob = await snapdom.toBlob(renderEl, {
     type: 'png',

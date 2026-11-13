@@ -1,7 +1,7 @@
 import { stripHtml } from './html.js';
-import { SITE_URL, ensureTrailingSlash } from './url.js';
+import { SITE_URL } from './url.js';
 import { formatDateToYMD } from './sitemap-builder.js';
-import { tagToSlug, formatTag } from './tags.js';
+import { tagToSlug } from './tags.js';
 import { getSentimentName, getSentimentIntro } from '../data/sentiments.js';
 
 export { SITE_URL };
@@ -182,7 +182,7 @@ export function buildLlmsTxt({
   baseUrl = SITE_URL,
   poems = [],
   collections = [],
-  collectionPoems = [],
+  collectionPoems: _collectionPoems = [],
   minPoemsPerSentiment = 3
 } = {}) {
   const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;

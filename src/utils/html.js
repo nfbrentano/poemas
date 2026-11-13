@@ -105,6 +105,23 @@ export function normalizeForSearch(text) {
     .toLowerCase();
 }
 
+let appSafeHtmlPolicy = null;
+function getAppSafeHtmlPolicy() {
+  if (appSafeHtmlPolicy !== null) return appSafeHtmlPolicy;
+  if (typeof window !== 'undefined' && window.trustedTypes && typeof window.trustedTypes.createPolicy === 'function') {
+    try {
+      appSafeHtmlPolicy = window.trustedTypes.createPolicy('app-safe-html', {
+        createHTML: (s) => s,
+      });
+    } catch (_) {
+      appSafeHtmlPolicy = false;
+    }
+  } else {
+    appSafeHtmlPolicy = false;
+  }
+  return appSafeHtmlPolicy;
+}
+
 /**
  * Safely marks an already escaped or trusted HTML string for innerHTML assignment,
  * ensuring type safety. Recognized as an allowed sanitizer by ESLint no-unsanitized/property.
@@ -113,5 +130,9 @@ export function normalizeForSearch(text) {
  */
 export function unwrapSafeHTML(html) {
   if (typeof html !== 'string') return '';
+  const policy = getAppSafeHtmlPolicy();
+  if (policy && typeof policy.createHTML === 'function') {
+    return policy.createHTML(html);
+  }
   return html;
 }

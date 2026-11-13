@@ -3,12 +3,12 @@ import { poemSchema, breadcrumbSchema, SITE_URL } from '../utils/structured-data
 import { trackPageView } from '../utils/analytics.js';
 import { navigateTo } from '../router.js';
 import { newsletter } from '../components/newsletter.js';
-import { escapeHtml, stripHtml, sanitizeUrl, unwrapSafeHTML } from '../utils/html.js';
+import { escapeHtml, stripHtml, unwrapSafeHTML } from '../utils/html.js';
 import { toast } from '../components/toast.js';
 import { AudioPlayer } from '../components/audio-player.js';
 import { ImmersiveReader } from '../components/immersive-reader.js';
 import { PoemComments } from '../components/poem-comments.js';
-import { renderPoemMarkup, EMOJIS } from '../utils/poem-template.js';
+import { renderPoemMarkup } from '../utils/poem-template.js';
 import { isFavorite, toggleFavorite } from '../utils/favorites.js';
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -426,7 +426,7 @@ export default {
             text: shareText,
             url: shareUrl
           });
-        } catch (err) {}
+        } catch (_err) {}
       });
     } else {
       shareFallbackContainer.style.display = 'flex';
@@ -595,7 +595,7 @@ export default {
             text: `"${selectedText}" — Natanael Fernando Gatti Brentano`,
             url: window.location.href
           });
-        } catch (err) {}
+        } catch (_err) {}
       } else {
         const textToShare = `"${selectedText}" — Natanael Fernando Gatti Brentano\n${window.location.href}`;
         navigator.clipboard.writeText(textToShare).then(() => {
@@ -652,7 +652,7 @@ export default {
             if (textSpan) textSpan.textContent = originalText;
             copyCitationBtn.classList.remove('copied');
           }, 2500);
-        } catch (err) {
+        } catch (_err) {
           toast.show('Não foi possível copiar automaticamente.', 'error');
         }
       });

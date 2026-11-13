@@ -1,12 +1,13 @@
 import { getAdminSession, signOutAdmin } from './admin/data.js';
 import { navigateTo } from '../router.js';
+import { unwrapSafeHTML } from '../utils/html.js';
 
 export { attachPoemsToComments, formatCommentPoemHtml } from './admin/comment-helpers.js';
 
 export default {
   meta: { title: 'Dashboard Admin', robots: 'noindex, nofollow' },
 
-  async render(container, params) {
+  async render(container, _params) {
     // Check Auth
     const session = await getAdminSession();
     if (!session) {
@@ -23,7 +24,7 @@ export default {
       return `font-size: 0.85rem; padding: 0.5rem 1rem; color: ${isActive ? 'var(--accent-subtle)' : 'var(--text-secondary)'}; font-weight: ${isActive ? '500' : '400'}; transition: color var(--transition-fast); border-bottom: 2px solid ${isActive ? 'var(--accent-subtle)' : 'transparent'}; padding-bottom: 0.25rem; text-decoration: none;`;
     };
 
-    container.innerHTML = `
+    container.innerHTML = unwrapSafeHTML(`
       <div class="admin-layout" style="max-width: 1400px; margin: 0 auto; padding: 0 var(--space-md); width: 100%; box-sizing: border-box;">
         <header style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-xl); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-subtle); flex-wrap: wrap; gap: var(--space-md);">
           <h2 style="font-family: var(--font-display); font-size: 2rem; font-weight: 400; color: var(--text-primary); cursor: pointer; margin: 0;" id="logo-header">Escrivaninha</h2>
@@ -43,7 +44,7 @@ export default {
         </header>
         <div id="admin-content"></div>
       </div>
-    `;
+    `);
 
     container.querySelector('#logo-header')?.addEventListener('click', () => {
       navigateTo('/admin');

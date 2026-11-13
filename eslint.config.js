@@ -38,7 +38,7 @@ export default [
       'no-unsanitized': pluginNoUnsanitized
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'all', caughtErrorsIgnorePattern: '^_' }],
       'no-undef': 'error',
       'no-unsanitized/method': 'error',
       'no-unsanitized/property': [
@@ -56,17 +56,6 @@ export default [
           }
         }
       ]
-    }
-  },
-  // Override para páginas de administração e analytics (tratadas como warn conforme SDD D02)
-  {
-    files: [
-      'src/pages/admin.js',
-      'src/pages/admin/**/*.js',
-      'src/pages/analytics.js'
-    ],
-    rules: {
-      'no-unsanitized/property': 'warn'
     }
   },
   // Override para arquivos de teste (Vitest)
@@ -92,7 +81,7 @@ export default [
       'no-unsanitized': pluginNoUnsanitized
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'all', caughtErrorsIgnorePattern: '^_' }],
       'no-undef': 'error',
       'no-unsanitized/method': 'error',
       'no-unsanitized/property': [
@@ -121,7 +110,7 @@ export default [
       }
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'all', caughtErrorsIgnorePattern: '^_' }],
       'no-undef': 'error'
     }
   }

@@ -1,4 +1,4 @@
-import { normalizeTag, tagToSlug, slugifyTag } from './tags.js';
+import { tagToSlug, slugifyTag } from './tags.js';
 import { SITE_URL, ensureTrailingSlash } from './url.js';
 
 export { tagToSlug, slugifyTag, SITE_URL, ensureTrailingSlash };

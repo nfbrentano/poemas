@@ -1,5 +1,6 @@
 import { db } from '../utils/firebase.js';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { escapeHtml, unwrapSafeHTML } from '../utils/html.js';
 
 // Minimal SVG line chart — no external deps
 function buildChart(data, width = 700, height = 160) {
@@ -106,7 +107,7 @@ export default {
   meta: { title: 'Analytics — Admin' },
 
   async render(container) {
-    container.innerHTML = `
+    container.innerHTML = unwrapSafeHTML(`
       <style>
         @keyframes pulse {
           0%, 100% { opacity: 0.6; }
@@ -203,7 +204,7 @@ export default {
           </div>
         </div>
       </div>
-    `;
+    `);
 
     // Period button logic
     let activeDays = 30;
@@ -232,12 +233,12 @@ export default {
     const hourlyHeatmap = container.querySelector('#hourly-heatmap');
     const countries = container.querySelector('#countries');
 
-    kpiRow.innerHTML = Array(6).fill(0).map(() => `
+    kpiRow.innerHTML = unwrapSafeHTML(Array(6).fill(0).map(() => `
       <div class="skeleton-pulse" style="padding:var(--space-md);border:1px solid var(--border-subtle);border-radius:2px;">
         <div style="height:2rem;background:var(--border-subtle);border-radius:2px;margin-bottom:8px;width:60%;"></div>
         <div style="height:0.75rem;background:var(--border-subtle);border-radius:2px;width:40%;"></div>
       </div>
-    `).join('');
+    `).join(''));
 
     chartArea.className = 'skeleton-pulse';
     chartArea.style.height = '160px';
@@ -246,7 +247,7 @@ export default {
     chartArea.innerHTML = '';
 
     topPoems.className = 'skeleton-pulse';
-    topPoems.innerHTML = Array(5).fill(0).map(() => `
+    topPoems.innerHTML = unwrapSafeHTML(Array(5).fill(0).map(() => `
       <div style="margin-bottom:var(--space-sm);">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
           <div style="height:0.82rem;width:50%;background:var(--border-subtle);border-radius:2px;"></div>
@@ -254,16 +255,16 @@ export default {
         </div>
         <div style="height:3px;background:var(--border-subtle);border-radius:2px;"></div>
       </div>
-    `).join('');
+    `).join(''));
 
     hourlyHeatmap.className = 'skeleton-pulse';
-    hourlyHeatmap.innerHTML = `
+    hourlyHeatmap.innerHTML = unwrapSafeHTML(`
       <div style="height:80px;background:var(--border-subtle);border-radius:2px;margin-bottom:8px;"></div>
       <div style="height:0.75rem;background:var(--border-subtle);border-radius:2px;width:100%;"></div>
-    `;
+    `);
 
     countries.className = 'skeleton-pulse';
-    countries.innerHTML = Array(4).fill(0).map(() => `
+    countries.innerHTML = unwrapSafeHTML(Array(4).fill(0).map(() => `
       <div style="margin-bottom:var(--space-sm);">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
           <div style="height:0.82rem;width:40%;background:var(--border-subtle);border-radius:2px;"></div>
@@ -271,7 +272,7 @@ export default {
         </div>
         <div style="height:3px;background:var(--border-subtle);border-radius:2px;"></div>
       </div>
-    `).join('');
+    `).join(''));
   },
 
   async loadData(container, days) {
@@ -296,7 +297,7 @@ export default {
     }
 
     if (error) {
-      container.querySelector('#chart-area').innerHTML = `<p style="color:var(--error)">${error.message}</p>`;
+      container.querySelector('#chart-area').innerHTML = unwrapSafeHTML(`<p style="color:var(--error)">${escapeHtml(error.message)}</p>`);
       return;
     }
 
@@ -327,13 +328,14 @@ export default {
         ${subtext ? `<div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;">${subtext}</div>` : ''}
       </div>
     `;
-    kpiRow.innerHTML =
+    kpiRow.innerHTML = unwrapSafeHTML(
       kpi('Visitas totais', total) +
       kpi('Visitas hoje', todayViews) +
       kpi('IPs únicos', uniqueIPs) +
       kpi('Lidos', poemViews, 'Poemas visualizados') +
       kpi('Retorno', `${returnRate}%`, 'Visitantes recorrentes') +
-      kpi('Poemas/visita', poemsPerVisit, 'Média de leitura');
+      kpi('Poemas/visita', poemsPerVisit, 'Média de leitura')
+    );
 
     // Daily chart data
     const dayMap = {};
@@ -349,7 +351,7 @@ export default {
     const chartArea = container.querySelector('#chart-area');
     chartArea.className = '';
     chartArea.style = '';
-    chartArea.innerHTML = buildChart(chartData);
+    chartArea.innerHTML = unwrapSafeHTML(buildChart(chartData));
 
     // Setup chart tooltips programmatically using SVG element bounds
     const tt = container.querySelector('#chart-tooltip');
@@ -393,20 +395,20 @@ export default {
     topPoemsEl.className = '';
     
     if (topPoems.length === 0) {
-      topPoemsEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:var(--space-md) 0;">Sem leituras registradas.</p>';
+      topPoemsEl.innerHTML = unwrapSafeHTML('<p style="color:var(--text-muted);font-size:0.85rem;padding:var(--space-md) 0;">Sem leituras registradas.</p>');
     } else {
       const maxPV = topPoems[0][1];
-      topPoemsEl.innerHTML = topPoems.map(([page, count]) => `
+      topPoemsEl.innerHTML = unwrapSafeHTML(topPoems.map(([page, count]) => `
         <div style="margin-bottom:var(--space-md);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <span style="font-size:0.82rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="${page}">${page.replace('/poema/','')}</span>
+            <span style="font-size:0.82rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="${escapeHtml(page)}">${escapeHtml(page.replace('/poema/',''))}</span>
             <span style="font-size:0.82rem;color:var(--text-primary);font-weight:500;">${count}</span>
           </div>
           <div style="height:3px;background:var(--border-subtle);border-radius:2px;overflow:hidden;">
             <div style="height:100%;width:${Math.round((count/maxPV)*100)}%;background:var(--text-primary);border-radius:2px;"></div>
           </div>
         </div>
-      `).join('');
+      `).join(''));
     }
 
     // Hourly Heatmap (visitas por hora do dia, 0h-23h local)
@@ -422,7 +424,7 @@ export default {
     
     const hourlyHeatmapEl = container.querySelector('#hourly-heatmap');
     hourlyHeatmapEl.className = '';
-    hourlyHeatmapEl.innerHTML = `
+    hourlyHeatmapEl.innerHTML = unwrapSafeHTML(`
       <div style="display:flex;align-items:flex-end;justify-content:space-between;height:84px;padding:var(--space-sm) 0 4px;border-bottom:1px solid var(--border-subtle);margin-bottom:8px;">
         ${hourMap.map((count, hour) => {
           const pct = Math.round((count / maxHourHits) * 100);
@@ -441,7 +443,7 @@ export default {
         <span>18h</span>
         <span>23h</span>
       </div>
-    `;
+    `);
 
     // Countries with horizontal progress percentage bars
     const countryMap = {};
@@ -453,17 +455,18 @@ export default {
     countriesEl.className = '';
     
     if (topCountries.length === 0) {
-      countriesEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:var(--space-md) 0;">Sem dados de país.</p>';
+      countriesEl.innerHTML = unwrapSafeHTML('<p style="color:var(--text-muted);font-size:0.85rem;padding:var(--space-md) 0;">Sem dados de país locais. Métricas geográficas detalhadas disponíveis no Microsoft Clarity.</p>');
     } else {
       const maxC = topCountries[0][1];
-      countriesEl.innerHTML = topCountries.map(([code, count]) => {
+      countriesEl.innerHTML = unwrapSafeHTML(topCountries.map(([code, count]) => {
         const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        const safeCode = escapeHtml(code);
         return `
           <div style="margin-bottom:var(--space-md);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
               <span style="font-size:0.82rem;color:var(--text-secondary);display:flex;align-items:center;gap:6px;">
                 <span style="font-size:1.1rem;line-height:1;">${countryFlag(code)}</span>
-                <span style="text-transform:uppercase;font-weight:500;">${code}</span>
+                <span style="text-transform:uppercase;font-weight:500;">${safeCode}</span>
               </span>
               <span style="font-size:0.82rem;color:var(--text-primary);font-weight:500;">
                 ${count} <span style="color:var(--text-muted);font-weight:normal;font-size:0.75rem;margin-left:4px;">(${pct}%)</span>
@@ -474,7 +477,7 @@ export default {
             </div>
           </div>
         `;
-      }).join('');
+      }).join(''));
     }
   }
 };

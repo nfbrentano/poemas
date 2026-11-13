@@ -1,6 +1,6 @@
 import { updateActiveNavLink, getRandomPoem } from './utils/navigation.js';
 import { setNotFoundSEO, updateSEO } from './utils/seo.js';
-import { setStructuredData, SITE_URL } from './utils/structured-data.js';
+import { setStructuredData } from './utils/structured-data.js';
 import { buildUrl } from './utils/url.js';
 import { unwrapSafeHTML } from './utils/html.js';
 import { reportError } from './utils/error-reporter.js';

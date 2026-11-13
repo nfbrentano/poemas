@@ -27,19 +27,11 @@ vi.mock('firebase/firestore', () => ({
 
 import {
   getPoemLastMod,
-  formatDateToYMD,
-  buildPoemSitemap,
   buildCollectionSitemap,
-  buildPagesSitemap,
-  buildSentimentsSitemap,
-  buildSitemapIndex,
-  generateAllSitemaps,
-  SITE_URL
+  generateAllSitemaps
 } from './utils/sitemap-builder.js';
 import {
-  buildRssFeed,
-  formatPoemHtmlForRss,
-  getExcerpt
+  buildRssFeed
 } from './utils/rss-builder.js';
 import { migrateUpdatedAt } from '../scripts/migrate-updated-at.js';
 

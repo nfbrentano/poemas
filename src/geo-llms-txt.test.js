@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -6,10 +6,6 @@ import {
   buildLlmsFullTxt,
   buildAllLlmsFiles,
   formatPoemForMarkdown,
-  extractPoemDescription,
-  getPoemCollectionNames,
-  getPoemSentiments,
-  sortPoemsByDateDesc,
   ATTRIBUTION_NOTICE,
   SITE_URL
 } from './utils/llms-builder.js';

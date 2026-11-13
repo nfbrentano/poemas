@@ -1,5 +1,5 @@
 import { listDocs, insertDocs, updateDocById } from './data.js';
-import { escapeHtml } from '../../utils/html.js';
+import { escapeHtml, unwrapSafeHTML } from '../../utils/html.js';
 
 export async function renderSubscribers(container) {
     container.innerHTML = '<div class="loading">Carregando assinantes...</div>';
@@ -7,7 +7,7 @@ export async function renderSubscribers(container) {
     const { data: subs, error } = await listDocs('subscribers', { orderBy: ['created_at', 'desc'] });
       
     if (error) {
-      container.innerHTML = `<div class="error">Erro ao carregar: ${error.message}</div>`;
+      container.innerHTML = unwrapSafeHTML(`<div class="error">Erro ao carregar: ${escapeHtml(error.message)}</div>`);
       return;
     }
     
@@ -47,7 +47,7 @@ export async function renderSubscribers(container) {
       </tr>
     `).join('');
     
-    container.innerHTML = `
+    container.innerHTML = unwrapSafeHTML(`
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl);">
         <div class="kpi-card" style="background: var(--bg-elevated); padding: var(--space-lg); border-radius: 4px; border: 1px solid var(--border-subtle);">
           <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Total de Assinantes</div>
@@ -85,7 +85,7 @@ export async function renderSubscribers(container) {
           ${rows}
         </tbody>
       </table>
-    `;
+    `);
 
     container.querySelector('#export-csv-btn')?.addEventListener('click', () => {
       const csvContent = "data:text/csv;charset=utf-8," 

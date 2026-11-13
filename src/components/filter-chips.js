@@ -16,7 +16,7 @@ export const filterChips = {
     if (!poems) {
       try {
         poems = await getPublishedPoems();
-      } catch (err) {
+      } catch (_err) {
         poems = [];
       }
     }

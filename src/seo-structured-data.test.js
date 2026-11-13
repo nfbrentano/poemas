@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { JSDOM } from 'jsdom';
 import {
-  personSchema,
   profilePageSchema,
   websiteSchema,
   poemSchema,
@@ -9,7 +8,6 @@ import {
   collectionsListSchema,
   breadcrumbSchema,
   serializeJsonLd,
-  setStructuredData,
   renderBreadcrumbsHtml,
   pageGraphSchema,
   DEFAULT_AUTHOR_PHOTO,

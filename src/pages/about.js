@@ -187,7 +187,7 @@ export default {
                 currentBioText = newValue;
                 bioContent.innerHTML = unwrapSafeHTML(escapeHtml(newValue).replace(/\n/g, '<br>'));
                 modal.style.display = 'none';
-              } catch (err) {
+              } catch (_err) {
                 alert('Erro ao salvar bio');
               }
               saveBtn.innerText = 'Salvar';

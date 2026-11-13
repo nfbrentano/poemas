@@ -17,7 +17,6 @@ import {
   faqPageSchema,
   collectionSchema,
   collectionsListSchema,
-  websiteSchema,
   sentimentSchema,
   sentimentsListSchema,
   serializeJsonLd,

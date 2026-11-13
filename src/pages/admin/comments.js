@@ -1,5 +1,5 @@
 import { listDocs, updateDocById, deleteDocById } from './data.js';
-import { escapeHtml } from '../../utils/html.js';
+import { escapeHtml, unwrapSafeHTML } from '../../utils/html.js';
 import { attachPoemsToComments, formatCommentPoemHtml } from './comment-helpers.js';
 
 export async function renderComments(container) {
@@ -12,7 +12,7 @@ export async function renderComments(container) {
       ]);
       
       if (commentsRes.error) {
-        container.innerHTML = `<div class="error">Erro ao carregar: ${commentsRes.error.message}</div>`;
+        container.innerHTML = unwrapSafeHTML(`<div class="error">Erro ao carregar: ${escapeHtml(commentsRes.error.message)}</div>`);
         return;
       }
       
@@ -48,7 +48,7 @@ export async function renderComments(container) {
         </tr>
       `).join('');
       
-      container.innerHTML = `
+      container.innerHTML = unwrapSafeHTML(`
         <table style="width: 100%; border-collapse: collapse; text-align: left;">
           <thead>
             <tr style="border-bottom: 1px solid var(--border-strong); color: var(--text-secondary); font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
@@ -62,7 +62,7 @@ export async function renderComments(container) {
             ${rows}
           </tbody>
         </table>
-      `;
+      `);
 
       container.querySelectorAll('.approve-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -83,6 +83,6 @@ export async function renderComments(container) {
         });
       });
     } catch (err) {
-      container.innerHTML = `<div class="error">Erro ao carregar: ${err.message}</div>`;
+      container.innerHTML = unwrapSafeHTML(`<div class="error">Erro ao carregar: ${escapeHtml(err.message)}</div>`);
     }
 }

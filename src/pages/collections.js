@@ -6,7 +6,6 @@ import { normalizeTag } from '../utils/tags.js';
 import { escapeHtml, sanitizeUrl, unwrapSafeHTML } from '../utils/html.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { getPoemRowExcerpt } from '../utils/collection-template.js';
-import { renderCollectionsPageMarkup } from '../utils/collections-template.js';
 import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../data/collections.js';
 
 export const collections = {

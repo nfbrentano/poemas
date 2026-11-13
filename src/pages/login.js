@@ -43,7 +43,7 @@ export default {
         try { localStorage.setItem('has_admin_session', '1'); } catch (_) {}
         errorEl.textContent = '';
         navigateTo('/admin');
-      } catch (error) {
+      } catch (_error) {
         errorEl.textContent = 'E-mail ou senha incorretos.';
       }
     });
