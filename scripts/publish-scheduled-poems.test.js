@@ -59,6 +59,27 @@ describe('Publicação automática de poemas agendados (SDD 2026-11-10)', () => 
         updated_at: '2026-11-10T08:20:00.000Z'
       });
     });
+
+    it('RF06: reseta notify_newsletter_on_publish e grava newsletter_sent_at quando habilitado', () => {
+      const poem = {
+        id: 'poem-notify',
+        title: 'Entardecer',
+        status: 'scheduled',
+        scheduled_at: '2026-11-10T08:00:00.000Z',
+        notify_newsletter_on_publish: true
+      };
+
+      const executionTime = new Date('2026-11-10T08:20:00.000Z');
+      const payload = preparePromotionPayload(poem, executionTime);
+
+      expect(payload).toEqual({
+        status: 'published',
+        published_at: '2026-11-10T08:00:00.000Z',
+        updated_at: '2026-11-10T08:20:00.000Z',
+        notify_newsletter_on_publish: false,
+        newsletter_sent_at: '2026-11-10T08:20:00.000Z'
+      });
+    });
   });
 
   describe('publishDuePoems (orquestração e idempotência)', () => {
@@ -140,6 +161,37 @@ describe('Publicação automática de poemas agendados (SDD 2026-11-10)', () => 
       expect(result.publishedCount).toBe(0);
       expect(result.publishedPoems).toEqual([]);
       expect(updateDocFn).not.toHaveBeenCalled();
+    });
+
+    it('RF06 & CA07: dispara newsletter apenas para poemas com notify_newsletter_on_publish === true', async () => {
+      const mockPoems = [
+        { id: 'due-with-notify', title: 'Com Notificação', slug: 'com-notif', status: 'scheduled', scheduled_at: '2026-11-10T10:00:00.000Z', notify_newsletter_on_publish: true },
+        { id: 'due-without-notify', title: 'Sem Notificação', slug: 'sem-notif', status: 'scheduled', scheduled_at: '2026-11-10T10:30:00.000Z', notify_newsletter_on_publish: false }
+      ];
+
+      const mockSnapshot = {
+        forEach: (cb) => mockPoems.forEach(p => cb({ id: p.id, data: () => p }))
+      };
+
+      const getDocsFn = vi.fn().mockResolvedValue(mockSnapshot);
+      const updateDocFn = vi.fn().mockResolvedValue();
+      const sendNewsletterFn = vi.fn().mockResolvedValue({ success: true, count: 5 });
+
+      const result = await publishDuePoems({
+        db: {},
+        getDocsFn,
+        updateDocFn,
+        queryFn: vi.fn(),
+        collectionFn: vi.fn(),
+        whereFn: vi.fn(),
+        docFn: vi.fn((_db, col, id) => ({ col, id })),
+        sendNewsletterFn,
+        now: baseTime
+      });
+
+      expect(result.publishedCount).toBe(2);
+      expect(sendNewsletterFn).toHaveBeenCalledTimes(1);
+      expect(sendNewsletterFn).toHaveBeenCalledWith({ poemId: 'due-with-notify' });
     });
 
     it('CT09 & CA09: falha de gravação não quebra a execução dos outros poemas e registra erro no log', async () => {

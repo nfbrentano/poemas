@@ -1,3 +1,12 @@
+export function getSubscribeEndpoint() {
+  if (import.meta.env.VITE_FIREBASE_FUNCTIONS_URL) {
+    const base = import.meta.env.VITE_FIREBASE_FUNCTIONS_URL.replace(/\/$/, '');
+    return `${base}/subscribeNewsletter`;
+  }
+  const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || 'poemas-natanael';
+  return `https://southamerica-east1-${projectId}.cloudfunctions.net/subscribeNewsletter`;
+}
+
 export const newsletter = {
   render() {
     return `
@@ -23,49 +32,80 @@ export const newsletter = {
       e.preventDefault();
       const emailInput = document.getElementById('subscriber-email');
       const submitBtn = subForm.querySelector('button[type="submit"]');
-      const email = emailInput.value.trim().toLowerCase();
+      const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
       const msgEl = document.getElementById('subscribe-message');
       
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        msgEl.innerHTML = 'Por favor, insira um e-mail válido.';
-        msgEl.style.color = 'var(--error)';
+        if (msgEl) {
+          msgEl.textContent = 'Por favor, insira um e-mail válido.';
+          msgEl.style.color = 'var(--error)';
+        }
         return;
       }
 
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        msgEl.innerHTML = 'Você está offline. Conecte-se à internet para assinar a newsletter.';
-        msgEl.style.color = 'var(--text-secondary)';
+        if (msgEl) {
+          msgEl.textContent = 'Você está offline. Conecte-se à internet para assinar a newsletter.';
+          msgEl.style.color = 'var(--text-secondary)';
+        }
         return;
       }
 
-      msgEl.innerHTML = 'Enviando...';
-      msgEl.style.color = 'var(--text-secondary)';
-      submitBtn.disabled = true;
+      if (msgEl) {
+        msgEl.textContent = 'Enviando...';
+        msgEl.style.color = 'var(--text-secondary)';
+      }
+      if (submitBtn) submitBtn.disabled = true;
       
       try {
-        const { db } = await import('../utils/firebase.js');
-        const { doc, setDoc } = await import('firebase/firestore');
-        await setDoc(doc(db, 'subscribers', email), { 
-          email, 
-          created_at: new Date().toISOString() 
+        const endpoint = getSubscribeEndpoint();
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
         });
-        msgEl.innerHTML = 'Obrigado por assinar.';
-        msgEl.style.color = 'var(--success)';
-        subForm.reset();
-      } catch (err) {
-        if (typeof navigator !== 'undefined' && !navigator.onLine) {
-          msgEl.innerHTML = 'Você está offline. Conecte-se à internet para assinar a newsletter.';
-          msgEl.style.color = 'var(--text-secondary)';
-        } else if (err.code === 'permission-denied') {
-          msgEl.innerHTML = 'Este e-mail já está inscrito.';
-          msgEl.style.color = 'var(--text-secondary)';
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+          if (data.status === 'already_subscribed') {
+            if (msgEl) {
+              msgEl.textContent = 'Este e-mail já está inscrito.';
+              msgEl.style.color = 'var(--text-secondary)';
+            }
+          } else {
+            if (msgEl) {
+              msgEl.textContent = data.message || 'Obrigado por assinar.';
+              msgEl.style.color = 'var(--success)';
+            }
+            subForm.reset();
+          }
+        } else if (res.status === 400) {
+          if (msgEl) {
+            msgEl.textContent = data.message || 'Por favor, insira um e-mail válido.';
+            msgEl.style.color = 'var(--error)';
+          }
         } else {
-          msgEl.innerHTML = 'Erro ao inscrever. Tente novamente.';
-          msgEl.style.color = 'var(--error)';
+          if (msgEl) {
+            msgEl.textContent = 'Erro ao inscrever. Tente novamente.';
+            msgEl.style.color = 'var(--error)';
+          }
+        }
+      } catch (_err) {
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          if (msgEl) {
+            msgEl.textContent = 'Você está offline. Conecte-se à internet para assinar a newsletter.';
+            msgEl.style.color = 'var(--text-secondary)';
+          }
+        } else {
+          if (msgEl) {
+            msgEl.textContent = 'Erro ao inscrever. Tente novamente.';
+            msgEl.style.color = 'var(--error)';
+          }
         }
       } finally {
-        submitBtn.disabled = false;
+        if (submitBtn) submitBtn.disabled = false;
       }
     });
   }

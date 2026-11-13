@@ -1,9 +1,10 @@
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 const { initializeApp, getApps } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const { buildFunctionErrorPayload, logBackendFunctionError } = require("./error-logger");
 
 if (getApps().length === 0) {
@@ -18,9 +19,212 @@ const senderName = defineSecret("SENDER_NAME");
 
 const siteUrl = "https://nfgbrentano.art.br";
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatPoemContentHtml(content) {
+  const safeContent = escapeHtml(content || "");
+  return safeContent
+    .replace(/\r\n/g, "\n")
+    .replace(/\n\n+/g, '</p><p style="margin: 1.5em 0; font-size: 18px; line-height: 2; color: #e2e2e2;">')
+    .replace(/\n/g, "<br>");
+}
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(email) {
+  return typeof email === "string" && EMAIL_REGEX.test(email) && email.length <= 254;
+}
+
+async function handleSubscribeLogic({ dbInstance, email, cryptoModule = crypto }) {
+  if (typeof email !== "string") {
+    return {
+      statusCode: 400,
+      body: { success: false, message: "Por favor, insira um e-mail válido." },
+    };
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!isValidEmail(normalizedEmail)) {
+    return {
+      statusCode: 400,
+      body: { success: false, message: "Por favor, insira um e-mail válido." },
+    };
+  }
+  const docRef = dbInstance.collection("subscribers").doc(normalizedEmail);
+  const docSnap = await docRef.get();
+
+  const nowIso = new Date().toISOString();
+
+  if (docSnap.exists) {
+    const data = docSnap.data() || {};
+    if (data.active === true) {
+      return {
+        statusCode: 200,
+        body: {
+          success: true,
+          message: "Este e-mail já está inscrito.",
+          status: "already_subscribed",
+        },
+      };
+    }
+
+    // Reativação de assinante anteriormente inativado
+    const unsubscribe_token = data.unsubscribe_token || (typeof cryptoModule.randomUUID === "function" ? cryptoModule.randomUUID() : cryptoModule.randomBytes(16).toString("hex"));
+    await docRef.update({
+      active: true,
+      unsubscribe_token,
+      reactivated_at: nowIso,
+      unsubscribed_at: null,
+    });
+
+    return {
+      statusCode: 200,
+      body: {
+        success: true,
+        message: "Obrigado por assinar.",
+        status: "reactivated",
+      },
+    };
+  }
+
+  // Novo assinante
+  const unsubscribe_token = typeof cryptoModule.randomUUID === "function"
+    ? cryptoModule.randomUUID()
+    : cryptoModule.randomBytes(16).toString("hex");
+
+  await docRef.set({
+    email: normalizedEmail,
+    active: true,
+    unsubscribe_token,
+    created_at: nowIso,
+  });
+
+  return {
+    statusCode: 200,
+    body: {
+      success: true,
+      message: "Obrigado por assinar.",
+      status: "subscribed",
+    },
+  };
+}
+
+async function handleUnsubscribeLogic({ dbInstance, token }) {
+  if (!token || typeof token !== "string" || !token.trim()) {
+    return {
+      statusCode: 400,
+      body: { success: false, message: "Token de cancelamento não fornecido." },
+    };
+  }
+
+  const cleanToken = token.trim();
+  const querySnap = await dbInstance
+    .collection("subscribers")
+    .where("unsubscribe_token", "==", cleanToken)
+    .limit(1)
+    .get();
+
+  if (querySnap.empty) {
+    return {
+      statusCode: 404,
+      body: { success: false, message: "Assinatura não encontrada ou link expirado." },
+    };
+  }
+
+  const docSnap = querySnap.docs[0];
+  const data = docSnap.data() || {};
+  const nowIso = new Date().toISOString();
+
+  if (data.active === false) {
+    return {
+      statusCode: 200,
+      body: {
+        success: true,
+        message: "Inscrição já cancelada anteriormente.",
+        already_unsubscribed: true,
+      },
+    };
+  }
+
+  await docSnap.ref.update({
+    active: false,
+    unsubscribed_at: nowIso,
+  });
+
+  return {
+    statusCode: 200,
+    body: {
+      success: true,
+      message: "Inscrição cancelada com sucesso.",
+      already_unsubscribed: false,
+    },
+  };
+}
+
+exports.escapeHtml = escapeHtml;
+exports.formatPoemContentHtml = formatPoemContentHtml;
+exports.isValidEmail = isValidEmail;
+exports.handleSubscribeLogic = handleSubscribeLogic;
+exports.handleUnsubscribeLogic = handleUnsubscribeLogic;
 exports.buildFunctionErrorPayload = buildFunctionErrorPayload;
 exports.logBackendFunctionError = (dbInstance, error, options = {}) =>
   logBackendFunctionError(dbInstance || db, error, { logger, ...options });
+
+exports.subscribeNewsletter = onRequest(
+  {
+    region: "southamerica-east1",
+    cors: true,
+  },
+  async (req, res) => {
+    if (req.method !== "POST") {
+      res.status(405).json({ success: false, message: "Método não permitido. Use POST." });
+      return;
+    }
+
+    try {
+      const email = req.body?.email;
+      const result = await handleSubscribeLogic({ dbInstance: db, email });
+      res.status(result.statusCode).json(result.body);
+    } catch (error) {
+      logger.error("Erro na função subscribeNewsletter:", error);
+      await logBackendFunctionError(db, error, {
+        category: "runtime",
+        severity: "error",
+        route_or_task: "subscribeNewsletter",
+      });
+      res.status(500).json({ success: false, message: "Erro ao processar inscrição." });
+    }
+  }
+);
+
+exports.unsubscribeNewsletter = onRequest(
+  {
+    region: "southamerica-east1",
+    cors: true,
+  },
+  async (req, res) => {
+    try {
+      const token = req.body?.token || req.query?.token;
+      const result = await handleUnsubscribeLogic({ dbInstance: db, token });
+      res.status(result.statusCode).json(result.body);
+    } catch (error) {
+      logger.error("Erro na função unsubscribeNewsletter:", error);
+      await logBackendFunctionError(db, error, {
+        category: "runtime",
+        severity: "error",
+        route_or_task: "unsubscribeNewsletter",
+      });
+      res.status(500).json({ success: false, message: "Erro ao processar cancelamento." });
+    }
+  }
+);
 
 exports.sendNewsletter = onCall(
   {
@@ -78,11 +282,12 @@ exports.sendNewsletter = onCall(
         };
       }
 
-      const poemContentHtml = (poem.content || "")
-        .replace(/\n\n/g, '</p><p style="margin: 1.5em 0; font-size: 18px; line-height: 2; color: #e2e2e2;">')
-        .replace(/\n/g, "<br>");
+      const poemContentHtml = formatPoemContentHtml(poem.content);
+      const escapedPoemTitle = escapeHtml(poem.title || "");
 
-      const getHtmlEmail = (unsubscribeToken) => `<!DOCTYPE html>
+      const getHtmlEmail = (unsubscribeToken) => {
+        const safeToken = encodeURIComponent(unsubscribeToken || "");
+        return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -100,7 +305,7 @@ exports.sendNewsletter = onCall(
           </tr>
           <tr>
             <td style="text-align: center; padding: 60px 20px 20px;">
-              <h1 style="margin: 0; font-size: 36px; font-weight: 400; color: #e2e2e2; line-height: 1.2;">${poem.title}</h1>
+              <h1 style="margin: 0; font-size: 36px; font-weight: 400; color: #e2e2e2; line-height: 1.2;">${escapedPoemTitle}</h1>
             </td>
           </tr>
           <tr>
@@ -117,7 +322,7 @@ exports.sendNewsletter = onCall(
             <td style="text-align: center; padding: 40px 20px; border-top: 1px solid #1a1a1a;">
               <p style="margin: 0 0 8px; font-size: 16px; font-style: italic; color: #666666;">Natanael Fernando Gatti Brentano</p>
               <p style="margin: 20px 0 0; font-size: 12px; color: #444444;">
-                <a href="${siteUrl}/unsubscribe?token=${unsubscribeToken}" style="color: #666666; text-decoration: underline;">Não quer mais receber estes e-mails? Cancelar inscrição</a>
+                <a href="${siteUrl}/unsubscribe?token=${safeToken}" style="color: #666666; text-decoration: underline;">Não quer mais receber estes e-mails? Cancelar inscrição</a>
               </p>
             </td>
           </tr>
@@ -127,6 +332,7 @@ exports.sendNewsletter = onCall(
   </table>
 </body>
 </html>`;
+      };
 
       const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
@@ -150,12 +356,17 @@ exports.sendNewsletter = onCall(
         const batch = subscribers.slice(i, i + BATCH_SIZE);
         await Promise.allSettled(
           batch.map(async (sub) => {
+            const safeToken = encodeURIComponent(sub.unsubscribe_token || "");
             const mailOptions = {
               from: `"${SENDER_NAME}" <${GMAIL_USER}>`,
               to: sub.email,
               subject: `${poem.title} — novo poema`,
               html: getHtmlEmail(sub.unsubscribe_token),
-              text: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${sub.unsubscribe_token}`,
+              text: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${safeToken}`,
+              headers: {
+                "List-Unsubscribe": `<${siteUrl}/unsubscribe?token=${safeToken}>, <mailto:${GMAIL_USER}?subject=Unsubscribe%20${safeToken}>`,
+                "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+              },
             };
 
             try {

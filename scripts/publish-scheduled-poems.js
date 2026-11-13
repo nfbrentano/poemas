@@ -34,11 +34,18 @@ export function preparePromotionPayload(poem, now = new Date()) {
   const nowDate = now instanceof Date ? now : new Date(now);
   const nowIso = !isNaN(nowDate.getTime()) ? nowDate.toISOString() : new Date().toISOString();
 
-  return {
+  const payload = {
     status: 'published',
     published_at: poem.scheduled_at || nowIso,
     updated_at: nowIso
   };
+
+  if (poem.notify_newsletter_on_publish) {
+    payload.notify_newsletter_on_publish = false;
+    payload.newsletter_sent_at = nowIso;
+  }
+
+  return payload;
 }
 
 /**
@@ -48,10 +55,13 @@ export function preparePromotionPayload(poem, now = new Date()) {
  * @param {Object} options.db Instância do Firestore
  * @param {Function} [options.getDocsFn] Opcional para injeção em testes
  * @param {Function} [options.updateDocFn] Opcional para injeção em testes
+ * @param {Function} [options.addDocFn] Opcional para injeção em testes
  * @param {Function} [options.queryFn] Opcional para injeção em testes
  * @param {Function} [options.collectionFn] Opcional para injeção em testes
  * @param {Function} [options.whereFn] Opcional para injeção em testes
  * @param {Function} [options.docFn] Opcional para injeção em testes
+ * @param {Function} [options.sendNewsletterFn] Função para envio de newsletter opcional
+ * @param {Function} [options.reportErrorFn] Função de reporte de erro
  * @param {Date} [options.now=new Date()] Data de referência
  * @param {Function} [options.log=console.log] Função de log
  * @param {Function} [options.errorLog=console.error] Função de log de erro
@@ -66,6 +76,7 @@ export async function publishDuePoems({
   collectionFn,
   whereFn,
   docFn,
+  sendNewsletterFn,
   reportErrorFn = reportError,
   now = new Date(),
   log = console.log,
@@ -137,6 +148,28 @@ export async function publishDuePoems({
       await uDoc(docRef, payload);
       publishedPoems.push({ id: poem.id, title: poem.title, slug: poem.slug, published_at: payload.published_at });
       log(`✓ [Publish Scheduled] Publicado: "${poem.title}" (${poem.slug}) com published_at = ${payload.published_at}`);
+
+      if (poem.notify_newsletter_on_publish && sendNewsletterFn) {
+        try {
+          log(`[Publish Scheduled] Disparando newsletter automática para "${poem.title}" (${poem.id})...`);
+          await sendNewsletterFn({ poemId: poem.id });
+          log(`✓ [Publish Scheduled] Newsletter enviada com sucesso para "${poem.title}".`);
+        } catch (newsletterErr) {
+          errorLog(`✗ [Publish Scheduled] Falha ao enviar newsletter automática para "${poem.title}":`, newsletterErr.message);
+          await reportErrorFn(newsletterErr, {
+            source: 'backend:scripts',
+            category: 'smtp',
+            severity: 'error',
+            route_or_task: 'scripts/publish-scheduled-poems.js',
+            user_agent: 'node-script/publish-scheduled-poems',
+            context: { phase: 'sendNewsletter', poemId: poem.id },
+            dbInstance: db,
+            addDocFn: aDoc,
+            collectionFn: cFn,
+            skipSessionLimits: true
+          });
+        }
+      }
     } catch (err) {
       errorLog(`✗ [Publish Scheduled] Falha ao publicar "${poem.title}" (${poem.id}):`, err.message);
       errors.push({ id: poem.id, title: poem.title, error: err.message });
@@ -196,15 +229,28 @@ async function main() {
   const db = getFirestore(app);
   const auth = getAuth(app);
 
+  let sendNewsletterFn = null;
+
   if (adminEmail && adminPassword) {
     console.log(`[Publish Scheduled] Autenticando como admin (${adminEmail})...`);
     await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
     console.log('[Publish Scheduled] Autenticado com sucesso.');
+
+    try {
+      const { getFunctions, httpsCallable } = await import('firebase/functions');
+      const functions = getFunctions(app, 'southamerica-east1');
+      const callable = httpsCallable(functions, 'sendNewsletter');
+      sendNewsletterFn = async ({ poemId }) => {
+        return callable({ poemId });
+      };
+    } catch (fnErr) {
+      console.warn('[Publish Scheduled] Não foi possível carregar callable sendNewsletter:', fnErr.message);
+    }
   } else {
     console.warn('[Publish Scheduled] Aviso: FIREBASE_ADMIN_EMAIL ou FIREBASE_ADMIN_PASSWORD ausentes. Tentando sem auth...');
   }
 
-  const result = await publishDuePoems({ db });
+  const result = await publishDuePoems({ db, sendNewsletterFn });
 
   // Sinaliza quantidade para o GitHub Actions Workflow
   if (process.env.GITHUB_OUTPUT) {
