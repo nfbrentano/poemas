@@ -8,9 +8,10 @@ export async function renderList(container) {
     container.innerHTML = '<div class="loading">Carregando obras...</div>';
     
     try {
+      const thirtyDaysAgoIso = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const [poemsRes, viewsRes] = await Promise.all([
         listDocs('poems'),
-        listDocs('page_views')
+        listDocs('page_views', { where: [['created_at', '>=', thirtyDaysAgoIso]], limit: 5000 })
       ]);
       
       if (poemsRes.error) throw poemsRes.error;
@@ -71,7 +72,7 @@ export async function renderList(container) {
                   <th style="padding-bottom: var(--space-sm); font-weight: 500;">Obra</th>
                   <th style="padding-bottom: var(--space-sm); font-weight: 500;">Link</th>
                   <th style="padding-bottom: var(--space-sm); font-weight: 500;">Estado</th>
-                  <th style="padding-bottom: var(--space-sm); font-weight: 500; text-align: center;">Visualizações</th>
+                  <th style="padding-bottom: var(--space-sm); font-weight: 500; text-align: center;" title="Visualizações nos últimos 30 dias">Visualizações (30d)</th>
                   <th style="padding-bottom: var(--space-sm); text-align: right; font-weight: 500;">Ações</th>
                 </tr>
               </thead>
@@ -124,7 +125,7 @@ export async function renderList(container) {
                 </span>
                 <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; font-family: var(--font-ui); white-space: nowrap;">${dateInfo}</div>
               </td>
-              <td style="padding: var(--space-md) 0; text-align: center; font-family: var(--font-ui); color: var(--text-secondary); font-size: 0.9rem;">
+              <td style="padding: var(--space-md) 0; text-align: center; font-family: var(--font-ui); color: var(--text-secondary); font-size: 0.9rem;" title="${count} visualizações nos últimos 30 dias">
                 👁 ${count}
               </td>
               <td style="padding: var(--space-md) 0; text-align: right; font-family: var(--font-ui);">

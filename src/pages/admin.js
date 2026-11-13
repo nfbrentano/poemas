@@ -8,15 +8,14 @@ export default {
 
   async render(container, params) {
     // Check Auth
-    const urlParams = new URLSearchParams(window.location.search);
-    const bypassAuth = urlParams.get('bypass_auth') === 'true';
     const session = await getAdminSession();
-    if (!session && !bypassAuth) {
+    if (!session) {
       navigateTo('/login');
       return;
     }
     
     // Simple query param router for admin
+    const urlParams = new URLSearchParams(window.location.search);
     const view = urlParams.get('view') || 'dashboard';
     
     const linkStyle = (v) => {
@@ -46,16 +45,16 @@ export default {
       </div>
     `;
 
-    container.querySelector('#logo-header').addEventListener('click', () => {
+    container.querySelector('#logo-header')?.addEventListener('click', () => {
       navigateTo('/admin');
     });
     
-    document.getElementById('logout-btn').addEventListener('click', async () => {
+    container.querySelector('#logout-btn')?.addEventListener('click', async () => {
       await signOutAdmin();
       navigateTo('/login');
     });
     
-    const contentDiv = document.getElementById('admin-content');
+    const contentDiv = container.querySelector('#admin-content');
     
     if (view === 'dashboard') {
       const { renderDashboard } = await import('./admin/dashboard.js');

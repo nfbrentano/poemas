@@ -32,7 +32,7 @@ export async function loadReactions(poemId) {
     querySnapshot.forEach((doc) => {
       data.push(doc.data());
     });
-  } catch (error) {
+  } catch (_error) {
     return { counts: {}, userReactions: new Set() };
   }
 
@@ -54,7 +54,7 @@ export async function toggleReaction(poemId, emoji) {
   const sessionId = getSessionId();
   try {
     const { db } = await import('./firebase.js');
-    const { collection, query, where, getDocs, addDoc, deleteDoc, doc } = await import('firebase/firestore');
+    const { collection, query, where, getDocs, addDoc } = await import('firebase/firestore');
     const q = query(
       collection(db, 'poem_reactions'),
       where('poem_id', '==', poemId),
@@ -64,9 +64,7 @@ export async function toggleReaction(poemId, emoji) {
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-      const existingDoc = querySnapshot.docs[0];
-      await deleteDoc(doc(db, 'poem_reactions', existingDoc.id));
-      return 'removed';
+      return 'already_reacted';
     } else {
       await addDoc(collection(db, 'poem_reactions'), { poem_id: poemId, emoji, session_id: sessionId });
       return 'added';

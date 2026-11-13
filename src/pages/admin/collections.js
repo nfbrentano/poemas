@@ -1,4 +1,4 @@
-import { listDocs, insertDocs, updateDocById, deleteDocById, replaceCollectionPoems, uploadFile, getPublicFileUrl } from './data.js';
+import { listDocs, getDocById, insertDocs, updateDocById, deleteDocById, replaceCollectionPoems, uploadFile, getPublicFileUrl } from './data.js';
 import { escapeHtml, sanitizeUrl } from '../../utils/html.js';
 import { countPoemsByCollection, formatPoemCount } from './collection-counts.js';
 import {
@@ -126,7 +126,7 @@ export async function renderCollections(container) {
       try {
         const [poemsRes, colRes, assocRes] = await Promise.all([
           listDocs('poems', { orderBy: ['title', 'asc'] }),
-          colId ? listDocs('collections', { where: [['id', '==', colId]], single: true }) : Promise.resolve({ data: null }),
+          colId ? getDocById('collections', colId) : Promise.resolve({ data: null }),
           colId ? listDocs('collection_poems', { where: [['collection_id', '==', colId]] }) : Promise.resolve({ data: [] })
         ]);
         
@@ -596,7 +596,7 @@ export async function renderCollections(container) {
             orderFeedback.textContent = '';
 
             const relations = buildCollectionPoemsPayload(colId, orderedPoems, true);
-            const { error: saveErr } = await replaceCollectionPoems(colId, relations);
+            const { error: saveErr } = await replaceCollectionPoems(colId, relations, { collectionSlug: col.slug });
 
             saveOrderBtn.disabled = false;
             saveOrderBtn.textContent = 'Salvar ordem';
@@ -632,7 +632,7 @@ export async function renderCollections(container) {
               orderFeedback.style.color = 'var(--text-muted)';
 
               const relations = buildCollectionPoemsPayload(colId, orderedPoems, false);
-              const { error: restErr } = await replaceCollectionPoems(colId, relations);
+              const { error: restErr } = await replaceCollectionPoems(colId, relations, { collectionSlug: col.slug });
               restoreOrderBtn.disabled = false;
 
               if (restErr) {
@@ -707,12 +707,12 @@ export async function renderCollections(container) {
           // Salva relações atomicamente com a ordem atualizada (RNF03)
           if (orderedPoems.length > 0) {
             const relations = buildCollectionPoemsPayload(colIdToUse, orderedPoems, isManualOrder);
-            const { error: relError } = await replaceCollectionPoems(colIdToUse, relations);
+            const { error: relError } = await replaceCollectionPoems(colIdToUse, relations, { collectionSlug: payload.slug });
             if (relError) {
               alert('Coleção salva, mas houve um erro ao associar/ordenar poemas: ' + relError.message);
             }
           } else {
-            await replaceCollectionPoems(colIdToUse, []);
+            await replaceCollectionPoems(colIdToUse, [], { collectionSlug: payload.slug });
           }
           
           renderList();

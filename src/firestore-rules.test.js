@@ -8,31 +8,39 @@ const block = (name) => {
   return rules.slice(start, rules.indexOf('\n    }\n', start));
 };
 
+describe('firestore.rules: isAdmin helper (CA02, CT02, RF02)', () => {
+  it('define helper isAdmin com checagem de Custom Claim e e-mail verificado do autor', () => {
+    expect(rules).toContain('function isAdmin()');
+    expect(rules).toContain('request.auth.token.admin == true');
+    expect(rules).toContain("request.auth.token.email in ['nfgbrentano@gmail.com']");
+  });
+});
+
 describe('firestore.rules: collection_poems (CA10 & CT10)', () => {
   const b = block('collection_poems');
   it('leitura pública permitida para montagem de coleções', () => {
     expect(b).toMatch(/allow read: if true;/);
   });
-  it('escrita restrita a usuário autenticado (impede gravação anônima)', () => {
-    expect(b).toMatch(/allow write: if request\.auth != null;/);
+  it('escrita restrita a usuário administrador (impede gravação anônima ou não-admin)', () => {
+    expect(b).toMatch(/allow write: if isAdmin\(\);/);
     expect(b).not.toMatch(/allow write[^;]*if true/);
   });
 });
 
 describe('firestore.rules: poems', () => {
   const b = block('poems');
-  it('CA08 & CT08: leitura anônima restrita a status published', () => {
-    expect(b).toContain("resource.data.status == 'published' || request.auth != null");
+  it('CA08 & CT08: leitura anônima restrita a status published ou administrador', () => {
+    expect(b).toContain("resource.data.status == 'published' || isAdmin()");
   });
-  it('CA08 & CT08: escrita restrita a usuário autenticado', () => {
-    expect(b).toContain('allow write: if request.auth != null;');
+  it('CA08 & CT08: escrita restrita a administrador', () => {
+    expect(b).toContain('allow write: if isAdmin();');
   });
 });
 
 describe('firestore.rules: push_subscriptions', () => {
   const b = block('push_subscriptions');
-  it('leitura restrita a usuário autenticado', () => {
-    expect(b).toMatch(/allow read, update: if request\.auth != null/);
+  it('leitura restrita a administrador', () => {
+    expect(b).toMatch(/allow read, update: if isAdmin\(\);/);
     expect(b).not.toMatch(/allow read[^;]*if true/);
   });
   it('create valida ID, campos e endpoint', () => {
@@ -42,7 +50,7 @@ describe('firestore.rules: push_subscriptions', () => {
   });
 });
 
-describe('firestore.rules: poem_reactions', () => {
+describe('firestore.rules: poem_reactions (RF03, CA03, CT03)', () => {
   const b = block('poem_reactions');
   it('mantém leitura pública', () => {
     expect(b).toMatch(/allow read: if true/);
@@ -52,12 +60,16 @@ describe('firestore.rules: poem_reactions', () => {
     EMOJIS.forEach(e => expect(b).toContain(`'${e}'`));
     expect(b).toContain('session_id.size() <= 64');
   });
+  it('RF03, CA03 & CT03: remoção e atualização restritas exclusivamente a administrador (sem delete público)', () => {
+    expect(b).toMatch(/allow update, delete: if isAdmin\(\);/);
+    expect(b).not.toMatch(/allow delete: if true/);
+  });
 });
 
 describe('firestore.rules: error_logs (CA13, CA14, CT13, CT14)', () => {
   const b = block('error_logs');
-  it('CT13 & CA13: leitura, atualização e exclusão restritas a usuário autenticado', () => {
-    expect(b).toMatch(/allow read, update, delete: if request\.auth != null;/);
+  it('CT13 & CA13: leitura, atualização e exclusão restritas a administrador', () => {
+    expect(b).toMatch(/allow read, update, delete: if isAdmin\(\);/);
     expect(b).not.toMatch(/allow read[^;]*if true/);
   });
   it('CT14 & CA14: create valida campos exatos, status open e limites de tamanho', () => {
@@ -66,6 +78,33 @@ describe('firestore.rules: error_logs (CA13, CA14, CT13, CT14)', () => {
     expect(b).toContain('request.resource.data.message.size() <= 1000');
     expect(b).toContain('request.resource.data.stack.size() <= 4000');
     expect(b).toContain('request.resource.data.context.size() <= 2000');
+  });
+});
+
+describe('firestore.rules: subscribers (CA08 & CT07)', () => {
+  const b = block('subscribers');
+  it('CT07 & CA08: leitura, atualização e exclusão restritas a administrador', () => {
+    expect(b).toMatch(/allow read, update, delete: if isAdmin\(\);/);
+    expect(b).not.toMatch(/allow read[^;]*if true/);
+    expect(b).not.toMatch(/allow update[^;]*if true/);
+  });
+  it('CT07 & CA08: create exige isAdmin() ou formato estrito com apenas email e created_at', () => {
+    expect(b).toContain('allow create: if isAdmin()');
+    expect(b).toContain("hasOnly(['email', 'created_at'])");
+    expect(b).toContain("hasAll(['email', 'created_at'])");
+  });
+});
+
+describe('firestore.rules: page_views e email_campaign_logs (CA02, RF02)', () => {
+  it('page_views restringe leitura e gestão a administrador', () => {
+    const b = block('page_views');
+    expect(b).toMatch(/allow read, update, delete: if isAdmin\(\);/);
+    expect(b).toMatch(/allow create: if true;/);
+  });
+
+  it('email_campaign_logs restringe leitura e escrita a administrador', () => {
+    const b = block('email_campaign_logs');
+    expect(b).toMatch(/allow read, write: if isAdmin\(\);/);
   });
 });
 

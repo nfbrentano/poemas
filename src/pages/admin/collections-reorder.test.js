@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mocks para data.js
 const listDocsMock = vi.fn();
+const getDocByIdMock = vi.fn();
 const replaceCollectionPoemsMock = vi.fn();
 const updateDocByIdMock = vi.fn();
 const insertDocsMock = vi.fn();
@@ -9,6 +10,7 @@ const deleteDocByIdMock = vi.fn();
 
 vi.mock('./data.js', () => ({
   listDocs: (...args) => listDocsMock(...args),
+  getDocById: (...args) => getDocByIdMock(...args),
   replaceCollectionPoems: (...args) => replaceCollectionPoemsMock(...args),
   updateDocById: (...args) => updateDocByIdMock(...args),
   insertDocs: (...args) => insertDocsMock(...args),
@@ -44,6 +46,13 @@ describe('Admin: reordenar poemas de uma coleção (SDD 2026-11-10)', () => {
     container = document.getElementById('app');
 
     // Configura respostas padrão
+    getDocByIdMock.mockImplementation((colName, id) => {
+      if (colName === 'collections' && id === 'col1') {
+        return Promise.resolve({ data: sampleCollection, error: null });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
     listDocsMock.mockImplementation((colName, opts) => {
       if (colName === 'collections') {
         if (opts?.single) return Promise.resolve({ data: sampleCollection, error: null });
@@ -114,7 +123,7 @@ describe('Admin: reordenar poemas de uma coleção (SDD 2026-11-10)', () => {
     expect(replaceCollectionPoemsMock).toHaveBeenCalledWith('col1', [
       { collection_id: 'col1', poem_id: 'p2', order: 1 },
       { collection_id: 'col1', poem_id: 'p1', order: 2 },
-    ]);
+    ], { collectionSlug: 'colecao-noturna' });
 
     const feedback = container.querySelector('#order-feedback');
     expect(feedback.textContent).toContain('Ordem salva com sucesso');
@@ -181,7 +190,7 @@ describe('Admin: reordenar poemas de uma coleção (SDD 2026-11-10)', () => {
     expect(replaceCollectionPoemsMock).toHaveBeenCalledWith('col1', [
       { collection_id: 'col1', poem_id: 'p1', order: null },
       { collection_id: 'col1', poem_id: 'p2', order: null },
-    ]);
+    ], { collectionSlug: 'colecao-noturna' });
 
     const feedback = container.querySelector('#order-feedback');
     expect(feedback.textContent).toContain('padrão cronológico');

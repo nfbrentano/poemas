@@ -15,9 +15,11 @@ const fs = {
   updateDoc: vi.fn(async (...a) => { calls.push(['updateDoc', ...a.slice(1)]); }),
   deleteDoc: vi.fn(async (...a) => { calls.push(['deleteDoc']); }),
   getDocs: vi.fn(),
+  getDoc: vi.fn(),
   writeBatch: vi.fn(() => ({
     delete: vi.fn(),
     set: vi.fn(),
+    update: vi.fn(),
     commit: vi.fn(async () => {}),
   })),
 };
@@ -68,6 +70,37 @@ describe('listDocs', () => {
     const err = new Error('Missing or insufficient permissions.');
     fs.getDocs.mockRejectedValueOnce(err);
     expect(await data.listDocs('poems')).toEqual({ data: null, error: err });
+  });
+});
+
+describe('getDocById', () => {
+  it('retorna documento por ID real do Firestore (CA04, CT04, RF04)', async () => {
+    fs.getDoc.mockResolvedValueOnce({
+      exists: () => true,
+      id: 'doc-123',
+      data: () => ({ title: 'Poema Teste', status: 'published' }),
+    });
+    const res = await data.getDocById('poems', 'doc-123');
+    expect(fs.doc).toHaveBeenCalledWith({ __db: true }, 'poems', 'doc-123');
+    expect(res).toEqual({
+      data: { id: 'doc-123', title: 'Poema Teste', status: 'published' },
+      error: null,
+    });
+  });
+
+  it('retorna data: null quando documento não existe', async () => {
+    fs.getDoc.mockResolvedValueOnce({
+      exists: () => false,
+    });
+    const res = await data.getDocById('poems', 'inexistente');
+    expect(res).toEqual({ data: null, error: null });
+  });
+
+  it('retorna erro em { error } quando falhar', async () => {
+    const err = new Error('Falha de leitura');
+    fs.getDoc.mockRejectedValueOnce(err);
+    const res = await data.getDocById('poems', 'err');
+    expect(res).toEqual({ data: null, error: err });
   });
 });
 
@@ -149,6 +182,45 @@ describe('updateDocById / deleteDocById / deleteDocsWhere', () => {
 
     const res = await data.replaceCollectionPoems('c1', [{ poem_id: 'p1', order: 1 }]);
     expect(res).toEqual({ error: err });
+  });
+
+  it('replaceCollectionPoems sincroniza collection_slugs nos poemas afetados (RF05, CA05, CT05)', async () => {
+    const delFn = vi.fn();
+    const setFn = vi.fn();
+    const updateFn = vi.fn();
+    const commitFn = vi.fn(async () => {});
+    fs.writeBatch.mockReturnValueOnce({ delete: delFn, set: setFn, update: updateFn, commit: commitFn });
+
+    // snapshot of previous collection_poems: p_old was in collection
+    fs.getDocs.mockResolvedValueOnce(snap([{ id: 'rel1', poem_id: 'p_old' }]));
+
+    // getDoc for p_old (removed)
+    fs.getDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ title: 'Poema Antigo', collection_slugs: ['antologia-2024', 'outra'] }),
+    });
+    // getDoc for p_new (added)
+    fs.getDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ title: 'Poema Novo', collection_slugs: ['outra'] }),
+    });
+
+    const res = await data.replaceCollectionPoems('col1', [{ poem_id: 'p_new', order: 1 }], { collectionSlug: 'antologia-2024' });
+
+    expect(res).toEqual({ error: null });
+    expect(delFn).toHaveBeenCalledTimes(1);
+    expect(setFn).toHaveBeenCalledTimes(1);
+    expect(updateFn).toHaveBeenCalledTimes(2);
+
+    expect(updateFn).toHaveBeenCalledWith(
+      { __op: 'doc', args: [{ __db: true }, 'poems', 'p_old'] },
+      expect.objectContaining({ collection_slugs: ['outra'] })
+    );
+    expect(updateFn).toHaveBeenCalledWith(
+      { __op: 'doc', args: [{ __db: true }, 'poems', 'p_new'] },
+      expect.objectContaining({ collection_slugs: ['outra', 'antologia-2024'] })
+    );
+    expect(commitFn).toHaveBeenCalledTimes(1);
   });
 });
 

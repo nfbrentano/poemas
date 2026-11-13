@@ -1,4 +1,5 @@
 import { listDocs, insertDocs, updateDocById } from './data.js';
+import { escapeHtml } from '../../utils/html.js';
 
 export async function renderSubscribers(container) {
     container.innerHTML = '<div class="loading">Carregando assinantes...</div>';
@@ -26,7 +27,7 @@ export async function renderSubscribers(container) {
     
     const rows = subs.map(s => `
       <tr style="border-bottom: 1px solid var(--border-subtle); transition: background-color var(--transition-fast);">
-        <td style="padding: var(--space-md) 0; font-family: var(--font-ui);">${s.email}</td>
+        <td style="padding: var(--space-md) 0; font-family: var(--font-ui);">${escapeHtml(s.email)}</td>
         <td style="padding: var(--space-md) 0; font-family: var(--font-ui); color: var(--text-muted); font-size: 0.85rem;">
           ${new Date(s.created_at).toLocaleDateString('pt-BR')}
         </td>
@@ -112,9 +113,14 @@ export async function renderSubscribers(container) {
         return;
       }
       
+      const token = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : (Math.random().toString(36).substring(2) + Date.now().toString(36));
+      
       const payload = {
         email: email,
         active: true,
+        unsubscribe_token: token,
         created_at: new Date().toISOString()
       };
       

@@ -1,23 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Leitura pública de poemas apenas quando publicados, ou qualquer status se autenticado
+    // Helper para verificar se a requisição provém do administrador autenticado
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.token.email in ['nfgbrentano@gmail.com']
+      );
+    }
+
+    // Leitura pública de poemas apenas quando publicados, ou qualquer status se administrador
     match /poems/{document=**} {
-      allow read: if resource.data.status == 'published' || request.auth != null;
-      allow write: if request.auth != null;
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
     }
     match /collections/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
     match /collection_poems/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
     
     // Comentários: proteção contra spam e moderação
     match /poem_comments/{document=**} {
-      allow read: if request.auth != null || resource.data.approved == true;
+      allow read: if isAdmin() || resource.data.approved == true;
       allow create: if request.resource.data.keys().hasOnly(['poem_id', 'author_name', 'content', 'approved', 'created_at'])
                     && request.resource.data.keys().hasAll(['poem_id', 'author_name', 'content', 'approved', 'created_at'])
                     && request.resource.data.approved == false
@@ -27,10 +35,10 @@ service cloud.firestore {
                     && request.resource.data.content is string
                     && request.resource.data.content.size() > 0
                     && request.resource.data.content.size() <= 500;
-      allow update, delete: if request.auth != null;
+      allow update, delete: if isAdmin();
     }
 
-    // Reações aos poemas: leitura pública (contagem), criação validada e remoção pública (baseadas em sessionId)
+    // Reações aos poemas: leitura pública (contagem) e criação validada. Remoção restrita a admin.
     match /poem_reactions/{document=**} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(['poem_id', 'emoji', 'session_id'])
@@ -42,14 +50,13 @@ service cloud.firestore {
                     && request.resource.data.session_id is string
                     && request.resource.data.session_id.size() > 0
                     && request.resource.data.session_id.size() <= 64;
-      allow delete: if true;
-      allow update: if request.auth != null;
+      allow update, delete: if isAdmin();
     }
 
-    // Notificações push: somente admin lê. O ID do documento é o SHA-256 (hex) do endpoint,
+    // Notificações push: somente admin lê e atualiza. O ID do documento é o SHA-256 (hex) do endpoint,
     // o que permite ao cliente cancelar a própria inscrição sem precisar listar as demais.
     match /push_subscriptions/{subId} {
-      allow read, update: if request.auth != null;
+      allow read, update: if isAdmin();
       allow create: if subId.matches('^[0-9a-f]{64}$')
                     && request.resource.data.keys().hasOnly(['user_id', 'subscription'])
                     && request.resource.data.keys().hasAll(['subscription'])
@@ -63,28 +70,30 @@ service cloud.firestore {
       allow delete: if true;
     }
 
-    // Page views e Inscritos: qualquer um pode criar, só admin pode ler/editar
+    // Page views e Inscritos: criação pública validada, leitura/edição restrita a admin
     match /page_views/{document=**} {
       allow create: if true;
-      allow read, update, delete: if request.auth != null;
+      allow read, update, delete: if isAdmin();
     }
     match /subscribers/{document=**} {
-      allow create: if request.resource.data.keys().hasOnly(['email', 'created_at'])
+      allow create: if isAdmin() || (
+                    request.resource.data.keys().hasOnly(['email', 'created_at'])
                     && request.resource.data.keys().hasAll(['email', 'created_at'])
                     && request.resource.data.email is string
-                    && request.resource.data.email.size() <= 254;
-      allow read, update, delete: if request.auth != null;
+                    && request.resource.data.email.size() <= 254
+      );
+      allow read, update, delete: if isAdmin();
     }
 
     // Permite que a página "Sobre" leia a biografia e a foto
     match /site_settings/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     // Observabilidade de erros: criação pública estritamente validada, leitura/gestão restrita a admin autenticado
     match /error_logs/{document=**} {
-      allow read, update, delete: if request.auth != null;
+      allow read, update, delete: if isAdmin();
       allow create: if request.resource.data.keys().hasOnly(['source', 'category', 'severity', 'message', 'stack', 'route_or_task', 'fingerprint', 'context', 'user_agent', 'status', 'created_at'])
                     && request.resource.data.keys().hasAll(['source', 'category', 'severity', 'message', 'stack', 'route_or_task', 'fingerprint', 'context', 'user_agent', 'status', 'created_at'])
                     && request.resource.data.source in ['frontend', 'backend:functions', 'backend:scripts']
@@ -111,9 +120,14 @@ service cloud.firestore {
                     && request.resource.data.created_at.size() <= 40;
     }
 
-    // Regra geral para outras coleções (ex: emails, analytics, etc)
+    // Campanhas de e-mail
+    match /email_campaign_logs/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Regra geral para outras coleções (ex: analytics, etc)
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
   }
 }

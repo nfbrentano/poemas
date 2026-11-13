@@ -13,8 +13,8 @@ describe('Security & Public Query Constraints', () => {
 
     const block = poemsMatchBlock[1];
     expect(block).not.toMatch(/allow\s+read\s*:\s*if\s+true\s*;/);
-    expect(block).toMatch(/allow\s+read\s*:\s*if\s+resource\.data\.status\s*==\s*['"]published['"]\s*\|\|\s*request\.auth\s*!=\s*null\s*;/);
-    expect(block).toMatch(/allow\s+write\s*:\s*if\s+request\.auth\s*!=\s*null\s*;/);
+    expect(block).toMatch(/allow\s+read\s*:\s*if\s+resource\.data\.status\s*==\s*['"]published['"]\s*\|\|\s*(isAdmin\(\)|request\.auth\s*!=\s*null)\s*;/);
+    expect(block).toMatch(/allow\s+write\s*:\s*if\s*(isAdmin\(\)|request\.auth\s*!=\s*null)\s*;/);
   });
 
   it('ensures all public queries to poems in src/ include status == published filter', () => {

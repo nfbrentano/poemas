@@ -422,7 +422,7 @@ describe('Observabilidade de Erros Front-end e Back-end (SDD 2026-11-11)', () =>
     const errorLogsBlock = rules.slice(start, rules.indexOf('\n    }\n', start));
 
     it('nega leitura, update e delete para usuários não autenticados', () => {
-      expect(errorLogsBlock).toContain('allow read, update, delete: if request.auth != null;');
+      expect(errorLogsBlock).toMatch(/allow read, update, delete:\s*if\s*(isAdmin\(\)|request\.auth\s*!=\s*null);/);
       expect(errorLogsBlock).not.toMatch(/allow read\s*:\s*if true/);
     });
 

@@ -301,7 +301,7 @@ export async function renderEmailHistory(container) {
         if (filteredLogs.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="5" style="padding: var(--space-xl) 0; text-align: center; color: var(--text-muted); font-style: italic;">
+              <td colspan="6" style="padding: var(--space-xl) 0; text-align: center; color: var(--text-muted); font-style: italic;">
                 Nenhum registro de envio encontrado com os filtros aplicados.
               </td>
             </tr>

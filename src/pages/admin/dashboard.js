@@ -11,58 +11,24 @@ export async function renderDashboard(container) {
       let lastSubscribers = [];
       let pageViews = [];
       
-      const bypassAuth = new URLSearchParams(window.location.search).get('bypass_auth') === 'true';
+      const [poemsRes, commentsRes, subscribersRes, viewsRes, errorsRes] = await Promise.all([
+        listDocs('poems'),
+        listDocs('poem_comments', { where: [['approved', '==', false]] }),
+        listDocs('subscribers', { orderBy: ['created_at', 'desc'], limit: 5 }),
+        listDocs('page_views', { where: [['created_at', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()]] }),
+        Promise.resolve(listDocs('error_logs', { where: [['status', '==', 'open']] })).catch(() => ({ data: [] }))
+      ]);
       
-      try {
-        const [poemsRes, commentsRes, subscribersRes, viewsRes, errorsRes] = await Promise.all([
-          listDocs('poems'),
-          listDocs('poem_comments', { where: [['approved', '==', false]] }),
-          listDocs('subscribers', { orderBy: ['created_at', 'desc'], limit: 5 }),
-          listDocs('page_views', { where: [['created_at', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()]] }),
-          Promise.resolve(listDocs('error_logs', { where: [['status', '==', 'open']] })).catch(() => ({ data: [] }))
-        ]);
-        
-        if (poemsRes.error || commentsRes.error || subscribersRes.error || viewsRes.error) {
-          if (bypassAuth) {
-            throw new Error('Firestore query error, fallback to mock data');
-          }
-          if (poemsRes.error) throw poemsRes.error;
-          if (commentsRes.error) throw commentsRes.error;
-          if (subscribersRes.error) throw subscribersRes.error;
-          if (viewsRes.error) throw viewsRes.error;
-        }
-        
-        poems = poemsRes.data || [];
-        pendingCommentsCount = commentsRes.data?.length || 0;
-        openErrorsCount = errorsRes?.data?.length || 0;
-        lastSubscribers = subscribersRes.data || [];
-        pageViews = viewsRes.data || [];
-      } catch (err) {
-        if (bypassAuth) {
-          poems = [
-            { id: '1', title: 'Poema das Flores', slug: 'poema-das-flores', status: 'published', created_at: new Date().toISOString() },
-            { id: '2', title: 'Canto Noturno', slug: 'canto-noturno', status: 'draft', created_at: new Date().toISOString() },
-            { id: '3', title: 'Silêncio da Alma', slug: 'silencio-da-alma', status: 'scheduled', scheduled_at: new Date(Date.now() + 86400000).toISOString(), created_at: new Date().toISOString() }
-          ];
-          pendingCommentsCount = 3;
-          lastSubscribers = [
-            { email: 'leitor1@exemplo.com', created_at: new Date(Date.now() - 100000).toISOString(), active: true },
-            { email: 'leitor2@exemplo.com', created_at: new Date(Date.now() - 500000).toISOString(), active: false },
-            { email: 'leitor3@exemplo.com', created_at: new Date(Date.now() - 900000).toISOString(), active: true }
-          ];
-          pageViews = [];
-          for (let i = 0; i < 7; i++) {
-            const count = [12, 18, 5, 23, 14, 30, 45][i];
-            const d = new Date();
-            d.setDate(d.getDate() - (6 - i));
-            for (let j = 0; j < count; j++) {
-              pageViews.push({ created_at: d.toISOString() });
-            }
-          }
-        } else {
-          throw err;
-        }
-      }
+      if (poemsRes.error) throw poemsRes.error;
+      if (commentsRes.error) throw commentsRes.error;
+      if (subscribersRes.error) throw subscribersRes.error;
+      if (viewsRes.error) throw viewsRes.error;
+      
+      poems = poemsRes.data || [];
+      pendingCommentsCount = commentsRes.data?.length || 0;
+      openErrorsCount = errorsRes?.data?.length || 0;
+      lastSubscribers = subscribersRes.data || [];
+      pageViews = viewsRes.data || [];
       
       const totalPoems = poems.length;
       const publishedPoems = poems.filter(p => p.status === 'published').length;

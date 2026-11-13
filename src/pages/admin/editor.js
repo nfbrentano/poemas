@@ -1,4 +1,4 @@
-import { listDocs, insertDocs, updateDocById, uploadFile, getPublicFileUrl, callFunction } from './data.js';
+import { listDocs, getDocById, insertDocs, updateDocById, uploadFile, getPublicFileUrl, callFunction } from './data.js';
 import { navigateTo } from '../../router.js';
 import { escapeHtml, stripHtml, sanitizeUrl } from '../../utils/html.js';
 import { debounce } from './debounce.js';
@@ -8,7 +8,7 @@ export async function renderEditor(container, id) {
     
     if (id) {
       container.innerHTML = '<div class="loading">Carregando poema...</div>';
-      const { data } = await listDocs('poems', { where: [['id', '==', id]], single: true });
+      const { data } = await getDocById('poems', id);
       if (data) {
         poem = data;
         // Clean imported HTML tags so the editor is always pure natural text
@@ -96,6 +96,10 @@ export async function renderEditor(container, id) {
               <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Data de Publicação</label>
               <input type="datetime-local" id="scheduled-at" value="${poem.scheduled_at ? new Date(poem.scheduled_at).toISOString().slice(0, 16) : ''}" style="width: 100%; padding: var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 2px;">
               <p class="field-help">Se definido e o status for "Agendado", o poema será publicado automaticamente.</p>
+              <label style="display: flex; align-items: center; gap: var(--space-2xs); margin-top: var(--space-sm); font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                <input type="checkbox" id="notify-newsletter-on-publish" ${poem.notify_newsletter_on_publish ? 'checked' : ''}>
+                Enviar newsletter automaticamente ao publicar
+              </label>
               ${poem.status === 'scheduled' ? `<p class="field-help" style="color: var(--accent-subtle); font-style: italic;">Este poema será publicado automaticamente em ${new Date(poem.scheduled_at).toLocaleString('pt-BR')}.</p>` : ''}
             </div>
             
@@ -283,6 +287,7 @@ export async function renderEditor(container, id) {
     const getFormData = () => {
       const tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
       const scheduledAtInput = document.getElementById('scheduled-at');
+      const notifyNewsletterInput = document.getElementById('notify-newsletter-on-publish');
       
       return {
         title: document.getElementById('poem-title').value,
@@ -292,7 +297,8 @@ export async function renderEditor(container, id) {
         tags,
         audio_url: audioUrlInput ? (audioUrlInput.value.trim() || null) : null,
         status: document.getElementById('poem-status').value,
-        scheduled_at: scheduledAtInput.value ? new Date(scheduledAtInput.value).toISOString() : null
+        scheduled_at: scheduledAtInput && scheduledAtInput.value ? new Date(scheduledAtInput.value).toISOString() : null,
+        notify_newsletter_on_publish: notifyNewsletterInput ? notifyNewsletterInput.checked : false
       };
     };
     
@@ -323,7 +329,7 @@ export async function renderEditor(container, id) {
       } else {
         payload.created_at = new Date().toISOString();
         payload.updated_at = payload.published_at || payload.created_at;
-        const res = await insertDocs('poems', [payload]);
+        const res = await insertDocs('poems', payload);
         error = res.error;
       }
       
