@@ -7,94 +7,96 @@ Natanael Fernando Gatti Brentano é um poeta brasileiro contemporâneo que escre
 
 ## Coleções
 
-- [Reflexões e Tempo](https://nfgbrentano.art.br/colecao/reflexoes-e-tempo/): Uma jornada interna sobre a passagem do tempo, a vida e os sentimentos mais profundos da alma.
-- [Amor](https://nfgbrentano.art.br/colecao/amor/): Palavras de amor
 - [Amor e Conexão](https://nfgbrentano.art.br/colecao/amor-e-conexao/): Poemas que exploram os laços de afeto, os encontros e a profundidade do amor em suas diversas formas.
-- [Família e Afeto](https://nfgbrentano.art.br/colecao/familia-e-afeto/): Uma homenagem àqueles que são nosso lar: a família, as alegrias diárias e a saudade de quem amamos.
+- [Reflexões e Tempo](https://nfgbrentano.art.br/colecao/reflexoes-e-tempo/): Uma jornada interna sobre a passagem do tempo, a vida e os sentimentos mais profundos da alma.
+- [Alma e Autoconhecimento](https://nfgbrentano.art.br/colecao/alma-e-autoconhecimento/): Versos intimistas sobre a coragem de olhar para dentro, acolher as próprias sombras, curar feridas e descobrir a força do amor-próprio.
 - [Paz e Esperança](https://nfgbrentano.art.br/colecao/paz-e-esperanca/): Versos que trazem calma, fé e a esperança em dias melhores e novos recomeços.
+- [Poesia e Cotidiano](https://nfgbrentano.art.br/colecao/poesia-e-cotidiano/): Poemas sobre o ritmo dos dias, a magia oculta na simplicidade das coisas, a relação com as palavras e os paradoxos do mundo contemporâneo.
+- [Família e Afeto](https://nfgbrentano.art.br/colecao/familia-e-afeto/): Uma homenagem àqueles que são nosso lar: a família, as alegrias diárias e a saudade de quem amamos.
+- [Amor](https://nfgbrentano.art.br/colecao/amor/): Palavras de amor
 
 ## Sentimentos
 
 - [Todos os Sentimentos](https://nfgbrentano.art.br/sentimentos/): Índice de poemas organizados por sentimentos e temas.
 - [Amor](https://nfgbrentano.art.br/sentimento/amor/): Poemas que exploram as nuances do amor, da paixão ardente ao afeto sereno, da entrega ao desvelo silencioso de amar.
-- [Sentimentos](https://nfgbrentano.art.br/sentimento/sentimentos/): Uma seleção de poemas e versos contemporâneos sobre sentimentos, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Dani](https://nfgbrentano.art.br/sentimento/dani/): Uma seleção de poemas e versos contemporâneos sobre dani, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Filha](https://nfgbrentano.art.br/sentimento/filha/): Uma seleção de poemas e versos contemporâneos sobre filha, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
+- [Sentimentos](https://nfgbrentano.art.br/sentimento/sentimentos/): Poemas que entrelaçam múltiplas camadas afetivas, revelando a complexidade e a riqueza da vida interior.
+- [Dani](https://nfgbrentano.art.br/sentimento/dani/): Poemas e dedicatórias inspirados na presença, na parceria, no encanto e nas memórias compartilhadas com Dani.
+- [Filha](https://nfgbrentano.art.br/sentimento/filha/): Poemas dedicados ao amor paterno e familiar, à ternura de ver crescer e ao legado de afeto e proteção para a filha.
 - [Paz](https://nfgbrentano.art.br/sentimento/paz/): Versos de quietude e serenidade, o repouso das tempestades internas e a busca pelo equilíbrio do espírito.
 - [Vida](https://nfgbrentano.art.br/sentimento/vida/): Poemas sobre o pulsar da existência, as pequenas descobertas cotidianas e o milagre efêmero de estar vivo.
-- [Abraco](https://nfgbrentano.art.br/sentimento/abraco/): Uma seleção de poemas e versos contemporâneos sobre abraco, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Conexao](https://nfgbrentano.art.br/sentimento/conexao/): Uma seleção de poemas e versos contemporâneos sobre conexao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
+- [Abraço](https://nfgbrentano.art.br/sentimento/abraco/): Poemas sobre o calor do encontro, o refúgio silencioso nos braços de quem se ama e o gesto que acolhe sem precisar de palavras.
+- [Conexão](https://nfgbrentano.art.br/sentimento/conexao/): Poemas sobre sintonia rara, encontros que parecem reconhecer-se desde sempre e os fios invisíveis que unem duas vidas.
 - [Tempo](https://nfgbrentano.art.br/sentimento/tempo/): Reflexões poéticas sobre as horas que passam, a brevidade dos instantes e o ritmo inexorável da existência humana.
-- [Reflexao](https://nfgbrentano.art.br/sentimento/reflexao/): Uma seleção de poemas e versos contemporâneos sobre reflexao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Alegria](https://nfgbrentano.art.br/sentimento/alegria/): Uma seleção de poemas e versos contemporâneos sobre alegria, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
+- [Reflexão](https://nfgbrentano.art.br/sentimento/reflexao/): Versos meditativos sobre o sentido da existência, o autoconhecimento e as perguntas que nos fazem crescer.
+- [Alegria](https://nfgbrentano.art.br/sentimento/alegria/): Poemas que celebram o entusiasmo de viver, a leveza dos instantes felizes e o brilho espontâneo que nasce nos dias de sol interior.
 - [Esperança](https://nfgbrentano.art.br/sentimento/esperanca/): Versos de renovação, fé no amanhã e a luz serena que persiste mesmo nas noites mais escuras e invernos da vida.
-- [Futuro](https://nfgbrentano.art.br/sentimento/futuro/): Uma seleção de poemas e versos contemporâneos sobre futuro, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
+- [Futuro](https://nfgbrentano.art.br/sentimento/futuro/): Reflexões poéticas sobre o amanhã, os horizontes em aberto, as sementes plantadas no presente e as promessas do tempo.
 - [Alma](https://nfgbrentano.art.br/sentimento/alma/): Poemas que sondam o íntimo, as veredas do espírito e a verdade nua de quem se permite sentir com profundidade.
-- [Coracao](https://nfgbrentano.art.br/sentimento/coracao/): Uma seleção de poemas e versos contemporâneos sobre coracao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Fe](https://nfgbrentano.art.br/sentimento/fe/): Uma seleção de poemas e versos contemporâneos sobre fe, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Felicidade](https://nfgbrentano.art.br/sentimento/felicidade/): Uma seleção de poemas e versos contemporâneos sobre felicidade, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
+- [Coração](https://nfgbrentano.art.br/sentimento/coracao/): Poemas centrados no pulsar das emoções, nos segredos guardados no peito e na bússola afetiva que guia nossas escolhas.
+- [Fé](https://nfgbrentano.art.br/sentimento/fe/): Poemas sobre espiritualidade, confiança no invisível, devoção e a força interior que sustenta os passos na caminhada.
+- [Felicidade](https://nfgbrentano.art.br/sentimento/felicidade/): Versos sobre a plenitude encontrada nas coisas simples, a gratidão pelo agora e a alegria compartilhada.
 - [Saudade](https://nfgbrentano.art.br/sentimento/saudade/): Versos sobre a presença da ausência, as lembranças que ecoam no tempo e o carinho por aquilo que ficou na memória.
-- [Familia](https://nfgbrentano.art.br/sentimento/familia/): Uma seleção de poemas e versos contemporâneos sobre familia, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Recomeco](https://nfgbrentano.art.br/sentimento/recomeco/): Uma seleção de poemas e versos contemporâneos sobre recomeco, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Sonhos](https://nfgbrentano.art.br/sentimento/sonhos/): Uma seleção de poemas e versos contemporâneos sobre sonhos, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Carinho](https://nfgbrentano.art.br/sentimento/carinho/): Uma seleção de poemas e versos contemporâneos sobre carinho, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Protecao](https://nfgbrentano.art.br/sentimento/protecao/): Uma seleção de poemas e versos contemporâneos sobre protecao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Silencio](https://nfgbrentano.art.br/sentimento/silencio/): Uma seleção de poemas e versos contemporâneos sobre silencio, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Verdade](https://nfgbrentano.art.br/sentimento/verdade/): Uma seleção de poemas e versos contemporâneos sobre verdade, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Aprendizado](https://nfgbrentano.art.br/sentimento/aprendizado/): Uma seleção de poemas e versos contemporâneos sobre aprendizado, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Energia](https://nfgbrentano.art.br/sentimento/energia/): Uma seleção de poemas e versos contemporâneos sobre energia, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Pai](https://nfgbrentano.art.br/sentimento/pai/): Uma seleção de poemas e versos contemporâneos sobre pai, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Presenca](https://nfgbrentano.art.br/sentimento/presenca/): Uma seleção de poemas e versos contemporâneos sobre presenca, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Resiliencia](https://nfgbrentano.art.br/sentimento/resiliencia/): Uma seleção de poemas e versos contemporâneos sobre resiliencia, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Viver](https://nfgbrentano.art.br/sentimento/viver/): Uma seleção de poemas e versos contemporâneos sobre viver, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Emocao](https://nfgbrentano.art.br/sentimento/emocao/): Uma seleção de poemas e versos contemporâneos sobre emocao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Luz](https://nfgbrentano.art.br/sentimento/luz/): Uma seleção de poemas e versos contemporâneos sobre luz, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Medo](https://nfgbrentano.art.br/sentimento/medo/): Uma seleção de poemas e versos contemporâneos sobre medo, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Reciprocidade](https://nfgbrentano.art.br/sentimento/reciprocidade/): Uma seleção de poemas e versos contemporâneos sobre reciprocidade, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Sinceridade](https://nfgbrentano.art.br/sentimento/sinceridade/): Uma seleção de poemas e versos contemporâneos sobre sinceridade, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Afeto](https://nfgbrentano.art.br/sentimento/afeto/): Uma seleção de poemas e versos contemporâneos sobre afeto, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Apoio](https://nfgbrentano.art.br/sentimento/apoio/): Uma seleção de poemas e versos contemporâneos sobre apoio, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Axe](https://nfgbrentano.art.br/sentimento/axe/): Uma seleção de poemas e versos contemporâneos sobre axe, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Cuidado](https://nfgbrentano.art.br/sentimento/cuidado/): Uma seleção de poemas e versos contemporâneos sobre cuidado, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Desejo](https://nfgbrentano.art.br/sentimento/desejo/): Uma seleção de poemas e versos contemporâneos sobre desejo, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
+- [Família](https://nfgbrentano.art.br/sentimento/familia/): Versos sobre raízes, pertencimento, laços de sangue e de afeto, e o porto seguro construído entre gerações.
+- [Recomeço](https://nfgbrentano.art.br/sentimento/recomeco/): Poemas sobre abrir novas páginas, reconstruir sonhos sobre bases mais maduras e celebrar cada nova aurora.
+- [Sonhos](https://nfgbrentano.art.br/sentimento/sonhos/): Versos sobre ideais, horizontes imaginados, utopias íntimas e a força criadora que mantém viva a esperança.
+- [Carinho](https://nfgbrentano.art.br/sentimento/carinho/): Versos tecidos com suavidade sobre o cuidado nos detalhes, o toque afetuoso e a doçura que acalma os dias turbulentos.
+- [Proteção](https://nfgbrentano.art.br/sentimento/protecao/): Poemas sobre amparo, guarda espiritual e afetiva, e o desejo de preservar aquilo que é sagrado e querido.
+- [Silêncio](https://nfgbrentano.art.br/sentimento/silencio/): Poemas sobre a eloquência da pausa, a escuta interior e tudo aquilo que só se compreende quando o ruído cessa.
+- [Verdade](https://nfgbrentano.art.br/sentimento/verdade/): Versos sobre autenticidade, clareza ética e afetiva, e o compromisso com o que é genuíno na vida e na arte.
+- [Aprendizado](https://nfgbrentano.art.br/sentimento/aprendizado/): Versos sobre as lições que o tempo ensina, a maturidade conquistada nas quedas e a sabedoria colhida em cada experiência.
+- [Energia](https://nfgbrentano.art.br/sentimento/energia/): Versos sobre vibração vital, troca de forças, magnetismo entre seres e o vigor que renova o espírito.
+- [Pai](https://nfgbrentano.art.br/sentimento/pai/): Versos sobre paternidade, presença protetora, ensinamentos de vida e o amor profundo que guia e acompanha.
+- [Presença](https://nfgbrentano.art.br/sentimento/presenca/): Versos sobre estar inteiro no agora, o valor insubstituível da companhia verdadeira e a atenção plena ao momento.
+- [Resiliência](https://nfgbrentano.art.br/sentimento/resiliencia/): Poemas sobre a capacidade de florescer após o inverno, reconstruir-se das adversidades e manter a ternura intacta.
+- [Viver](https://nfgbrentano.art.br/sentimento/viver/): Versos sobre a arte de experimentar o presente por inteiro, celebrar a caminhada e transformar o cotidiano em poesia.
+- [Emoção](https://nfgbrentano.art.br/sentimento/emocao/): Versos sobre o transbordar do sentir, o arrepio diante da beleza e a intensidade de viver cada instante à flor da pele.
+- [Luz](https://nfgbrentano.art.br/sentimento/luz/): Versos sobre clareza espiritual, despertar da consciência e os raios de esperança que dissipam as sombras internas.
+- [Medo](https://nfgbrentano.art.br/sentimento/medo/): Poemas que encaram as incertezas, a vulnerabilidade diante do abismo e a travessia rumo à superação dos próprios receios.
+- [Reciprocidade](https://nfgbrentano.art.br/sentimento/reciprocidade/): Versos sobre o equilíbrio do afeto compartilhado, o encontro de duas entregas e a harmonia de amar e ser amado.
+- [Sinceridade](https://nfgbrentano.art.br/sentimento/sinceridade/): Versos sobre transparência da alma, palavra honesta e a coragem de apresentar-se sem máscaras diante do outro.
+- [Afeto](https://nfgbrentano.art.br/sentimento/afeto/): Versos dedicados à ternura cotidiana, aos laços invisíveis que aproximam corações e à delicadeza de demonstrar presença e bem-querer.
+- [Apoio](https://nfgbrentano.art.br/sentimento/apoio/): Poemas sobre amparo mútuo, mãos estendidas nas travessias difíceis e a força tranquila de caminhar ao lado de alguém.
+- [Axé](https://nfgbrentano.art.br/sentimento/axe/): Versos atravessados pela ancestralidade, pela força sagrada dos caminhos, pela espiritualidade viva e pelas bênçãos de movimento e luz.
+- [Cuidado](https://nfgbrentano.art.br/sentimento/cuidado/): Poemas sobre zelo, atenção genuína ao outro e ao próprio ser, e a arte de cultivar o que é essencial.
+- [Desejo](https://nfgbrentano.art.br/sentimento/desejo/): Versos sobre a chama que impulsiona o encontro, a intensidade do querer e a pulsão viva que habita a pele e o pensamento.
 - [Dor](https://nfgbrentano.art.br/sentimento/dor/): Poemas que dão voz ao sofrimento humano, às feridas íntimas da alma e à superação que brota da resiliência.
-- [Emocoes](https://nfgbrentano.art.br/sentimento/emocoes/): Uma seleção de poemas e versos contemporâneos sobre emocoes, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Equilibrio](https://nfgbrentano.art.br/sentimento/equilibrio/): Uma seleção de poemas e versos contemporâneos sobre equilibrio, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Escolhas](https://nfgbrentano.art.br/sentimento/escolhas/): Uma seleção de poemas e versos contemporâneos sobre escolhas, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Lar](https://nfgbrentano.art.br/sentimento/lar/): Uma seleção de poemas e versos contemporâneos sobre lar, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Melodia](https://nfgbrentano.art.br/sentimento/melodia/): Uma seleção de poemas e versos contemporâneos sobre melodia, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Mente](https://nfgbrentano.art.br/sentimento/mente/): Uma seleção de poemas e versos contemporâneos sobre mente, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Mudanca](https://nfgbrentano.art.br/sentimento/mudanca/): Uma seleção de poemas e versos contemporâneos sobre mudanca, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Pensamento](https://nfgbrentano.art.br/sentimento/pensamento/): Uma seleção de poemas e versos contemporâneos sobre pensamento, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Realidade](https://nfgbrentano.art.br/sentimento/realidade/): Uma seleção de poemas e versos contemporâneos sobre realidade, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Sentimento](https://nfgbrentano.art.br/sentimento/sentimento/): Uma seleção de poemas e versos contemporâneos sobre sentimento, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Sol](https://nfgbrentano.art.br/sentimento/sol/): Uma seleção de poemas e versos contemporâneos sobre sol, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
+- [Emoções](https://nfgbrentano.art.br/sentimento/emocoes/): Poemas que percorrem o caleidoscópio dos afetos humanos, acolhendo tanto a calmaria quanto as marés internas.
+- [Equilíbrio](https://nfgbrentano.art.br/sentimento/equilibrio/): Poemas sobre a harmonia entre razão e sensibilidade, o centro sereno em meio ao caos e a temperança do caminhar.
+- [Escolhas](https://nfgbrentano.art.br/sentimento/escolhas/): Reflexões poéticas sobre encruzilhadas da vida, renúncias necessárias e a liberdade de traçar o próprio destino.
+- [Lar](https://nfgbrentano.art.br/sentimento/lar/): Poemas sobre o espaço de acolhimento, o abrigo que mora no abraço de quem amamos e a paz de sentir-se em casa.
+- [Melodia](https://nfgbrentano.art.br/sentimento/melodia/): Versos marcados pela musicalidade da alma, pelo ritmo das palavras e pela canção silenciosa que embala as memórias.
+- [Mente](https://nfgbrentano.art.br/sentimento/mente/): Poemas sobre o universo dos pensamentos, os labirintos da consciência, a imaginação e a busca por serenidade mental.
+- [Mudança](https://nfgbrentano.art.br/sentimento/mudanca/): Versos sobre metamorfose, desapego do que já foi e a coragem de reinventar-se a cada nova etapa da caminhada.
+- [Pensamento](https://nfgbrentano.art.br/sentimento/pensamento/): Poemas contemplativos sobre a reflexão íntima, o fluxo das ideias e o diálogo silencioso consigo mesmo.
+- [Realidade](https://nfgbrentano.art.br/sentimento/realidade/): Poemas que enxergam a beleza concreta do mundo real, o despertar das ilusões e a poesia presente na vida como ela é.
+- [Sentimento](https://nfgbrentano.art.br/sentimento/sentimento/): Versos dedicados à essência do sentir humano, à sensibilidade poética e à verdade que pulsa em cada emoção.
+- [Sol](https://nfgbrentano.art.br/sentimento/sol/): Poemas solares sobre calor humano, alvoradas que renovam o ânimo e a claridade que ilumina os dias e os afetos.
 - [Solidão](https://nfgbrentano.art.br/sentimento/solidao/): Poemas sobre o recolhimento, o silêncio interior, o deserto da alma e o encontro consigo mesmo nas horas solitárias.
-- [Sorriso](https://nfgbrentano.art.br/sentimento/sorriso/): Uma seleção de poemas e versos contemporâneos sobre sorriso, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Amar](https://nfgbrentano.art.br/sentimento/amar/): Uma seleção de poemas e versos contemporâneos sobre amar, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
+- [Sorriso](https://nfgbrentano.art.br/sentimento/sorriso/): Poemas sobre a curva mais luminosa do rosto, a alegria compartilhada num instante e o gesto que desarma distâncias.
+- [Amar](https://nfgbrentano.art.br/sentimento/amar/): Reflexões poéticas sobre o verbo amar como ação contínua, escolha diária, entrega consciente e construção compartilhada.
 - [Amor-Próprio](https://nfgbrentano.art.br/sentimento/amor-proprio/): Versos sobre o acolhimento de si, a reconstrução da autoestima e a coragem de ser quem verdadeiramente se é.
-- [Atitude](https://nfgbrentano.art.br/sentimento/atitude/): Uma seleção de poemas e versos contemporâneos sobre atitude, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Beijo](https://nfgbrentano.art.br/sentimento/beijo/): Uma seleção de poemas e versos contemporâneos sobre beijo, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Ciclos](https://nfgbrentano.art.br/sentimento/ciclos/): Uma seleção de poemas e versos contemporâneos sobre ciclos, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Compromisso](https://nfgbrentano.art.br/sentimento/compromisso/): Uma seleção de poemas e versos contemporâneos sobre compromisso, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Comunicacao](https://nfgbrentano.art.br/sentimento/comunicacao/): Uma seleção de poemas e versos contemporâneos sobre comunicacao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Confianca](https://nfgbrentano.art.br/sentimento/confianca/): Uma seleção de poemas e versos contemporâneos sobre confianca, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Coragem](https://nfgbrentano.art.br/sentimento/coragem/): Uma seleção de poemas e versos contemporâneos sobre coragem, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Espera](https://nfgbrentano.art.br/sentimento/espera/): Uma seleção de poemas e versos contemporâneos sobre espera, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Essencia](https://nfgbrentano.art.br/sentimento/essencia/): Uma seleção de poemas e versos contemporâneos sobre essencia, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Harmonia](https://nfgbrentano.art.br/sentimento/harmonia/): Uma seleção de poemas e versos contemporâneos sobre harmonia, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Mae](https://nfgbrentano.art.br/sentimento/mae/): Uma seleção de poemas e versos contemporâneos sobre mae, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Noite](https://nfgbrentano.art.br/sentimento/noite/): Uma seleção de poemas e versos contemporâneos sobre noite, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Olhos](https://nfgbrentano.art.br/sentimento/olhos/): Uma seleção de poemas e versos contemporâneos sobre olhos, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Oracao](https://nfgbrentano.art.br/sentimento/oracao/): Uma seleção de poemas e versos contemporâneos sobre oracao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Paixao](https://nfgbrentano.art.br/sentimento/paixao/): Uma seleção de poemas e versos contemporâneos sobre paixao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Palavras](https://nfgbrentano.art.br/sentimento/palavras/): Uma seleção de poemas e versos contemporâneos sobre palavras, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Pensamentos](https://nfgbrentano.art.br/sentimento/pensamentos/): Uma seleção de poemas e versos contemporâneos sobre pensamentos, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Perdao](https://nfgbrentano.art.br/sentimento/perdao/): Uma seleção de poemas e versos contemporâneos sobre perdao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Querer](https://nfgbrentano.art.br/sentimento/querer/): Uma seleção de poemas e versos contemporâneos sobre querer, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Seguranca](https://nfgbrentano.art.br/sentimento/seguranca/): Uma seleção de poemas e versos contemporâneos sobre seguranca, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Superacao](https://nfgbrentano.art.br/sentimento/superacao/): Uma seleção de poemas e versos contemporâneos sobre superacao, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
-- [Vazio](https://nfgbrentano.art.br/sentimento/vazio/): Uma seleção de poemas e versos contemporâneos sobre vazio, explorando emoções, reflexões e vivências através da poesia de Natanael Fernando Gatti Brentano.
+- [Atitude](https://nfgbrentano.art.br/sentimento/atitude/): Poemas sobre iniciativa, presença ativa diante da vida e a decisão de transformar intenção em gesto concreto.
+- [Beijo](https://nfgbrentano.art.br/sentimento/beijo/): Poemas sobre o instante suspenso do toque, o encontro de dois mundos num sopro de afeto e a linguagem silenciosa do desejo.
+- [Ciclos](https://nfgbrentano.art.br/sentimento/ciclos/): Reflexões poéticas sobre fases que se encerram e se renovam, as estações da existência e a beleza natural das transformações.
+- [Compromisso](https://nfgbrentano.art.br/sentimento/compromisso/): Poemas sobre lealdade, constância afetiva e a escolha firme de permanecer e construir pontes duradouras.
+- [Comunicação](https://nfgbrentano.art.br/sentimento/comunicacao/): Versos sobre a ponte entre o que se sente e o que se diz, a escuta verdadeira e os diálogos que aproximam almas.
+- [Confiança](https://nfgbrentano.art.br/sentimento/confianca/): Versos sobre entregar-se sem reservas, construir segurança no olhar do outro e repousar o coração em solo firme.
+- [Coragem](https://nfgbrentano.art.br/sentimento/coragem/): Versos sobre enfrentar o desconhecido, atravessar tempestades de peito aberto e ousar recomeçar apesar do medo.
+- [Espera](https://nfgbrentano.art.br/sentimento/espera/): Versos sobre paciência, maturação do tempo, saudade contida na janela e a preparação silenciosa para o que há de vir.
+- [Essência](https://nfgbrentano.art.br/sentimento/essencia/): Poemas sobre o que permanece quando as aparências silenciam: a raiz autêntica, a identidade profunda e a verdade interior.
+- [Harmonia](https://nfgbrentano.art.br/sentimento/harmonia/): Versos sobre consonância interior, paz compartilhada e a sintonia delicada entre o ser, o outro e o mundo.
+- [Mãe](https://nfgbrentano.art.br/sentimento/mae/): Poemas de homenagem e gratidão ao amor materno, ao colo primordial, à sabedoria e à dedicação incondicional.
+- [Noite](https://nfgbrentano.art.br/sentimento/noite/): Poemas nascidos no silêncio noturno, entre estrelas, insônias criativas, confidências e contemplação da madrugada.
+- [Olhos](https://nfgbrentano.art.br/sentimento/olhos/): Versos sobre o espelho da alma, a verdade revelada num olhar e os diálogos silenciosos que acontecem sem uma única palavra.
+- [Oração](https://nfgbrentano.art.br/sentimento/oracao/): Poemas em forma de prece, súplica e gratidão, conectando o coração humano ao sagrado e às forças da natureza.
+- [Paixão](https://nfgbrentano.art.br/sentimento/paixao/): Poemas sobre o encantamento arrebatador, o fogo dos encontros intensos e a entrega vibrante aos sentimentos.
+- [Palavras](https://nfgbrentano.art.br/sentimento/palavras/): Metapoesia e reflexões sobre o poder do verbo, a escrita como refúgio e o esforço de traduzir o indizível em verso.
+- [Pensamentos](https://nfgbrentano.art.br/sentimento/pensamentos/): Versos que reúnem devaneios, inquietações filosóficas e observações líricas sobre o cotidiano e o existir.
+- [Perdão](https://nfgbrentano.art.br/sentimento/perdao/): Poemas sobre reconciliação, libertação de mágoas antigas e a leveza de curar feridas para seguir adiante em paz.
+- [Querer](https://nfgbrentano.art.br/sentimento/querer/): Versos sobre vontade, afeto escolhido e o movimento espontâneo do coração em direção ao que faz sentido.
+- [Segurança](https://nfgbrentano.art.br/sentimento/seguranca/): Poemas sobre porto seguro, estabilidade emocional e a tranquilidade de habitar um afeto sem sobressaltos.
+- [Superação](https://nfgbrentano.art.br/sentimento/superacao/): Versos sobre vencer limites internos, atravessar fases difíceis com dignidade e descobrir a própria força.
+- [Vazio](https://nfgbrentano.art.br/sentimento/vazio/): Poemas que contemplam as lacunas da existência, o espaço deixado pelas ausências e o silêncio fértil de onde brota o novo.
 
 ## Poemas
 

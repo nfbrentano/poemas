@@ -2,6 +2,7 @@
   "/",
   "/sobre",
   "/colecoes",
+  "/favoritos",
   "/admin",
   "/login",
   "/unsubscribe",
@@ -543,9 +544,11 @@
   "/poema/amor-em-atos",
   "/poema/encontro-de-almas",
   "/poema/amor-desnudo",
-  "/colecao/reflexoes-e-tempo",
-  "/colecao/amor",
   "/colecao/amor-e-conexao",
+  "/colecao/reflexoes-e-tempo",
+  "/colecao/alma-e-autoconhecimento",
+  "/colecao/paz-e-esperanca",
+  "/colecao/poesia-e-cotidiano",
   "/colecao/familia-e-afeto",
-  "/colecao/paz-e-esperanca"
+  "/colecao/amor"
 ]

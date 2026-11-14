@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poemas-cache-v21';
+const CACHE_NAME = 'poemas-cache-v22';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip cross-origin API requests (supabase, clarity, emailjs, etc.)
+  // Skip cross-origin API requests (clarity, emailjs, etc.)
   if (requestUrl.origin !== self.location.origin) {
     return;
   }
