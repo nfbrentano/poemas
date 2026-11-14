@@ -4,7 +4,7 @@ import {
   formatPoemContentHtml as fnFormatPoemContentHtml,
   handleSubscribeLogic,
   handleUnsubscribeLogic
-} from '../functions/index.js';
+} from '../functions/newsletter-helpers.js';
 import {
   buildDailyPoemEmailHtml,
   getDailyPoemRecipients
