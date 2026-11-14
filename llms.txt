@@ -1,185 +1,33 @@
 # Poemas — Natanael Fernando Gatti Brentano
 
-> Poesia brasileira contemporânea em língua portuguesa por Natanael Fernando Gatti Brentano. Acervo com 239 poemas publicados sobre amor, tempo, efêmero e o cotidiano.
+> Poesia brasileira contemporânea em língua portuguesa por Natanael Fernando Gatti Brentano. Acervo com 159 poemas publicados sobre amor, tempo, efêmero e o cotidiano.
 > © Natanael Fernando Gatti Brentano. Citações permitidas com crédito e link para a URL do poema.
 
 Natanael Fernando Gatti Brentano é um poeta brasileiro contemporâneo que escreve sobre o que sobra do dia, capturando a efemeridade do instante e a profundidade das coisas simples. Conheça a trajetória e a proposta poética na [página sobre o autor](https://nfgbrentano.art.br/sobre/).
 
 ## Coleções
 
-- [Amor e Conexão](https://nfgbrentano.art.br/colecao/amor-e-conexao/): Poemas que exploram os laços de afeto, os encontros e a profundidade do amor em suas diversas formas.
-- [Reflexões e Tempo](https://nfgbrentano.art.br/colecao/reflexoes-e-tempo/): Uma jornada interna sobre a passagem do tempo, a vida e os sentimentos mais profundos da alma.
+- [Amor e Conexão](https://nfgbrentano.art.br/colecao/amor-e-conexao/): Poemas que exploram os laços de afeto, os encontros, a cumplicidade e a profundidade do amor em suas diversas formas.
+- [Reflexões e Tempo](https://nfgbrentano.art.br/colecao/reflexoes-e-tempo/): Uma jornada interna sobre a passagem do tempo, a vida, as escolhas e os sentimentos mais profundos da alma.
 - [Alma e Autoconhecimento](https://nfgbrentano.art.br/colecao/alma-e-autoconhecimento/): Versos intimistas sobre a coragem de olhar para dentro, acolher as próprias sombras, curar feridas e descobrir a força do amor-próprio.
-- [Paz e Esperança](https://nfgbrentano.art.br/colecao/paz-e-esperanca/): Versos que trazem calma, fé e a esperança em dias melhores e novos recomeços.
+- [Paz e Esperança](https://nfgbrentano.art.br/colecao/paz-e-esperanca/): Versos que trazem calma, fé e a esperança em dias melhores, novos recomeços e equilíbrio espiritual.
 - [Poesia e Cotidiano](https://nfgbrentano.art.br/colecao/poesia-e-cotidiano/): Poemas sobre o ritmo dos dias, a magia oculta na simplicidade das coisas, a relação com as palavras e os paradoxos do mundo contemporâneo.
-- [Família e Afeto](https://nfgbrentano.art.br/colecao/familia-e-afeto/): Uma homenagem àqueles que são nosso lar: a família, as alegrias diárias e a saudade de quem amamos.
-- [Amor](https://nfgbrentano.art.br/colecao/amor/): Palavras de amor
+- [Família e Afeto](https://nfgbrentano.art.br/colecao/familia-e-afeto/): Uma homenagem àqueles que são nosso lar: a paternidade, a família, as alegrias diárias e a saudade de quem amamos.
+- [Amor](https://nfgbrentano.art.br/colecao/amor/): Palavras essenciais e declarações poéticas sobre a arte de amar.
 
 ## Sentimentos
 
 - [Todos os Sentimentos](https://nfgbrentano.art.br/sentimentos/): Índice de poemas organizados por sentimentos e temas.
 - [Amor](https://nfgbrentano.art.br/sentimento/amor/): Poemas que exploram as nuances do amor, da paixão ardente ao afeto sereno, da entrega ao desvelo silencioso de amar.
-- [Sentimentos](https://nfgbrentano.art.br/sentimento/sentimentos/): Poemas que entrelaçam múltiplas camadas afetivas, revelando a complexidade e a riqueza da vida interior.
-- [Dani](https://nfgbrentano.art.br/sentimento/dani/): Poemas e dedicatórias inspirados na presença, na parceria, no encanto e nas memórias compartilhadas com Dani.
-- [Filha](https://nfgbrentano.art.br/sentimento/filha/): Poemas dedicados ao amor paterno e familiar, à ternura de ver crescer e ao legado de afeto e proteção para a filha.
-- [Paz](https://nfgbrentano.art.br/sentimento/paz/): Versos de quietude e serenidade, o repouso das tempestades internas e a busca pelo equilíbrio do espírito.
-- [Vida](https://nfgbrentano.art.br/sentimento/vida/): Poemas sobre o pulsar da existência, as pequenas descobertas cotidianas e o milagre efêmero de estar vivo.
-- [Abraço](https://nfgbrentano.art.br/sentimento/abraco/): Poemas sobre o calor do encontro, o refúgio silencioso nos braços de quem se ama e o gesto que acolhe sem precisar de palavras.
-- [Conexão](https://nfgbrentano.art.br/sentimento/conexao/): Poemas sobre sintonia rara, encontros que parecem reconhecer-se desde sempre e os fios invisíveis que unem duas vidas.
-- [Tempo](https://nfgbrentano.art.br/sentimento/tempo/): Reflexões poéticas sobre as horas que passam, a brevidade dos instantes e o ritmo inexorável da existência humana.
-- [Reflexão](https://nfgbrentano.art.br/sentimento/reflexao/): Versos meditativos sobre o sentido da existência, o autoconhecimento e as perguntas que nos fazem crescer.
-- [Alegria](https://nfgbrentano.art.br/sentimento/alegria/): Poemas que celebram o entusiasmo de viver, a leveza dos instantes felizes e o brilho espontâneo que nasce nos dias de sol interior.
-- [Esperança](https://nfgbrentano.art.br/sentimento/esperanca/): Versos de renovação, fé no amanhã e a luz serena que persiste mesmo nas noites mais escuras e invernos da vida.
-- [Futuro](https://nfgbrentano.art.br/sentimento/futuro/): Reflexões poéticas sobre o amanhã, os horizontes em aberto, as sementes plantadas no presente e as promessas do tempo.
-- [Alma](https://nfgbrentano.art.br/sentimento/alma/): Poemas que sondam o íntimo, as veredas do espírito e a verdade nua de quem se permite sentir com profundidade.
-- [Coração](https://nfgbrentano.art.br/sentimento/coracao/): Poemas centrados no pulsar das emoções, nos segredos guardados no peito e na bússola afetiva que guia nossas escolhas.
-- [Fé](https://nfgbrentano.art.br/sentimento/fe/): Poemas sobre espiritualidade, confiança no invisível, devoção e a força interior que sustenta os passos na caminhada.
-- [Felicidade](https://nfgbrentano.art.br/sentimento/felicidade/): Versos sobre a plenitude encontrada nas coisas simples, a gratidão pelo agora e a alegria compartilhada.
 - [Saudade](https://nfgbrentano.art.br/sentimento/saudade/): Versos sobre a presença da ausência, as lembranças que ecoam no tempo e o carinho por aquilo que ficou na memória.
-- [Família](https://nfgbrentano.art.br/sentimento/familia/): Versos sobre raízes, pertencimento, laços de sangue e de afeto, e o porto seguro construído entre gerações.
-- [Recomeço](https://nfgbrentano.art.br/sentimento/recomeco/): Poemas sobre abrir novas páginas, reconstruir sonhos sobre bases mais maduras e celebrar cada nova aurora.
-- [Sonhos](https://nfgbrentano.art.br/sentimento/sonhos/): Versos sobre ideais, horizontes imaginados, utopias íntimas e a força criadora que mantém viva a esperança.
-- [Carinho](https://nfgbrentano.art.br/sentimento/carinho/): Versos tecidos com suavidade sobre o cuidado nos detalhes, o toque afetuoso e a doçura que acalma os dias turbulentos.
-- [Proteção](https://nfgbrentano.art.br/sentimento/protecao/): Poemas sobre amparo, guarda espiritual e afetiva, e o desejo de preservar aquilo que é sagrado e querido.
-- [Silêncio](https://nfgbrentano.art.br/sentimento/silencio/): Poemas sobre a eloquência da pausa, a escuta interior e tudo aquilo que só se compreende quando o ruído cessa.
-- [Verdade](https://nfgbrentano.art.br/sentimento/verdade/): Versos sobre autenticidade, clareza ética e afetiva, e o compromisso com o que é genuíno na vida e na arte.
-- [Aprendizado](https://nfgbrentano.art.br/sentimento/aprendizado/): Versos sobre as lições que o tempo ensina, a maturidade conquistada nas quedas e a sabedoria colhida em cada experiência.
-- [Energia](https://nfgbrentano.art.br/sentimento/energia/): Versos sobre vibração vital, troca de forças, magnetismo entre seres e o vigor que renova o espírito.
-- [Pai](https://nfgbrentano.art.br/sentimento/pai/): Versos sobre paternidade, presença protetora, ensinamentos de vida e o amor profundo que guia e acompanha.
-- [Presença](https://nfgbrentano.art.br/sentimento/presenca/): Versos sobre estar inteiro no agora, o valor insubstituível da companhia verdadeira e a atenção plena ao momento.
-- [Resiliência](https://nfgbrentano.art.br/sentimento/resiliencia/): Poemas sobre a capacidade de florescer após o inverno, reconstruir-se das adversidades e manter a ternura intacta.
-- [Viver](https://nfgbrentano.art.br/sentimento/viver/): Versos sobre a arte de experimentar o presente por inteiro, celebrar a caminhada e transformar o cotidiano em poesia.
-- [Emoção](https://nfgbrentano.art.br/sentimento/emocao/): Versos sobre o transbordar do sentir, o arrepio diante da beleza e a intensidade de viver cada instante à flor da pele.
-- [Luz](https://nfgbrentano.art.br/sentimento/luz/): Versos sobre clareza espiritual, despertar da consciência e os raios de esperança que dissipam as sombras internas.
-- [Medo](https://nfgbrentano.art.br/sentimento/medo/): Poemas que encaram as incertezas, a vulnerabilidade diante do abismo e a travessia rumo à superação dos próprios receios.
-- [Reciprocidade](https://nfgbrentano.art.br/sentimento/reciprocidade/): Versos sobre o equilíbrio do afeto compartilhado, o encontro de duas entregas e a harmonia de amar e ser amado.
-- [Sinceridade](https://nfgbrentano.art.br/sentimento/sinceridade/): Versos sobre transparência da alma, palavra honesta e a coragem de apresentar-se sem máscaras diante do outro.
+- [Tempo](https://nfgbrentano.art.br/sentimento/tempo/): Reflexões poéticas sobre as horas que passam, a brevidade dos instantes e o ritmo inexorável da existência humana.
 - [Afeto](https://nfgbrentano.art.br/sentimento/afeto/): Versos dedicados à ternura cotidiana, aos laços invisíveis que aproximam corações e à delicadeza de demonstrar presença e bem-querer.
-- [Apoio](https://nfgbrentano.art.br/sentimento/apoio/): Poemas sobre amparo mútuo, mãos estendidas nas travessias difíceis e a força tranquila de caminhar ao lado de alguém.
-- [Axé](https://nfgbrentano.art.br/sentimento/axe/): Versos atravessados pela ancestralidade, pela força sagrada dos caminhos, pela espiritualidade viva e pelas bênçãos de movimento e luz.
-- [Cuidado](https://nfgbrentano.art.br/sentimento/cuidado/): Poemas sobre zelo, atenção genuína ao outro e ao próprio ser, e a arte de cultivar o que é essencial.
-- [Desejo](https://nfgbrentano.art.br/sentimento/desejo/): Versos sobre a chama que impulsiona o encontro, a intensidade do querer e a pulsão viva que habita a pele e o pensamento.
-- [Dor](https://nfgbrentano.art.br/sentimento/dor/): Poemas que dão voz ao sofrimento humano, às feridas íntimas da alma e à superação que brota da resiliência.
-- [Emoções](https://nfgbrentano.art.br/sentimento/emocoes/): Poemas que percorrem o caleidoscópio dos afetos humanos, acolhendo tanto a calmaria quanto as marés internas.
-- [Equilíbrio](https://nfgbrentano.art.br/sentimento/equilibrio/): Poemas sobre a harmonia entre razão e sensibilidade, o centro sereno em meio ao caos e a temperança do caminhar.
-- [Escolhas](https://nfgbrentano.art.br/sentimento/escolhas/): Reflexões poéticas sobre encruzilhadas da vida, renúncias necessárias e a liberdade de traçar o próprio destino.
-- [Lar](https://nfgbrentano.art.br/sentimento/lar/): Poemas sobre o espaço de acolhimento, o abrigo que mora no abraço de quem amamos e a paz de sentir-se em casa.
-- [Melodia](https://nfgbrentano.art.br/sentimento/melodia/): Versos marcados pela musicalidade da alma, pelo ritmo das palavras e pela canção silenciosa que embala as memórias.
-- [Mente](https://nfgbrentano.art.br/sentimento/mente/): Poemas sobre o universo dos pensamentos, os labirintos da consciência, a imaginação e a busca por serenidade mental.
-- [Mudança](https://nfgbrentano.art.br/sentimento/mudanca/): Versos sobre metamorfose, desapego do que já foi e a coragem de reinventar-se a cada nova etapa da caminhada.
-- [Pensamento](https://nfgbrentano.art.br/sentimento/pensamento/): Poemas contemplativos sobre a reflexão íntima, o fluxo das ideias e o diálogo silencioso consigo mesmo.
-- [Realidade](https://nfgbrentano.art.br/sentimento/realidade/): Poemas que enxergam a beleza concreta do mundo real, o despertar das ilusões e a poesia presente na vida como ela é.
-- [Sentimento](https://nfgbrentano.art.br/sentimento/sentimento/): Versos dedicados à essência do sentir humano, à sensibilidade poética e à verdade que pulsa em cada emoção.
-- [Sol](https://nfgbrentano.art.br/sentimento/sol/): Poemas solares sobre calor humano, alvoradas que renovam o ânimo e a claridade que ilumina os dias e os afetos.
-- [Solidão](https://nfgbrentano.art.br/sentimento/solidao/): Poemas sobre o recolhimento, o silêncio interior, o deserto da alma e o encontro consigo mesmo nas horas solitárias.
-- [Sorriso](https://nfgbrentano.art.br/sentimento/sorriso/): Poemas sobre a curva mais luminosa do rosto, a alegria compartilhada num instante e o gesto que desarma distâncias.
-- [Amar](https://nfgbrentano.art.br/sentimento/amar/): Reflexões poéticas sobre o verbo amar como ação contínua, escolha diária, entrega consciente e construção compartilhada.
-- [Amor-Próprio](https://nfgbrentano.art.br/sentimento/amor-proprio/): Versos sobre o acolhimento de si, a reconstrução da autoestima e a coragem de ser quem verdadeiramente se é.
-- [Atitude](https://nfgbrentano.art.br/sentimento/atitude/): Poemas sobre iniciativa, presença ativa diante da vida e a decisão de transformar intenção em gesto concreto.
-- [Beijo](https://nfgbrentano.art.br/sentimento/beijo/): Poemas sobre o instante suspenso do toque, o encontro de dois mundos num sopro de afeto e a linguagem silenciosa do desejo.
-- [Ciclos](https://nfgbrentano.art.br/sentimento/ciclos/): Reflexões poéticas sobre fases que se encerram e se renovam, as estações da existência e a beleza natural das transformações.
-- [Compromisso](https://nfgbrentano.art.br/sentimento/compromisso/): Poemas sobre lealdade, constância afetiva e a escolha firme de permanecer e construir pontes duradouras.
-- [Comunicação](https://nfgbrentano.art.br/sentimento/comunicacao/): Versos sobre a ponte entre o que se sente e o que se diz, a escuta verdadeira e os diálogos que aproximam almas.
-- [Confiança](https://nfgbrentano.art.br/sentimento/confianca/): Versos sobre entregar-se sem reservas, construir segurança no olhar do outro e repousar o coração em solo firme.
-- [Coragem](https://nfgbrentano.art.br/sentimento/coragem/): Versos sobre enfrentar o desconhecido, atravessar tempestades de peito aberto e ousar recomeçar apesar do medo.
-- [Espera](https://nfgbrentano.art.br/sentimento/espera/): Versos sobre paciência, maturação do tempo, saudade contida na janela e a preparação silenciosa para o que há de vir.
-- [Essência](https://nfgbrentano.art.br/sentimento/essencia/): Poemas sobre o que permanece quando as aparências silenciam: a raiz autêntica, a identidade profunda e a verdade interior.
-- [Harmonia](https://nfgbrentano.art.br/sentimento/harmonia/): Versos sobre consonância interior, paz compartilhada e a sintonia delicada entre o ser, o outro e o mundo.
-- [Mãe](https://nfgbrentano.art.br/sentimento/mae/): Poemas de homenagem e gratidão ao amor materno, ao colo primordial, à sabedoria e à dedicação incondicional.
-- [Noite](https://nfgbrentano.art.br/sentimento/noite/): Poemas nascidos no silêncio noturno, entre estrelas, insônias criativas, confidências e contemplação da madrugada.
-- [Olhos](https://nfgbrentano.art.br/sentimento/olhos/): Versos sobre o espelho da alma, a verdade revelada num olhar e os diálogos silenciosos que acontecem sem uma única palavra.
-- [Oração](https://nfgbrentano.art.br/sentimento/oracao/): Poemas em forma de prece, súplica e gratidão, conectando o coração humano ao sagrado e às forças da natureza.
-- [Paixão](https://nfgbrentano.art.br/sentimento/paixao/): Poemas sobre o encantamento arrebatador, o fogo dos encontros intensos e a entrega vibrante aos sentimentos.
-- [Palavras](https://nfgbrentano.art.br/sentimento/palavras/): Metapoesia e reflexões sobre o poder do verbo, a escrita como refúgio e o esforço de traduzir o indizível em verso.
-- [Pensamentos](https://nfgbrentano.art.br/sentimento/pensamentos/): Versos que reúnem devaneios, inquietações filosóficas e observações líricas sobre o cotidiano e o existir.
-- [Perdão](https://nfgbrentano.art.br/sentimento/perdao/): Poemas sobre reconciliação, libertação de mágoas antigas e a leveza de curar feridas para seguir adiante em paz.
-- [Querer](https://nfgbrentano.art.br/sentimento/querer/): Versos sobre vontade, afeto escolhido e o movimento espontâneo do coração em direção ao que faz sentido.
-- [Segurança](https://nfgbrentano.art.br/sentimento/seguranca/): Poemas sobre porto seguro, estabilidade emocional e a tranquilidade de habitar um afeto sem sobressaltos.
-- [Superação](https://nfgbrentano.art.br/sentimento/superacao/): Versos sobre vencer limites internos, atravessar fases difíceis com dignidade e descobrir a própria força.
-- [Vazio](https://nfgbrentano.art.br/sentimento/vazio/): Poemas que contemplam as lacunas da existência, o espaço deixado pelas ausências e o silêncio fértil de onde brota o novo.
+- [Esperança](https://nfgbrentano.art.br/sentimento/esperanca/): Versos de renovação, fé no amanhã e a luz serena que persiste mesmo nas noites mais escuras e invernos da vida.
+- [Reflexão](https://nfgbrentano.art.br/sentimento/reflexao/): Versos meditativos sobre o sentido da existência, o autoconhecimento e as perguntas que nos fazem crescer.
+- [Vida](https://nfgbrentano.art.br/sentimento/vida/): Poemas sobre o pulsar da existência, as pequenas descobertas cotidianas e o milagre efêmero de estar vivo.
 
 ## Poemas
 
-- [Amor Desnudo](https://nfgbrentano.art.br/poema/amor-desnudo/): Ouçam-me em meio ao caos,
-- [Encontro de Almas](https://nfgbrentano.art.br/poema/encontro-de-almas/): Caminhos que se cruzam
-- [Amor em Atos](https://nfgbrentano.art.br/poema/amor-em-atos/): Amor em atos,
-- [Habitar em Mim](https://nfgbrentano.art.br/poema/habitar-em-mim/): Congelo em teu olhar,
-- [Lugar de Existir](https://nfgbrentano.art.br/poema/lugar-de-existir/): Um abraço inesquecível,
-- [Coração de Pai](https://nfgbrentano.art.br/poema/coracao-de-pai/): Em busca da felicidade,
-- [O Que Cabe no Tempo](https://nfgbrentano.art.br/poema/o-que-cabe-no-tempo/): O tempo não é remédio,
-- [Só viajo na mente](https://nfgbrentano.art.br/poema/so-viajo-na-mente/): Noites afoitas.
-- [Labirinto da Vida](https://nfgbrentano.art.br/poema/labirinto-da-vida/): Labirinto da vida,
-- [Com Você](https://nfgbrentano.art.br/poema/com-voce/): Eu só quero te dizer:
-- [Partilhar](https://nfgbrentano.art.br/poema/partilhar/): Assimilar, gerir, sentir;
-- [Sintonia em Ti](https://nfgbrentano.art.br/poema/sintonia-em-ti/): Abraço com cumplicidade,
-- [Amanhecer em Nós](https://nfgbrentano.art.br/poema/amanhecer-em-nos/): Sol de amor,
-- [Seu Par](https://nfgbrentano.art.br/poema/seu-par/): Gentileza é sua beleza,
-- [Leveza do Sentir](https://nfgbrentano.art.br/poema/leveza-do-sentir/): amor, Dani
-- [Raro e Surreal](https://nfgbrentano.art.br/poema/raro-e-surreal/): amor, Dani
-- [Amor e Poesia](https://nfgbrentano.art.br/poema/amor-e-poesia/): Aaah, que sorte,
-- [O Amor Ainda é Tudo](https://nfgbrentano.art.br/poema/o-amor-ainda-e-tudo/): O amor ainda é tudo,
-- [Sóis a Contemplar](https://nfgbrentano.art.br/poema/sois-a-contemplar/): Amor com paz,
-- [Particularidades](https://nfgbrentano.art.br/poema/particularidades/): Saudade vai além,
-- [Para Minha Filha](https://nfgbrentano.art.br/poema/para-minha-filha/): À noite, em meus sonhos,
-- [Sol de Nós Dois](https://nfgbrentano.art.br/poema/sol-de-nos-dois/): Pega na minha mão,
-- [Em Admiração](https://nfgbrentano.art.br/poema/em-admiracao/): Musa da minha poesia,
-- [Toque no Coração](https://nfgbrentano.art.br/poema/toque-no-coracao/): Menina, me dê sua mão,
-- [Branco](https://nfgbrentano.art.br/poema/branco/): Me deu um branco —
-- [Vontade de Existir](https://nfgbrentano.art.br/poema/vontade-de-existir/): Minha vida, leve contigo
-- [A Transição para a Calmaria](https://nfgbrentano.art.br/poema/a-transicao-para-a-calmaria/): Trilha sonora no alto,
-- [Contemplação](https://nfgbrentano.art.br/poema/contemplacao/): O sol brilha, reluz;
-- [Lado Escuro da Alma](https://nfgbrentano.art.br/poema/lado-escuro-da-alma/): A destruição,
-- [Melodia da vida](https://nfgbrentano.art.br/poema/melodia-da-vida/): Hoje escrevo em poesia,
-- [Reflexos de Luz](https://nfgbrentano.art.br/poema/reflexos-de-luz/): Sol que brilha,
-- [Natural ](https://nfgbrentano.art.br/poema/natural/): Caminhos se cruzam,
-- [Vem à Vida](https://nfgbrentano.art.br/poema/vem-a-vida/): Eu já disse que te quero?
-- [Print de um Sentimento](https://nfgbrentano.art.br/poema/print-de-um-sentimento/): Foco na presença,
-- [Simples Pra Quem Vê](https://nfgbrentano.art.br/poema/simples-pra-quem-ve/): A energia do momento,
-- [Eu: Livro Aberto ](https://nfgbrentano.art.br/poema/eu-livro-aberto/): Hoje parei, pensei...
-- [A Vida é Mais](https://nfgbrentano.art.br/poema/a-vida-e-mais/): Doce música da alma,
-- [Colors](https://nfgbrentano.art.br/poema/colors/): Perdi-me no teu olhar,
-- [Existência](https://nfgbrentano.art.br/poema/existencia/): Sorriso que me cativa,
-- [Trilha Sonora do Agora](https://nfgbrentano.art.br/poema/trilha-sonora-do-agora/): A estrada da vida
-- [Caverna de Sonhos](https://nfgbrentano.art.br/poema/caverna-de-sonhos/): Caverna de sonhos,
-- [Juras](https://nfgbrentano.art.br/poema/juras/): Juras de amor,
-- [Ser Porto](https://nfgbrentano.art.br/poema/ser-porto/): Ser porto seguro,
-- [Vazio](https://nfgbrentano.art.br/poema/vazio/): Você não demonstra amor,
-- [Coração Emocionado](https://nfgbrentano.art.br/poema/coracao-emocionado/): Transparente, cristalino,
-- [Dois Corações](https://nfgbrentano.art.br/poema/dois-coracoes/): Se eu me atrapalhar,
-- [Sanidade, enfim!](https://nfgbrentano.art.br/poema/sanidade-enfim/): Sanidade, enfim!
-- [Inerente](https://nfgbrentano.art.br/poema/inerente/): Perfeição é
-- [O Abraço](https://nfgbrentano.art.br/poema/o-abraco/): Poesia é rima, poesia estima.
-- [Fazer Parte](https://nfgbrentano.art.br/poema/fazer-parte/): Fazer parte, pertencer.
-- [O Mago de Si Mesmo](https://nfgbrentano.art.br/poema/o-mago-de-si-mesmo/): Acho que você pode,
-- [Refúgio](https://nfgbrentano.art.br/poema/refugio/): Energia do abraço,
-- [Nem](https://nfgbrentano.art.br/poema/nem/): Tudo passa.
-- [Com um Abraço Te Espero](https://nfgbrentano.art.br/poema/com-um-abraco-te-espero/): Eco da convivência,
-- [Marés Internas](https://nfgbrentano.art.br/poema/mares-internas/): Movimento das ondas: calmo,
-- [Celebração da Solitude](https://nfgbrentano.art.br/poema/celebracao-da-solitude/): A paz da solidão,
-- [Raízes do Afeto](https://nfgbrentano.art.br/poema/raizes-do-afeto/): Firmeza no amor,
-- [Calibragem](https://nfgbrentano.art.br/poema/calibragem/): Obrigado, vida, pelos aprendizados
-- [Descompasso](https://nfgbrentano.art.br/poema/descompasso/): O passado que desperta
-- [O Silêncio Denso](https://nfgbrentano.art.br/poema/o-silencio-denso/): Minha escuridão,
-- [Transições](https://nfgbrentano.art.br/poema/transicoes/): Agradecer
-- [Autorretrato](https://nfgbrentano.art.br/poema/autorretrato/): Quem sou?
-- [Doce Constância](https://nfgbrentano.art.br/poema/doce-constancia/): Amar é consistência,
-- [Conexão Incomum](https://nfgbrentano.art.br/poema/conexao-incomum/): Pega o telefone, liga e diz:
-- [Dia das Mães](https://nfgbrentano.art.br/poema/dia-das-maes/): Mãe, tens todo meu apreço,
-- [Entre Caos e Rimas](https://nfgbrentano.art.br/poema/entre-caos-e-rimas/): A existência basta,
-- [O Amor Cura](https://nfgbrentano.art.br/poema/o-amor-cura/): As feridas desta vida
-- [Presença](https://nfgbrentano.art.br/poema/presenca/): Fico pensando em escrever
-- [Simulacro](https://nfgbrentano.art.br/poema/simulacro/): Amor trocado por admiração,
-- [Linha do Tempo](https://nfgbrentano.art.br/poema/linha-do-tempo/): Passado, presente e futuro
-- [Impermanência](https://nfgbrentano.art.br/poema/impermanencia/): Deixar fluir,
-- [Apaixonidade](https://nfgbrentano.art.br/poema/apaixonidade/): Amanhã, talvez,
-- [Penhasco de Sentimentos](https://nfgbrentano.art.br/poema/penhasco-de-sentimentos/): Penhasco de sentimentos,
-- [Entre Linhas e Abraços](https://nfgbrentano.art.br/poema/entre-linhas-e-abracos/): Inesperadamente quis abraços,
-- [A Porta Entreaberta](https://nfgbrentano.art.br/poema/a-porta-entreaberta/): Note que em mim habita:
-- [Espelho da Alma](https://nfgbrentano.art.br/poema/espelho-da-alma/): Inspiração em mim, de
-- [Ciclos de Luz](https://nfgbrentano.art.br/poema/ciclos-de-luz/): Sol que brilha, sobrevida.
-- [Manifesto do Agora](https://nfgbrentano.art.br/poema/manifesto-do-agora/): Tomar atitude pra falar,
-- [Debug da Alma](https://nfgbrentano.art.br/poema/debug-da-alma/): A justiça vem tudo equilibrar,
-- [Aprendiz de Amor](https://nfgbrentano.art.br/poema/aprendiz-de-amor/): Me deu um branco,
 - [Do Lado de Dentro](https://nfgbrentano.art.br/poema/do-lado-de-dentro/): Pensamento vago, e eu,
 - [O Aprendizado das Entrelinhas](https://nfgbrentano.art.br/poema/o-aprendizado-das-entrelinhas/): Aprendi muito em uma frase,
 - [Herança do Amanhã](https://nfgbrentano.art.br/poema/heranca-do-amanha/): Adiante meu caro pensamento,
@@ -269,7 +117,7 @@ Natanael Fernando Gatti Brentano é um poeta brasileiro contemporâneo que escre
 - [Ecos do Coração: Sobre o Amor](https://nfgbrentano.art.br/poema/ecos-do-coracao-sobre-o-amor/): Amor: Paciência, Resiliência, Consistência
 - [Pista de Pouso para Dois](https://nfgbrentano.art.br/poema/pista-de-pouso-para-dois/): Ser pista de pouso,
 - [Cinquenta a Cinquenta](https://nfgbrentano.art.br/poema/cinquenta-a-cinquenta/): O amor e seus porcentos,
-- [O Legado de um Pai](https://nfgbrentano.art.br/poema/o-legado-de-um-pai/): Amor de pai,
+- [O Legado de um Pai](https://nfgbrentano.art.br/poema/a-alma-do-meu-pai/): Amor de pai,
 - [Abraço Que Transcende](https://nfgbrentano.art.br/poema/abraco-que-transcende/): Abraço de amor,
 - [O Despertar do Afeto](https://nfgbrentano.art.br/poema/o-despertar-do-afeto/): Dar as mãos...
 - [Além das telas](https://nfgbrentano.art.br/poema/alem-das-telas/): Quando mostro intensidade,
@@ -298,7 +146,7 @@ Natanael Fernando Gatti Brentano é um poeta brasileiro contemporâneo que escre
 - [Silêncio que espera](https://nfgbrentano.art.br/poema/silencio-que-espera/): Me acostumei, sozinho é como sei.
 - [Sorrir](https://nfgbrentano.art.br/poema/sorrir/): Sorrir,
 - [Amar-se](https://nfgbrentano.art.br/poema/amar-se/): Tão sagrado
-- [Caminho de felicidade ](https://nfgbrentano.art.br/poema/caminho-de-felicidade/): É de amor,
+- [Caminho de felicidade](https://nfgbrentano.art.br/poema/caminho-de-felicidade/): É de amor,
 - [Lar de abraços](https://nfgbrentano.art.br/poema/lar-de-abracos/): Nasceu, cresceu e se fortalece.
 - [Quando te vi](https://nfgbrentano.art.br/poema/quando-te-vi/): Quando te vi,
 - [Lara](https://nfgbrentano.art.br/poema/lara/): Logo que te vejo, meu olho brilha:
@@ -328,13 +176,13 @@ Natanael Fernando Gatti Brentano é um poeta brasileiro contemporâneo que escre
 - [Amor](https://nfgbrentano.art.br/poema/amor/): Cativam e,
 - [Saudade](https://nfgbrentano.art.br/poema/saudade/): Ceifar a saudade,
 - [Amor chegando](https://nfgbrentano.art.br/poema/amor-chegando/): Passa dia, passa noite,
-- [Mãe](https://nfgbrentano.art.br/poema/mae/): É você que me ensina a viver,
+- [Mãe](https://nfgbrentano.art.br/poema/mae/): É você que me ensina a viver
 - [Teu minuto pra mim](https://nfgbrentano.art.br/poema/teu-minuto-pra-mim/): Te ter um minuto é pouco pra mim,
-- [O tempo ao seu lado](https://nfgbrentano.art.br/poema/o-tempo-ao-seu-lado/): Todo o tempo em que estou ao seu lado,
-- [Se o amor é pra acontecer](https://nfgbrentano.art.br/poema/se-o-amor-e-pra-acontecer/): Nem só de felicidade vive-se o amor;
-- [Tempo](https://nfgbrentano.art.br/poema/tempo/): Como o tempo voa
+- [O tempo ao seu lado](https://nfgbrentano.art.br/poema/o-tempo-ao-seu-lado/): Todo tempo que ao seu lado
+- [Se o amor é pra acontecer](https://nfgbrentano.art.br/poema/se-o-amor-e-pra-acontecer/): Não só de felicidade vive-se o amor
 - [Palavras](https://nfgbrentano.art.br/poema/palavras/): Note que palavras
 - [Amor pra vida inteira](https://nfgbrentano.art.br/poema/amor-pra-vida-inteira/): Seguido paro, e penso
+- [Tempo](https://nfgbrentano.art.br/poema/tempo/): Como o tempo voa
 - [Felicidade](https://nfgbrentano.art.br/poema/felicidade/): Felicidade em mim se passa,
 - [Acasos](https://nfgbrentano.art.br/poema/acasos/): Pode o tempo passar
 - [Carinho](https://nfgbrentano.art.br/poema/carinho/): Me conquista, tira o sossego,
@@ -342,6 +190,7 @@ Natanael Fernando Gatti Brentano é um poeta brasileiro contemporâneo que escre
 
 ## Optional
 
+- [Arquivo e Linha do Tempo Literária](https://nfgbrentano.art.br/arquivo/): Linha do tempo cronológica com marcos literários de todas as obras publicadas desde 2015.
 - [Acervo Completo (Markdown)](https://nfgbrentano.art.br/llms-full.txt): Texto integral de todos os poemas publicados com metadados para LLMs.
 - [Feed RSS](https://nfgbrentano.art.br/feed.xml): Feed de atualizações com os últimos poemas publicados.
 - [Mapa do Site (Sitemap)](https://nfgbrentano.art.br/sitemap.xml): Índice de sitemaps XML para indexação e rastreamento.
