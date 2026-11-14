@@ -313,12 +313,6 @@ export const searchOverlay = {
       if (e.key === 'Escape' && this.overlay.classList.contains('active')) {
         this.close();
       }
-      if (e.key === '/' && !this.overlay.classList.contains('active')) {
-        if (!['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
-          e.preventDefault();
-          this.open();
-        }
-      }
     });
   },
 

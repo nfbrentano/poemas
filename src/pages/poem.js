@@ -10,6 +10,7 @@ import { ImmersiveReader } from '../components/immersive-reader.js';
 import { PoemComments } from '../components/poem-comments.js';
 import { renderPoemMarkup } from '../utils/poem-template.js';
 import { isFavorite, toggleFavorite } from '../utils/favorites.js';
+import { recordReading } from '../utils/reading-history.js';
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -31,18 +32,25 @@ let handleScroll = null;
 let handleTouchStart = null;
 let handleTouchEnd = null;
 let handleKeydown = null;
+let handleSelectionChange = null;
 let isExportingQuote = false;
 let quoteText = '';
+let readingTimer = null;
 
 export default {
   meta: {
     title: 'Poema'
   },
   cleanup() {
+    if (readingTimer) {
+      clearTimeout(readingTimer);
+      readingTimer = null;
+    }
     if (handleScroll) window.removeEventListener('scroll', handleScroll);
     if (handleTouchStart) document.removeEventListener('touchstart', handleTouchStart);
     if (handleTouchEnd) document.removeEventListener('touchend', handleTouchEnd);
     if (handleKeydown) document.removeEventListener('keydown', handleKeydown);
+    if (handleSelectionChange) document.removeEventListener('selectionchange', handleSelectionChange);
     
     ImmersiveReader.cleanup();
     AudioPlayer.cleanup();
@@ -53,6 +61,7 @@ export default {
     handleTouchStart = null;
     handleTouchEnd = null;
     handleKeydown = null;
+    handleSelectionChange = null;
     isExportingQuote = false;
     quoteText = '';
   },
@@ -329,6 +338,21 @@ export default {
 
     setupStanzaAnimation();
 
+    // Histórico de Leitura Local (RF03, RNF01, CA04, CA05, CA07)
+    let hasRecordedReading = false;
+    const tryRecordReading = () => {
+      if (hasRecordedReading) return;
+      if (!poem || !poem.slug) return;
+      if (poem.status && poem.status !== 'published') return;
+      hasRecordedReading = true;
+      recordReading({ slug: poem.slug, title: poem.title });
+    };
+
+    if (readingTimer) clearTimeout(readingTimer);
+    readingTimer = setTimeout(() => {
+      tryRecordReading();
+    }, 3000);
+
     // Toggle Logic for Settings and Comments
     const toggleSettingsBtn = document.getElementById('mobile-reading-settings-btn');
     const settingsPanel = document.getElementById('poem-settings-panel');
@@ -396,6 +420,14 @@ export default {
           e.preventDefault();
           handleToggle();
         }
+      });
+    }
+
+    // Print Button Logic (RF01, CA01)
+    const printBtn = container.querySelector('#print-poem-btn');
+    if (printBtn) {
+      printBtn.addEventListener('click', () => {
+        window.print();
       });
     }
 
@@ -548,44 +580,69 @@ export default {
       setTimeout(() => heart.remove(), 800);
     }
 
+    const poemBody = document.getElementById('poem-body') || document.getElementById('poem-text');
     const tooltip = document.getElementById('highlight-tooltip');
     let selectedText = '';
 
+    const mobileSelectionToolbar = document.getElementById('mobile-selection-toolbar');
     const mobileShareSelectionBtn = document.getElementById('mobile-share-selection-btn');
+    const mobileCardSelectionBtn = document.getElementById('mobile-card-selection-btn');
+
+    const hideSelectionUI = () => {
+      tooltip?.classList.remove('visible');
+      mobileSelectionToolbar?.classList.remove('visible');
+      mobileShareSelectionBtn?.classList.remove('visible');
+    };
+
     const handleSelection = () => {
       const selection = window.getSelection();
-      if (!selection.rangeCount || selection.isCollapsed) {
-        tooltip?.classList.remove('visible');
-        if (mobileShareSelectionBtn) mobileShareSelectionBtn.classList.remove('visible');
+      if (!selection || !selection.rangeCount || selection.isCollapsed) {
+        hideSelectionUI();
         return;
       }
       
       const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
+      if (!poemBody || !poemBody.contains(range.commonAncestorContainer)) {
+        hideSelectionUI();
+        return;
+      }
+
       selectedText = selection.toString().trim();
 
-      if (selectedText.length > 0) {
+      if (selectedText.length >= 8 && selectedText.length <= 1500) {
         if (/Mobi|Android/i.test(navigator.userAgent)) {
-          if (mobileShareSelectionBtn) mobileShareSelectionBtn.classList.add('visible');
+          if (mobileSelectionToolbar) {
+            mobileSelectionToolbar.classList.add('visible');
+          } else if (mobileShareSelectionBtn) {
+            mobileShareSelectionBtn.classList.add('visible');
+          }
         } else if (tooltip) {
+          const rect = typeof range.getBoundingClientRect === 'function'
+            ? range.getBoundingClientRect()
+            : { left: 0, top: 0, width: 0, height: 0 };
           tooltip.style.left = `${rect.left + rect.width / 2}px`;
           tooltip.style.top = `${rect.top + window.scrollY}px`;
           tooltip.classList.add('visible');
         }
       } else {
-        tooltip?.classList.remove('visible');
-        if (mobileShareSelectionBtn) mobileShareSelectionBtn.classList.remove('visible');
+        hideSelectionUI();
       }
     };
 
-    poemText?.addEventListener('mouseup', handleSelection);
-    document.addEventListener('selectionchange', () => {
+    poemBody?.addEventListener('mouseup', handleSelection);
+    poemBody?.addEventListener('touchend', handleSelection);
+    handleSelectionChange = () => {
       const selection = window.getSelection();
-      if (selection.isCollapsed) {
-        tooltip?.classList.remove('visible');
-        if (mobileShareSelectionBtn) mobileShareSelectionBtn.classList.remove('visible');
+      if (!selection || !selection.rangeCount || selection.isCollapsed) {
+        hideSelectionUI();
+        return;
       }
-    });
+      const range = selection.getRangeAt(0);
+      if (!poemBody || !poemBody.contains(range.commonAncestorContainer)) {
+        hideSelectionUI();
+      }
+    };
+    document.addEventListener('selectionchange', handleSelectionChange);
 
     mobileShareSelectionBtn?.addEventListener('click', async () => {
       if (navigator.share) {
@@ -602,15 +659,15 @@ export default {
           toast.show('Trecho copiado!', 'success');
         });
       }
-      window.getSelection().removeAllRanges();
-      mobileShareSelectionBtn.classList.remove('visible');
+      window.getSelection()?.removeAllRanges();
+      hideSelectionUI();
     });
 
     document.getElementById('highlight-copy-btn')?.addEventListener('click', () => {
       navigator.clipboard.writeText(selectedText).then(() => {
         toast.show('Trecho copiado para a área de transferência!', 'success');
-        window.getSelection().removeAllRanges();
-        tooltip?.classList.remove('visible');
+        window.getSelection()?.removeAllRanges();
+        hideSelectionUI();
       });
     });
 
@@ -618,23 +675,82 @@ export default {
       const textToShare = `"${selectedText}" — Natanael Fernando Gatti Brentano\n${window.location.href}`;
       const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}`;
       window.open(url, '_blank', 'noopener,noreferrer');
-      window.getSelection().removeAllRanges();
-      tooltip?.classList.remove('visible');
+      window.getSelection()?.removeAllRanges();
+      hideSelectionUI();
     });
 
-    const showCardPreview = () => {
-      window.getSelection().removeAllRanges();
-      tooltip?.classList.remove('visible');
-      if (mobileShareSelectionBtn) mobileShareSelectionBtn.classList.remove('visible');
-      isExportingQuote = true;
-      quoteText = selectedText || stripHtml(poem.content).substring(0, 150) + '...';
-      const previewModal = document.getElementById('card-preview-modal');
+    // Preview do card e alternador de modo (RF02, CA02, CA03)
+    const previewModal = document.getElementById('card-preview-modal');
+    const cardModeToggleGroup = document.getElementById('card-mode-toggle-group');
+    const cardModeQuoteBtn = document.getElementById('card-mode-quote-btn');
+    const cardModeFullBtn = document.getElementById('card-mode-full-btn');
+    const cardPreviewTitle = document.getElementById('card-preview-title');
+    const cardPreviewBody = document.getElementById('card-preview-body');
+
+    const updateCardModalPreview = () => {
+      if (!cardPreviewTitle || !cardPreviewBody) return;
+      if (isExportingQuote && quoteText) {
+        cardPreviewTitle.textContent = `De “${poem.title}”`;
+        cardPreviewBody.textContent = `“ ${quoteText} ”`;
+        cardPreviewBody.style.fontStyle = 'italic';
+      } else {
+        cardPreviewTitle.textContent = poem.title || 'Poema';
+        const plainText = stripHtml(poem.content || '');
+        const lines = plainText.split('\n').map(l => l.trim()).filter(Boolean);
+        cardPreviewBody.textContent = lines.slice(0, 10).join('\n') + (lines.length > 10 ? '\n...' : '');
+        cardPreviewBody.style.fontStyle = 'normal';
+      }
+    };
+
+    const setCardExportMode = (mode) => {
+      if (mode === 'quote') {
+        isExportingQuote = true;
+        cardModeQuoteBtn?.classList.add('active');
+        cardModeQuoteBtn?.style.setProperty('border-color', 'var(--accent-subtle)');
+        cardModeQuoteBtn?.style.setProperty('color', 'var(--text-primary)');
+        cardModeFullBtn?.classList.remove('active');
+        cardModeFullBtn?.style.setProperty('border-color', 'var(--border-subtle)');
+        cardModeFullBtn?.style.setProperty('color', 'var(--text-muted)');
+      } else {
+        isExportingQuote = false;
+        cardModeFullBtn?.classList.add('active');
+        cardModeFullBtn?.style.setProperty('border-color', 'var(--accent-subtle)');
+        cardModeFullBtn?.style.setProperty('color', 'var(--text-primary)');
+        cardModeQuoteBtn?.classList.remove('active');
+        cardModeQuoteBtn?.style.setProperty('border-color', 'var(--border-subtle)');
+        cardModeQuoteBtn?.style.setProperty('color', 'var(--text-muted)');
+      }
+      updateCardModalPreview();
+    };
+
+    cardModeQuoteBtn?.addEventListener('click', () => setCardExportMode('quote'));
+    cardModeFullBtn?.addEventListener('click', () => setCardExportMode('full'));
+
+    const showCardPreview = (quote = null) => {
+      const chosenQuote = quote !== null ? quote : selectedText;
+      window.getSelection()?.removeAllRanges();
+      hideSelectionUI();
+
+      if (chosenQuote) {
+        quoteText = chosenQuote;
+        isExportingQuote = true;
+        if (cardModeToggleGroup) cardModeToggleGroup.style.display = 'flex';
+        setCardExportMode('quote');
+      } else {
+        quoteText = '';
+        isExportingQuote = false;
+        if (cardModeToggleGroup) cardModeToggleGroup.style.display = 'none';
+        setCardExportMode('full');
+      }
+
       if (previewModal) {
         previewModal.style.display = 'flex';
         previewModal.classList.add('active');
       }
     };
-    document.getElementById('highlight-card-btn')?.addEventListener('click', showCardPreview);
+
+    document.getElementById('highlight-card-btn')?.addEventListener('click', () => showCardPreview());
+    mobileCardSelectionBtn?.addEventListener('click', () => showCardPreview());
 
     // Botão de copiar citação ABNT
     const copyCitationBtn = document.getElementById('copy-citation-btn');
@@ -697,8 +813,12 @@ export default {
     handleScroll = throttle(() => {
       const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const scrolled = (winScroll / height) * 100;
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
       if (scrollBar) scrollBar.style.width = scrolled + "%";
+
+      if (scrolled > 25) {
+        tryRecordReading();
+      }
 
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight;
@@ -750,7 +870,6 @@ export default {
     // Card Export Preview Modal Logic
     const shareCardBtnMobile = document.getElementById('share-card-btn-mobile');
     const shareCardBtnDesktop = document.getElementById('share-card-btn-desktop');
-    const previewModal = document.getElementById('card-preview-modal');
     const closePreviewBtn = document.getElementById('close-preview-btn');
     const downloadCardBtn = document.getElementById('download-card-btn');
     const themeBtns = container.querySelectorAll('.preview-theme-btn');
@@ -762,6 +881,8 @@ export default {
       if (previewModal) {
         isExportingQuote = false;
         quoteText = '';
+        if (cardModeToggleGroup) cardModeToggleGroup.style.display = 'none';
+        setCardExportMode('full');
         previewModal.style.display = 'flex';
         previewModal.classList.add('active');
       }
@@ -773,6 +894,8 @@ export default {
       if (previewModal) {
         previewModal.style.display = 'none';
         previewModal.classList.remove('active');
+        isExportingQuote = false;
+        quoteText = '';
       }
     });
 
@@ -801,7 +924,7 @@ export default {
       downloadCardBtn.disabled = true;
       try {
         const { generateSocialCard } = await import('../utils/social-export.js');
-        const textToExport = isExportingQuote ? quoteText : null;
+        const textToExport = (isExportingQuote && quoteText) ? quoteText : null;
         await generateSocialCard(poem, document.getElementById('social-card-container'), selectedExportTheme, textToExport, selectedExportRatio);
         toast.show('Card gerado com sucesso!', 'success');
       } catch (err) {

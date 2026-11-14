@@ -268,6 +268,7 @@ export function buildLlmsTxt({
   // Optional section (RF02)
   const optionalLines = [
     '## Optional\n',
+    `- [Arquivo e Linha do Tempo Literária](${cleanBase}arquivo/): Linha do tempo cronológica com marcos literários de todas as obras publicadas desde 2015.`,
     `- [Acervo Completo (Markdown)](${cleanBase}llms-full.txt): Texto integral de todos os poemas publicados com metadados para LLMs.`,
     `- [Feed RSS](${cleanBase}feed.xml): Feed de atualizações com os últimos poemas publicados.`,
     `- [Mapa do Site (Sitemap)](${cleanBase}sitemap.xml): Índice de sitemaps XML para indexação e rastreamento.`
@@ -322,9 +323,31 @@ export function buildLlmsFullTxt({
 
       const poemText = formatPoemForMarkdown(poem.content);
 
+      let contextBlock = '';
+      if (poem.dedication && typeof poem.dedication === 'string' && poem.dedication.trim()) {
+        contextBlock += `> Dedicatória: ${decodeHtmlEntities(stripHtml(poem.dedication)).trim()}\n`;
+      }
+      const contextParts = [];
+      if (poem.written_location && typeof poem.written_location === 'string' && poem.written_location.trim()) {
+        contextParts.push(`Local: ${decodeHtmlEntities(stripHtml(poem.written_location)).trim()}`);
+      }
+      if (poem.written_at && typeof poem.written_at === 'string' && poem.written_at.trim()) {
+        contextParts.push(`Escrito em: ${decodeHtmlEntities(stripHtml(poem.written_at)).trim()}`);
+      }
+      if (contextParts.length > 0) {
+        contextBlock += `> Criação: ${contextParts.join(' | ')}\n`;
+      }
+      if (poem.author_note && typeof poem.author_note === 'string' && poem.author_note.trim()) {
+        contextBlock += `> Nota do autor: ${decodeHtmlEntities(stripHtml(poem.author_note)).replace(/\s+/g, ' ').trim()}\n`;
+      }
+      if (contextBlock) {
+        contextBlock += '\n';
+      }
+
       return (
         `## ${poem.title}\n\n` +
         `URL: ${canonicalUrl} | Publicado em: ${publishedDate} | Coleções: ${colString} | Sentimentos: ${sentString}\n\n` +
+        `${contextBlock}` +
         `${poemText}`
       );
     });

@@ -1,7 +1,7 @@
 # [FEAT] Autosave local e gestão integrada de coleções no editor de poemas
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
+> **Status:** Aprovado
+> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-14
 
 ## Detalhes da Atividade
 
@@ -45,13 +45,13 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que estou digitando um novo poema ou editando um existente no admin, quando paro de digitar por 1 segundo, então o estado atual do formulário é salvo no `localStorage`.
-- [ ] **CA02:** Dado que fechei ou recarreguei a aba sem salvar no Firestore, quando volto ao editor na mesma rota, então um banner informa data/hora do rascunho local e "Restaurar" preenche novamente os campos.
-- [ ] **CA03:** Dado o banner de rascunho local disponível, quando clico em "Descartar", então a entrada no `localStorage` é removida e os dados oficiais do Firestore permanecem intactos.
-- [ ] **CA04:** Dado um rascunho local ativo durante edição, quando salvo o poema no Firestore com sucesso, então o rascunho local correspondente é apagado automaticamente.
-- [ ] **CA05:** Dado que marquei duas coleções no formulário do editor e salvei o poema, quando verifico o banco, então `poem.collection_slugs` contém os 2 slugs e `collection_poems` possui os dois vínculos sem duplicar entradas pré-existentes.
-- [ ] **CA06:** Dado um poema com 3 estrofes e 12 versos digitado no textarea, quando a prévia/estatística atualiza, então exibe `3 estrofes · 12 versos`.
-- [ ] **CA07:** Dado que tento salvar um novo poema com um slug pertencente a outra obra já existente, quando submeto (ou saio do campo slug), então o editor bloqueia a gravação e exibe aviso indicando conflito de slug.
+- [x] **CA01:** Dado que estou digitando um novo poema ou editando um existente no admin, quando paro de digitar por 1 segundo, então o estado atual do formulário é salvo no `localStorage`.
+- [x] **CA02:** Dado que fechei ou recarreguei a aba sem salvar no Firestore, quando volto ao editor na mesma rota, então um banner informa data/hora do rascunho local e "Restaurar" preenche novamente os campos.
+- [x] **CA03:** Dado o banner de rascunho local disponível, quando clico em "Descartar", então a entrada no `localStorage` é removida e os dados oficiais do Firestore permanecem intactos.
+- [x] **CA04:** Dado um rascunho local ativo durante edição, quando salvo o poema no Firestore com sucesso, então o rascunho local correspondente é apagado automaticamente.
+- [x] **CA05:** Dado que marquei duas coleções no formulário do editor e salvei o poema, quando verifico o banco, então `poem.collection_slugs` contém os 2 slugs e `collection_poems` possui os dois vínculos sem duplicar entradas pré-existentes.
+- [x] **CA06:** Dado um poema com 3 estrofes e 12 versos digitado no textarea, quando a prévia/estatística atualiza, então exibe `3 estrofes · 12 versos`.
+- [x] **CA07:** Dado que tento salvar um novo poema com um slug pertencente a outra obra já existente, quando submeto (ou saio do campo slug), então o editor bloqueia a gravação e exibe aviso indicando conflito de slug.
 
 ## O que a atividade não inclui
 
@@ -67,7 +67,7 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O aviso ao detectar rascunho local deve também bloquear fechamento acidental da aba via `beforeunload` quando houver alterações não salvas? | PO/dev | Não | |
+| D01 | O aviso ao detectar rascunho local deve também bloquear fechamento acidental da aba via `beforeunload` quando houver alterações não salvas? | PO/dev | Não | Sim, registrar listener de `beforeunload` enquanto houver modificações locais não salvas, removendo-o no cleanup do editor e após o salvamento bem-sucedido. |
 
 ## Sugestões de casos de teste
 

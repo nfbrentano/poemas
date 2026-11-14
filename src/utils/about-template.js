@@ -17,7 +17,7 @@ export function renderPushToggleHtml() {
 export const DEFAULT_AVATAR_URL = 'https://firebasestorage.googleapis.com/v0/b/poemas-natanael.firebasestorage.app/o/avatars%2Favatar_1788017538021.jpeg?alt=media&token=e54e38e7-5950-4c47-97a1-9ac1f8bcef15';
 export const DEFAULT_AUTHOR_BIO = 'Natanael Fernando Gatti Brentano escreve sobre o que sobra do dia. Seus versos buscam capturar a efemeridade do instante e a profundidade das coisas simples.';
 
-export function getAboutFaq({ poemsCount = 222, collectionsCount = 5 } = {}) {
+export function getAboutFaq({ poemsCount = 239, collectionsCount = 7 } = {}) {
   return [
     {
       question: 'Quem é Natanael Fernando Gatti Brentano?',
@@ -129,6 +129,11 @@ export function renderAboutMarkup({
                     <span class="event">Consolidação do acervo digital e superação da marca de 200 poemas em julho com <em>Trilha Sonora do Agora</em>, reunindo atualmente <strong id="total-poems-count">${poemsCount}</strong> poemas publicados.</span>
                   </div>
                 </div>
+                <p style="margin-top: var(--space-md); font-family: var(--font-ui); font-size: 0.9rem;">
+                  <a href="${baseUrl}arquivo/" data-link style="color: var(--accent-subtle); text-decoration: underline; text-underline-offset: 3px;">
+                    Ver linha do tempo completa e arquivo cronológico por ano →
+                  </a>
+                </p>
               </div>
             </div>
 

@@ -22,12 +22,16 @@ export function setPoemsCacheEnabled(enabled) {
 }
 
 /**
- * Limpa o cache de poemas publicados em memória e qualquer requisição em andamento.
+ * Limpa o cache de poemas publicados em memória e qualquer requisição em andamento,
+ * além de invalidar o cache de slugs de navegação aleatória (RF05, CA07).
  */
 export function invalidatePoemsCache() {
   cachedPoems = null;
   cacheTimestamp = 0;
   inflightPromise = null;
+  try {
+    import('./navigation.js').then(m => m.invalidatePublishedSlugsCache?.()).catch(() => {});
+  } catch (_) {}
 }
 
 /**

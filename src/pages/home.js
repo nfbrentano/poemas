@@ -278,8 +278,8 @@ export default {
               </div>
             </a>
             <div class="featured-actions" style="display: flex; gap: 1rem; margin-top: 1rem;">
-              <button class="featured-share-btn btn-secondary btn-sm" data-platform="whatsapp" data-slug="${poem.slug}" data-title="${poem.title}">WhatsApp</button>
-              <button class="featured-share-btn btn-secondary btn-sm" data-platform="twitter" data-slug="${poem.slug}" data-title="${poem.title}">X (Twitter)</button>
+              <button class="featured-share-btn btn-secondary btn-sm" data-platform="whatsapp" data-slug="${escapeHtml(poem.slug)}" data-title="${escapeHtml(poem.title)}">WhatsApp</button>
+              <button class="featured-share-btn btn-secondary btn-sm" data-platform="twitter" data-slug="${escapeHtml(poem.slug)}" data-title="${escapeHtml(poem.title)}">X (Twitter)</button>
             </div>
             <div class="featured-separator"></div>
           </article>
@@ -311,6 +311,11 @@ export default {
             Explorar índice completo do acervo (${poems.length} poemas${qualifyingSentiments.length > 0 ? ` e ${qualifyingSentiments.length} sentimentos` : ''})
           </summary>
           <div class="archive-index-body" style="margin-top: var(--space-lg);">
+            <div style="text-align: center; margin-bottom: var(--space-lg);">
+              <a href="${BASE_URL}arquivo/" data-link class="btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; padding: 6px 16px; border-radius: 20px;">
+                📅 Ver linha do tempo completa e marcos da obra →
+              </a>
+            </div>
             ${qualifyingSentiments.length > 0 ? `
             <div class="archive-sentiments-block" style="margin-bottom: var(--space-xl);">
               <h2 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: var(--space-sm);">Sentimentos e Temas</h2>

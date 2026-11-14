@@ -152,7 +152,7 @@ export function poemSchema(poem, collections = []) {
     : websiteRef;
 
   const keywords = Array.isArray(poem.tags) ? poem.tags : [];
-  const imageUrl = poem.image || `https://poemas-natanael.web.app/og-image?slug=${poemSlug}`;
+  const imageUrl = poem.image || `${SITE_URL}/og/poema/${poemSlug}.png`;
 
   const about = keywords.filter(Boolean).map(tag => {
     const slug = slugifyTag(tag);
@@ -203,6 +203,17 @@ export function poemSchema(poem, collections = []) {
       "cssSelector": ["#poem-text", ".single-poem header h1"]
     }
   };
+
+  if (poem.written_at) {
+    result.dateCreated = poem.written_at;
+  }
+
+  if (poem.written_location) {
+    result.locationCreated = {
+      "@type": "Place",
+      "name": poem.written_location
+    };
+  }
 
   if (poem.audio_url) {
     const audioUrl = sanitizeUrl(poem.audio_url);
@@ -280,6 +291,37 @@ export function collectionsListSchema(collections = []) {
         "position": idx + 1,
         "name": col.name || '',
         "url": ensureTrailingSlash(`${SITE_URL}/colecao/${col.slug}`)
+      }))
+    }
+  };
+}
+
+/**
+ * Schema for the archive and literary timeline page (/arquivo/).
+ */
+export function archivePageSchema(poems = []) {
+  const archiveUrl = ensureTrailingSlash(`${SITE_URL}/arquivo`);
+  const poemsList = Array.isArray(poems) ? poems : [];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": ["CollectionPage", "ItemPage"],
+    "@id": `${archiveUrl}#arquivo`,
+    "url": archiveUrl,
+    "name": "Arquivo e Linha do Tempo Literária — Natanael Fernando Gatti Brentano",
+    "description": "Linha do tempo cronológica com marcos literários de todas as obras publicadas desde 2015 por Natanael Fernando Gatti Brentano.",
+    "inLanguage": "pt-BR",
+    "isPartOf": {
+      "@id": WEBSITE_ID
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": poemsList.length,
+      "itemListElement": poemsList.map((p, idx) => ({
+        "@type": "ListItem",
+        "position": idx + 1,
+        "name": p.title || '',
+        "url": ensureTrailingSlash(`${SITE_URL}/poema/${p.slug}`)
       }))
     }
   };

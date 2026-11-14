@@ -35,6 +35,10 @@ import { toast } from '../components/toast.js';
 
 let cachedPublishedSlugs = null;
 
+export function invalidatePublishedSlugsCache() {
+  cachedPublishedSlugs = null;
+}
+
 export async function getRandomPoem(event) {
   let btn = null;
   if (event) {

@@ -75,7 +75,7 @@ export function renderPoemMarkup({
   ` : '';
 
   const relatedHtml = (relatedPoems && relatedPoems.length > 0) ? relatedPoems.map(r => `
-    <a href="${baseUrl}poema/${escapeHtml(r.slug)}/" class="related-poem-card" style="padding: var(--space-md); border: 1px solid var(--border-subtle); border-radius: 4px; display: block; text-decoration: none; color: var(--text-primary); transition: background-color var(--transition-fast);" data-link onmouseover="this.style.backgroundColor='var(--border-subtle)'" onmouseout="this.style.backgroundColor='transparent'">
+    <a href="${baseUrl}poema/${escapeHtml(r.slug)}/" class="related-poem-card" data-link>
       <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 4px;">${escapeHtml(r.title)}</h3>
       ${r.excerpt ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">${escapeHtml(stripHtml(r.excerpt).substring(0, 100))}...</p>` : ''}
     </a>
@@ -112,6 +112,56 @@ export function renderPoemMarkup({
   ];
   const breadcrumbsHtml = renderBreadcrumbsHtml(breadcrumbItems);
 
+  const dedicationHtml = poem.dedication ? `
+    <p class="poem-dedication"><em>${escapeHtml(poem.dedication)}</em></p>
+  ` : '';
+
+  let authorNoteHtml = '';
+  const hasAuthorNote = Boolean(poem.author_note && poem.author_note.trim());
+  const hasWrittenContext = Boolean((poem.written_location && poem.written_location.trim()) || (poem.written_at && poem.written_at.trim()));
+
+  if (hasAuthorNote || hasWrittenContext) {
+    let writtenMetaHtml = '';
+    if (hasWrittenContext) {
+      const parts = [];
+      if (poem.written_location && poem.written_location.trim()) {
+        parts.push(escapeHtml(poem.written_location.trim()));
+      }
+      if (poem.written_at && poem.written_at.trim()) {
+        const rawDate = poem.written_at.trim();
+        let formattedDate = rawDate;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+          const d = new Date(`${rawDate}T12:00:00Z`);
+          if (!isNaN(d.getTime())) {
+            formattedDate = d.toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+          }
+        }
+        parts.push(escapeHtml(formattedDate));
+      }
+      writtenMetaHtml = `<p class="poem-written-meta">Escrito em ${parts.join(', ')}.</p>`;
+    }
+
+    let formattedNote = '';
+    if (hasAuthorNote) {
+      const safeNote = escapeHtml(poem.author_note.trim());
+      const paragraphs = safeNote.split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+      formattedNote = `<div class="poem-author-note-text">${paragraphs}</div>`;
+    }
+
+    authorNoteHtml = `
+      <details class="poem-author-note">
+        <summary class="poem-author-note-summary">
+          <span class="author-note-icon" aria-hidden="true">✍️</span>
+          <span>Sobre este poema / Nota do autor</span>
+        </summary>
+        <div class="poem-author-note-body">
+          ${formattedNote}
+          ${writtenMetaHtml}
+        </div>
+      </details>
+    `;
+  }
+
   return `
     <div class="poem-container">
       <div class="scroll-progress-container"><div id="scroll-bar" class="scroll-progress-bar"></div></div>
@@ -127,6 +177,7 @@ export function renderPoemMarkup({
             <span>•</span>
             <span class="reading-time">${readingLabel}</span>
           </div>
+          ${dedicationHtml}
           
           <div class="reading-settings-trigger-container">
             <button id="mobile-reading-settings-btn" class="btn-reading-settings" aria-label="Ajustes de leitura">Aa</button>
@@ -209,7 +260,9 @@ export function renderPoemMarkup({
           </section>
         ` : ''}
 
-        <div id="poem-text" class="poem-content">${formattedContent}</div>
+        <div id="poem-body" class="poem-body"><div id="poem-text" class="poem-content">${formattedContent}</div></div>
+
+        ${authorNoteHtml}
 
         ${taxonomyHtml}
 
@@ -279,12 +332,20 @@ export function renderPoemMarkup({
           `}
         </div>
 
-        <div class="poem-actions">
+        <div class="poem-actions" style="display: flex; gap: var(--space-sm); justify-content: center; align-items: center; flex-wrap: wrap;">
           <button id="favorite-poem-btn" type="button" class="btn-favorite" aria-pressed="false" aria-label="Salvar poema nos favoritos">
             <svg class="bookmark-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
             </svg>
             <span class="favorite-btn-text">Favoritar</span>
+          </button>
+          <button id="print-poem-btn" type="button" class="btn-print" aria-label="Imprimir este poema" title="Imprimir este poema (Ctrl+P / Cmd+P)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span>Imprimir</span>
           </button>
         </div>
 
@@ -377,12 +438,18 @@ export function renderPoemMarkup({
       <div id="highlight-tooltip" class="highlight-tooltip">
         <button id="highlight-copy-btn" class="highlight-btn">Copiar</button>
         <button id="highlight-share-btn" class="highlight-btn">Compartilhar</button>
-        <button id="highlight-card-btn" class="highlight-btn">Gerar Card</button>
+        <button id="highlight-card-btn" class="highlight-btn">Gerar Imagem</button>
       </div>
-      <button id="mobile-share-selection-btn" class="mobile-share-selection-btn" aria-label="Compartilhar trecho selecionado">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-        Compartilhar trecho
-      </button>
+      <div id="mobile-selection-toolbar" class="mobile-selection-toolbar">
+        <button id="mobile-share-selection-btn" class="mobile-share-selection-btn" aria-label="Compartilhar trecho selecionado">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          Compartilhar trecho
+        </button>
+        <button id="mobile-card-selection-btn" class="mobile-card-selection-btn" aria-label="Gerar imagem do trecho selecionado">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          Gerar imagem
+        </button>
+      </div>
 
       <!-- Painel de Controle da Leitura Imersiva -->
       <div id="immersive-control-panel" class="immersive-control-panel">
@@ -409,6 +476,23 @@ export function renderPoemMarkup({
           <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: var(--space-sm); color: var(--text-primary);">Exportar Card</h3>
           <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: var(--space-md);">Escolha um estilo visual para o card antes do download.</p>
           
+          <!-- Alternador de Trecho vs Poema Completo (RF02, CA02, CA03) -->
+          <div id="card-mode-toggle-group" class="card-mode-toggle-group" style="display: none; justify-content: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+            <button type="button" id="card-mode-quote-btn" class="preview-mode-btn active" data-mode="quote" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--accent-subtle); background: var(--bg-primary); color: var(--text-primary); cursor: pointer;">
+              Trecho selecionado
+            </button>
+            <button type="button" id="card-mode-full-btn" class="preview-mode-btn" data-mode="full" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border-subtle); background: var(--bg-primary); color: var(--text-muted); cursor: pointer;">
+              Poema completo
+            </button>
+          </div>
+
+          <!-- Prévia compacta do cartão no modal -->
+          <div id="card-modal-preview" class="card-modal-preview" style="background: #050505; border: 1px solid var(--border-strong); border-radius: 6px; padding: var(--space-md); margin-bottom: var(--space-md); text-align: center; max-height: 200px; overflow-y: auto;">
+            <p id="card-preview-title" style="font-family: var(--font-display); font-size: 1.05rem; color: #c5a880; margin-bottom: var(--space-xs);"></p>
+            <div id="card-preview-body" style="font-family: var(--font-poem); font-size: 0.95rem; line-height: 1.6; color: #e2e2e2; white-space: pre-line;"></div>
+            <div style="font-family: var(--font-ui); font-size: 0.72rem; color: #888888; margin-top: var(--space-xs); text-transform: uppercase; letter-spacing: 1px;">Natanael Fernando Gatti Brentano</div>
+          </div>
+
           <div class="theme-selector" style="display: flex; justify-content: center; gap: var(--space-sm); margin-bottom: var(--space-lg);">
             <button class="preview-theme-btn active" data-theme="dark" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-strong); background: #050505; color: #e2e2e2; cursor: pointer;">Escuro</button>
             <button class="preview-theme-btn" data-theme="light" style="padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-subtle); background: #fdfdfd; color: #1a1a1a; cursor: pointer;">Claro</button>

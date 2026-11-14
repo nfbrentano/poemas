@@ -1,7 +1,7 @@
 # [FIX] Restauração da impressão nativa, paridade de shell prerender/SPA, OG/Schema e limpeza de listeners
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
+> **Status:** Aprovado
+> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-14
 
 ## Detalhes da Atividade
 
@@ -51,14 +51,14 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que estou em uma página de poema, quando os estilos `@media print` são aplicados (sem classe `is-printing-anthology`), então `#app` e `.single-poem` permanecem visíveis enquanto menus, ações e rodapé ficam ocultos.
-- [ ] **CA02:** Dado o HTML pré-renderizado da Home (`dist/index.html`) e de um poema, quando inspeciono o DOM inicial antes mesmo da troca de rota, então o link `/favoritos/` consta nos Ajustes e o formulário de newsletter usa `#subscribe-form` compatível com [`newsletter.init()`](../src/components/newsletter.js).
-- [ ] **CA03:** Dado um poema com texto contendo `</script><script>` no conteúdo ou `"` no título, quando o HTML é pré-renderizado ou renderizado no cliente, então nenhuma tag `<script>` espúria é aberta e todos os atributos ficam corretamente escapados.
-- [ ] **CA04:** Dado um poema ou coleção sem OG gerada (usando fallback `.jpg`), quando o HTML é pré-renderizado e inspecionado pelo módulo SEO, então `og:image` aponta para `https://nfgbrentano.art.br/...`, `og:image:type` corresponde ao formato real (`image/jpeg` ou `image/png`) e não há referências a `poemas-natanael.web.app`.
-- [ ] **CA05:** Dado a página `/sobre/` carregada no navegador ou pré-renderizada, quando o FAQ e o JSON-LD são gerados, então o número de coleções exibido reflete o total real curado/publicado (`>= 7`) e o `Person`/`ProfilePage` schema usa a URL de avatar configurada.
-- [ ] **CA06:** Dado que navego de `/poema/a/` para `/poema/b/` e depois para `/`, quando `cleanup()` é executado em `poem.js`, então o listener `selectionchange` da rota anterior é removido e pressionar `/` dispara a abertura da busca apenas uma vez.
-- [ ] **CA07:** Dado que `invalidatePoemsCache()` foi chamado após publicação/edição no admin, quando o usuário aciona "Poema Aleatório", então `getRandomPoem()` recarrega a lista atualizada de slugs publicados.
-- [ ] **CA08:** Dado o arquivo [`public/_headers`](../public/_headers), quando inspecionado, então apenas recursos com hash ou estáticos versionáveis usam `immutable`, nunca páginas `.html` ou `/sw.js`.
+- [x] **CA01:** Dado que estou em uma página de poema, quando os estilos `@media print` são aplicados (sem classe `is-printing-anthology`), então `#app` e `.single-poem` permanecem visíveis enquanto menus, ações e rodapé ficam ocultos.
+- [x] **CA02:** Dado o HTML pré-renderizado da Home (`dist/index.html`) e de um poema, quando inspeciono o DOM inicial antes mesmo da troca de rota, então o link `/favoritos/` consta nos Ajustes e o formulário de newsletter usa `#subscribe-form` compatível com [`newsletter.init()`](../src/components/newsletter.js).
+- [x] **CA03:** Dado um poema com texto contendo `</script><script>` no conteúdo ou `"` no título, quando o HTML é pré-renderizado ou renderizado no cliente, então nenhuma tag `<script>` espúria é aberta e todos os atributos ficam corretamente escapados.
+- [x] **CA04:** Dado um poema ou coleção sem OG gerada (usando fallback `.jpg`), quando o HTML é pré-renderizado e inspecionado pelo módulo SEO, então `og:image` aponta para `https://nfgbrentano.art.br/...`, `og:image:type` corresponde ao formato real (`image/jpeg` ou `image/png`) e não há referências a `poemas-natanael.web.app`.
+- [x] **CA05:** Dado a página `/sobre/` carregada no navegador ou pré-renderizada, quando o FAQ e o JSON-LD são gerados, então o número de coleções exibido reflete o total real curado/publicado (`>= 7`) e o `Person`/`ProfilePage` schema usa a URL de avatar configurada.
+- [x] **CA06:** Dado que navego de `/poema/a/` para `/poema/b/` e depois para `/`, quando `cleanup()` é executado em `poem.js`, então o listener `selectionchange` da rota anterior é removido e pressionar `/` dispara a abertura da busca apenas uma vez.
+- [x] **CA07:** Dado que `invalidatePoemsCache()` foi chamado após publicação/edição no admin, quando o usuário aciona "Poema Aleatório", então `getRandomPoem()` recarrega a lista atualizada de slugs publicados.
+- [x] **CA08:** Dado o arquivo [`public/_headers`](../public/_headers), quando inspecionado, então apenas recursos com hash ou estáticos versionáveis usam `immutable`, nunca páginas `.html` ou `/sw.js`.
 
 ## O que a atividade não inclui
 
@@ -73,7 +73,7 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Deseja exibir um botão explícito "Imprimir poema" na barra de ações do poema ou apenas corrigir o `@media print` nativo (`Cmd/Ctrl+P`) por enquanto? | design/PO | Não | |
+| D01 | Deseja exibir um botão explícito "Imprimir poema" na barra de ações do poema ou apenas corrigir o `@media print` nativo (`Cmd/Ctrl+P`) por enquanto? | design/PO | Não | Adicionar botão discreto "Imprimir" nas ações do poema (ao lado de Favoritar) disparando `window.print()`, além de garantir o `@media print` nativo (`Cmd/Ctrl+P`) via CSS sem bloqueio de `#app`. |
 
 ## Sugestões de casos de teste
 

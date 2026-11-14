@@ -1,7 +1,7 @@
 # [FEAT] Página de Arquivo e Linha do Tempo Literária (`/arquivo/`)
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
+> **Status:** Aprovado
+> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-14
 
 ## Detalhes da Atividade
 
@@ -43,12 +43,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um acervo com poemas publicados entre 2015 e o ano atual, quando acesso `/arquivo/`, então vejo os anos organizados em linha do tempo com a contagem exata de obras e links clicáveis para cada poema.
-- [ ] **CA02:** Dado 100+ poemas publicados ordenados cronologicamente do mais antigo para o mais novo, quando o módulo calcula os marcos literários, então identifica corretamente o 1º poema, o 50º e o 100º com título, data e link.
-- [ ] **CA03:** Dado que estou em `/arquivo/`, quando seleciono "Ordem cronológica (2015 → atual)" ou clico em um chip de ano no topo, então a lista reordena ou rola para o ano selecionado mantendo usabilidade no mobile.
-- [ ] **CA04:** Dado o build de produção, quando verifico `dist/arquivo/index.html` e `dist/sitemap-paginas.xml`, então o arquivo HTML contém marcação semântica, `<link rel="canonical" href="https://nfgbrentano.art.br/arquivo/">` e a URL consta no sitemap.
-- [ ] **CA05:** Dado que visito a Home ou `/sobre/`, quando olho a seção de arquivo ou marcos literários, então encontro link navegável SPA (`data-link`) levando a `/arquivo/`.
-- [ ] **CA06:** Dado um poema em rascunho ou agendado no conjunto de entrada, quando a linha do tempo e o prerender são gerados, então o poema não publicado nunca aparece na listagem nem nos marcos.
+- [x] **CA01:** Dado um acervo com poemas publicados entre 2015 e o ano atual, quando acesso `/arquivo/`, então vejo os anos organizados em linha do tempo com a contagem exata de obras e links clicáveis para cada poema.
+- [x] **CA02:** Dado 100+ poemas publicados ordenados cronologicamente do mais antigo para o mais novo, quando o módulo calcula os marcos literários, então identifica corretamente o 1º poema, o 50º e o 100º com título, data e link.
+- [x] **CA03:** Dado que estou em `/arquivo/`, quando seleciono "Ordem cronológica (2015 → atual)" ou clico em um chip de ano no topo, então a lista reordena ou rola para o ano selecionado mantendo usabilidade no mobile.
+- [x] **CA04:** Dado o build de produção, quando verifico `dist/arquivo/index.html` e `dist/sitemap-paginas.xml`, então o arquivo HTML contém marcação semântica, `<link rel="canonical" href="https://nfgbrentano.art.br/arquivo/">` e a URL consta no sitemap.
+- [x] **CA05:** Dado que visito a Home ou `/sobre/`, quando olho a seção de arquivo ou marcos literários, então encontro link navegável SPA (`data-link`) levando a `/arquivo/`.
+- [x] **CA06:** Dado um poema em rascunho ou agendado no conjunto de entrada, quando a linha do tempo e o prerender são gerados, então o poema não publicado nunca aparece na listagem nem nos marcos.
 
 ## O que a atividade não inclui
 
@@ -63,7 +63,7 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O bloco de arquivo na Home deve permanecer como `<details>` simples + link "Ver linha do tempo completa →" ou ser substituído por apenas um card/chamada para `/arquivo/`? | design/PO | Não | |
+| D01 | O bloco de arquivo na Home deve permanecer como `<details>` simples + link "Ver linha do tempo completa →" ou ser substituído por apenas um card/chamada para `/arquivo/`? | design/PO | Não | Manter o `<details class="home-archive-index">` na Home preservando a rastreabilidade/SEO e adicionar botão/link de destaque "Ver linha do tempo completa e marcos da obra →" apontando para `/arquivo/`. |
 
 ## Sugestões de casos de teste
 

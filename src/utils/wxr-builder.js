@@ -98,6 +98,21 @@ function buildItem(poem, id, siteUrl) {
   const published = toDate(poem.published_at) || toDate(poem.created_at) || new Date(0);
   const modified = toDate(poem.updated_at) || published;
   const status = STATUS_MAP[poem.status] || 'draft';
+  const postmetaLines = [];
+  if (poem.dedication) {
+    postmetaLines.push(`\t\t<wp:postmeta>\n\t\t\t<wp:meta_key>${cdata('dedication')}</wp:meta_key>\n\t\t\t<wp:meta_value>${cdata(poem.dedication)}</wp:meta_value>\n\t\t</wp:postmeta>`);
+  }
+  if (poem.author_note) {
+    postmetaLines.push(`\t\t<wp:postmeta>\n\t\t\t<wp:meta_key>${cdata('author_note')}</wp:meta_key>\n\t\t\t<wp:meta_value>${cdata(poem.author_note)}</wp:meta_value>\n\t\t</wp:postmeta>`);
+  }
+  if (poem.written_at) {
+    postmetaLines.push(`\t\t<wp:postmeta>\n\t\t\t<wp:meta_key>${cdata('written_at')}</wp:meta_key>\n\t\t\t<wp:meta_value>${cdata(poem.written_at)}</wp:meta_value>\n\t\t</wp:postmeta>`);
+  }
+  if (poem.written_location) {
+    postmetaLines.push(`\t\t<wp:postmeta>\n\t\t\t<wp:meta_key>${cdata('written_location')}</wp:meta_key>\n\t\t\t<wp:meta_value>${cdata(poem.written_location)}</wp:meta_value>\n\t\t</wp:postmeta>`);
+  }
+  const postmetaXml = postmetaLines.length > 0 ? `\n${postmetaLines.join('\n')}` : '';
+
   return `\t\t<item>
 \t\t<title>${cdata(poem.title)}</title>
 \t\t<link>${siteUrl}/poema/${encodeURIComponent(poem.slug || '')}</link>
@@ -121,7 +136,7 @@ function buildItem(poem, id, siteUrl) {
 \t\t<wp:post_type>${cdata('post')}</wp:post_type>
 \t\t<wp:post_password>${cdata('')}</wp:post_password>
 \t\t<wp:is_sticky>0</wp:is_sticky>
-${buildCategories(poem.tags)}
+${buildCategories(poem.tags)}${postmetaXml}
 \t\t</item>`;
 }
 

@@ -17,6 +17,7 @@ export const routes = {
   '/sentimentos': () => import('./pages/sentiments.js').then(m => m.default),
   '/sentimento/:slug': () => import('./pages/sentiment.js').then(m => m.default),
   '/favoritos': () => import('./pages/favorites.js').then(m => m.default),
+  '/arquivo': () => import('./pages/archive.js').then(m => m.default),
   '/unsubscribe': () => import('./pages/unsubscribe.js').then(m => m.default),
   '/cancelar-inscricao': () => import('./pages/unsubscribe.js').then(m => m.default)
 };

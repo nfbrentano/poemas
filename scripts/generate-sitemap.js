@@ -78,7 +78,8 @@ export async function runGenerateSitemap(outputDirectory) {
 
   const staticPages = [
     { loc: 'sobre', lastmod: getFileMTime('src/pages/about.js') },
-    { loc: 'colecoes', lastmod: getFileMTime('src/pages/collections.js') }
+    { loc: 'colecoes', lastmod: getFileMTime('src/pages/collections.js') },
+    { loc: 'arquivo', lastmod: getFileMTime('src/pages/archive.js') }
   ];
 
   console.log('Building sitemap index and sub-sitemaps...');

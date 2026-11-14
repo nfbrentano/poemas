@@ -1,7 +1,7 @@
 # [FEAT] Notas do autor, dedicatória e metadados de criação do poema
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
+> **Status:** Aprovado
+> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-14
 
 ## Detalhes da Atividade
 
@@ -43,12 +43,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o editor admin aberto, quando preencho `dedication`, `author_note`, `written_at` e `written_location` e salvo o poema, então os 4 campos são persistidos no documento em `poems` (ou gravados como `null` quando limpos).
-- [ ] **CA02:** Dado um poema publicado com `dedication` e `author_note`, quando abro `/poema/<slug>/`, então vejo a dedicatória antes dos versos e o resumo clicável *"Sobre este poema / Nota do autor"* recolhido após o último verso; ao clicar/pressionar Enter, a nota expande com local e data de escrita.
-- [ ] **CA03:** Dado um poema sem nenhum dos novos campos preenchidos, quando abro sua página, então não aparecem elementos `.poem-dedication` nem `.poem-author-note` no DOM.
-- [ ] **CA04:** Dado um poema com `written_at = "2018-04-10"` e `written_location = "Porto Alegre"`, quando gero `poemSchema()` e `buildLlmsFullTxt()`, então `dateCreated` e `locationCreated` constam no JSON-LD e a nota aparece no bloco Markdown; em poemas sem esses campos, essas propriedades são omitidas do JSON-LD.
-- [ ] **CA05:** Dado um build de produção com poema contendo nota do autor, quando inspeciono o arquivo pré-renderizado `dist/poema/<slug>/index.html`, então a nota já consta no HTML estático e no `__DATA__`.
-- [ ] **CA06:** Dado um valor malicioso `<img src=x onerror=alert(1)>` salvo em `author_note` ou `dedication`, quando a página renderiza, então o texto aparece literalmente escapado sem executar script.
+- [x] **CA01:** Dado o editor admin aberto, quando preencho `dedication`, `author_note`, `written_at` e `written_location` e salvo o poema, então os 4 campos são persistidos no documento em `poems` (ou gravados como `null` quando limpos).
+- [x] **CA02:** Dado um poema publicado com `dedication` e `author_note`, quando abro `/poema/<slug>/`, então vejo a dedicatória antes dos versos e o resumo clicável *"Sobre este poema / Nota do autor"* recolhido após o último verso; ao clicar/pressionar Enter, a nota expande com local e data de escrita.
+- [x] **CA03:** Dado um poema sem nenhum dos novos campos preenchidos, quando abro sua página, então não aparecem elementos `.poem-dedication` nem `.poem-author-note` no DOM.
+- [x] **CA04:** Dado um poema com `written_at = "2018-04-10"` e `written_location = "Porto Alegre"`, quando gero `poemSchema()` e `buildLlmsFullTxt()`, então `dateCreated` e `locationCreated` constam no JSON-LD e a nota aparece no bloco Markdown; em poemas sem esses campos, essas propriedades são omitidas do JSON-LD.
+- [x] **CA05:** Dado um build de produção com poema contendo nota do autor, quando inspeciono o arquivo pré-renderizado `dist/poema/<slug>/index.html`, então a nota já consta no HTML estático e no `__DATA__`.
+- [x] **CA06:** Dado um valor malicioso `<img src=x onerror=alert(1)>` salvo em `author_note` ou `dedication`, quando a página renderiza, então o texto aparece literalmente escapado sem executar script.
 
 ## O que a atividade não inclui
 
@@ -63,7 +63,7 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O texto da nota do autor deve iniciar recolhido (`<details>`) por padrão para manter os versos protagonistas, ou visível aberto logo após a assinatura do poema? | design/PO | Não | |
+| D01 | O texto da nota do autor deve iniciar recolhido (`<details>`) por padrão para manter os versos protagonistas, ou visível aberto logo após a assinatura do poema? | design/PO | Não | Iniciar recolhido (`<details class="poem-author-note">` fechado por padrão sem o atributo `open`), mantendo o foco do leitor prioritariamente nos versos e na experiência poética, permitindo expansão opcional ao final. |
 
 ## Sugestões de casos de teste
 

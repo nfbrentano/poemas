@@ -175,13 +175,16 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
       });
     }
 
-    // Dynamic OG Image for Articles
+    // Dynamic OG Image for Articles (RF04, CA04)
     if (url && url.includes('/poema/')) {
       const slug = url.split('/').filter(Boolean).pop();
-      const dynamicOgUrl = `${window.location.origin}/og/poema/${slug}.png`;
-      setMeta('meta[property="og:image"]', 'content', dynamicOgUrl);
-      setMeta('meta[property="og:image:type"]', 'content', 'image/png');
-      setMeta('meta[name="twitter:image"]', 'content', dynamicOgUrl);
+      const articleImage = (imageUrl && !imageUrl.includes('og-cover.jpg') && !imageUrl.includes('og-default.jpg'))
+        ? imageUrl
+        : `${SITE_URL}/og/poema/${slug}.png`;
+      const imageType = /\.png(?:[?#]|$)/i.test(articleImage) ? 'image/png' : 'image/jpeg';
+      setMeta('meta[property="og:image"]', 'content', articleImage);
+      setMeta('meta[property="og:image:type"]', 'content', imageType);
+      setMeta('meta[name="twitter:image"]', 'content', articleImage);
     }
 
     // Academic / GEO Citation Meta Tags (Google Scholar, Perplexity, ChatGPT Search)

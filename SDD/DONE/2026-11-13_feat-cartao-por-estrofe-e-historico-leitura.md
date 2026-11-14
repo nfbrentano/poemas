@@ -1,7 +1,7 @@
 # [FEAT] Cartão de estrofe selecionada e histórico local "Continuar Lendo"
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
+> **Status:** Aprovado
+> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-14
 
 ## Detalhes da Atividade
 
@@ -46,13 +46,13 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que estou lendo um poema e seleciono uma estrofe dentro de `#poem-body`, quando a barra contextual de seleção aparece, então exibe o botão "Gerar imagem" ao lado das opções existentes.
-- [ ] **CA02:** Dado que selecionei 3 versos e cliquei em "Gerar imagem", quando o modal de cartão abre, então a prévia exibe exatamente aqueles 3 versos junto ao título do poema e crédito do autor, sem tags HTML quebradas.
-- [ ] **CA03:** Dado o modal de cartão aberto com um trecho selecionado, quando alterno o toggle para "Poema inteiro" (ou abro o modal pelo botão tradicional "Salvar Imagem"), então exibe o poema padrão sem resquício da seleção anterior.
-- [ ] **CA04:** Dado que li os poemas A e B na sessão, quando abro a visualização de "Lidos recentemente" em `/favoritos/`, então B aparece antes de A com link direto para retomar a leitura, sem gravar nada no Firestore.
-- [ ] **CA05:** Dado que o histórico atingiu 8 poemas, quando leio um 9º poema diferente, então o mais antigo sai da lista mantendo máximo de 8 entradas ordenadas por data de leitura.
-- [ ] **CA06:** Dado um histórico com 3 poemas lidos, quando clico em "Limpar histórico", então a chave no `localStorage` é removida e a seção desaparece imediatamente.
-- [ ] **CA07:** Dado que `localStorage.setItem` lança erro de cota/privacidade, quando abro e leio um poema, então a página funciona normalmente sem erros visíveis ao leitor.
+- [x] **CA01:** Dado que estou lendo um poema e seleciono uma estrofe dentro de `#poem-body`, quando a barra contextual de seleção aparece, então exibe o botão "Gerar imagem" ao lado das opções existentes.
+- [x] **CA02:** Dado que selecionei 3 versos e cliquei em "Gerar imagem", quando o modal de cartão abre, então a prévia exibe exatamente aqueles 3 versos junto ao título do poema e crédito do autor, sem tags HTML quebradas.
+- [x] **CA03:** Dado o modal de cartão aberto com um trecho selecionado, quando alterno o toggle para "Poema inteiro" (ou abro o modal pelo botão tradicional "Salvar Imagem"), então exibe o poema padrão sem resquício da seleção anterior.
+- [x] **CA04:** Dado que li os poemas A e B na sessão, quando abro a visualização de "Lidos recentemente" em `/favoritos/`, então B aparece antes de A com link direto para retomar a leitura, sem gravar nada no Firestore.
+- [x] **CA05:** Dado que o histórico atingiu 8 poemas, quando leio um 9º poema diferente, então o mais antigo sai da lista mantendo máximo de 8 entradas ordenadas por data de leitura.
+- [x] **CA06:** Dado um histórico com 3 poemas lidos, quando clico em "Limpar histórico", então a chave no `localStorage` é removida e a seção desaparece imediatamente.
+- [x] **CA07:** Dado que `localStorage.setItem` lança erro de cota/privacidade, quando abro e leio um poema, então a página funciona normalmente sem erros visíveis ao leitor.
 
 ## O que a atividade não inclui
 
@@ -68,8 +68,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O bloco "Lidos recentemente" deve ficar apenas em `/favoritos/` (como complemento natural para leitores recorrentes) ou também aparecer de forma compacta na Home quando já houver histórico? | design/PO | Não | |
-| D02 | Em caso de seleção de texto no iOS Safari / Android Chrome onde a barra nativa do sistema aparece perto da seleção, qual posicionamento evita sobreposição (barra fixa na base vs acima da seleção)? | design | Não | |
+| D01 | O bloco "Lidos recentemente" deve ficar apenas em `/favoritos/` (como complemento natural para leitores recorrentes) ou também aparecer de forma compacta na Home quando já houver histórico? | design/PO | Não | Exibir em `/favoritos/` como biblioteca pessoal do leitor, preservando a Home limpa sem layout shift (CLS). |
+| D02 | Em caso de seleção de texto no iOS Safari / Android Chrome onde a barra nativa do sistema aparece perto da seleção, qual posicionamento evita sobreposição (barra fixa na base vs acima da seleção)? | design | Não | Manter a barra flutuante com cálculo de coordenadas já existente em `poem.js` e adicionar a ação "Gerar imagem" (`#quote-card-btn`) ao lado de "Copiar trecho" e "Compartilhar". |
 
 ## Sugestões de casos de teste
 

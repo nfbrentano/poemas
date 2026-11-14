@@ -18,15 +18,21 @@ export default {
       { name: 'Sobre', url: canonicalAboutUrl }
     ];
 
+    let cachedAvatar = DEFAULT_AVATAR_URL;
+    try {
+      cachedAvatar = localStorage.getItem('profilePhotoURL') || DEFAULT_AVATAR_URL;
+    } catch (_) {}
+
     updateSEO({
       title: 'Sobre Natanael Fernando Gatti Brentano — Poeta',
       description: 'Biografia, influências e trajetória poética de Natanael Fernando Gatti Brentano.',
       url: canonicalAboutUrl,
       type: 'profile',
+      imageUrl: cachedAvatar,
       structuredData: [
-        profilePageSchema(),
+        profilePageSchema(cachedAvatar),
         breadcrumbSchema(breadcrumbItems),
-        faqPageSchema(getAboutFaq())
+        faqPageSchema(getAboutFaq({ collectionsCount: 7 }))
       ]
     });
 
@@ -34,11 +40,6 @@ export default {
     if (isPrerendered) {
       container.removeAttribute('data-prerendered');
     } else {
-      let cachedAvatar = DEFAULT_AVATAR_URL;
-      try {
-        cachedAvatar = localStorage.getItem('profilePhotoURL') || DEFAULT_AVATAR_URL;
-      } catch (_) {}
-
       container.innerHTML = unwrapSafeHTML(renderAboutMarkup({
         avatarUrl: cachedAvatar,
         baseUrl: import.meta.env.BASE_URL
