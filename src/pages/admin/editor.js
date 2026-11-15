@@ -1,6 +1,7 @@
 import { getDocById, insertDocs, updateDocById, uploadFile, getPublicFileUrl, callFunction, listDocs } from './data.js';
 import { navigateTo } from '../../router.js';
-import { escapeHtml, stripHtml, sanitizeUrl, unwrapSafeHTML } from '../../utils/html.js';
+import { escapeHtml, sanitizeUrl, unwrapSafeHTML } from '../../utils/html.js';
+import { formatPoemForAnimation, normalizePoemContent } from '../../utils/text-format.js';
 import { debounce } from './debounce.js';
 import {
   calculatePoemMetrics,
@@ -43,7 +44,7 @@ export async function renderEditor(container, id) {
 
     if (poemData) {
       poem = { ...poem, ...poemData };
-      poem.content = stripHtml(poem.content);
+      poem.content = normalizePoemContent(poem.content);
     }
     allCollections = allColsData || [];
     linkedCollectionIds = (poemRelationsData || []).map(r => r.collection_id).filter(Boolean);
@@ -247,7 +248,7 @@ export async function renderEditor(container, id) {
             <div id="preview-dedication" class="poem-dedication" style="${poem.dedication ? '' : 'display: none;'}">
               <em>${escapeHtml(poem.dedication || '')}</em>
             </div>
-            <div id="preview-content" class="poem-content">${escapeHtml(poem.content || '')}</div>
+            <div id="preview-content" class="poem-content">${formatPoemForAnimation(poem.content || '')}</div>
             <details id="preview-author-note" class="poem-author-note" style="${poem.author_note || poem.written_location || poem.written_at ? '' : 'display: none;'}">
               <summary class="poem-author-note-summary">
                 <span class="author-note-icon" aria-hidden="true">✍️</span>
@@ -361,7 +362,7 @@ export async function renderEditor(container, id) {
 
   // Preview Sync Logic
   const updatePreview = () => {
-    if (previewContent) previewContent.textContent = contentInput.value;
+    if (previewContent) previewContent.innerHTML = unwrapSafeHTML(formatPoemForAnimation(contentInput.value));
     updateMetrics();
   };
 

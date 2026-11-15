@@ -4,6 +4,7 @@ import { getFirestore, collection, getDocs, query, where, addDoc } from 'firebas
 import nodemailer from 'nodemailer';
 import { getPoemOfDay } from '../src/utils/poemOfDay.js';
 import { reportError } from '../src/utils/error-reporter.js';
+import { normalizePoemContent } from '../src/utils/text-format.js';
 
 export function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -16,7 +17,17 @@ export function escapeHtml(str) {
 }
 
 export function formatPoemContentHtml(content) {
-  const safeContent = escapeHtml(content || '');
+  const normalized = normalizePoemContent(content || '');
+  let safeContent = escapeHtml(normalized);
+  let prev;
+  do {
+    prev = safeContent;
+    safeContent = safeContent.replace(
+      /&lt;(strong|em)&gt;([\s\S]*?)&lt;\/\1&gt;/g,
+      '<$1>$2</$1>'
+    );
+  } while (safeContent !== prev);
+
   return safeContent
     .replace(/\r\n/g, '\n')
     .replace(/\n\n+/g, '</p><p style="margin: 1.5em 0; font-size: 18px; line-height: 2; color: #e2e2e2;">')

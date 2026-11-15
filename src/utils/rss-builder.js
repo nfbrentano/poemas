@@ -53,7 +53,28 @@ export function formatPoemHtmlForRss(content) {
   let html = content.trim();
   if (!html) return '';
 
-  if (!/<p|br|div/i.test(html)) {
+  let prev;
+  do {
+    prev = html;
+    html = html.replace(/<!--[\s\S]*?-->/g, '');
+  } while (html !== prev);
+
+  html = html.replace(/<pre\b[^>]*>([\s\S]*?)<\/pre\s*>/gi, (_, inner) => {
+    const trimmed = inner.trim();
+    if (!trimmed) return '';
+    if (/<(?:p|br|div)\b/i.test(trimmed)) {
+      return `<p>${trimmed}</p>`;
+    }
+    return trimmed
+      .split(/\n\s*\n/)
+      .map(stanza => `<p>${stanza.trim().replace(/\n/g, '<br />')}</p>`)
+      .join('\n');
+  });
+
+  html = html.trim();
+  if (!html) return '';
+
+  if (!/<(?:p|br|div)\b/i.test(html)) {
     // Plain text poem: convert double newlines to paragraphs and single newlines to br
     html = html
       .split(/\n\s*\n/)

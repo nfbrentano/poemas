@@ -37,6 +37,11 @@ describe('html utils', () => {
       expect(stripHtml(input)).toBe('Texto seguro');
     });
 
+    it('CT05: converte múltiplos blocos </pre> do WordPress em quebras de estrofe (CA05)', () => {
+      const input = '<!-- wp:verse --><pre class="wp-block-verse">Estrofe 1</pre><!-- /wp:verse --><!-- wp:verse --><pre class="wp-block-verse">Estrofe 2</pre><!-- /wp:verse -->';
+      expect(stripHtml(input)).toBe('Estrofe 1\n\nEstrofe 2');
+    });
+
     it('strips script and style tags with whitespace or attributes in closing tags (CodeQL #45)', () => {
       const input = '<div><script>alert(1)</script >Texto seguro<script>alert(2)</script foo="bar"><style>body{color:red}</style ></div>';
       expect(stripHtml(input)).toBe('Texto seguro');

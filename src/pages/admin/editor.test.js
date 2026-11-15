@@ -448,4 +448,33 @@ Verso doze da terceira estrofe`;
       expect(slugError.textContent).toContain('Poema Existente');
     });
   });
+
+  describe('CT08 & CA08: Normalização de poemas do WordPress e Preview formatado no editor', () => {
+    it('remove blocos Gutenberg/wrappers preservando <strong> e renderiza preview formatado', async () => {
+      getDocByIdMock.mockResolvedValueOnce({
+        data: {
+          id: 'poem-wp-1',
+          title: 'Poema do WordPress',
+          slug: 'poema-do-wordpress',
+          content: '<!-- wp:verse {"textAlign":"center"} -->\n<pre class="wp-block-verse">Linha 1<br><strong>Linha 2</strong></pre>\n<!-- /wp:verse -->',
+          status: 'published',
+          tags: ['Amor']
+        },
+        error: null
+      });
+
+      await renderEditor(container, 'poem-wp-1');
+      await tick();
+
+      const contentInput = container.querySelector('#poem-content-input');
+      expect(contentInput.value).toBe('Linha 1\n<strong>Linha 2</strong>');
+
+      const previewContent = container.querySelector('#preview-content');
+      expect(previewContent.querySelectorAll('.stanza.stagger-reveal').length).toBe(1);
+      expect(previewContent.querySelectorAll('.line-reveal').length).toBe(2);
+      expect(previewContent.querySelector('strong')?.textContent).toBe('Linha 2');
+      expect(previewContent.textContent).not.toContain('wp:verse');
+      expect(previewContent.textContent).not.toContain('<pre');
+    });
+  });
 });

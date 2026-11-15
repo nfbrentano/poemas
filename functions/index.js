@@ -20,6 +20,8 @@ const siteUrl = "https://nfgbrentano.art.br";
 
 const {
   escapeHtml,
+  normalizeNewsletterPoemContent,
+  formatPoemPlainText,
   formatPoemContentHtml,
   isValidEmail,
   handleSubscribeLogic,
@@ -27,6 +29,8 @@ const {
 } = require("./newsletter-helpers");
 
 exports.escapeHtml = escapeHtml;
+exports.normalizeNewsletterPoemContent = normalizeNewsletterPoemContent;
+exports.formatPoemPlainText = formatPoemPlainText;
 exports.formatPoemContentHtml = formatPoemContentHtml;
 exports.isValidEmail = isValidEmail;
 exports.handleSubscribeLogic = handleSubscribeLogic;
@@ -220,7 +224,7 @@ exports.sendNewsletter = onCall(
               to: sub.email,
               subject: `${poem.title} — novo poema`,
               html: getHtmlEmail(sub.unsubscribe_token),
-              text: `${poem.title}\n\n${poem.content}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${safeToken}`,
+              text: `${poem.title}\n\n${formatPoemPlainText(poem.content)}\n\n---\nLeia no site: ${poemUrl}\nCancelar inscrição: ${siteUrl}/unsubscribe?token=${safeToken}`,
               headers: {
                 "List-Unsubscribe": `<${siteUrl}/unsubscribe?token=${safeToken}>, <mailto:${GMAIL_USER}?subject=Unsubscribe%20${safeToken}>`,
                 "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",

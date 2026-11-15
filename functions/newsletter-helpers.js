@@ -10,8 +10,68 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
+function normalizeNewsletterPoemContent(content) {
+  if (!content || typeof content !== "string") return "";
+
+  let text = content.replace(/\r\n?/g, "\n");
+  let prev;
+  do {
+    prev = text;
+    text = text.replace(/<!--[\s\S]*?-->/g, "");
+  } while (text !== prev);
+
+  do {
+    prev = text;
+    text = text.replace(/<(strong|em)\b[^>]*>([\s\S]*?)<\/\1\s*>/gi, (_, rawTag, inner) => {
+      const tag = rawTag.toLowerCase();
+      const withNewlines = inner.replace(/<br\s*\/?>/gi, "\n");
+      if (!withNewlines.includes("\n")) {
+        const trimmed = withNewlines.trim();
+        if (!trimmed) return withNewlines.length > 0 ? " " : "";
+        const leading = withNewlines.match(/^\s*/)[0];
+        const trailing = withNewlines.match(/\s*$/)[0];
+        return `${leading}<${tag}>${trimmed}</${tag}>${trailing}`;
+      }
+      return withNewlines
+        .split("\n")
+        .map((part) => {
+          const trimmed = part.trim();
+          return trimmed ? `<${tag}>${trimmed}</${tag}>` : "";
+        })
+        .join("\n");
+    });
+  } while (text !== prev);
+
+  text = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/?(?:pre|p|div)\b[^>]*>/gi, "\n\n")
+    .replace(/<\/?(?:span|a)\b[^>]*>/gi, "");
+
+  return text
+    .split("\n")
+    .map((line) => line.replace(/[ \t]+$/g, ""))
+    .join("\n")
+    .replace(/\n\s*\n/g, "\n\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function formatPoemPlainText(content) {
+  return normalizeNewsletterPoemContent(content).replace(/<\/?(?:strong|em)>/gi, "");
+}
+
 function formatPoemContentHtml(content) {
-  const safeContent = escapeHtml(content || "");
+  const normalized = normalizeNewsletterPoemContent(content || "");
+  let safeContent = escapeHtml(normalized);
+  let prev;
+  do {
+    prev = safeContent;
+    safeContent = safeContent.replace(
+      /&lt;(strong|em)&gt;([\s\S]*?)&lt;\/\1&gt;/g,
+      "<$1>$2</$1>"
+    );
+  } while (safeContent !== prev);
+
   return safeContent
     .replace(/\r\n/g, "\n")
     .replace(/\n\n+/g, '</p><p style="margin: 1.5em 0; font-size: 18px; line-height: 2; color: #e2e2e2;">')
@@ -151,6 +211,8 @@ async function handleUnsubscribeLogic({ dbInstance, token }) {
 
 module.exports = {
   escapeHtml,
+  normalizeNewsletterPoemContent,
+  formatPoemPlainText,
   formatPoemContentHtml,
   isValidEmail,
   handleSubscribeLogic,

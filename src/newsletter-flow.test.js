@@ -254,6 +254,30 @@ describe('Fluxo Completo de Newsletter e Unsubscribe (SDD 2026-11-13)', () => {
       expect(emailHtml).not.toContain('<script>bad()</script>');
     });
 
+    it('CT06 & CA06: limpa blocos Gutenberg e preserva <br> e <strong> sem XSS em newsletter e e-mail diário', () => {
+      const wpContent = '<!-- wp:verse --><pre class="wp-block-verse">Verso 1<br><strong>Verso 2</strong></pre><!-- /wp:verse --><!-- wp:paragraph --><p>Estrofe 2 <script>evil()</script></p><!-- /wp:paragraph -->';
+
+      const fnHtml = fnFormatPoemContentHtml(wpContent);
+      expect(fnHtml).not.toContain('&lt;!--');
+      expect(fnHtml).not.toContain('&lt;pre');
+      expect(fnHtml).not.toContain('&lt;p');
+      expect(fnHtml).toContain('Verso 1<br><strong>Verso 2</strong>');
+      expect(fnHtml).toContain('</p><p style=');
+      expect(fnHtml).toContain('&lt;script&gt;evil()&lt;/script&gt;');
+
+      const dailyHtml = buildDailyPoemEmailHtml({
+        poem: {
+          title: 'Poema Legado',
+          slug: 'poema-legado',
+          content: wpContent
+        }
+      });
+      expect(dailyHtml).not.toContain('&lt;!-- wp:verse');
+      expect(dailyHtml).not.toContain('&lt;pre');
+      expect(dailyHtml).toContain('Verso 1<br><strong>Verso 2</strong>');
+      expect(dailyHtml).toContain('&lt;script&gt;evil()&lt;/script&gt;');
+    });
+
     it('getDailyPoemRecipients suporta DAILY_POEM_RECIPIENTS com fallback seguro', () => {
       const originalEnv = process.env.DAILY_POEM_RECIPIENTS;
       delete process.env.DAILY_POEM_RECIPIENTS;

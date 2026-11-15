@@ -31,7 +31,8 @@ import {
   generateAllSitemaps
 } from './utils/sitemap-builder.js';
 import {
-  buildRssFeed
+  buildRssFeed,
+  formatPoemHtmlForRss
 } from './utils/rss-builder.js';
 import { migrateUpdatedAt } from '../scripts/migrate-updated-at.js';
 
@@ -248,6 +249,15 @@ describe('{SEO} Sitemap e RSS: lastmod real, datas de atualização e feed compl
       const parsed = parser.parse(feedXml);
       const items = parsed.rss.channel.item;
       expect(items.length).toBe(50);
+    });
+
+    it('CT07 & CA07: formatPoemHtmlForRss converte bloco Gutenberg <pre> com \\n em <p> e <br>', () => {
+      const wpPrePoem = '<!-- wp:verse {"textAlign":"center"} -->\n<pre class="wp-block-verse">Verso 1\nVerso 2\n\nVerso 3</pre>\n<!-- /wp:verse -->';
+      const rssHtml = formatPoemHtmlForRss(wpPrePoem);
+
+      expect(rssHtml).not.toContain('wp:verse');
+      expect(rssHtml).not.toContain('<pre');
+      expect(rssHtml).toBe('<p>Verso 1<br>Verso 2</p>\n<p>Verso 3</p>');
     });
   });
 

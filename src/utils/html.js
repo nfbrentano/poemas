@@ -42,6 +42,7 @@ export function stripHtml(html) {
   // Convert block formatting to preserved line breaks
   result = result
     .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/pre\s*>/gi, '\n\n')
     .replace(/<\/p\s*>/gi, '\n\n')
     .replace(/<\/div\s*>/gi, '\n');
 
@@ -51,7 +52,7 @@ export function stripHtml(html) {
     result = result.replace(/<[^>]*>/g, '');
   } while (result !== prev);
 
-  return result.trim();
+  return result.replace(/\n{3,}/g, '\n\n').trim();
 }
 
 /**
