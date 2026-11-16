@@ -247,7 +247,11 @@ async function main() {
       console.warn('[Publish Scheduled] Não foi possível carregar callable sendNewsletter:', fnErr.message);
     }
   } else {
-    console.warn('[Publish Scheduled] Aviso: FIREBASE_ADMIN_EMAIL ou FIREBASE_ADMIN_PASSWORD ausentes. Tentando sem auth...');
+    console.warn('[Publish Scheduled] FIREBASE_ADMIN_EMAIL ou FIREBASE_ADMIN_PASSWORD ausentes no ambiente. Promoção automática pausada até configuração das credenciais admin.');
+    if (process.env.GITHUB_OUTPUT) {
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, 'published_count=0\n');
+    }
+    return;
   }
 
   const result = await publishDuePoems({ db, sendNewsletterFn });

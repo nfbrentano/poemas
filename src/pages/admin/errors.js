@@ -42,6 +42,116 @@ export function formatErrorDiagnosticMarkdown(log = {}) {
   ].join('\n');
 }
 
+/**
+ * Formata um relatório consolidado em Markdown de múltiplos registros de erro para envio à IA / Gemini (RF01 / CA01).
+ * @param {Array<Object>} logs
+ * @returns {string}
+ */
+export function formatBulkErrorsMarkdown(logs = []) {
+  const openLogs = logs.filter(l => (l.status || 'open') === 'open');
+  const ids = openLogs.map(l => l.id).filter(Boolean);
+  const nowIso = new Date().toISOString();
+
+  const lines = [
+    '# Relatório de Observabilidade de Erros — Escrivaninha',
+    `- **Data de Exportação:** ${nowIso}`,
+    `- **Total de Erros em Aberto:** ${openLogs.length}`,
+    '',
+    '> **Instruções para o Gemini / IA:**',
+    '> 1. Analise os diagnósticos abaixo e explique a causa raiz de cada falha.',
+    '> 2. Proponha o plano de correção no código-fonte.',
+    '> 3. Ao concluir, forneça um bloco JSON com a lista de IDs tratados neste formato:',
+    '> ```json',
+    `> { "resolved_ids": ${JSON.stringify(ids)} }`,
+    '> ```',
+    '> O usuário poderá copiar esse JSON e colar na opção "Resolver em Lote" no painel administrativo para marcar todos os erros como resolvidos.',
+    '',
+    `## Lista de IDs em Aberto (${ids.length})`,
+    '```json',
+    JSON.stringify(ids, null, 2),
+    '```',
+    '',
+    '---',
+    '## Diagnósticos Detalhados',
+    ''
+  ];
+
+  if (openLogs.length === 0) {
+    lines.push('Nenhum erro em aberto no momento.');
+    return lines.join('\n');
+  }
+
+  openLogs.forEach((log, index) => {
+    lines.push(`### [${index + 1}/${openLogs.length}] Erro ID: \`${log.id || 'N/A'}\``);
+    lines.push(formatErrorDiagnosticMarkdown(log));
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  });
+
+  return lines.join('\n');
+}
+
+/**
+ * Interpreta uma entrada em texto bruto (JSON array, JSON object com resolved_ids/ids, ou lista de IDs) e devolve array de IDs únicos (RF04 / CA03).
+ * @param {string} rawInput
+ * @returns {Array<string>}
+ */
+export function parseErrorIdsFromInput(rawInput = '') {
+  if (!rawInput || typeof rawInput !== 'string') return [];
+  const trimmed = rawInput.trim();
+  if (!trimmed) return [];
+
+  // Tenta analisar como JSON
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return Array.from(new Set(parsed.map(String).map(s => s.trim()).filter(Boolean)));
+      }
+      if (parsed && typeof parsed === 'object') {
+        const candidateList = parsed.resolved_ids || parsed.ids || parsed.error_ids;
+        if (Array.isArray(candidateList)) {
+          return Array.from(new Set(candidateList.map(String).map(s => s.trim()).filter(Boolean)));
+        }
+      }
+    } catch (_) {}
+  }
+
+  // Tenta extrair IDs alfanuméricos com tamanho típico de ID do Firestore (ex: 12-40 caracteres)
+  const idMatches = trimmed.match(/[a-zA-Z0-9_-]{12,40}/g);
+  if (idMatches && idMatches.length > 0) {
+    return Array.from(new Set(idMatches.map(s => s.trim()).filter(Boolean)));
+  }
+
+  // Fallback por linha ou vírgula
+  return Array.from(new Set(
+    trimmed
+      .split(/[\n,\r\t]+/)
+      .map(s => s.trim().replace(/^['"`]|['"`]$/g, ''))
+      .filter(Boolean)
+  ));
+}
+
+function downloadTextFile(filename, content, mimeType = 'text/plain') {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  try {
+    const blob = new Blob([content], { type: mimeType });
+    if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => {
+        if (typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(url);
+      }, 1000);
+    }
+  } catch (_) {}
+}
+
 function normalizeTimestamp(val) {
   if (!val) return '';
   if (typeof val === 'string') return val;
@@ -195,9 +305,20 @@ export async function renderErrorLogs(container) {
             <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 400; margin: 0 0 4px 0; color: var(--text-primary);">Observabilidade de Erros</h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Monitore falhas do front-end e back-end para atuar em melhorias e ajustes futuros.</p>
           </div>
-          <button id="clear-resolved-errors-btn" type="button" class="btn-secondary" style="padding: 0.55rem 1rem; border: 1px solid var(--border-strong); background: var(--bg-elevated); color: var(--text-secondary); font-size: 0.85rem; border-radius: 4px; cursor: pointer;">
-            Limpar resolvidos / ignorados
-          </button>
+          <div style="display: flex; gap: var(--space-xs); align-items: center; flex-wrap: wrap;">
+            <button id="export-gemini-btn" type="button" class="btn-primary" style="padding: 0.5rem 0.9rem; background: var(--accent-subtle); color: var(--bg-primary); border: none; font-size: 0.82rem; border-radius: 4px; cursor: pointer; font-weight: 500;" title="Copia o relatório de erros em aberto para o clipboard e baixa arquivo .md formatado para o Gemini">
+              Exportar para IA (Gemini)
+            </button>
+            <button id="export-json-btn" type="button" class="btn-secondary" style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-strong); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.82rem; border-radius: 4px; cursor: pointer;" title="Baixa um arquivo JSON com todos os erros em aberto">
+              Baixar JSON
+            </button>
+            <button id="open-bulk-resolve-modal-btn" type="button" class="btn-secondary" style="padding: 0.5rem 0.85rem; border: 1px solid var(--success); background: transparent; color: var(--success); font-size: 0.82rem; border-radius: 4px; cursor: pointer; font-weight: 500;" title="Abre caixa para colar IDs resolvidos pelo Gemini ou resolver em massa">
+              Resolver em Lote
+            </button>
+            <button id="clear-resolved-errors-btn" type="button" class="btn-secondary" style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-strong); background: var(--bg-elevated); color: var(--text-secondary); font-size: 0.82rem; border-radius: 4px; cursor: pointer;">
+              Limpar resolvidos
+            </button>
+          </div>
         </div>
 
         <!-- KPIs Row -->
@@ -267,11 +388,16 @@ export async function renderErrorLogs(container) {
         </div>
 
         <!-- Contador de Resultados -->
-        <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
+        <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; padding: 0 4px; flex-wrap: wrap; gap: 8px;">
           <div>
             Mostrando <strong id="error-results-count" style="color: var(--text-primary);">0</strong> de <strong id="error-total-count">${logs.length}</strong> registros
           </div>
-          <span id="copy-feedback-toast" style="color: var(--success); font-size: 0.8rem; display: none;">✔ Diagnóstico copiado para a área de transferência!</span>
+          <div style="display: flex; gap: var(--space-xs); align-items: center; flex-wrap: wrap;">
+            <button id="quick-resolve-all-open-btn" type="button" style="font-size: 0.8rem; padding: 0.25rem 0.6rem; border: 1px solid var(--success); background: transparent; color: var(--success); border-radius: 4px; cursor: pointer;" title="Marca todos os erros com status 'open' como 'resolved'">
+              ✔ Marcar todos em aberto como resolvidos
+            </button>
+            <span id="copy-feedback-toast" style="color: var(--success); font-size: 0.8rem; display: none;">✔ Operação realizada com sucesso!</span>
+          </div>
         </div>
 
         <!-- Tabela Responsiva (modern-web-guidance: responsive-table) -->
@@ -335,6 +461,29 @@ export async function renderErrorLogs(container) {
               <button type="button" id="modal-delete-btn" class="btn-secondary" style="padding: 0.45rem 0.9rem; border: 1px solid var(--error); background: transparent; color: var(--error); border-radius: 4px; font-size: 0.82rem; cursor: pointer;">Excluir</button>
             </div>
             <button type="button" id="close-error-dialog-btn" class="btn-secondary" style="padding: 0.45rem 0.9rem; border: none; background: transparent; color: var(--text-secondary); font-size: 0.85rem; cursor: pointer;">Fechar</button>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- Dialog de Resolução em Lote (RF04 / CA03) -->
+      <dialog id="bulk-resolve-dialog" closedby="any" aria-labelledby="bulk-resolve-title" style="background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: 6px; padding: var(--space-lg); max-width: 580px; width: 92vw; max-height: 85vh; overflow-y: auto;">
+        <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-xs);">
+            <h3 id="bulk-resolve-title" style="font-family: var(--font-display); font-size: 1.4rem; color: var(--text-primary); margin: 0;">Resolver Erros em Lote</h3>
+            <button type="button" id="close-bulk-resolve-dialog-btn" class="btn-secondary" style="border: none; background: transparent; color: var(--text-secondary); font-size: 1.2rem; cursor: pointer; padding: 0;" aria-label="Fechar">&times;</button>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+            Cole abaixo a resposta/JSON gerado pelo <strong>Gemini</strong> ou uma lista de IDs de erros para marcá-los como <strong>resolvidos</strong> de uma só vez:
+          </p>
+
+          <div>
+            <textarea id="bulk-resolve-textarea" placeholder='Cole aqui, ex:&#10;{ "resolved_ids": ["id1", "id2"] }&#10;ou apenas&#10;["id1", "id2"]&#10;ou um ID por linha' style="width: 100%; min-height: 140px; padding: var(--space-sm); background: var(--bg-primary); border: 1px solid var(--border-strong); border-radius: 4px; font-family: monospace; font-size: 0.82rem; color: var(--text-primary); box-sizing: border-box;"></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-xs); border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm);">
+            <button type="button" id="submit-bulk-resolve-btn" class="btn-primary" style="padding: 0.45rem 1rem; background: var(--success); color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; font-weight: 500;">Marcar IDs como Resolvidos</button>
+            <span id="bulk-resolve-status-msg" style="font-size: 0.82rem; color: var(--text-muted);"></span>
           </div>
         </div>
       </dialog>
@@ -655,6 +804,148 @@ export async function renderErrorLogs(container) {
       logs = logs.filter(l => !removedIds.has(l.id));
       refreshKpisUI();
       applyFilters();
+    });
+
+    // Dialog de resolução em lote (RF04 / CA03)
+    const bulkResolveDialog = container.querySelector('#bulk-resolve-dialog');
+    const openBulkResolveBtn = container.querySelector('#open-bulk-resolve-modal-btn');
+    const closeBulkResolveBtn = container.querySelector('#close-bulk-resolve-dialog-btn');
+    const bulkTextarea = container.querySelector('#bulk-resolve-textarea');
+    const bulkSubmitBtn = container.querySelector('#submit-bulk-resolve-btn');
+    const bulkStatusMsg = container.querySelector('#bulk-resolve-status-msg');
+
+    const openBulkModal = () => {
+      if (!bulkResolveDialog) return;
+      if (bulkTextarea) bulkTextarea.value = '';
+      if (bulkStatusMsg) bulkStatusMsg.textContent = '';
+      if (typeof bulkResolveDialog.showModal === 'function') {
+        try { bulkResolveDialog.showModal(); } catch { bulkResolveDialog.setAttribute('open', ''); }
+      } else {
+        bulkResolveDialog.setAttribute('open', '');
+      }
+    };
+
+    const closeBulkModal = () => {
+      if (!bulkResolveDialog) return;
+      if (typeof bulkResolveDialog.close === 'function' && bulkResolveDialog.open) {
+        bulkResolveDialog.close();
+      } else {
+        bulkResolveDialog.removeAttribute('open');
+      }
+    };
+
+    openBulkResolveBtn?.addEventListener('click', openBulkModal);
+    closeBulkResolveBtn?.addEventListener('click', closeBulkModal);
+
+    if (bulkResolveDialog && (typeof HTMLDialogElement === 'undefined' || !('closedBy' in HTMLDialogElement.prototype))) {
+      bulkResolveDialog.addEventListener('click', (event) => {
+        if (event.target !== bulkResolveDialog) return;
+        const rect = bulkResolveDialog.getBoundingClientRect();
+        const isDialogContent = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
+        if (isDialogContent) return;
+        closeBulkModal();
+      });
+    }
+
+    const showToast = (message) => {
+      if (!copyFeedbackEl) return;
+      copyFeedbackEl.textContent = message;
+      copyFeedbackEl.style.display = 'inline';
+      setTimeout(() => {
+        copyFeedbackEl.style.display = 'none';
+      }, 3500);
+    };
+
+    // Exportar para IA / Gemini (RF01 / CA01)
+    const exportGeminiBtn = container.querySelector('#export-gemini-btn');
+    exportGeminiBtn?.addEventListener('click', async () => {
+      const markdown = formatBulkErrorsMarkdown(logs);
+      try {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          await navigator.clipboard.writeText(markdown);
+        }
+      } catch (_) {}
+      const today = new Date().toISOString().slice(0, 10);
+      downloadTextFile(`erros-em-aberto-${today}.md`, markdown, 'text/markdown;charset=utf-8');
+      showToast('✔ Relatório copiado e baixado para análise no Gemini!');
+    });
+
+    // Baixar JSON de erros em aberto (RF03 / CA02)
+    const exportJsonBtn = container.querySelector('#export-json-btn');
+    exportJsonBtn?.addEventListener('click', () => {
+      const openLogs = logs.filter(l => (l.status || 'open') === 'open');
+      const jsonStr = JSON.stringify(openLogs, null, 2);
+      const today = new Date().toISOString().slice(0, 10);
+      downloadTextFile(`erros-em-aberto-${today}.json`, jsonStr, 'application/json;charset=utf-8');
+      showToast('✔ Arquivo JSON baixado com sucesso!');
+    });
+
+    // Resolver erros em lote via modal com lista de IDs ou JSON (RF04 / CA03)
+    bulkSubmitBtn?.addEventListener('click', async () => {
+      const rawText = bulkTextarea?.value || '';
+      const ids = parseErrorIdsFromInput(rawText);
+      if (ids.length === 0) {
+        if (bulkStatusMsg) bulkStatusMsg.textContent = 'Nenhum ID válido informado.';
+        return;
+      }
+
+      bulkSubmitBtn.disabled = true;
+      bulkSubmitBtn.textContent = 'Processando...';
+
+      let resolvedCount = 0;
+      for (const id of ids) {
+        const { error } = await updateDocById('error_logs', id, { status: 'resolved' });
+        if (!error) {
+          resolvedCount++;
+          const item = logs.find(l => l.id === id);
+          if (item) item.status = 'resolved';
+        }
+      }
+
+      bulkSubmitBtn.disabled = false;
+      bulkSubmitBtn.textContent = 'Marcar IDs como Resolvidos';
+      closeBulkModal();
+      refreshKpisUI();
+      applyFilters();
+
+      showToast(`✔ ${resolvedCount} erro(s) marcado(s) como resolvido(s)!`);
+    });
+
+    // Resolução rápida de todos os erros em aberto (RF05 / CA04)
+    const quickResolveAllBtn = container.querySelector('#quick-resolve-all-open-btn');
+    quickResolveAllBtn?.addEventListener('click', async () => {
+      const openItems = logs.filter(l => (l.status || 'open') === 'open');
+      if (openItems.length === 0) {
+        alert('Nenhum erro em aberto no momento.');
+        return;
+      }
+
+      const proceed = confirm(`Deseja marcar todos os ${openItems.length} erro(s) em aberto como resolvidos?`);
+      if (!proceed) return;
+
+      quickResolveAllBtn.disabled = true;
+      quickResolveAllBtn.textContent = 'Resolvendo...';
+
+      let resolvedCount = 0;
+      for (const item of openItems) {
+        const { error } = await updateDocById('error_logs', item.id, { status: 'resolved' });
+        if (!error) {
+          resolvedCount++;
+          item.status = 'resolved';
+        }
+      }
+
+      quickResolveAllBtn.disabled = false;
+      quickResolveAllBtn.textContent = '✔ Marcar todos em aberto como resolvidos';
+      refreshKpisUI();
+      applyFilters();
+
+      showToast(`✔ Todos os ${resolvedCount} erros em aberto foram marcados como resolvidos!`);
     });
 
     applyFilters();

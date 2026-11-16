@@ -17,7 +17,12 @@ vi.mock('./pages/admin/data.js', () => ({
   deleteDocById: vi.fn()
 }));
 
-import { renderErrorLogs, formatErrorDiagnosticMarkdown } from './pages/admin/errors.js';
+import {
+  renderErrorLogs,
+  formatErrorDiagnosticMarkdown,
+  formatBulkErrorsMarkdown,
+  parseErrorIdsFromInput
+} from './pages/admin/errors.js';
 import { renderDashboard } from './pages/admin/dashboard.js';
 import { listDocs, updateDocById, deleteDocById } from './pages/admin/data.js';
 
@@ -467,6 +472,123 @@ describe('Observabilidade de Erros Front-end e Back-end (SDD 2026-11-11)', () =>
       expect(clean).not.toContain('minhasenha123');
       expect(clean).toContain('Bearer [REDACTED]');
       expect(clean).not.toContain('eyJhbGciOiJIUzI1NiJ9');
+    });
+  });
+
+  describe('Exportação e Resolução em Lote de Erros (SDD 2026-11-16)', () => {
+    const mockLogs = [
+      {
+        id: 'err-bulk-1',
+        message: 'Falha 1',
+        source: 'frontend',
+        category: 'runtime',
+        severity: 'error',
+        status: 'open',
+        route_or_task: '/poema/a',
+        fingerprint: 'fp-1',
+        created_at: '2026-11-16T10:00:00.000Z'
+      },
+      {
+        id: 'err-bulk-2',
+        message: 'Falha 2',
+        source: 'backend:scripts',
+        category: 'script',
+        severity: 'critical',
+        status: 'open',
+        route_or_task: 'scripts/task.js',
+        fingerprint: 'fp-2',
+        created_at: '2026-11-16T11:00:00.000Z'
+      },
+      {
+        id: 'err-bulk-resolved',
+        message: 'Falha já tratada',
+        source: 'frontend',
+        category: 'router',
+        severity: 'warning',
+        status: 'resolved',
+        route_or_task: '/sobre',
+        fingerprint: 'fp-3',
+        created_at: '2026-11-16T09:00:00.000Z'
+      }
+    ];
+
+    it('CT01 & CA01: formatBulkErrorsMarkdown gera relatório consolidado apenas com erros em aberto e bloco de IDs', () => {
+      const md = formatBulkErrorsMarkdown(mockLogs);
+      expect(md).toContain('# Relatório de Observabilidade de Erros — Escrivaninha');
+      expect(md).toContain('Total de Erros em Aberto:** 2');
+      expect(md).toContain('err-bulk-1');
+      expect(md).toContain('err-bulk-2');
+      expect(md).not.toContain('err-bulk-resolved');
+      expect(md).toContain('Instruções para o Gemini / IA:');
+      expect(md).toContain('{ "resolved_ids":');
+    });
+
+    it('CT02 & CA03: parseErrorIdsFromInput suporta JSON array, objeto resolved_ids e texto livre', () => {
+      expect(parseErrorIdsFromInput('["id-1", "id-2"]')).toEqual(['id-1', 'id-2']);
+      expect(parseErrorIdsFromInput('{"resolved_ids": ["id-3", "id-4"]}')).toEqual(['id-3', 'id-4']);
+      expect(parseErrorIdsFromInput('{"ids": ["id-5"]}')).toEqual(['id-5']);
+      expect(parseErrorIdsFromInput('id-alphanumeric-1\nid-alphanumeric-2')).toEqual(['id-alphanumeric-1', 'id-alphanumeric-2']);
+      expect(parseErrorIdsFromInput('id-token-1, id-token-2')).toEqual(['id-token-1', 'id-token-2']);
+      expect(parseErrorIdsFromInput('')).toEqual([]);
+    });
+
+    it('CT03 & CA03: resolução em lote por IDs no modal atualiza Firestore e KPIs', async () => {
+      listDocs.mockResolvedValueOnce({ data: mockLogs.map(l => ({ ...l })), error: null });
+      updateDocById.mockResolvedValue({ error: null });
+
+      const container = document.createElement('div');
+      await renderErrorLogs(container);
+
+      const openModalBtn = container.querySelector('#open-bulk-resolve-modal-btn');
+      openModalBtn.click();
+
+      const textarea = container.querySelector('#bulk-resolve-textarea');
+      textarea.value = JSON.stringify(['err-bulk-1', 'err-bulk-2']);
+
+      const submitBtn = container.querySelector('#submit-bulk-resolve-btn');
+      submitBtn.click();
+      await new Promise(r => setTimeout(r, 20));
+
+      expect(updateDocById).toHaveBeenCalledWith('error_logs', 'err-bulk-1', { status: 'resolved' });
+      expect(updateDocById).toHaveBeenCalledWith('error_logs', 'err-bulk-2', { status: 'resolved' });
+      expect(container.querySelector('#kpi-open-errors').textContent).toBe('0');
+    });
+
+    it('CT04 & CA04: marcação rápida de todos os erros em aberto como resolvidos', async () => {
+      listDocs.mockResolvedValueOnce({ data: mockLogs.map(l => ({ ...l })), error: null });
+      updateDocById.mockResolvedValue({ error: null });
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+      const container = document.createElement('div');
+      await renderErrorLogs(container);
+
+      const quickBtn = container.querySelector('#quick-resolve-all-open-btn');
+      quickBtn.click();
+      await new Promise(r => setTimeout(r, 20));
+
+      expect(updateDocById).toHaveBeenCalledWith('error_logs', 'err-bulk-1', { status: 'resolved' });
+      expect(updateDocById).toHaveBeenCalledWith('error_logs', 'err-bulk-2', { status: 'resolved' });
+      expect(container.querySelector('#kpi-open-errors').textContent).toBe('0');
+    });
+
+    it('CT05 & CA01 & CA02: botões de exportação disparam cópia no clipboard e download', async () => {
+      listDocs.mockResolvedValueOnce({ data: mockLogs.map(l => ({ ...l })), error: null });
+      const writeTextMock = vi.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, { clipboard: { writeText: writeTextMock } });
+
+      const container = document.createElement('div');
+      await renderErrorLogs(container);
+
+      const geminiBtn = container.querySelector('#export-gemini-btn');
+      geminiBtn.click();
+      await new Promise(r => setTimeout(r, 10));
+
+      expect(writeTextMock).toHaveBeenCalledTimes(1);
+      expect(writeTextMock.mock.calls[0][0]).toContain('# Relatório de Observabilidade de Erros');
+
+      const jsonBtn = container.querySelector('#export-json-btn');
+      jsonBtn.click();
+      expect(container.querySelector('#copy-feedback-toast')).not.toBeNull();
     });
   });
 });
