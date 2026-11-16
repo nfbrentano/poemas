@@ -302,6 +302,12 @@ export default {
     }
 
     const total      = views.length;
+
+    if (days === 30 && total > 0 && !(typeof process !== 'undefined' && process.env?.VITEST)) {
+      import('./admin/most-read-sync.js')
+        .then(({ syncMostReadSetting }) => syncMostReadSetting({ recentViews: views }))
+        .catch(() => {});
+    }
     
     // Calculate new engagement metrics
     const ipCounts = {};

@@ -33,6 +33,8 @@ import { getSentimentIntro, getSentimentName } from '../src/data/sentiments.js';
 import { loadFonts, generatePoemOgImage, generateCollectionOgImage, generateDefaultOgImage } from './generate-og-images.js';
 import { loadFallbackPoems } from './fallback-data.js';
 import { sortPoemsByCollectionRelations } from '../src/utils/collection-order.js';
+import { renderMostReadMarkup } from '../src/utils/most-read.js';
+import { loadMostReadForBuild } from './most-read-loader.js';
 
 
 // Note: Run this with node --env-file=.env.local scripts/prerender.js
@@ -203,6 +205,12 @@ button { cursor: pointer; font-family: var(--font-ui); font-size: var(--btn-font
 .home-title { font-family: var(--font-display); font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 300; color: var(--text-primary); margin-bottom: var(--space-xs); letter-spacing: -0.01em; line-height: 1.25; }
 .home-description { font-family: var(--font-poem); font-size: 1rem; color: var(--text-secondary); line-height: 1.7; max-width: 580px; margin: 0 auto; }
 .home-description a { color: var(--accent-subtle); text-decoration: underline; text-underline-offset: 3px; }
+.most-read { max-width: var(--container-main); margin: 0 auto var(--space-lg) auto; padding: var(--space-lg) 0; border-bottom: 1px solid var(--border-subtle); width: 100%; }
+.most-read-heading { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: var(--space-md); }
+.most-read-list { list-style: none; display: grid; gap: 2px; max-width: 680px; margin: 0 auto; }
+.most-read-link { display: flex; align-items: baseline; gap: var(--space-md); min-block-size: 44px; padding: var(--space-xs) var(--space-sm); text-decoration: none; color: inherit; }
+.most-read-rank { font-family: var(--font-ui); font-size: 0.85rem; color: var(--accent-subtle); font-variant-numeric: tabular-nums; flex-shrink: 0; min-inline-size: 1.25rem; }
+.most-read-title { font-family: var(--font-display); font-size: clamp(1.1rem, 1rem + 1vw, 1.35rem); color: var(--text-primary); min-inline-size: 0; }
 @media (max-width: 768px) {
   .site-header { display: none !important; }
   .mobile-brand { display: block; text-align: center; padding: var(--space-md) 0; font-family: var(--font-display); font-size: 1.2rem; }
@@ -231,8 +239,9 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
   });
 }
 
-export function renderHomeMarkup({ poems, podPoem, allCollections = [], qualifyingSentiments = [] }) {
+export function renderHomeMarkup({ poems, podPoem, allCollections = [], qualifyingSentiments = [], mostReadPoems = [] }) {
   const podExcerpt = podPoem ? getExcerpt(podPoem, 160) : '';
+  const mostReadHtml = renderMostReadMarkup(mostReadPoems, { baseUrl: '/' });
   const displayPoems = podPoem ? poems.filter(p => p.id !== podPoem.id) : poems;
   const recentPoems = displayPoems.slice(0, 20);
   const featuredPoem = recentPoems[0];
@@ -320,6 +329,8 @@ export function renderHomeMarkup({ poems, podPoem, allCollections = [], qualifyi
     </section>
     ` : ''}
 
+    ${mostReadHtml}
+
     <section class="poems-list fade-in" style="padding-top: var(--space-xl);">
       <div class="discovery-filters" style="margin-bottom: var(--space-xl);">
         <div class="filter-section">
@@ -381,10 +392,12 @@ async function prerender() {
       process.exit(1);
     }
 
+    let firebaseApp = null;
     let db = null;
     let poems = [];
     let allCollections = [];
     let collectionPoems = [];
+    let usedFirestorePoems = false;
 
     if (!firebaseConfig.apiKey) {
       console.warn('[Prerender] Firebase apiKey missing, using local fallback poems.');
@@ -392,8 +405,8 @@ async function prerender() {
       allCollections = enrichCollectionsWithCurated([]);
       collectionPoems = mergeRelationsWithCurated([], poems, allCollections);
     } else {
-      const app = initializeApp(firebaseConfig);
-      db = getFirestore(app);
+      firebaseApp = initializeApp(firebaseConfig);
+      db = getFirestore(firebaseApp);
 
       console.log('Fetching published poems, collections and relations for pre-rendering...');
       const poemsQuery = query(
@@ -410,6 +423,7 @@ async function prerender() {
         const data = doc.data();
         return { id: doc.id, ...data };
       });
+      usedFirestorePoems = poems.length > 0;
 
       const rawCollections = collectionsSnapshot.docs.map(doc => ({
         id: doc.id,
@@ -425,6 +439,20 @@ async function prerender() {
         poems = loadFallbackPoems();
         allCollections = enrichCollectionsWithCurated(allCollections.length ? allCollections : []);
         collectionPoems = mergeRelationsWithCurated([], poems, allCollections);
+      }
+    }
+
+    let mostReadPoems = [];
+    if (db && usedFirestorePoems) {
+      try {
+        let auth = null;
+        if (process.env.FIREBASE_ADMIN_EMAIL && process.env.FIREBASE_ADMIN_PASSWORD) {
+          const { getAuth } = await import('firebase/auth');
+          auth = getAuth(firebaseApp);
+        }
+        mostReadPoems = await loadMostReadForBuild({ db, auth, poems });
+      } catch (mrErr) {
+        console.warn('[Prerender] Falha ao carregar poemas mais lidos:', mrErr.message);
       }
     }
     const poemToColsMap = new Map();
@@ -1134,11 +1162,17 @@ async function prerender() {
     // Pre-render home page in dist/index.html (RF05)
     console.log('Generating pre-rendered content for home page (dist/index.html)...');
     const podPoem = getPoemOfDay(poems);
-    const homeMainMarkup = renderHomeMarkup({ poems: sortedPoemsDesc, podPoem, allCollections, qualifyingSentiments });
+    const homeMainMarkup = renderHomeMarkup({ poems: sortedPoemsDesc, podPoem, allCollections, qualifyingSentiments, mostReadPoems });
     const homeShell = renderBaseLayout({
       mainContent: homeMainMarkup,
       dataPrerendered: '/'
     });
+
+    fs.writeFileSync(
+      path.join(distDir, 'most-read.json'),
+      JSON.stringify({ poems: mostReadPoems, updated_at: new Date().toISOString() }),
+      'utf-8'
+    );
 
     const homeDesc = 'Poemas e poesia contemporânea de Natanael Fernando Gatti Brentano. Uma coleção de versos originais em português sobre amor, tempo, efêmero e o cotidiano.';
     let homeHtml = originalHtml
@@ -1157,7 +1191,8 @@ async function prerender() {
 
     const homeGraph = pageGraphSchema();
     const homeLdTag = `<script type="application/ld+json" data-seo="true">${serializeJsonLd(homeGraph)}</script>`;
-    homeHtml = removeJsonLdScripts(homeHtml).replace(/<\/head>/i, `  ${homeLdTag}\n</head>`);
+    const mostReadScriptTag = `<script type="application/json" id="__MOST_READ__">${JSON.stringify(mostReadPoems).replace(/</g, '\\u003c')}</script>`;
+    homeHtml = removeJsonLdScripts(homeHtml).replace(/<\/head>/i, `  ${homeLdTag}\n  ${mostReadScriptTag}\n</head>`);
 
     fs.writeFileSync(templatePath, homeHtml, 'utf-8');
     console.log('Pre-rendered home page successfully generated at dist/index.html');

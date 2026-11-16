@@ -1,7 +1,7 @@
 # [FEAT] Seção "Mais lidos" com os poemas mais visitados
 
-> **Status:** Rascunho
-> **Autor:** Claude · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
+> **Status:** Concluída
+> **Autor:** Claude · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-16
 
 ## Detalhes da Atividade
 
@@ -47,15 +47,15 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que existem visualizações registradas nos últimos 30 dias, quando abro a home, então vejo a seção "Mais lidos" com 5 poemas ordenados do mais para o menos visualizado, cada um com link para sua página.
-- [ ] **CA02:** Dado que a seção está visível, quando a inspeciono, então nenhuma contagem de visualizações é exibida ao leitor.
-- [ ] **CA03:** Dado que o poema mais visualizado do período foi despublicado, quando a lista é gerada, então ele não aparece e o próximo colocado ocupa a vaga.
-- [ ] **CA04:** Dado que não há nenhuma visualização registrada, quando abro a home, então a seção não é renderizada (sem título órfão nem lista vazia).
-- [ ] **CA05:** Dado que dois poemas têm a mesma contagem, quando a lista é gerada, então o publicado mais recentemente vem primeiro.
-- [ ] **CA06:** Dado o build de produção, quando abro `llms.txt`, então os poemas em destaque constam com título e URL canônica.
-- [ ] **CA07:** Dado um leitor anônimo, quando carrego a home, então não há leitura de `page_views` na rede e as regras do Firestore seguem negando essa leitura.
-- [ ] **CA08:** Dado o build de produção, quando leio `dist/index.html` sem executar JavaScript, então a seção e seus 5 links `<a href="/poema/.../">` estão presentes.
-- [ ] **CA09:** Dado que a leitura de `page_views` falha durante o build, quando o build termina, então ele conclui com sucesso, registra um aviso e a home é gerada sem a seção.
+- [x] **CA01:** Dado que existem visualizações registradas nos últimos 30 dias, quando abro a home, então vejo a seção "Mais lidos" com 5 poemas ordenados do mais para o menos visualizado, cada um com link para sua página.
+- [x] **CA02:** Dado que a seção está visível, quando a inspeciono, então nenhuma contagem de visualizações é exibida ao leitor.
+- [x] **CA03:** Dado que o poema mais visualizado do período foi despublicado, quando a lista é gerada, então ele não aparece e o próximo colocado ocupa a vaga.
+- [x] **CA04:** Dado que não há nenhuma visualização registrada, quando abro a home, então a seção não é renderizada (sem título órfão nem lista vazia).
+- [x] **CA05:** Dado que dois poemas têm a mesma contagem, quando a lista é gerada, então o publicado mais recentemente vem primeiro.
+- [x] **CA06:** Dado o build de produção, quando abro `llms.txt`, então os poemas em destaque constam com título e URL canônica.
+- [x] **CA07:** Dado um leitor anônimo, quando carrego a home, então não há leitura de `page_views` na rede e as regras do Firestore seguem negando essa leitura.
+- [x] **CA08:** Dado o build de produção, quando leio `dist/index.html` sem executar JavaScript, então a seção e seus 5 links `<a href="/poema/.../">` estão presentes.
+- [x] **CA09:** Dado que a leitura de `page_views` falha durante o build, quando o build termina, então ele conclui com sucesso, registra um aviso e a home é gerada sem a seção.
 
 ## O que a atividade não inclui
 
@@ -72,9 +72,9 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Como o build lê `page_views`, se a leitura exige autenticação? Conta de serviço como secret no GitHub Actions, ou um documento agregado público em `site_settings` atualizado pelo admin? | dev/PO | Sim | |
-| D02 | O workflow diário ([`daily-poem.yml`](../.github/workflows/daily-poem.yml)) deve disparar um rebuild para manter o ranking fresco? | PO | Não | |
-| D03 | Posição da seção na home: antes ou depois da lista principal? | design | Não | |
+| D01 | Como o build lê `page_views`, se a leitura exige autenticação? Conta de serviço como secret no GitHub Actions, ou um documento agregado público em `site_settings` atualizado pelo admin? | dev/PO | Sim | Abordagem híbrida: o build tenta autenticar com `FIREBASE_ADMIN_EMAIL` e `FIREBASE_ADMIN_PASSWORD` para ler `page_views` diretamente e usa fallback automático em `site_settings/most_read` (sem contagens públicas), atualizado pelo painel admin (`dashboard`/`analytics`). |
+| D02 | O workflow diário ([`daily-poem.yml`](../.github/workflows/daily-poem.yml)) deve disparar um rebuild para manter o ranking fresco? | PO | Não | Sim — disparar `deploy.yml` ao final do `daily-poem.yml` para atualizar diariamente o ranking e o Poema do Dia pré-renderizado. |
+| D03 | Posição da seção na home: antes ou depois da lista principal? | design | Não | Antes da lista principal (logo após o "Poema do dia"), funcionando como porta de entrada imediata para novos leitores. |
 
 ## Sugestões de casos de teste
 

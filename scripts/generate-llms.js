@@ -3,6 +3,7 @@ import path from 'path';
 import { buildAllLlmsFiles, SITE_URL } from '../src/utils/llms-builder.js';
 import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../src/data/collections.js';
 import { loadFallbackPoems } from './fallback-data.js';
+import { loadMostReadForBuild } from './most-read-loader.js';
 
 // Note: Run this with node --env-file=.env.local scripts/generate-llms.js
 const firebaseConfig = {
@@ -20,6 +21,7 @@ export async function runGenerateLlms(outputDirectory) {
   let poems = [];
   let collections = [];
   let collectionPoems = [];
+  let mostReadPoems = [];
 
   if (!firebaseConfig.apiKey) {
     console.warn('⚠️  Aviso: Credenciais do Firebase ausentes. Usando poemas locais de fallback.');
@@ -42,6 +44,7 @@ export async function runGenerateLlms(outputDirectory) {
       const poemSnapshot = await getDocs(poemsQuery);
       poems = poemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       console.log(`Encontrados ${poems.length} poemas publicados.`);
+      const hasFirestorePoems = poems.length > 0;
 
       console.log('Buscando coleções no Firestore...');
       try {
@@ -63,11 +66,22 @@ export async function runGenerateLlms(outputDirectory) {
         console.warn('Aviso: Não foi possível obter vínculos collection_poems:', cpErr.message);
         collectionPoems = mergeRelationsWithCurated([], poems, collections);
       }
-      if (poems.length === 0) {
+      if (!hasFirestorePoems) {
         console.warn('[LLMs] Nenhum poema obtido do Firestore (modo offline/sandbox). Usando fallback local.');
         poems = loadFallbackPoems();
         collections = enrichCollectionsWithCurated(collections.length ? collections : []);
         collectionPoems = mergeRelationsWithCurated([], poems, collections);
+      } else {
+        try {
+          let auth = null;
+          if (process.env.FIREBASE_ADMIN_EMAIL && process.env.FIREBASE_ADMIN_PASSWORD) {
+            const { getAuth } = await import('firebase/auth');
+            auth = getAuth(app);
+          }
+          mostReadPoems = await loadMostReadForBuild({ db, auth, poems });
+        } catch (mrErr) {
+          console.warn('Aviso: Falha ao carregar poemas em destaque para llms.txt:', mrErr.message);
+        }
       }
     } catch (err) {
       // RNF04 & CA06: Se o Firestore falhar, o build não pode quebrar
@@ -80,7 +94,8 @@ export async function runGenerateLlms(outputDirectory) {
     baseUrl,
     poems,
     collections,
-    collectionPoems
+    collectionPoems,
+    mostReadPoems
   });
 
   const targetDir = outputDirectory || path.resolve(process.cwd(), 'dist');

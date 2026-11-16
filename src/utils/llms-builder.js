@@ -3,6 +3,7 @@ import { SITE_URL } from './url.js';
 import { formatDateToYMD } from './sitemap-builder.js';
 import { tagToSlug } from './tags.js';
 import { getSentimentName, getSentimentIntro } from '../data/sentiments.js';
+import { filterPublishedMostRead } from './most-read.js';
 
 export { SITE_URL };
 
@@ -176,6 +177,7 @@ export function sortPoemsByDateDesc(poems) {
  * @param {Array} [options.collections]
  * @param {Array} [options.collectionPoems]
  * @param {number} [options.minPoemsPerSentiment]
+ * @param {Array} [options.mostReadPoems]
  * @returns {string}
  */
 export function buildLlmsTxt({
@@ -183,7 +185,8 @@ export function buildLlmsTxt({
   poems = [],
   collections = [],
   collectionPoems: _collectionPoems = [],
-  minPoemsPerSentiment = 3
+  minPoemsPerSentiment = 3,
+  mostReadPoems = []
 } = {}) {
   const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 
@@ -204,6 +207,20 @@ export function buildLlmsTxt({
   sections.push(
     `Natanael Fernando Gatti Brentano é um poeta brasileiro contemporâneo que escreve sobre o que sobra do dia, capturando a efemeridade do instante e a profundidade das coisas simples. Conheça a trajetória e a proposta poética na [página sobre o autor](${cleanBase}sobre/).\n`
   );
+
+  // Featured / Most-read poems section (RF06, CA06)
+  const featuredPoems = filterPublishedMostRead(mostReadPoems, publishedPoems, 5);
+  if (featuredPoems.length > 0) {
+    const publishedBySlug = new Map(publishedPoems.map(p => [p.slug, p]));
+    const featuredLines = ['## Poemas em destaque\n'];
+    featuredPoems.forEach(item => {
+      const fullPoem = publishedBySlug.get(item.slug) || item;
+      const url = `${cleanBase}poema/${fullPoem.slug}/`;
+      const desc = extractPoemDescription(fullPoem, 120);
+      featuredLines.push(`- [${fullPoem.title}](${url}): ${desc}`);
+    });
+    sections.push(featuredLines.join('\n') + '\n');
+  }
 
   // Collections section (RF02)
   const validCollections = collections.filter(c => c && c.slug);

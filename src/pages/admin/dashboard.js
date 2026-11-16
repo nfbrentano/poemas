@@ -1,6 +1,8 @@
 import { listDocs } from './data.js';
 import { escapeHtml, unwrapSafeHTML } from '../../utils/html.js';
 
+let hasSyncedMostReadInSession = false;
+
 export async function renderDashboard(container) {
     container.innerHTML = '<div class="loading">Carregando painel geral...</div>';
     
@@ -29,6 +31,13 @@ export async function renderDashboard(container) {
       openErrorsCount = errorsRes?.data?.length || 0;
       lastSubscribers = subscribersRes.data || [];
       pageViews = viewsRes.data || [];
+
+      if (!hasSyncedMostReadInSession && poems.length > 0 && !(typeof process !== 'undefined' && process.env?.VITEST)) {
+        hasSyncedMostReadInSession = true;
+        import('./most-read-sync.js')
+          .then(({ syncMostReadSetting }) => syncMostReadSetting({ poems }))
+          .catch(() => {});
+      }
       
       const totalPoems = poems.length;
       const publishedPoems = poems.filter(p => p.status === 'published').length;

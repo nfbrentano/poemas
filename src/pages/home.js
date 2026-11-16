@@ -9,6 +9,49 @@ import { getPoemOfDay } from '../utils/poemOfDay.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { getSentimentName } from '../data/sentiments.js';
 import { getFavoriteSlugs } from '../utils/favorites.js';
+import { filterPublishedMostRead, renderMostReadMarkup, MOST_READ_LIMIT } from '../utils/most-read.js';
+
+let cachedMostReadData = null;
+
+export function resetMostReadClientCache() {
+  cachedMostReadData = null;
+}
+
+async function getClientMostReadItems(baseUrl = '/') {
+  if (Array.isArray(cachedMostReadData)) {
+    return cachedMostReadData;
+  }
+
+  if (typeof document !== 'undefined') {
+    const scriptEl = document.getElementById('__MOST_READ__');
+    if (scriptEl && scriptEl.textContent) {
+      try {
+        const parsed = JSON.parse(scriptEl.textContent);
+        if (Array.isArray(parsed)) {
+          cachedMostReadData = parsed;
+          return cachedMostReadData;
+        }
+      } catch (_) {}
+    }
+  }
+
+  const isVitest = typeof process !== 'undefined' && Boolean(process.env?.VITEST);
+  if (typeof fetch === 'function' && (!isVitest || globalThis.__ENABLE_MOST_READ_FETCH_TEST__)) {
+    try {
+      const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+      const response = await fetch(`${base}most-read.json`);
+      if (response && response.ok) {
+        const payload = await response.json();
+        if (Array.isArray(payload?.poems)) {
+          cachedMostReadData = payload.poems;
+          return cachedMostReadData;
+        }
+      }
+    } catch (_) {}
+  }
+
+  return [];
+}
 
 export default {
   meta: {
@@ -341,6 +384,13 @@ export default {
     const podIsFav = podPoem && (favSlugs.has(podPoem.slug) || (podPoem.id && favSlugs.has(podPoem.id)));
     const podFavBadge = podIsFav ? ' <span class="favorite-badge" aria-label="Poema favoritado" title="Poema favoritado">🔖</span>' : '';
 
+    let mostReadHtml = '';
+    if (!isFiltering) {
+      const rawMostRead = await getClientMostReadItems(BASE_URL);
+      const mostReadPoems = filterPublishedMostRead(rawMostRead, poems, MOST_READ_LIMIT, { allowMissingStatus: true });
+      mostReadHtml = renderMostReadMarkup(mostReadPoems, { baseUrl: BASE_URL, favoriteSlugs: favSlugs });
+    }
+
     container.innerHTML = unwrapSafeHTML(`
       <div class="home-layout">
         ${heroHtml}
@@ -353,6 +403,8 @@ export default {
           </a>
         </section>
         ` : ''}
+
+        ${mostReadHtml}
 
         <section class="poems-list fade-in" style="padding-top: var(--space-xl);">
           <div class="discovery-filters" style="margin-bottom: var(--space-xl);">
@@ -458,14 +510,17 @@ export default {
         setupPagination();
       }
       
-      // Hide POD and Hero when searching
+      // Hide POD, Most Read and Hero when searching
       const podSection = container.querySelector('.poem-of-day');
+      const mostReadSection = container.querySelector('.most-read');
       const heroSection = container.querySelector('.home-hero') || container.querySelector('.hero-section');
       if (searchTerm.length > 0) {
         if (podSection) podSection.style.display = 'none';
+        if (mostReadSection) mostReadSection.style.display = 'none';
         if (heroSection) heroSection.style.display = 'none';
       } else {
         if (podSection) podSection.style.display = 'block';
+        if (mostReadSection) mostReadSection.style.display = '';
         if (heroSection) heroSection.style.display = 'block';
       }
     };
