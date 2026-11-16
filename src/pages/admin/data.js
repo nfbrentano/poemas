@@ -17,6 +17,9 @@ function setAdminFlag(on) {
 /** Usuário admin logado ou null. Mantém o flag local `has_admin_session` em dia. */
 export async function getAdminSession() {
   const auth = await getFirebaseAuth();
+  if (typeof auth.authStateReady === 'function') {
+    await auth.authStateReady();
+  }
   setAdminFlag(!!auth.currentUser);
   return auth.currentUser;
 }

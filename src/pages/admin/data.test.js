@@ -245,6 +245,14 @@ describe('arquivos, funções e sessão', () => {
     expect(localStorage.getItem('has_admin_session')).toBeNull();
     auth.currentUser = { uid: 'u1' };
   });
+  it('getAdminSession aguarda authStateReady quando disponível (CA05)', async () => {
+    const readyMock = vi.fn().mockResolvedValueOnce(undefined);
+    auth.authStateReady = readyMock;
+    auth.currentUser = { uid: 'u1' };
+    expect(await data.getAdminSession()).toEqual({ uid: 'u1' });
+    expect(readyMock).toHaveBeenCalledTimes(1);
+    delete auth.authStateReady;
+  });
   it('signOutAdmin sai e limpa o flag', async () => {
     localStorage.setItem('has_admin_session', '1');
     await data.signOutAdmin();

@@ -45,4 +45,17 @@ describe('Admin Auth & Hardening (CA01, CT01, RF01)', () => {
     expect(container.querySelector('.admin-layout')).not.toBeNull();
     expect(container.querySelector('#logout-btn')).not.toBeNull();
   });
+
+  it('permite renderização para a conta natanaelfernando@outlook.com (CA01, CA04)', async () => {
+    delete window.location;
+    window.location = new URL('https://poemas.exemplo.com/admin?view=list');
+
+    getAdminSession.mockResolvedValueOnce({ uid: 'facb36ce-a587-4277-b56f-884a46216127', email: 'natanaelfernando@outlook.com' });
+
+    const container = document.createElement('div');
+    await adminPage.render(container);
+
+    expect(navigateTo).not.toHaveBeenCalled();
+    expect(container.querySelector('.admin-layout')).not.toBeNull();
+  });
 });

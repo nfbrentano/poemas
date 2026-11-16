@@ -12,7 +12,7 @@ describe('firestore.rules: isAdmin helper (CA02, CT02, RF02)', () => {
   it('define helper isAdmin com checagem de Custom Claim e e-mail verificado do autor', () => {
     expect(rules).toContain('function isAdmin()');
     expect(rules).toContain('request.auth.token.admin == true');
-    expect(rules).toContain("request.auth.token.email in ['nfgbrentano@gmail.com']");
+    expect(rules).toContain("request.auth.token.email in ['nfgbrentano@gmail.com', 'natanaelfernando@outlook.com']");
   });
 });
 
