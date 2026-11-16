@@ -4,7 +4,9 @@ const logger = require("firebase-functions/logger");
 const { initializeApp, getApps } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const nodemailer = require("nodemailer");
+const webPush = require("web-push");
 const { buildFunctionErrorPayload, logBackendFunctionError } = require("./error-logger");
+const { buildPushPayload, handleSendPushLogic } = require("./push-helpers");
 
 if (getApps().length === 0) {
   initializeApp();
@@ -15,6 +17,9 @@ const db = getFirestore();
 const gmailUser = defineSecret("GMAIL_USER");
 const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
 const senderName = defineSecret("SENDER_NAME");
+const vapidPublicKey = defineSecret("VAPID_PUBLIC_KEY");
+const vapidPrivateKey = defineSecret("VAPID_PRIVATE_KEY");
+const vapidSubject = defineSecret("VAPID_SUBJECT");
 
 const siteUrl = "https://nfgbrentano.art.br";
 
@@ -36,6 +41,8 @@ exports.isValidEmail = isValidEmail;
 exports.handleSubscribeLogic = handleSubscribeLogic;
 exports.handleUnsubscribeLogic = handleUnsubscribeLogic;
 exports.buildFunctionErrorPayload = buildFunctionErrorPayload;
+exports.buildPushPayload = buildPushPayload;
+exports.handleSendPushLogic = handleSendPushLogic;
 exports.logBackendFunctionError = (dbInstance, error, options = {}) =>
   logBackendFunctionError(dbInstance || db, error, { logger, ...options });
 
@@ -279,6 +286,7 @@ exports.sendNewsletter = onCall(
       // Log success
       await db.collection("email_campaign_logs").add({
         poem_id: poemId,
+        channel: "newsletter",
         status: successCount > 0 ? "success" : "failed",
         type: targetEmail ? "individual" : "newsletter",
         target_email: targetEmail || null,
@@ -307,6 +315,7 @@ exports.sendNewsletter = onCall(
         .collection("email_campaign_logs")
         .add({
           poem_id: poemId,
+          channel: "newsletter",
           status: "failed",
           type: targetEmail ? "individual" : "newsletter",
           target_email: targetEmail || null,
@@ -316,6 +325,43 @@ exports.sendNewsletter = onCall(
         .catch(() => {});
 
       throw new HttpsError("internal", "Falha ao enviar newsletter.");
+    }
+  }
+);
+
+exports.sendPushNotification = onCall(
+  {
+    region: "southamerica-east1",
+    secrets: [vapidPublicKey, vapidPrivateKey, vapidSubject],
+  },
+  async (request) => {
+    try {
+      return await handleSendPushLogic({
+        auth: request.auth,
+        data: request.data || {},
+        dbInstance: db,
+        webPush,
+        vapidPublicKey: vapidPublicKey.value(),
+        vapidPrivateKey: vapidPrivateKey.value(),
+        vapidSubject: vapidSubject.value() || "mailto:nfgbrentano@gmail.com",
+        siteUrl,
+        logger,
+        logErrorFn: logBackendFunctionError,
+        createError: (code, message) => new HttpsError(code, message),
+        createdAtValue: FieldValue.serverTimestamp(),
+      });
+    } catch (error) {
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+      logger.error("Erro na função sendPushNotification:", error);
+      await logBackendFunctionError(db, error, {
+        category: "runtime",
+        severity: "critical",
+        route_or_task: "sendPushNotification",
+        context: { poemId: request.data?.poemId || null },
+      });
+      throw new HttpsError("internal", "Falha ao enviar notificações push.");
     }
   }
 );

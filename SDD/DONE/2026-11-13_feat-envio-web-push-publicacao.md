@@ -1,7 +1,7 @@
 # [FEAT] Envio real de notificações Web Push na publicação de poemas
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-16
 
 ## Detalhes da Atividade
 
@@ -47,13 +47,13 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um poema publicado e inscrições válidas em `push_subscriptions`, quando o admin aciona `sendPushNotification`, então todas as inscrições recebem payload `{ title, body, url: "https://nfgbrentano.art.br/poema/<slug>/" }` dentro de `<= 3 KB`.
-- [ ] **CA02:** Dado um usuário não autenticado ou sem permissão admin chamando `sendPushNotification` (ou tentando enviar para um rascunho), quando a Cloud Function executa, então rejeita a chamada com `HttpsError` apropriado (`unauthenticated`/`permission-denied`/`failed-precondition`).
-- [ ] **CA03:** Dado um lote com 2 inscrições válidas e 1 expirada retornando HTTP `410`, quando o envio executa, então as 2 válidas são entregues e apenas a expirada é excluída de `push_subscriptions`.
-- [ ] **CA04:** Dado o painel admin autenticado, quando o autor seleciona enviar notificação push de um poema publicado, então vê feedback com quantidade de entregas bem-sucedidas, falhas e inscrições expiradas limpas.
-- [ ] **CA05:** Dado que o usuário clica na notificação exibida pelo Service Worker ([`public/sw.js`](../public/sw.js)), quando a janela já está aberta ou fechada, então o navegador foca ou abre exatamente a URL do poema notificado (fallback para `/` se ausente).
-- [ ] **CA06:** Dado um poema agendado marcado para notificação push, quando promovido para `published` pelo workflow agendado, então a notificação é enviada após a publicação.
-- [ ] **CA07:** Dado uma falha inesperada no serviço `web-push`, quando ocorre exceção, então um registro de erro é gravado via `logBackendFunctionError`.
+- [x] **CA01:** Dado um poema publicado e inscrições válidas em `push_subscriptions`, quando o admin aciona `sendPushNotification`, então todas as inscrições recebem payload `{ title, body, url: "https://nfgbrentano.art.br/poema/<slug>/" }` dentro de `<= 3 KB`.
+- [x] **CA02:** Dado um usuário não autenticado ou sem permissão admin chamando `sendPushNotification` (ou tentando enviar para um rascunho), quando a Cloud Function executa, então rejeita a chamada com `HttpsError` apropriado (`unauthenticated`/`permission-denied`/`failed-precondition`).
+- [x] **CA03:** Dado um lote com 2 inscrições válidas e 1 expirada retornando HTTP `410`, quando o envio executa, então as 2 válidas são entregues e apenas a expirada é excluída de `push_subscriptions`.
+- [x] **CA04:** Dado o painel admin autenticado, quando o autor seleciona enviar notificação push de um poema publicado, então vê feedback com quantidade de entregas bem-sucedidas, falhas e inscrições expiradas limpas.
+- [x] **CA05:** Dado que o usuário clica na notificação exibida pelo Service Worker ([`public/sw.js`](../public/sw.js)), quando a janela já está aberta ou fechada, então o navegador foca ou abre exatamente a URL do poema notificado (fallback para `/` se ausente).
+- [x] **CA06:** Dado um poema agendado marcado para notificação push, quando promovido para `published` pelo workflow agendado, então a notificação é enviada após a publicação.
+- [x] **CA07:** Dado uma falha inesperada no serviço `web-push`, quando ocorre exceção, então um registro de erro é gravado via `logBackendFunctionError`.
 
 ## O que a atividade não inclui
 
@@ -68,8 +68,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O envio de Web Push na publicação imediata deve acontecer por clique explícito do autor ("Publicar e Notificar") ou automaticamente via trigger `onDocumentWritten` em `poems`? | PO/dev | Sim | |
-| D02 | O histórico de push deve compartilhar a tela/aba atual de [`emails.js`](../src/pages/admin/emails.js) (renomeando para "Envios / Campanhas") ou ganhar uma sub-seção própria? | design | Não | |
+| D01 | O envio de Web Push na publicação imediata deve acontecer por clique explícito do autor ("Publicar e Notificar") ou automaticamente via trigger `onDocumentWritten` em `poems`? | PO/dev | Sim | Clique explícito no admin: checkbox/ação explícita ao publicar ("Publicar Agora" / "Enviar Push") via `sendPushNotification`, evitando disparos acidentais. |
+| D02 | O histórico de push deve compartilhar a tela/aba atual de [`emails.js`](../src/pages/admin/emails.js) (renomeando para "Envios / Campanhas") ou ganhar uma sub-seção própria? | design | Não | Compartilhar a tela de `emails.js` renomeada para "Envios / Campanhas", com filtro por canal (`Newsletter` / `Web Push`) e ação "Enviar Push". |
 
 ## Sugestões de casos de teste
 

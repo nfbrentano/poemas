@@ -220,16 +220,20 @@ export async function renderEditor(container, id) {
               <input type="checkbox" id="notify-newsletter-on-publish" ${poem.notify_newsletter_on_publish ? 'checked' : ''}>
               Enviar newsletter automaticamente ao publicar
             </label>
-            <label style="display: flex; align-items: center; gap: var(--space-2xs); margin-top: var(--space-xs); font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-              <input type="checkbox" id="notify-push-on-publish" ${poem.notify_push_on_publish ? 'checked' : ''}>
+            ${poem.status === 'scheduled' ? `<p class="field-help" style="color: var(--accent-subtle); font-style: italic;">Este poema será publicado automaticamente em ${new Date(poem.scheduled_at).toLocaleString('pt-BR')}.</p>` : ''}
+          </div>
+
+          <div id="publish-notifications-fields" style="margin-top: var(--space-sm); ${poem.status === 'published' ? 'display: none;' : ''}">
+            <label style="display: flex; align-items: center; gap: var(--space-2xs); font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+              <input type="checkbox" id="notify-push-on-publish" ${poem.notify_push_on_publish ? 'checked' : ''} style="width: auto;">
               Enviar notificação Web Push aos leitores ao publicar
             </label>
-            ${poem.status === 'scheduled' ? `<p class="field-help" style="color: var(--accent-subtle); font-style: italic;">Este poema será publicado automaticamente em ${new Date(poem.scheduled_at).toLocaleString('pt-BR')}.</p>` : ''}
           </div>
           
           <div style="display: flex; justify-content: flex-end; align-items: center; gap: var(--space-md); margin-top: var(--space-lg); border-top: 1px solid var(--border-subtle); padding-top: var(--space-lg); flex-wrap: wrap;">
             <span id="autosave-status" style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-ui); margin-right: auto;"></span>
             <a href="${import.meta.env.BASE_URL}admin" data-link class="btn-secondary" style="padding: 0.75rem 1.5rem; color: var(--text-secondary);">Cancelar</a>
+            ${poem.status === 'published' && id ? `<button type="button" class="btn-secondary" id="send-poem-push-btn" style="padding: 0.75rem 1.5rem; border-color: var(--accent-subtle); color: var(--accent-subtle); border-radius: 2px;">🔔 Enviar Push</button>` : ''}
             <button type="submit" class="btn-primary" id="save-btn" style="padding: 0.75rem 1.5rem; background: var(--border-strong); color: var(--text-primary); border-radius: 2px;">Gravar Alterações</button>
             ${poem.status === 'draft' ? `<button type="button" class="btn-primary" id="publish-btn" style="padding: 0.75rem 1.5rem; background: var(--success); color: #fff; border-radius: 2px; font-weight: 500;">Publicar Agora</button>` : ''}
           </div>
@@ -301,6 +305,7 @@ export async function renderEditor(container, id) {
   const previewAuthorNoteText = document.getElementById('preview-author-note-text');
   const previewWrittenMeta = document.getElementById('preview-written-meta');
   const schedulingFields = document.getElementById('scheduling-fields');
+  const publishNotificationsFields = document.getElementById('publish-notifications-fields');
 
   const metricsStanzasVerses = document.getElementById('poem-metrics-stanzas-verses');
   const metricsWords = document.getElementById('poem-metrics-words');
@@ -498,6 +503,9 @@ export async function renderEditor(container, id) {
 
   statusSelect.addEventListener('change', () => {
     schedulingFields.style.display = statusSelect.value === 'scheduled' ? 'block' : 'none';
+    if (publishNotificationsFields) {
+      publishNotificationsFields.style.display = statusSelect.value === 'published' ? 'none' : 'block';
+    }
     onFieldChange();
   });
 
@@ -561,6 +569,9 @@ export async function renderEditor(container, id) {
           if (existingDraft.status !== undefined) {
             statusSelect.value = existingDraft.status;
             schedulingFields.style.display = statusSelect.value === 'scheduled' ? 'block' : 'none';
+            if (publishNotificationsFields) {
+              publishNotificationsFields.style.display = statusSelect.value === 'published' ? 'none' : 'block';
+            }
           }
           if (existingDraft.scheduled_at && scheduledAtInput) {
             scheduledAtInput.value = existingDraft.scheduled_at.slice(0, 16);
@@ -806,9 +817,14 @@ export async function renderEditor(container, id) {
       payload.collection_slugs = selectedCollectionSlugs;
       delete payload.collection_ids;
 
+      const shouldSendPush = Boolean(notifyPushInput && notifyPushInput.checked);
       payload.status = 'published';
       payload.published_at = new Date().toISOString();
       payload.updated_at = payload.published_at;
+      if (shouldSendPush) {
+        payload.notify_push_on_publish = false;
+        payload.push_sent_at = payload.published_at;
+      }
 
       let poemId = id;
       let error = null;
@@ -841,13 +857,15 @@ export async function renderEditor(container, id) {
       hasUnsavedChanges = false;
       window.removeEventListener('beforeunload', handleBeforeUnload);
 
-      // Trigger Cloud Function Newsletter
+      // Trigger Cloud Function Newsletter e Web Push explícito (D01)
       if (poemId) {
+        let newsletterMsg = '';
+        let pushMsg = '';
         try {
           publishBtn.innerText = 'Enviando newsletter...';
           const { data, error: fnError } = await callFunction('sendNewsletter', { poemId });
           if (fnError) throw fnError;
-          alert(`Obra publicada e newsletter enviada com sucesso para ${data.count} assinantes!`);
+          newsletterMsg = `Newsletter enviada com sucesso para ${data?.count || 0} assinantes.`;
         } catch (err) {
           console.error('Newsletter erro:', err);
           let detailedMsg = '';
@@ -857,11 +875,59 @@ export async function renderEditor(container, id) {
               detailedMsg = errBody.error || errBody.message || '';
             } catch (_) {}
           }
-          alert(`Obra publicada, mas houve um erro ao enviar a newsletter:\n${detailedMsg || err.message || 'Erro na Edge Function'}`);
+          newsletterMsg = `Erro ao enviar a newsletter: ${detailedMsg || err.message || 'Erro na Cloud Function'}`;
         }
+
+        if (shouldSendPush) {
+          try {
+            publishBtn.innerText = 'Enviando Web Push...';
+            const { data: pushData, error: pushErr } = await callFunction('sendPushNotification', { poemId });
+            if (pushErr) throw pushErr;
+            pushMsg = `\nWeb Push: ${pushData?.sent || 0} entregue(s), ${pushData?.failed || 0} falha(s), ${pushData?.removed || 0} expirada(s) removida(s).`;
+          } catch (pushErr) {
+            console.error('Web Push erro:', pushErr);
+            pushMsg = `\nErro ao enviar Web Push: ${pushErr?.message || 'Erro na Cloud Function'}`;
+          }
+        }
+
+        alert(`Obra publicada!\n${newsletterMsg}${pushMsg}`);
       }
 
       navigateTo('/admin');
+    });
+  }
+
+  // Envio manual de Push para obra já publicada
+  const sendPoemPushBtn = document.getElementById('send-poem-push-btn');
+  if (sendPoemPushBtn && id) {
+    sendPoemPushBtn.addEventListener('click', async () => {
+      let activeCountText = '';
+      try {
+        const { data: subsData } = await listDocs('push_subscriptions');
+        const count = Array.isArray(subsData) ? subsData.length : 0;
+        activeCountText = ` (${count} inscrição(ões) ativa(s))`;
+      } catch (_) {}
+
+      const poemTitle = titleInput.value.trim() || poem.title || 'esta obra';
+      if (!confirm(`Deseja enviar notificação Web Push sobre "${poemTitle}"${activeCountText}?`)) {
+        return;
+      }
+
+      const originalLabel = sendPoemPushBtn.innerText;
+      sendPoemPushBtn.disabled = true;
+      sendPoemPushBtn.innerText = 'Enviando Push...';
+
+      try {
+        const { data, error: fnError } = await callFunction('sendPushNotification', { poemId: id });
+        if (fnError) throw fnError;
+        alert(`Web Push enviado: ${data?.sent || 0} entregue(s), ${data?.failed || 0} falha(s), ${data?.removed || 0} expirada(s) removida(s).`);
+      } catch (err) {
+        console.error('Erro ao enviar push:', err);
+        alert(`Erro ao enviar notificação push:\n${err?.message || 'Erro inesperado'}`);
+      } finally {
+        sendPoemPushBtn.disabled = false;
+        sendPoemPushBtn.innerText = originalLabel;
+      }
     });
   }
 }

@@ -6,9 +6,10 @@ export async function renderEmailHistory(container) {
     container.innerHTML = '<div class="loading">Carregando histórico e dados...</div>';
     
     try {
-      const [logsRes, poemsRes] = await Promise.all([
+      const [logsRes, poemsRes, pushSubsRes] = await Promise.all([
         listDocs('email_campaign_logs', { orderBy: ['created_at', 'desc'] }),
-        listDocs('poems', { where: [['status', '==', 'published']] })
+        listDocs('poems', { where: [['status', '==', 'published']] }),
+        Promise.resolve(listDocs('push_subscriptions')).catch(() => ({ data: [], error: null }))
       ]);
       
       if (logsRes.error) throw logsRes.error;
@@ -16,12 +17,15 @@ export async function renderEmailHistory(container) {
       
       const logs = logsRes.data || [];
       const publishedPoems = poemsRes.data || [];
+      const pushSubscriptions = pushSubsRes?.data || [];
+      const pushSubsCount = pushSubscriptions.length;
       publishedPoems.sort((a, b) => a.title.localeCompare(b.title));
       
       // Normalize logs data (handle Firestore Timestamps and missing joined tables)
       logs.forEach(log => {
         const matchedPoem = publishedPoems.find(p => p.id === log.poem_id);
         if (matchedPoem && !log.poems) log.poems = { title: matchedPoem.title };
+        if (!log.channel) log.channel = log.type === 'push' ? 'push' : 'newsletter';
         if (log.created_at && typeof log.created_at.toDate === 'function') log.created_at = log.created_at.toDate().toISOString();
         else if (log.created_at && log.created_at.seconds) log.created_at = new Date(log.created_at.seconds * 1000).toISOString();
         if (log.sent_at && typeof log.sent_at.toDate === 'function') log.sent_at = log.sent_at.toDate().toISOString();
@@ -30,6 +34,8 @@ export async function renderEmailHistory(container) {
       
       // Calculate KPIs
       const totalCount = logs.length;
+      const pushCampaignCount = logs.filter(l => l.channel === 'push').length;
+      const newsletterCampaignCount = totalCount - pushCampaignCount;
       const successCount = logs.filter(l => l.status === 'success').length;
       const successRate = totalCount > 0 ? ((successCount / totalCount) * 100).toFixed(1) : '100.0';
       const lastLog = logs[0] || null;
@@ -56,19 +62,25 @@ export async function renderEmailHistory(container) {
           <!-- Header and Primary Action -->
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-xs);">
             <div>
-              <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Gerencie os disparos de newsletters enviados aos seus leitores.</p>
+              <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 400; color: var(--text-primary); margin: 0 0 4px 0;">Envios / Campanhas</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Gerencie os disparos de newsletter por e-mail e notificações Web Push aos seus leitores.</p>
             </div>
-            <button id="open-dispatch-modal-btn" class="btn-primary" style="padding: 0.6rem 1.2rem; background: var(--accent-subtle); color: var(--bg-primary); font-weight: 500; font-size: 0.85rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; transition: opacity var(--transition-fast);">
-              <span style="font-size: 1.1rem; line-height: 1;">✉</span> Novo Disparo Manual
-            </button>
+            <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap;">
+              <button type="button" id="open-push-modal-btn" class="btn-secondary" style="padding: 0.6rem 1.2rem; border: 1px solid var(--accent-subtle); color: var(--accent-subtle); font-weight: 500; font-size: 0.85rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: opacity var(--transition-fast);">
+                <span aria-hidden="true">🔔</span> Enviar Push (${pushSubsCount})
+              </button>
+              <button type="button" id="open-dispatch-modal-btn" class="btn-primary" style="padding: 0.6rem 1.2rem; background: var(--accent-subtle); color: var(--bg-primary); font-weight: 500; font-size: 0.85rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; transition: opacity var(--transition-fast);">
+                <span style="font-size: 1.1rem; line-height: 1;" aria-hidden="true">✉</span> Novo Disparo (Newsletter)
+              </button>
+            </div>
           </div>
 
           <!-- KPIs Row -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
             <div class="kpi-card" style="background: var(--bg-elevated); padding: var(--space-lg); border-radius: 6px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between;">
               <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-2xs);">Total de Campanhas</div>
               <div style="font-size: 2.2rem; font-family: var(--font-display); color: var(--text-primary); line-height: 1.2;">${totalCount}</div>
-              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-3xs);">Registros de disparos de newsletter</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-3xs);">${newsletterCampaignCount} newsletter · ${pushCampaignCount} push</div>
             </div>
             
             <div class="kpi-card" style="background: var(--bg-elevated); padding: var(--space-lg); border-radius: 6px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between;">
@@ -76,11 +88,17 @@ export async function renderEmailHistory(container) {
               <div style="font-size: 2.2rem; font-family: var(--font-display); color: var(--success); line-height: 1.2;">${successRate}%</div>
               <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-3xs);">${successCount} envios bem-sucedidos</div>
             </div>
+
+            <div class="kpi-card" style="background: var(--bg-elevated); padding: var(--space-lg); border-radius: 6px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between;">
+              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-2xs);">Inscrições Push Ativas</div>
+              <div id="push-subs-kpi" style="font-size: 2.2rem; font-family: var(--font-display); color: var(--accent-subtle); line-height: 1.2;">${pushSubsCount}</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-3xs);">Dispositivos inscritos no navegador</div>
+            </div>
             
             <div class="kpi-card" style="background: var(--bg-elevated); padding: var(--space-lg); border-radius: 6px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between;">
               <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-2xs);">Último Envio</div>
-              <div style="font-size: 1.1rem; font-family: var(--font-ui); color: var(--accent-subtle); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;" title="${lastLog?.poems?.title || '-'}">
-                ${lastLog?.poems?.title || 'Nenhum envio registrado'}
+              <div style="font-size: 1.1rem; font-family: var(--font-ui); color: var(--accent-subtle); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;" title="${escapeHtml(lastLog?.poems?.title || '-')}">
+                ${escapeHtml(lastLog?.poems?.title || 'Nenhum envio registrado')}
               </div>
               <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: var(--space-3xs);">
                 ${lastLog ? formatRelativeTime(lastLog.created_at || lastLog.sent_at) : 'Nenhum dado'}
@@ -91,6 +109,12 @@ export async function renderEmailHistory(container) {
           <!-- Filters Toolbar -->
           <div style="display: flex; gap: var(--space-xs); align-items: center; flex-wrap: wrap; background: var(--bg-elevated); padding: var(--space-sm); border-radius: 6px; border: 1px solid var(--border-subtle);">
             <input type="text" id="email-search" placeholder="Buscar por obra ou detalhes..." style="flex-grow: 1; padding: 0.5rem var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; min-width: 200px; font-size: 0.85rem;">
+
+            <select id="email-filter-channel" style="padding: 0.5rem var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; font-size: 0.85rem; cursor: pointer;">
+              <option value="all">Todos os Canais</option>
+              <option value="newsletter">Newsletter</option>
+              <option value="push">Web Push</option>
+            </select>
             
             <select id="email-filter-status" style="padding: 0.5rem var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; font-size: 0.85rem; cursor: pointer;">
               <option value="all">Todos os Status</option>
@@ -172,6 +196,52 @@ export async function renderEmailHistory(container) {
           </div>
         </div>
 
+        <!-- DIALOG: Enviar Notificação Web Push -->
+        <dialog id="push-dispatch-dialog" class="admin-dialog" aria-labelledby="push-dialog-title" closedby="any">
+          <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+            <h3 id="push-dialog-title" style="font-family: var(--font-display); font-size: 1.6rem; color: var(--text-primary); margin: 0; border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-2xs);">Enviar Notificação Web Push</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin: 0;">
+              Prévia da audiência: <strong id="push-active-preview" style="color: var(--accent-subtle);">${pushSubsCount} ${pushSubsCount === 1 ? 'inscrição ativa' : 'inscrições ativas'}</strong>.
+            </p>
+
+            <form id="push-dispatch-form" style="display: flex; flex-direction: column; gap: var(--space-md);">
+              <div style="display: flex; flex-direction: column; gap: var(--space-3xs);">
+                <label for="push-poem-select" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Selecione a Obra</label>
+                <select id="push-poem-select" name="poemId" required autofocus style="padding: var(--space-xs); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; cursor: pointer; width: 100%;">
+                  <option value="" disabled selected>Escolha um poema publicado...</option>
+                  ${publishedPoems.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.title)}</option>`).join('')}
+                </select>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: var(--space-3xs);">
+                <label for="push-title-input" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Título da Notificação (Opcional)</label>
+                <input type="text" id="push-title-input" name="title" maxlength="100" placeholder="Deixe vazio para usar o título do poema" style="padding: var(--space-xs); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; width: 100%;">
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: var(--space-3xs);">
+                <label for="push-body-input" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Mensagem (Opcional, máx. 140 caracteres)</label>
+                <textarea id="push-body-input" name="body" maxlength="140" rows="3" placeholder="Deixe vazio para usar o primeiro verso ou resumo" style="padding: var(--space-xs); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; width: 100%; resize: vertical;"></textarea>
+              </div>
+
+              <div style="display: flex; align-items: flex-start; gap: var(--space-2xs);">
+                <input type="checkbox" id="push-confirm-chk" name="confirm" required style="margin-top: 3px; width: auto; cursor: pointer;">
+                <label for="push-confirm-chk" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; cursor: pointer;">
+                  Confirmo o envio imediato da notificação push para ${pushSubsCount} ${pushSubsCount === 1 ? 'inscrição ativa' : 'inscrições ativas'}.
+                </label>
+              </div>
+
+              <p id="push-dispatch-status" role="status" aria-live="polite" style="font-size: 0.85rem; color: var(--accent-subtle); margin: 0; min-height: 1.2em;"></p>
+
+              <div class="modal-actions" style="border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm);">
+                <button type="button" id="close-push-dialog-btn" class="btn-secondary" style="padding: 0.5rem 1rem; color: var(--text-secondary); font-size: 0.85rem; border: none; background: transparent; cursor: pointer;">Cancelar</button>
+                <button type="submit" id="submit-push-btn" class="btn-primary" ${publishedPoems.length === 0 ? 'disabled' : ''} style="padding: 0.5rem 1.2rem; background: var(--success); color: white; border-radius: 4px; font-size: 0.85rem; font-weight: 500; border: none; cursor: pointer;">
+                  Disparar Push
+                </button>
+              </div>
+            </form>
+          </div>
+        </dialog>
+
         <!-- MODAL: Detalhes do Log -->
         <div id="log-details-modal" class="modal">
           <div class="modal-content" style="max-width: 550px; display: flex; flex-direction: column; gap: var(--space-md);">
@@ -214,6 +284,40 @@ export async function renderEmailHistory(container) {
       // Set up modal elements references
       const dispatchModal = container.querySelector('#manual-dispatch-modal');
       const detailsModal = container.querySelector('#log-details-modal');
+      const pushDialog = container.querySelector('#push-dispatch-dialog');
+      const pushForm = container.querySelector('#push-dispatch-form');
+      const pushStatusEl = container.querySelector('#push-dispatch-status');
+
+      const openPushDialog = () => {
+        pushForm?.reset();
+        if (pushStatusEl) pushStatusEl.textContent = '';
+        if (typeof pushDialog?.showModal === 'function') {
+          pushDialog.showModal();
+        } else {
+          pushDialog?.setAttribute('open', '');
+        }
+      };
+
+      const closePushDialog = () => {
+        if (typeof pushDialog?.close === 'function') {
+          if (pushDialog.open) pushDialog.close();
+        } else {
+          pushDialog?.removeAttribute('open');
+        }
+      };
+
+      container.querySelector('#open-push-modal-btn')?.addEventListener('click', openPushDialog);
+      container.querySelector('#close-push-dialog-btn')?.addEventListener('click', closePushDialog);
+
+      if (pushDialog && typeof HTMLDialogElement !== 'undefined' && !('closedBy' in HTMLDialogElement.prototype)) {
+        const isOutside = (e) => {
+          const r = pushDialog.getBoundingClientRect();
+          return r.width > 0 && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom);
+        };
+        let pressedOutside = false;
+        pushDialog.addEventListener('pointerdown', (e) => { pressedOutside = isOutside(e); });
+        pushDialog.addEventListener('pointerup', (e) => { if (pressedOutside && isOutside(e)) closePushDialog(); });
+      }
       
       // Open Dispatch Modal
       container.querySelector('#open-dispatch-modal-btn').addEventListener('click', () => {
@@ -244,12 +348,16 @@ export async function renderEmailHistory(container) {
       let selectedLogForResend = null;
       
       // Set up Reenviar actions
-      const handleResendAction = async (poemId, poemTitle, buttonEl) => {
+      const handleResendAction = async (poemId, poemTitle, buttonEl, channel = 'newsletter') => {
         if (!poemId) {
           alert('Não é possível reenviar: id da obra indisponível.');
           return;
         }
-        if (!confirm(`Deseja reenviar a newsletter da obra "${poemTitle}" para todos os assinantes ativos?`)) {
+        const isPush = channel === 'push';
+        const confirmText = isPush
+          ? `Deseja disparar novamente a notificação Web Push da obra "${poemTitle}" para ${pushSubsCount} inscrição(ões) ativa(s)?`
+          : `Deseja reenviar a newsletter da obra "${poemTitle}" para todos os assinantes ativos?`;
+        if (!confirm(confirmText)) {
           return;
         }
         
@@ -259,14 +367,18 @@ export async function renderEmailHistory(container) {
         buttonEl.style.opacity = '0.5';
         
         try {
-          const { data, error: fnError } = await callFunction('sendNewsletter', { poemId });
-          
-          if (fnError) throw fnError;
-          
-          alert(`Newsletter para "${poemTitle}" reenviada com sucesso para ${data?.count || 0} assinantes!`);
-          // Close details modal if open
+          if (isPush) {
+            const { data, error: fnError } = await callFunction('sendPushNotification', { poemId });
+            if (fnError) throw fnError;
+            alert(
+              `Web Push para "${poemTitle}" concluído: ${data?.sent || 0} entregue(s), ${data?.failed || 0} falha(s), ${data?.removed || 0} expirada(s) removida(s).`
+            );
+          } else {
+            const { data, error: fnError } = await callFunction('sendNewsletter', { poemId });
+            if (fnError) throw fnError;
+            alert(`Newsletter para "${poemTitle}" reenviada com sucesso para ${data?.count || 0} assinantes!`);
+          }
           detailsModal.style.display = 'none';
-          // Reload the view
           renderEmailHistory(container);
         } catch (err) {
           console.error('Erro ao reenviar:', err);
@@ -277,7 +389,7 @@ export async function renderEmailHistory(container) {
               detailedMsg = errBody.error || errBody.message || '';
             } catch (_e) {}
           }
-          alert(`Erro ao enviar newsletter:\n${detailedMsg || err.message || 'Erro na Edge Function'}`);
+          alert(`Erro ao enviar ${isPush ? 'notificação push' : 'newsletter'}:\n${detailedMsg || err.message || 'Erro na Cloud Function'}`);
           buttonEl.disabled = false;
           buttonEl.innerText = originalText;
           buttonEl.style.opacity = '1';
@@ -291,7 +403,8 @@ export async function renderEmailHistory(container) {
           await handleResendAction(
             selectedLogForResend.poem_id,
             selectedLogForResend.poems?.title || 'Desconhecido',
-            e.currentTarget
+            e.currentTarget,
+            selectedLogForResend.channel
           );
         }
       });
@@ -329,7 +442,9 @@ export async function renderEmailHistory(container) {
               </span>
             `;
             
-          const typeLabel = log.type === 'individual' ? 'Individual' : (log.type === 'newsletter' ? 'Newsletter' : 'Desconhecido');
+          const typeLabel = log.channel === 'push' || log.type === 'push'
+            ? 'Web Push'
+            : (log.type === 'individual' ? 'Individual' : (log.type === 'newsletter' ? 'Newsletter' : 'Desconhecido'));
           const typeBadge = `<span style="padding: 0.2rem 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 4px; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">${typeLabel}</span>`;
             
           const detailsPreview = log.details 
@@ -345,7 +460,7 @@ export async function renderEmailHistory(container) {
               <td style="padding: var(--space-md) 0; font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${detailsPreview}</td>
               <td style="padding: var(--space-md) 0; text-align: right; font-family: var(--font-ui);">
                 <button class="view-details-btn" data-id="${log.id}" style="color: var(--text-primary); background: transparent; border: none; cursor: pointer; font-size: 0.85rem; margin-right: var(--space-sm); transition: color var(--transition-fast); text-decoration: underline; padding: 0;">Detalhes</button>
-                <button class="resend-log-btn" data-poem-id="${log.poem_id || ''}" data-title="${escapeHtml(title)}" style="color: var(--accent-subtle); background: transparent; border: none; cursor: pointer; font-size: 0.85rem; transition: opacity var(--transition-fast); text-decoration: none; padding: 0; font-weight: 500;">Reenviar</button>
+                <button class="resend-log-btn" data-poem-id="${log.poem_id || ''}" data-channel="${escapeHtml(log.channel || 'newsletter')}" data-title="${escapeHtml(title)}" style="color: var(--accent-subtle); background: transparent; border: none; cursor: pointer; font-size: 0.85rem; transition: opacity var(--transition-fast); text-decoration: none; padding: 0; font-weight: 500;">Reenviar</button>
               </td>
             </tr>
           `;
@@ -373,7 +488,9 @@ export async function renderEmailHistory(container) {
             
             container.querySelector('#detail-poem-title').innerText = log.poems?.title || 'Desconhecido';
             
-            const typeText = log.type === 'individual' ? `Individual${log.target_email ? ` (${log.target_email})` : ''}` : (log.type === 'newsletter' ? 'Newsletter' : 'Desconhecido');
+            const typeText = log.channel === 'push' || log.type === 'push'
+              ? 'Web Push'
+              : (log.type === 'individual' ? `Individual${log.target_email ? ` (${log.target_email})` : ''}` : (log.type === 'newsletter' ? 'Newsletter' : 'Desconhecido'));
             container.querySelector('#detail-type').innerText = typeText;
             
             const timeVal = log.created_at || log.sent_at;
@@ -405,17 +522,20 @@ export async function renderEmailHistory(container) {
             e.preventDefault();
             const poemId = btn.dataset.poemId;
             const title = btn.dataset.title;
-            handleResendAction(poemId, title, btn);
+            const channel = btn.dataset.channel || 'newsletter';
+            handleResendAction(poemId, title, btn, channel);
           });
         });
       };
 
       const searchInput = container.querySelector('#email-search');
+      const channelSelect = container.querySelector('#email-filter-channel');
       const statusSelect = container.querySelector('#email-filter-status');
       const sortSelect = container.querySelector('#email-sort');
       
       const filterList = () => {
         const query = searchInput.value.toLowerCase().trim();
+        const channel = channelSelect ? channelSelect.value : 'all';
         const status = statusSelect.value;
         const sort = sortSelect.value;
         
@@ -427,6 +547,10 @@ export async function renderEmailHistory(container) {
             const details = (log.details || '').toLowerCase();
             return title.includes(query) || details.includes(query);
           });
+        }
+
+        if (channel !== 'all') {
+          filtered = filtered.filter(log => (log.channel || 'newsletter') === channel);
         }
         
         if (status !== 'all') {
@@ -459,11 +583,66 @@ export async function renderEmailHistory(container) {
       };
       
       searchInput.addEventListener('input', debounce(filterList, 150));
+      channelSelect?.addEventListener('change', filterList);
       statusSelect.addEventListener('change', filterList);
       sortSelect.addEventListener('change', filterList);
       
       // Execute initial filter
       filterList();
+
+      // Set up Web Push Dispatch Form submission handler
+      pushForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const poemSelect = container.querySelector('#push-poem-select');
+        const titleInput = container.querySelector('#push-title-input');
+        const bodyInput = container.querySelector('#push-body-input');
+        const confirmChk = container.querySelector('#push-confirm-chk');
+        const submitBtn = container.querySelector('#submit-push-btn');
+        const cancelBtn = container.querySelector('#close-push-dialog-btn');
+
+        const poemId = poemSelect?.value || '';
+        const poemTitle = poemSelect?.options?.[poemSelect.selectedIndex]?.text || '';
+        if (!poemId) return;
+        if (!confirmChk?.checked) {
+          if (pushStatusEl) pushStatusEl.textContent = 'Confirme o envio da notificação antes de continuar.';
+          return;
+        }
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Enviando...';
+        }
+        if (cancelBtn) cancelBtn.disabled = true;
+        if (pushStatusEl) pushStatusEl.textContent = 'Disparando notificações Web Push...';
+
+        try {
+          const payload = { poemId };
+          if (titleInput?.value.trim()) payload.title = titleInput.value.trim();
+          if (bodyInput?.value.trim()) payload.body = bodyInput.value.trim();
+
+          const { data, error: fnError } = await callFunction('sendPushNotification', payload);
+          if (fnError) throw fnError;
+
+          const sent = data?.sent || 0;
+          const failed = data?.failed || 0;
+          const removed = data?.removed || 0;
+          const summaryMsg = `Web Push para "${poemTitle}" enviado: ${sent} entregue(s), ${failed} falha(s), ${removed} expirada(s) removida(s).`;
+          if (pushStatusEl) pushStatusEl.textContent = summaryMsg;
+          alert(summaryMsg);
+          closePushDialog();
+          renderEmailHistory(container);
+        } catch (err) {
+          console.error('Erro ao disparar Web Push:', err);
+          const msg = err?.message || 'Erro inesperado ao enviar push.';
+          if (pushStatusEl) pushStatusEl.textContent = `Erro: ${msg}`;
+          alert(`Erro ao disparar Web Push:\n${msg}`);
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Disparar Push';
+          }
+          if (cancelBtn) cancelBtn.disabled = false;
+        }
+      });
 
       // Set up Dispatch Form submission handler
       const dispatchForm = container.querySelector('#manual-dispatch-form');

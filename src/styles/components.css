@@ -1494,6 +1494,79 @@ input, textarea {
   .pod-title { font-size: 2rem; }
 }
 
+/* 1b. Mais Lidos (Home) */
+.most-read {
+  max-width: var(--container-main);
+  margin: 0 auto var(--space-lg) auto;
+  padding: var(--space-lg) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  width: 100%;
+}
+.most-read-heading {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+.most-read-list {
+  list-style: none;
+  display: grid;
+  gap: 2px;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0;
+}
+.most-read-item {
+  border-radius: 4px;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+@media (hover: hover) {
+  .most-read-item:hover {
+    background-color: var(--bg-secondary);
+    transform: translateX(4px);
+  }
+}
+.most-read-link {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  min-block-size: 44px;
+  padding-block: var(--space-xs);
+  padding-inline: var(--space-sm);
+  text-decoration: none;
+  color: inherit;
+}
+.most-read-rank {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--accent-subtle);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  min-inline-size: 1.25rem;
+}
+.most-read-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 1rem + 1vw, 1.35rem);
+  color: var(--text-primary);
+  min-inline-size: 0;
+  transition: color var(--transition-fast);
+}
+.most-read-link:hover .most-read-title {
+  color: var(--accent-subtle);
+}
+@media (max-width: 768px) {
+  .most-read {
+    padding: var(--space-md) 0;
+  }
+  .most-read-link {
+    padding-inline: var(--space-2xs);
+  }
+}
+
 /* 2. Reactions (Poem) */
 .reactions-section {
   margin-top: var(--space-xl);
@@ -2715,6 +2788,35 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+}
+
+dialog.admin-dialog {
+  margin: auto;
+  padding: var(--space-xl);
+  width: min(92vw, 520px);
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+}
+
+dialog.admin-dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog.admin-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+dialog.admin-dialog input,
+dialog.admin-dialog select,
+dialog.admin-dialog textarea {
+  font-size: max(1rem, 1em);
 }
 
 /* 7. Audio Player */

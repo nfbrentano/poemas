@@ -33,7 +33,7 @@ export default {
             <a href="${import.meta.env.BASE_URL}admin?view=list" data-link style="${linkStyle('list')}">Obras</a>
             <a href="${import.meta.env.BASE_URL}admin?view=collections" data-link style="${linkStyle('collections')}">Coleções</a>
             <a href="${import.meta.env.BASE_URL}admin?view=analytics" data-link style="${linkStyle('analytics')}">Estatísticas</a>
-            <a href="${import.meta.env.BASE_URL}admin?view=emails" data-link style="${linkStyle('emails')}">Histórico de Emails</a>
+            <a href="${import.meta.env.BASE_URL}admin?view=emails" data-link style="${linkStyle(view === 'campaigns' ? 'campaigns' : 'emails')}">Envios / Campanhas</a>
             <a href="${import.meta.env.BASE_URL}admin?view=subscribers" data-link style="${linkStyle('subscribers')}">Assinantes</a>
             <a href="${import.meta.env.BASE_URL}admin?view=comments" data-link style="${linkStyle('comments')}">Comentários</a>
             <a href="${import.meta.env.BASE_URL}admin?view=errors" data-link style="${linkStyle('errors')}">Erros</a>
@@ -72,7 +72,7 @@ export default {
     } else if (view === 'analytics') {
       const { default: Analytics } = await import('./analytics.js');
       await Analytics.render(contentDiv);
-    } else if (view === 'emails') {
+    } else if (view === 'emails' || view === 'campaigns') {
       const { renderEmailHistory } = await import('./admin/emails.js');
       await renderEmailHistory(contentDiv);
     } else if (view === 'subscribers') {

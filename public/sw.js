@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poemas-cache-v22';
+const CACHE_NAME = 'poemas-cache-v23';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -138,27 +138,69 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : { 
-    title: 'Natanael Fernando Gatti Brentano', 
+  const fallback = {
+    title: 'Natanael Fernando Gatti Brentano',
     body: 'Uma nova obra foi publicada. Venha ler.',
     url: '/'
   };
-  
+
+  let payload = { ...fallback };
+  if (event.data) {
+    try {
+      const parsed = event.data.json();
+      if (parsed && typeof parsed === 'object') {
+        payload = {
+          title: parsed.title || fallback.title,
+          body: parsed.body || fallback.body,
+          url: parsed.url || fallback.url
+        };
+      } else if (typeof parsed === 'string' && parsed.trim()) {
+        payload.body = parsed.trim();
+      }
+    } catch (_jsonErr) {
+      try {
+        const text = typeof event.data.text === 'function' ? event.data.text() : '';
+        if (text && text.trim()) {
+          payload.body = text.trim();
+        }
+      } catch (_textErr) {}
+    }
+  }
+
   const options = {
-    body: data.body,
+    body: payload.body,
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-192x192.png',
-    data: data.url
+    data: { url: payload.url }
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(payload.title, options)
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  const rawData = event.notification && event.notification.data;
+  const targetUrl = (typeof rawData === 'string' ? rawData : rawData && rawData.url) || '/';
+  const origin = (self.location && self.location.origin) || 'https://nfgbrentano.art.br';
+  const normalizedTarget = new URL(targetUrl, origin).href;
+
   event.waitUntil(
-    clients.openWindow(event.notification.data)
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url === normalizedTarget && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      for (const client of windowClients) {
+        if (client.url && client.url.startsWith(origin) && 'navigate' in client && 'focus' in client) {
+          return client.navigate(normalizedTarget).then(() => client.focus());
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
   );
 });

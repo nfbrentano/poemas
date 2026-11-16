@@ -59,6 +59,32 @@ O build do projeto em produção é realizado via GitHub Actions (`.github/workf
 
 ---
 
+## 🔐 4. Configurar Secrets VAPID no Backend (Cloud Functions)
+
+O disparo real de notificações Web Push pela Cloud Function `sendPushNotification` exige o par completo de chaves VAPID (pública e privada) e o identificador de contato (`VAPID_SUBJECT`) armazenados com segurança no **Google Secret Manager** via Firebase CLI.
+
+> ⚠️ **Atenção:** A `VAPID_PRIVATE_KEY` **nunca** deve ser adicionada ao `.env.local`, ao repositório ou a variáveis `VITE_*`. Apenas a chave pública vai para o frontend.
+
+Execute os comandos abaixo na raiz do projeto:
+
+```bash
+firebase functions:secrets:set VAPID_PUBLIC_KEY
+firebase functions:secrets:set VAPID_PRIVATE_KEY
+firebase functions:secrets:set VAPID_SUBJECT
+```
+
+- **`VAPID_PUBLIC_KEY`**: mesma chave pública configurada em `VITE_VAPID_PUBLIC_KEY`.
+- **`VAPID_PRIVATE_KEY`**: chave privada VAPID obtida no Firebase Console (**Project Settings > Cloud Messaging > Web Push certificates**).
+- **`VAPID_SUBJECT`**: URL ou e-mail de contato no formato `mailto:nfgbrentano@gmail.com` (ou `https://nfgbrentano.art.br`).
+
+Em seguida, faça o deploy da Cloud Function para vincular os secrets:
+
+```bash
+firebase deploy --only functions
+```
+
+---
+
 ## 🧪 Como Testar e Validar (Caso de Teste CT01)
 
 1. Com a chave configurada no `.env.local` e o servidor local rodando (`npm run dev`):

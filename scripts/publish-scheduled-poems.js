@@ -45,6 +45,11 @@ export function preparePromotionPayload(poem, now = new Date()) {
     payload.newsletter_sent_at = nowIso;
   }
 
+  if (poem.notify_push_on_publish) {
+    payload.notify_push_on_publish = false;
+    payload.push_sent_at = nowIso;
+  }
+
   return payload;
 }
 
@@ -61,6 +66,7 @@ export function preparePromotionPayload(poem, now = new Date()) {
  * @param {Function} [options.whereFn] Opcional para injeção em testes
  * @param {Function} [options.docFn] Opcional para injeção em testes
  * @param {Function} [options.sendNewsletterFn] Função para envio de newsletter opcional
+ * @param {Function} [options.sendPushFn] Função para envio de Web Push opcional
  * @param {Function} [options.reportErrorFn] Função de reporte de erro
  * @param {Date} [options.now=new Date()] Data de referência
  * @param {Function} [options.log=console.log] Função de log
@@ -77,6 +83,7 @@ export async function publishDuePoems({
   whereFn,
   docFn,
   sendNewsletterFn,
+  sendPushFn,
   reportErrorFn = reportError,
   now = new Date(),
   log = console.log,
@@ -170,6 +177,28 @@ export async function publishDuePoems({
           });
         }
       }
+
+      if (poem.notify_push_on_publish && sendPushFn) {
+        try {
+          log(`[Publish Scheduled] Disparando Web Push automático para "${poem.title}" (${poem.id})...`);
+          await sendPushFn({ poemId: poem.id });
+          log(`✓ [Publish Scheduled] Web Push enviado com sucesso para "${poem.title}".`);
+        } catch (pushErr) {
+          errorLog(`✗ [Publish Scheduled] Falha ao enviar Web Push automático para "${poem.title}":`, pushErr.message);
+          await reportErrorFn(pushErr, {
+            source: 'backend:scripts',
+            category: 'network',
+            severity: 'error',
+            route_or_task: 'scripts/publish-scheduled-poems.js',
+            user_agent: 'node-script/publish-scheduled-poems',
+            context: { phase: 'sendPush', poemId: poem.id },
+            dbInstance: db,
+            addDocFn: aDoc,
+            collectionFn: cFn,
+            skipSessionLimits: true
+          });
+        }
+      }
     } catch (err) {
       errorLog(`✗ [Publish Scheduled] Falha ao publicar "${poem.title}" (${poem.id}):`, err.message);
       errors.push({ id: poem.id, title: poem.title, error: err.message });
@@ -230,6 +259,7 @@ async function main() {
   const auth = getAuth(app);
 
   let sendNewsletterFn = null;
+  let sendPushFn = null;
 
   if (adminEmail && adminPassword) {
     console.log(`[Publish Scheduled] Autenticando como admin (${adminEmail})...`);
@@ -239,12 +269,16 @@ async function main() {
     try {
       const { getFunctions, httpsCallable } = await import('firebase/functions');
       const functions = getFunctions(app, 'southamerica-east1');
-      const callable = httpsCallable(functions, 'sendNewsletter');
+      const newsletterCallable = httpsCallable(functions, 'sendNewsletter');
       sendNewsletterFn = async ({ poemId }) => {
-        return callable({ poemId });
+        return newsletterCallable({ poemId });
+      };
+      const pushCallable = httpsCallable(functions, 'sendPushNotification');
+      sendPushFn = async ({ poemId }) => {
+        return pushCallable({ poemId });
       };
     } catch (fnErr) {
-      console.warn('[Publish Scheduled] Não foi possível carregar callable sendNewsletter:', fnErr.message);
+      console.warn('[Publish Scheduled] Não foi possível carregar callables de notificação:', fnErr.message);
     }
   } else {
     console.warn('[Publish Scheduled] FIREBASE_ADMIN_EMAIL ou FIREBASE_ADMIN_PASSWORD ausentes no ambiente. Promoção automática pausada até configuração das credenciais admin.');
@@ -254,7 +288,7 @@ async function main() {
     return;
   }
 
-  const result = await publishDuePoems({ db, sendNewsletterFn });
+  const result = await publishDuePoems({ db, sendNewsletterFn, sendPushFn });
 
   // Sinaliza quantidade para o GitHub Actions Workflow
   if (process.env.GITHUB_OUTPUT) {
