@@ -25,6 +25,82 @@ export function buildAbntCitation(poem, accessDate = new Date()) {
 }
 
 /**
+ * Renderiza a faixa discreta de contexto/progresso quando o poema é lido em série (RF02, CA01).
+ * @param {object|null} seriesContext
+ * @param {string} [baseUrl='/']
+ * @returns {string}
+ */
+export function renderSeriesBannerMarkup(seriesContext, baseUrl = '/') {
+  if (!seriesContext || !seriesContext.collectionSlug || !seriesContext.total) {
+    return '';
+  }
+  return `
+    <nav id="poem-series-banner" class="poem-series-banner" aria-label="Progresso na coleção">
+      <div class="poem-series-info">
+        <span class="poem-series-title">Série: <strong>${escapeHtml(seriesContext.collectionName || 'Coleção')}</strong></span>
+        <span aria-hidden="true">·</span>
+        <span class="poem-series-progress">Poema ${Number(seriesContext.index)} de ${Number(seriesContext.total)}</span>
+      </div>
+      <a href="${baseUrl}colecao/${escapeHtml(seriesContext.collectionSlug)}/" class="poem-series-back" data-link>← Voltar à coleção</a>
+    </nav>
+  `;
+}
+
+/**
+ * Renderiza os controles internos de .poem-nav respeitando contexto de coleção quando ativo (CA01, CA02, CA03).
+ * @param {object} params
+ * @returns {string}
+ */
+export function renderPoemNavInnerMarkup({
+  prevSlug = '',
+  nextSlug = '',
+  prevTitle = '',
+  nextTitle = '',
+  seriesContext = null,
+  baseUrl = '/'
+} = {}) {
+  const collectionQuery = seriesContext?.collectionSlug
+    ? `?colecao=${encodeURIComponent(seriesContext.collectionSlug)}`
+    : '';
+
+  const prevHtml = prevSlug ? `
+    <a id="prev-btn" href="${baseUrl}poema/${escapeHtml(prevSlug)}/${collectionQuery}" class="nav-btn" data-link rel="prev" aria-label="Poema anterior: ${escapeHtml(prevTitle || '')}" title="${escapeHtml(prevTitle || '')}">
+      <span class="nav-btn-label">← Anterior</span>
+      <span class="nav-btn-title">${escapeHtml(prevTitle || '')}</span>
+    </a>
+  ` : `
+    <div id="prev-btn" class="nav-btn" style="visibility: hidden;" aria-hidden="true"></div>
+  `;
+
+  let nextHtml;
+  if (nextSlug) {
+    nextHtml = `
+      <a id="next-btn" href="${baseUrl}poema/${escapeHtml(nextSlug)}/${collectionQuery}" class="nav-btn nav-btn-next" data-link rel="next" aria-label="Próximo poema: ${escapeHtml(nextTitle || '')}" title="${escapeHtml(nextTitle || '')}">
+        <span class="nav-btn-label">Próximo →</span>
+        <span class="nav-btn-title">${escapeHtml(nextTitle || '')}</span>
+      </a>
+    `;
+  } else if (seriesContext?.collectionSlug) {
+    nextHtml = `
+      <a id="next-btn" href="${baseUrl}colecao/${escapeHtml(seriesContext.collectionSlug)}/" class="nav-btn nav-btn-next nav-btn-collection-end" data-link aria-label="Voltar ao índice da coleção: ${escapeHtml(seriesContext.collectionName || '')}">
+        <span class="nav-btn-label">Fim da série →</span>
+        <span class="nav-btn-title">Voltar ao índice da coleção</span>
+      </a>
+    `;
+  } else {
+    nextHtml = `
+      <div id="next-btn" class="nav-btn nav-btn-next" style="visibility: hidden;" aria-hidden="true"></div>
+    `;
+  }
+
+  return `
+    ${prevHtml}
+    <div class="nav-center"></div>
+    ${nextHtml}
+  `;
+}
+
+/**
  * Renders the poem container markup.
  * Can be used both in client-side router and server/build-time prerender.
  */
@@ -36,6 +112,7 @@ export function renderPoemMarkup({
   nextTitle = '',
   collectionsData = [],
   relatedPoems = [],
+  seriesContext = null,
   baseUrl = '/'
 }) {
   const plainText = stripHtml(poem.content || '').replace(/\s+/g, ' ').trim();
@@ -162,12 +239,23 @@ export function renderPoemMarkup({
     `;
   }
 
+  const seriesBannerHtml = renderSeriesBannerMarkup(seriesContext, baseUrl);
+  const poemNavInnerHtml = renderPoemNavInnerMarkup({
+    prevSlug,
+    nextSlug,
+    prevTitle,
+    nextTitle,
+    seriesContext,
+    baseUrl
+  });
+
   return `
     <div class="poem-container">
       <div class="scroll-progress-container"><div id="scroll-bar" class="scroll-progress-bar"></div></div>
       
       <article class="single-poem fade-in">
         ${breadcrumbsHtml}
+        ${seriesBannerHtml}
         <header>
           <h1>${escapeHtml(poem.title)}</h1>
           <div class="poem-meta">
@@ -310,26 +398,7 @@ export function renderPoemMarkup({
         </div>
 
         <div class="poem-nav">
-          ${prevSlug ? `
-            <a id="prev-btn" href="${baseUrl}poema/${escapeHtml(prevSlug)}/" class="nav-btn" data-link rel="prev" aria-label="Poema anterior: ${escapeHtml(prevTitle || '')}" title="${escapeHtml(prevTitle || '')}">
-              <span class="nav-btn-label">← Anterior</span>
-              <span class="nav-btn-title">${escapeHtml(prevTitle || '')}</span>
-            </a>
-          ` : `
-            <div id="prev-btn" class="nav-btn" style="visibility: hidden;" aria-hidden="true"></div>
-          `}
-          
-          <div class="nav-center">
-          </div>
-          
-          ${nextSlug ? `
-            <a id="next-btn" href="${baseUrl}poema/${escapeHtml(nextSlug)}/" class="nav-btn nav-btn-next" data-link rel="next" aria-label="Próximo poema: ${escapeHtml(nextTitle || '')}" title="${escapeHtml(nextTitle || '')}">
-              <span class="nav-btn-label">Próximo →</span>
-              <span class="nav-btn-title">${escapeHtml(nextTitle || '')}</span>
-            </a>
-          ` : `
-            <div id="next-btn" class="nav-btn nav-btn-next" style="visibility: hidden;" aria-hidden="true"></div>
-          `}
+          ${poemNavInnerHtml}
         </div>
 
         <div class="poem-actions" style="display: flex; gap: var(--space-sm); justify-content: center; align-items: center; flex-wrap: wrap;">

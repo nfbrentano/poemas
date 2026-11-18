@@ -3708,8 +3708,57 @@ html.immersive-mode .immersive-control-panel {
   box-shadow: 0 0 10px var(--accent-muted);
 }
 
+/* Collection Actions & Continuous Series Reading Mode */
+.collection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.poem-series-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs) var(--space-md);
+  padding: 0.65rem 1rem;
+  margin-bottom: var(--space-lg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.poem-series-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.poem-series-back {
+  color: var(--accent-subtle);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.poem-series-back:hover {
+  text-decoration: underline;
+}
+
+#print-library-container {
+  display: none;
+}
+
 /* PDF Print styles for exported library / anthology */
 @media print {
+  .poem-series-banner,
+  .collection-actions {
+    display: none !important;
+  }
   body.is-printing-anthology #app {
     display: none !important;
   }
@@ -3724,10 +3773,30 @@ html.immersive-mode .immersive-control-panel {
   }
   .print-poem {
     page-break-after: always;
-    padding: 2in 0;
+    padding: 1.5in 0;
     max-width: 6.5in;
     margin: 0 auto;
     box-sizing: border-box;
+  }
+  .print-poem:last-child {
+    page-break-after: auto;
+  }
+  .print-anthology-cover {
+    text-align: center;
+  }
+  .print-anthology-author,
+  .print-anthology-desc,
+  .print-anthology-count {
+    font-family: 'Merriweather', serif !important;
+    color: #333 !important;
+    margin: 12pt auto !important;
+    max-width: 500px;
+  }
+  .print-poem-dedication {
+    text-align: center;
+    font-size: 11pt !important;
+    color: #444 !important;
+    margin-bottom: 18pt !important;
   }
   .print-poem-title {
     font-family: 'Cormorant Garamond', Georgia, serif !important;

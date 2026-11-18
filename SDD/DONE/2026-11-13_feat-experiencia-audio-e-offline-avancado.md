@@ -1,7 +1,7 @@
 # [FEAT] Evolução do player de áudio (MediaSession + preferências) e otimização de cache offline
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-17
 
 ## Detalhes da Atividade
 
@@ -47,12 +47,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o leitor ajustou a velocidade para `1.5x` e o volume para `0.6` na narração de um poema, quando navega para outro poema com narração, então os controles e o elemento `<audio>` iniciam já em `1.5x` e volume `0.6`.
-- [ ] **CA02:** Dado que o navegador bloqueia autoplay ao tentar restaurar um som ambiente ativo após troca de rota, quando o bloqueio ocorre, então nenhuma exceção não tratada vai para `error_logs` e a UI reflete corretamente o estado pausado/pronto para toque.
-- [ ] **CA03:** Dado um navegador com suporte a `navigator.mediaSession`, quando o usuário pressiona Play na narração, então `mediaSession.metadata.title` reflete o título do poema e os action handlers de play/pause/seek respondem corretamente.
-- [ ] **CA04:** Dado que o usuário já visitou o site (ou reproduziu um som ambiente online uma vez), quando fica offline e ativa "Chuva" ou "Fogueira", então o áudio é servido do cache do Service Worker sem erro de conexão.
-- [ ] **CA05:** Dado uma nova execução de `npm run build`, quando inspeciono `dist/sw.js`, então `CACHE_NAME` contém identificador único da versão compilada em vez de string manual estática.
-- [ ] **CA06:** Dado um catálogo cuja serialização ultrapassa o limite seguro de `localStorage` (simulado em teste), quando `savePersistentPoems` é executado, então o `IndexedDB` recebe o acervo completo e o `localStorage` não gera `QuotaExceededError` nem corrompe dados existentes.
+- [x] **CA01:** Dado que o leitor ajustou a velocidade para `1.5x` e o volume para `0.6` na narração de um poema, quando navega para outro poema com narração, então os controles e o elemento `<audio>` iniciam já em `1.5x` e volume `0.6`.
+- [x] **CA02:** Dado que o navegador bloqueia autoplay ao tentar restaurar um som ambiente ativo após troca de rota, quando o bloqueio ocorre, então nenhuma exceção não tratada vai para `error_logs` e a UI reflete corretamente o estado pausado/pronto para toque.
+- [x] **CA03:** Dado um navegador com suporte a `navigator.mediaSession`, quando o usuário pressiona Play na narração, então `mediaSession.metadata.title` reflete o título do poema e os action handlers de play/pause/seek respondem corretamente.
+- [x] **CA04:** Dado que o usuário já visitou o site (ou reproduziu um som ambiente online uma vez), quando fica offline e ativa "Chuva" ou "Fogueira", então o áudio é servido do cache do Service Worker sem erro de conexão.
+- [x] **CA05:** Dado uma nova execução de `npm run build`, quando inspeciono `dist/sw.js`, então `CACHE_NAME` contém identificador único da versão compilada em vez de string manual estática.
+- [x] **CA06:** Dado um catálogo cuja serialização ultrapassa o limite seguro de `localStorage` (simulado em teste), quando `savePersistentPoems` é executado, então o `IndexedDB` recebe o acervo completo e o `localStorage` não gera `QuotaExceededError` nem corrompe dados existentes.
 
 ## O que a atividade não inclui
 
@@ -68,8 +68,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O som ambiente (chuva/fogueira) deve tentar manter reprodução contínua ao navegar entre poemas via SPA (movendo `<audio id="ambient-audio">` para fora de `#main-content`) ou apenas lembrar a seleção para o próximo play? | design/PO | Não | |
-| D02 | Os MP3s de `public/sounds/` são leves o suficiente para cache em segundo plano após `load` ou devem ser cacheados apenas após o primeiro clique? | dev | Não | |
+| D01 | O som ambiente (chuva/fogueira) deve tentar manter reprodução contínua ao navegar entre poemas via SPA (movendo `<audio id="ambient-audio">` para fora de `#main-content`) ou apenas lembrar a seleção para o próximo play? | design/PO | Não | Persistir a seleção (`ambient-sound-mode`) em `localStorage` e tentar restaurar automaticamente ao inicializar `AudioPlayer.init`; se o navegador bloquear o autoplay (`NotAllowedError`), capturar silenciosamente sem reportar ao `error_logs` e refletir o estado pausado/pronto (`Mudo`) na UI até novo toque do leitor. |
+| D02 | Os MP3s de `public/sounds/` são leves o suficiente para cache em segundo plano após `load` ou devem ser cacheados apenas após o primeiro clique? | dev | Não | `fire.mp3` (~323 KB) e `rain.mp3` (~1,1 MB) somam ~1,4 MB; para proteger o `LCP` e não bloquear o evento `install` do Service Worker (`RNF01`), o cache será Cache-First sob demanda no `/sounds/` e pré-aquecido em segundo plano via `requestIdleCallback` após `load` (mensagem `WARM_AMBIENT_SOUNDS`, respeitando `saveData`). |
 
 ## Sugestões de casos de teste
 

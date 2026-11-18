@@ -6,6 +6,10 @@ import { toggleFavorite } from '../utils/favorites.js';
 import { renderCollectionMarkup } from '../utils/collection-template.js';
 import { buildPoemSitemap, buildCollectionSitemap, buildPagesSitemap, buildSentimentsSitemap } from '../utils/sitemap-builder.js';
 
+vi.mock('../utils/analytics.js', () => ({
+  trackPageView: vi.fn()
+}));
+
 describe('Página e Integração de Favoritos (SDD 2026-11-10)', () => {
   let container;
 
@@ -17,6 +21,7 @@ describe('Página e Integração de Favoritos (SDD 2026-11-10)', () => {
   });
 
   afterEach(() => {
+    poemPage.cleanup();
     localStorage.clear();
     vi.restoreAllMocks();
     if (container.parentNode) {

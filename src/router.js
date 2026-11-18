@@ -478,7 +478,13 @@ export function initRouter() {
     }
 
     e.preventDefault();
-    navigateTo(link.getAttribute('href') || link.href);
+    let targetHref = link.getAttribute('href') || link.href;
+    const collectionSlug = link.dataset?.collectionSlug;
+    if (collectionSlug && targetHref.includes('/poema/') && !targetHref.includes('colecao=')) {
+      const separator = targetHref.includes('?') ? '&' : '?';
+      targetHref = `${targetHref}${separator}colecao=${encodeURIComponent(collectionSlug)}`;
+    }
+    navigateTo(targetHref);
   };
   document.body.addEventListener('click', window.__routerClickHandler);
 

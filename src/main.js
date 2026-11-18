@@ -96,6 +96,24 @@ if ('serviceWorker' in navigator) {
       .then(reg => {
         // Automatically check for SW updates
         reg.update().catch(() => {});
+
+        // Pré-aquecimento não-bloqueante dos sons ambiente para disponibilidade offline (RF03, RNF01)
+        const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+        if (!saveData) {
+          const triggerAmbientWarmup = () => {
+            try {
+              const target = reg.active || navigator.serviceWorker.controller;
+              if (target && typeof target.postMessage === 'function') {
+                target.postMessage({ type: 'WARM_AMBIENT_SOUNDS' });
+              }
+            } catch {}
+          };
+          if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(triggerAmbientWarmup);
+          } else {
+            setTimeout(triggerAmbientWarmup, 2500);
+          }
+        }
       })
       .catch(err => {
         console.log('SW registration failed:', err);

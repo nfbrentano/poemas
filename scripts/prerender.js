@@ -35,17 +35,16 @@ import { loadFallbackPoems } from './fallback-data.js';
 import { sortPoemsByCollectionRelations } from '../src/utils/collection-order.js';
 import { renderMostReadMarkup } from '../src/utils/most-read.js';
 import { loadMostReadForBuild } from './most-read-loader.js';
+import {
+  getFirebaseConfig,
+  installFirebaseNodeReferer,
+  patchFirebaseAuthReferer,
+  readBuildDataCache,
+  writeBuildDataCache
+} from './build-data-cache.js';
 
 
 // Note: Run this with node --env-file=.env.local scripts/prerender.js
-const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID
-};
 
 /**
  * Safely removes all JSON-LD script tags, iterating until stabilized (RF08, CA10).
@@ -398,15 +397,32 @@ async function prerender() {
     let allCollections = [];
     let collectionPoems = [];
     let usedFirestorePoems = false;
+    const firebaseConfig = getFirebaseConfig();
+
+    const ensureFirestore = () => {
+      if (!db && firebaseConfig.apiKey) {
+        installFirebaseNodeReferer();
+        firebaseApp = initializeApp(firebaseConfig);
+        db = getFirestore(firebaseApp);
+      }
+      return { app: firebaseApp, db };
+    };
+
+    const cached = firebaseConfig.apiKey ? readBuildDataCache() : null;
 
     if (!firebaseConfig.apiKey) {
       console.warn('[Prerender] Firebase apiKey missing, using local fallback poems.');
       poems = loadFallbackPoems();
       allCollections = enrichCollectionsWithCurated([]);
       collectionPoems = mergeRelationsWithCurated([], poems, allCollections);
+    } else if (cached && Array.isArray(cached.poems) && cached.poems.length > 0 && Array.isArray(cached.rawCollections) && Array.isArray(cached.rawCollectionPoems)) {
+      console.log('[Prerender] Reutilizando poemas e coleções do cache compartilhado de build (0 leituras duplicadas).');
+      poems = cached.poems.map(p => ({ ...p }));
+      usedFirestorePoems = true;
+      allCollections = enrichCollectionsWithCurated(cached.rawCollections);
+      collectionPoems = mergeRelationsWithCurated(cached.rawCollectionPoems, poems, allCollections);
     } else {
-      firebaseApp = initializeApp(firebaseConfig);
-      db = getFirestore(firebaseApp);
+      ensureFirestore();
 
       console.log('Fetching published poems, collections and relations for pre-rendering...');
       const poemsQuery = query(
@@ -439,18 +455,28 @@ async function prerender() {
         poems = loadFallbackPoems();
         allCollections = enrichCollectionsWithCurated(allCollections.length ? allCollections : []);
         collectionPoems = mergeRelationsWithCurated([], poems, allCollections);
+      } else {
+        writeBuildDataCache({
+          poems,
+          rawCollections,
+          rawCollectionPoems
+        });
       }
     }
 
     let mostReadPoems = [];
-    if (db && usedFirestorePoems) {
+    if (cached && Array.isArray(cached.mostReadPoems)) {
+      mostReadPoems = cached.mostReadPoems;
+    } else if (usedFirestorePoems && firebaseConfig.apiKey) {
       try {
+        const { app, db: firestoreDb } = ensureFirestore();
         let auth = null;
         if (process.env.FIREBASE_ADMIN_EMAIL && process.env.FIREBASE_ADMIN_PASSWORD) {
           const { getAuth } = await import('firebase/auth');
-          auth = getAuth(firebaseApp);
+          auth = patchFirebaseAuthReferer(getAuth(app));
         }
-        mostReadPoems = await loadMostReadForBuild({ db, auth, poems });
+        mostReadPoems = await loadMostReadForBuild({ db: firestoreDb, auth, poems });
+        writeBuildDataCache({ mostReadPoems });
       } catch (mrErr) {
         console.warn('[Prerender] Falha ao carregar poemas mais lidos:', mrErr.message);
       }
@@ -711,9 +737,13 @@ async function prerender() {
 
     let authorAvatarUrl = DEFAULT_AVATAR_URL;
     let authorBioText = DEFAULT_AUTHOR_BIO;
-    if (db) {
+    if (cached?.siteSettings) {
+      authorAvatarUrl = cached.siteSettings.authorAvatarUrl || DEFAULT_AVATAR_URL;
+      authorBioText = cached.siteSettings.authorBioText || DEFAULT_AUTHOR_BIO;
+    } else if (firebaseConfig.apiKey) {
       try {
-        const settingsSnap = await getDocs(collection(db, 'site_settings'));
+        const { db: firestoreDb } = ensureFirestore();
+        const settingsSnap = await getDocs(collection(firestoreDb, 'site_settings'));
         settingsSnap.forEach(d => {
           const data = d.data();
           const key = data.key || d.id;
@@ -724,6 +754,7 @@ async function prerender() {
             authorBioText = data.value;
           }
         });
+        writeBuildDataCache({ siteSettings: { authorAvatarUrl, authorBioText } });
       } catch (err) {
         console.warn('Could not fetch site_settings in prerender:', err);
       }

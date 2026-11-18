@@ -7,6 +7,7 @@ const DB_VERSION = 1;
 const STORE_NAME = 'acervo';
 const POEMS_RECORD_KEY = 'published_poems';
 const LOCAL_STORAGE_KEY = 'poemas_offline_acervo_v1';
+export const MAX_LOCAL_STORAGE_BYTES = 4 * 1024 * 1024; // 4 MB (< 4.5 MB RNF03)
 
 let cachedPoems = null;
 let cacheTimestamp = 0;
@@ -104,14 +105,88 @@ async function readFromIndexedDb() {
 }
 
 /**
- * Salva no localStorage como camada síncrona / fallback de contingência.
+ * Calcula o tamanho aproximado em bytes UTF-8 de uma string serializada.
+ * @param {string} str
+ * @returns {number}
+ */
+export function getSerializedByteSize(str) {
+  if (typeof str !== 'string') return 0;
+  if (typeof TextEncoder !== 'undefined') {
+    return new TextEncoder().encode(str).byteLength;
+  }
+  return str.length * 2;
+}
+
+/**
+ * Constrói resumo leve indexável dos poemas (sem o texto integral `content`)
+ * para evitar estouro de cota no fallback em localStorage (RF05, RNF03).
  * @param {Array<object>} poems
+ * @returns {Array<object>}
+ */
+export function buildLightweightPoemsSummary(poems) {
+  if (!Array.isArray(poems)) return [];
+  return poems.map((p) => {
+    const summary = {
+      id: p.id || '',
+      slug: p.slug || '',
+      title: p.title || '',
+      status: p.status || 'published',
+      published_at: p.published_at || '',
+      _lightweight: true
+    };
+    if (p.updated_at) summary.updated_at = p.updated_at;
+    if (p.audio_url) summary.audio_url = p.audio_url;
+    if (Array.isArray(p.tags)) summary.tags = [...p.tags];
+    if (Array.isArray(p.collection_slugs)) summary.collection_slugs = [...p.collection_slugs];
+    if (typeof p.excerpt === 'string' && p.excerpt) {
+      summary.excerpt = p.excerpt.slice(0, 240);
+    }
+    return summary;
+  });
+}
+
+/**
+ * Salva no localStorage como camada síncrona / fallback de contingência com guarda estrita de bytes.
+ * @param {Array<object>} poems
+ * @param {{ maxBytes?: number }} [options]
  * @returns {boolean}
  */
-function saveToLocalStorage(poems) {
+function saveToLocalStorage(poems, { maxBytes = MAX_LOCAL_STORAGE_BYTES } = {}) {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return false;
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(poems));
+    const safeLimit = typeof maxBytes === 'number' && Number.isFinite(maxBytes) && maxBytes >= 0
+      ? maxBytes
+      : MAX_LOCAL_STORAGE_BYTES;
+    if (safeLimit < 2) return false;
+    let payload = JSON.stringify(poems);
+
+    if (getSerializedByteSize(payload) > safeLimit) {
+      const lightweight = buildLightweightPoemsSummary(poems);
+      payload = JSON.stringify(lightweight);
+
+      if (getSerializedByteSize(payload) > safeLimit) {
+        // Busca binária para encontrar o maior prefixo de resumos que cabe no limite
+        let low = 1;
+        let high = lightweight.length;
+        let bestPayload = null;
+        while (low <= high) {
+          const mid = Math.floor((low + high) / 2);
+          const candidate = JSON.stringify(lightweight.slice(0, mid));
+          if (getSerializedByteSize(candidate) <= safeLimit) {
+            bestPayload = candidate;
+            low = mid + 1;
+          } else {
+            high = mid - 1;
+          }
+        }
+        if (!bestPayload) {
+          return false;
+        }
+        payload = bestPayload;
+      }
+    }
+
+    localStorage.setItem(LOCAL_STORAGE_KEY, payload);
     return true;
   } catch {
     return false;
@@ -135,20 +210,23 @@ function readFromLocalStorage() {
 }
 
 /**
- * Persiste o acervo localmente garantindo conformidade com RNF01 (≤ 5MB),
- * RNF03/CA09 (apenas status 'published') e RNF04/CA10 (falha local não quebra a app).
+ * Persiste o acervo localmente garantindo conformidade com RNF01/RNF03 (<= 4 MB no localStorage,
+ * acervo completo priorizado no IndexedDB), apenas status 'published' e falha local segura.
  * @param {Array<object>} poems
+ * @param {{ maxLocalStorageBytes?: number }} [options]
  * @returns {Promise<boolean>}
  */
-export async function savePersistentPoems(poems) {
+export async function savePersistentPoems(poems, options = {}) {
   if (!Array.isArray(poems)) return false;
   // RNF03 & CA09: Rascunhos e agendados NUNCA são armazenados localmente
   const publishedOnly = poems
     .filter(p => p && p.status !== 'draft' && p.status !== 'scheduled')
     .map(p => ({ ...p, status: p.status || 'published' }));
   try {
-    saveToLocalStorage(publishedOnly);
+    // Prioriza IndexedDB para o conteúdo completo (`content`)
     await saveToIndexedDb(publishedOnly);
+    // Fallback leve e limitado em localStorage
+    saveToLocalStorage(publishedOnly, { maxBytes: options.maxLocalStorageBytes });
     cachedPoems = publishedOnly.map(p => ({ ...p }));
     cacheTimestamp = Date.now();
     return true;

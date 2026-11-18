@@ -3,17 +3,14 @@ import path from 'path';
 import { generateAllSitemaps, formatDateToYMD, SITE_URL } from '../src/utils/sitemap-builder.js';
 import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../src/data/collections.js';
 import { loadFallbackPoems } from './fallback-data.js';
+import {
+  getFirebaseConfig,
+  installFirebaseNodeReferer,
+  readBuildDataCache,
+  writeBuildDataCache
+} from './build-data-cache.js';
 
 // Note: Run this with node --env-file=.env.local scripts/generate-sitemap.js
-const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID
-};
-
 const baseUrl = process.env.SITE_URL || SITE_URL;
 
 function getFileMTime(relativePath) {
@@ -26,10 +23,11 @@ function getFileMTime(relativePath) {
   return null;
 }
 
-export async function runGenerateSitemap(outputDirectory) {
+export async function runGenerateSitemap(outputDirectory, options = {}) {
   let poems = [];
   let collections = [];
   let collectionPoems = [];
+  const firebaseConfig = getFirebaseConfig();
 
   if (!firebaseConfig.apiKey) {
     console.warn('[Sitemap] Firebase apiKey missing, using local fallback poems.');
@@ -37,42 +35,61 @@ export async function runGenerateSitemap(outputDirectory) {
     collections = enrichCollectionsWithCurated([]);
     collectionPoems = mergeRelationsWithCurated([], poems, collections);
   } else {
-    const { initializeApp } = await import('firebase/app');
-    const { getFirestore, collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    console.log('Fetching published poems from Firestore...');
-    const poemsQuery = query(
-      collection(db, 'poems'),
-      where('status', '==', 'published'),
-      orderBy('published_at', 'desc')
-    );
-    const poemSnapshot = await getDocs(poemsQuery);
-    poems = poemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    console.log(`Found ${poems.length} published poems.`);
-
-    console.log('Fetching collections from Firestore...');
-    const colSnapshot = await getDocs(collection(db, 'collections'));
-    const rawCollections = colSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(col => col.slug);
-    collections = enrichCollectionsWithCurated(rawCollections);
-    console.log(`Found ${collections.length} collections (including curated).`);
-
-    console.log('Fetching collection_poems relations from Firestore...');
-    try {
-      const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
-      const rawCp = cpSnapshot.docs.map(doc => doc.data());
+    const cached = readBuildDataCache(options.cacheOptions);
+    if (cached && Array.isArray(cached.poems) && cached.poems.length > 0) {
+      console.log('[Sitemap] Reutilizando cache compartilhado de build (0 leituras no Firestore).');
+      poems = cached.poems.map(p => ({ ...p }));
+      collections = enrichCollectionsWithCurated(Array.isArray(cached.rawCollections) ? cached.rawCollections : []);
+      const rawCp = Array.isArray(cached.rawCollectionPoems) ? cached.rawCollectionPoems : [];
       collectionPoems = mergeRelationsWithCurated(rawCp, poems, collections);
-    } catch (e) {
-      console.warn('Could not fetch collection_poems:', e.message);
-      collectionPoems = mergeRelationsWithCurated([], poems, collections);
-    }
+    } else {
+      installFirebaseNodeReferer();
+      const { initializeApp } = await import('firebase/app');
+      const { getFirestore, collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
 
-    if (poems.length === 0) {
-      console.warn('[Sitemap] No poems found from Firestore (offline mode). Using local fallback poems.');
-      poems = loadFallbackPoems();
-      collections = enrichCollectionsWithCurated(collections.length ? collections : []);
-      collectionPoems = mergeRelationsWithCurated([], poems, collections);
+      console.log('Fetching published poems from Firestore...');
+      const poemsQuery = query(
+        collection(db, 'poems'),
+        where('status', '==', 'published'),
+        orderBy('published_at', 'desc')
+      );
+      const poemSnapshot = await getDocs(poemsQuery);
+      poems = poemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log(`Found ${poems.length} published poems.`);
+
+      console.log('Fetching collections from Firestore...');
+      const colSnapshot = await getDocs(collection(db, 'collections'));
+      const rawCollections = colSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(col => col.slug);
+      collections = enrichCollectionsWithCurated(rawCollections);
+      console.log(`Found ${collections.length} collections (including curated).`);
+
+      console.log('Fetching collection_poems relations from Firestore...');
+      let rawCp = [];
+      let cpLoaded = false;
+      try {
+        const cpSnapshot = await getDocs(collection(db, 'collection_poems'));
+        rawCp = cpSnapshot.docs.map(doc => doc.data());
+        cpLoaded = true;
+        collectionPoems = mergeRelationsWithCurated(rawCp, poems, collections);
+      } catch (e) {
+        console.warn('Could not fetch collection_poems:', e.message);
+        collectionPoems = mergeRelationsWithCurated([], poems, collections);
+      }
+
+      if (poems.length === 0) {
+        console.warn('[Sitemap] No poems found from Firestore (offline mode). Using local fallback poems.');
+        poems = loadFallbackPoems();
+        collections = enrichCollectionsWithCurated(collections.length ? collections : []);
+        collectionPoems = mergeRelationsWithCurated([], poems, collections);
+      } else {
+        const cachePayload = { poems, rawCollections };
+        if (cpLoaded) {
+          cachePayload.rawCollectionPoems = rawCp;
+        }
+        writeBuildDataCache(cachePayload, options.cacheOptions);
+      }
     }
   }
 

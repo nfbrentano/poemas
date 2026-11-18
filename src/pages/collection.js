@@ -7,6 +7,8 @@ import { getPublishedPoems } from '../utils/poems-store.js';
 import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../data/collections.js';
 import { unwrapSafeHTML } from '../utils/html.js';
 import { sortPoemsByCollectionRelations } from '../utils/collection-order.js';
+import { navigateTo } from '../router.js';
+import { printAnthology } from '../utils/print-anthology.js';
 
 export const collection = {
   meta: {
@@ -142,12 +144,56 @@ export const collection = {
 
     if (isPrerendered) {
       container.removeAttribute('data-prerendered');
+      if (poemsList.length > 0 && !container.querySelector('#start-collection-reading-btn')) {
+        container.innerHTML = unwrapSafeHTML(renderCollectionMarkup({
+          col,
+          poemsList,
+          baseUrl: import.meta.env.BASE_URL
+        }));
+      }
     } else {
       container.innerHTML = unwrapSafeHTML(renderCollectionMarkup({
         col,
         poemsList,
         baseUrl: import.meta.env.BASE_URL
       }));
+    }
+
+    const baseUrl = import.meta.env.BASE_URL;
+
+    // Botão "Começar leitura" em modo coleção (RF03, CA04)
+    const startBtn = container.querySelector('#start-collection-reading-btn');
+    if (startBtn && poemsList.length > 0) {
+      startBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo(`${baseUrl}poema/${poemsList[0].slug}/?colecao=${encodeURIComponent(col.slug)}`);
+      });
+    }
+
+    // Preserva contexto ?colecao= nos cliques diretos de cada poema da lista (RF01, CA01)
+    container.querySelectorAll('.poem-row-link[data-collection-slug]').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const poemSlug = link.dataset.poemSlug;
+        const colSlug = link.dataset.collectionSlug || col.slug;
+        if (poemSlug) {
+          navigateTo(`${baseUrl}poema/${poemSlug}/?colecao=${encodeURIComponent(colSlug)}`);
+        }
+      });
+    });
+
+    // Botão "Imprimir / Salvar PDF da Coleção" (RF03, RF04, CA05)
+    const printBtn = container.querySelector('#print-collection-btn');
+    if (printBtn) {
+      printBtn.addEventListener('click', () => {
+        printAnthology({
+          title: col.name,
+          subtitle: col.description || '',
+          poems: poemsList
+        });
+      });
     }
   }
 };

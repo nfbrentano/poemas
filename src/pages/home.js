@@ -78,6 +78,10 @@ export default {
       searchParams.has('tag') || 
       searchParams.has('q') || 
       searchParams.has('busca') || 
+      searchParams.has('col') ||
+      searchParams.has('sent') ||
+      searchParams.has('tam') ||
+      searchParams.has('audio') ||
       searchParams.has('page');
 
     this.meta = {
@@ -305,6 +309,8 @@ export default {
       itemsToRender.forEach((poem, index) => {
         const isFav = favSlugs.has(poem.slug) || (poem.id && favSlugs.has(poem.id));
         const favBadge = isFav ? ' <span class="favorite-badge" aria-label="Poema favoritado" title="Poema favoritado">🔖</span>' : '';
+        const hasAudio = Boolean(poem.audio_url && String(poem.audio_url).trim());
+        const audioBadge = hasAudio ? ' <span class="audio-badge" aria-label="Com narração em áudio" title="Com narração em áudio">🔊</span>' : '';
         const year = new Date(poem.published_at).getFullYear();
         const dateStr = new Date(poem.published_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
         
@@ -314,7 +320,7 @@ export default {
           html += `
           <article class="poem-featured fade-in">
             <a href="${BASE_URL}poema/${poem.slug}/" data-link>
-              <h2 class="featured-title">${escapeHtml(poem.title)}${favBadge}</h2>
+              <h2 class="featured-title">${escapeHtml(poem.title)}${favBadge}${audioBadge}</h2>
               <div class="featured-excerpt">${escapeHtml(rawExcerpt)}</div>
               <div class="featured-meta">
                 <span>${dateStr}</span>
@@ -336,7 +342,7 @@ export default {
           html += `
           <article class="poem-row fade-in">
             <a href="${BASE_URL}poema/${poem.slug}/" data-link class="poem-row-link">
-              <h3 class="poem-row-title">${escapeHtml(poem.title)}${favBadge}</h3>
+              <h3 class="poem-row-title">${escapeHtml(poem.title)}${favBadge}${audioBadge}</h3>
               <span class="poem-row-year">${year}</span>
             </a>
           </article>
@@ -560,9 +566,16 @@ export default {
       getRandomPoem(e);
     });
 
-    if (params.q) {
+    if (
+      params.q ||
+      searchParams.has('q') ||
+      searchParams.has('col') ||
+      searchParams.has('sent') ||
+      searchParams.has('tam') ||
+      searchParams.has('audio')
+    ) {
       import('../components/search-overlay.js').then(({ searchOverlay }) => {
-        searchOverlay.open(params.q);
+        searchOverlay.open(params.q ?? null);
       });
     }
   }

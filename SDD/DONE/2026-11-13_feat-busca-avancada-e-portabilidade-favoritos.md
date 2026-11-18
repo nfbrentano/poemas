@@ -1,7 +1,7 @@
 # [FEAT] Busca avançada com filtros combináveis e portabilidade de favoritos
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-17
 
 ## Detalhes da Atividade
 
@@ -46,13 +46,13 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o overlay de busca aberto, quando seleciono o filtro "Com narração em áudio" e tamanho "Curto" sem digitar termo textual, então são listados apenas poemas publicados que atendem simultaneamente aos dois critérios.
-- [ ] **CA02:** Dado uma busca combinando termo `"luz"` + sentimento `"amor"`, quando os resultados renderizam, então exibem somente poemas que contêm `"luz"` (sem acento) e a tag correspondente, mostrando ícone de áudio nos que possuem `audio_url`.
-- [ ] **CA03:** Dado uma URL aberta com `/?q=tempo&audio=1` (ou filtros na URL), quando a SPA inicializa, então o overlay restaura os filtros selecionados e exibe os resultados filtrados.
-- [ ] **CA04:** Dado que tenho 6 poemas favoritados e digito um termo na busca interna de `/favoritos/`, quando filtro, então apenas os favoritos correspondentes permanecem visíveis sem alterar os dados salvos.
-- [ ] **CA05:** Dado que exporto meus 4 favoritos como JSON ou link `/favoritos/?import=...` e abro em outro navegador que já tinha 1 favorito diferente, quando confirmo a importação, então a lista mesclada passa a conter os 5 poemas únicos válidos.
-- [ ] **CA06:** Dado um arquivo JSON ou parâmetro `?import=` contendo slugs inexistentes, rascunhos ou caracteres inválidos (`<script>`), quando tento importar, então os itens inválidos são descartados e apenas slugs publicados válidos são adicionados (ou exibe erro se nada for válido).
-- [ ] **CA07:** Dado que o usuário clica em "Limpar filtros" na busca, quando acionado, então todos os selects/toggles retornam ao padrão e a URL é limpa mantendo o foco no campo de busca.
+- [x] **CA01:** Dado o overlay de busca aberto, quando seleciono o filtro "Com narração em áudio" e tamanho "Curto" sem digitar termo textual, então são listados apenas poemas publicados que atendem simultaneamente aos dois critérios.
+- [x] **CA02:** Dado uma busca combinando termo `"luz"` + sentimento `"amor"`, quando os resultados renderizam, então exibem somente poemas que contêm `"luz"` (sem acento) e a tag correspondente, mostrando ícone de áudio nos que possuem `audio_url`.
+- [x] **CA03:** Dado uma URL aberta com `/?q=tempo&audio=1` (ou filtros na URL), quando a SPA inicializa, então o overlay restaura os filtros selecionados e exibe os resultados filtrados.
+- [x] **CA04:** Dado que tenho 6 poemas favoritados e digito um termo na busca interna de `/favoritos/`, quando filtro, então apenas os favoritos correspondentes permanecem visíveis sem alterar os dados salvos.
+- [x] **CA05:** Dado que exporto meus 4 favoritos como JSON ou link `/favoritos/?import=...` e abro em outro navegador que já tinha 1 favorito diferente, quando confirmo a importação, então a lista mesclada passa a conter os 5 poemas únicos válidos.
+- [x] **CA06:** Dado um arquivo JSON ou parâmetro `?import=` contendo slugs inexistentes, rascunhos ou caracteres inválidos (`<script>`), quando tento importar, então os itens inválidos são descartados e apenas slugs publicados válidos são adicionados (ou exibe erro se nada for válido).
+- [x] **CA07:** Dado que o usuário clica em "Limpar filtros" na busca, quando acionado, então todos os selects/toggles retornam ao padrão e a URL é limpa mantendo o foco no campo de busca.
 
 ## O que a atividade não inclui
 
@@ -67,8 +67,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Os filtros combináveis na busca devem ficar visíveis por padrão ou recolhidos atrás de um botão "Filtros" para preservar o visual minimalista do overlay? | design | Não | |
-| D02 | Os critérios de tamanho (`curto`/`médio`/`longo`) fazem mais sentido por número de versos (`<= 15`, `16–35`, `> 35`) ou por tempo de leitura estimado (`<= 1 min`, `2 min`, `3+ min`)? | PO/design | Não | |
+| D01 | Os filtros combináveis na busca devem ficar visíveis por padrão ou recolhidos atrás de um botão "Filtros" para preservar o visual minimalista do overlay? | design | Não | Barra compacta de filtros renderizada diretamente no overlay (selects de Coleção, Sentimento, Tamanho, toggle de Áudio e botão "Limpar filtros"), permitindo uso imediato em desktop e mobile. |
+| D02 | Os critérios de tamanho (`curto`/`médio`/`longo`) fazem mais sentido por número de versos (`<= 15`, `16–35`, `> 35`) ou por tempo de leitura estimado (`<= 1 min`, `2 min`, `3+ min`)? | PO/design | Não | Classificação por quantidade de versos (`curto` <= 15 versos, `medio` 16–35 versos, `longo` > 35 versos), conforme especificado no `RF01`. |
 
 ## Sugestões de casos de teste
 

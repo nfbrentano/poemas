@@ -2,6 +2,7 @@
  * Utilitários para ordenação de poemas dentro de coleções.
  * Usado pelo painel administrativo (arrastar-e-soltar / botões), pela SPA e pelo prerender.
  */
+import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../data/collections.js';
 
 /**
  * Move um item de `fromIndex` para `toIndex` em um array, retornando um novo array.
@@ -159,4 +160,90 @@ export function buildCollectionPoemsPayload(collectionId, orderedPoems, isManual
     }
     return item;
   });
+}
+
+/**
+ * Calcula posição e vizinhos (Anterior/Próximo) do poema dentro de uma lista ordenada de coleção (RF01, RF02, CA01, CA02, CA07).
+ * @param {Array<object>|object} orderedPoemsOrOptions
+ * @param {string} [currentPoemSlug]
+ * @param {object|null} [collection=null]
+ * @returns {object|null}
+ */
+export function getCollectionReadingContext(orderedPoemsOrOptions, currentPoemSlug, collection = null) {
+  let poemsList = orderedPoemsOrOptions;
+  let targetSlug = currentPoemSlug;
+  let colObj = collection;
+
+  if (!Array.isArray(orderedPoemsOrOptions) && orderedPoemsOrOptions && typeof orderedPoemsOrOptions === 'object') {
+    poemsList = orderedPoemsOrOptions.orderedPoems || orderedPoemsOrOptions.poems;
+    targetSlug = orderedPoemsOrOptions.currentPoemSlug || orderedPoemsOrOptions.poemSlug || orderedPoemsOrOptions.slug;
+    colObj = orderedPoemsOrOptions.collection || null;
+  }
+
+  if (!Array.isArray(poemsList) || poemsList.length === 0 || !targetSlug) {
+    return null;
+  }
+
+  const idx = poemsList.findIndex(p => p && p.slug === targetSlug);
+  if (idx === -1) {
+    return null;
+  }
+
+  const prev = idx > 0 ? poemsList[idx - 1] : null;
+  const next = idx < poemsList.length - 1 ? poemsList[idx + 1] : null;
+
+  return {
+    collection: colObj || null,
+    collectionSlug: colObj?.slug || '',
+    collectionName: colObj?.name || '',
+    current: poemsList[idx],
+    prev,
+    next,
+    prevSlug: prev?.slug || '',
+    prevTitle: prev?.title || '',
+    nextSlug: next?.slug || '',
+    nextTitle: next?.title || '',
+    index: idx + 1,
+    total: poemsList.length
+  };
+}
+
+export const getCollectionNavigation = getCollectionReadingContext;
+
+/**
+ * Resolve e ordena o contexto completo de série para um poema dentro de `?colecao=<slug>` (RNF02, CA07).
+ * Retorna `null` se a coleção não existir ou não contiver o poema.
+ * @param {object} params
+ * @returns {object|null}
+ */
+export function resolveCollectionContextForPoem({
+  collectionSlug,
+  poemSlug,
+  allPoems = [],
+  firestoreCollections = [],
+  firestoreRelations = []
+} = {}) {
+  if (!collectionSlug || !poemSlug) return null;
+
+  const enrichedCollections = enrichCollectionsWithCurated(firestoreCollections);
+  const targetCollection = enrichedCollections.find(c => c && c.slug === collectionSlug);
+  if (!targetCollection) return null;
+
+  const publishedPoems = (allPoems || []).filter(
+    p => p && p.status !== 'draft' && p.status !== 'scheduled'
+  );
+  const mergedRelations = mergeRelationsWithCurated(
+    firestoreRelations,
+    publishedPoems,
+    [targetCollection]
+  );
+  const colRelations = mergedRelations.filter(r => r && r.collection_id === targetCollection.id);
+  const relationPoemIds = new Set(colRelations.map(r => r.poem_id));
+
+  const matched = publishedPoems.filter(
+    p => relationPoemIds.has(p.id) || (Array.isArray(p.collection_slugs) && p.collection_slugs.includes(targetCollection.slug))
+  );
+
+  const orderedPoems = sortPoemsByCollectionRelations(matched, colRelations);
+  return getCollectionReadingContext(orderedPoems, poemSlug, targetCollection);
 }

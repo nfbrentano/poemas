@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderAboutMarkup, getAboutFaq } from './utils/about-template.js';
 import { renderCollectionMarkup } from './utils/collection-template.js';
 import { renderPoemMarkup } from './utils/poem-template.js';
 import { faqPageSchema, serializeJsonLd, SITE_URL } from './utils/structured-data.js';
+
+vi.mock('./utils/poems-store.js', () => ({
+  getPublishedPoems: vi.fn().mockResolvedValue([])
+}));
 
 describe('GEO Conteúdo Citável — SDD: 2026-09-24_geo-conteudo-citavel-sobre-e-colecoes', () => {
 

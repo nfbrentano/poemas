@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poemas-cache-v23';
+const CACHE_NAME = 'poemas-cache-v24';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -12,6 +12,33 @@ const STATIC_ASSETS = [
   '/fonts/merriweather-v33-latin-regular.woff2',
   '/fonts/cormorant-garamond-v21-latin-regular.woff2'
 ];
+
+const AMBIENT_SOUND_ASSETS = [
+  '/sounds/rain.mp3',
+  '/sounds/fire.mp3'
+];
+
+async function warmAmbientSoundsCache() {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    await Promise.all(
+      AMBIENT_SOUND_ASSETS.map(async (soundUrl) => {
+        try {
+          const existing = await cache.match(soundUrl);
+          if (existing) return;
+          const res = await fetch(soundUrl);
+          if (res && res.status === 200) {
+            await cache.put(soundUrl, res.clone());
+          }
+        } catch (err) {
+          console.warn('[SW] Failed to pre-warm ambient sound:', soundUrl, err);
+        }
+      })
+    );
+  } catch (err) {
+    console.warn('[SW] Unable to warm ambient sounds cache:', err);
+  }
+}
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -113,6 +140,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // 2b. Ambient Sound Assets (/sounds/*) - Cache First on-demand (offline support without blocking install)
+  if (requestUrl.pathname.startsWith('/sounds/')) {
+    event.respondWith((async () => {
+      const cacheKey = requestUrl.pathname;
+      const cached = (await caches.match(cacheKey)) || (await caches.match(event.request));
+      if (cached) {
+        return cached;
+      }
+      try {
+        const networkResponse = await fetch(cacheKey);
+        if (networkResponse && networkResponse.status === 200) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(cacheKey, networkResponse.clone());
+        }
+        return networkResponse;
+      } catch (err) {
+        console.warn('[SW] Fetch failed for ambient sound:', event.request.url, err);
+        return new Response('', { status: 503, statusText: 'Service Unavailable' });
+      }
+    })());
+    return;
+  }
+
   // 3. Other same-origin resources (images, icons, theme-init.js, manifest.json, etc.)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
@@ -203,4 +253,14 @@ self.addEventListener('notificationclick', (event) => {
       }
     })
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event?.data && event.data.type === 'WARM_AMBIENT_SOUNDS') {
+    if (typeof event.waitUntil === 'function') {
+      event.waitUntil(warmAmbientSoundsCache());
+    } else {
+      warmAmbientSoundsCache();
+    }
+  }
 });

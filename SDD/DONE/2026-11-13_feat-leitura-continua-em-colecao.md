@@ -1,7 +1,7 @@
 # [FEAT] Leitura contínua em coleção (Modo Antologia e impressão de série)
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-13
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-11-13 · **Atualizada em:** 2026-11-17
 
 ## Detalhes da Atividade
 
@@ -44,13 +44,13 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que estou em `/colecao/amor-e-conexao/` e abro o 1º poema da lista ordenada, quando o poema renderiza, então vejo o indicador `Poema 1 de N` da coleção e o botão "Próximo" aponta para o 2º poema dessa coleção.
-- [ ] **CA02:** Dado que estou no 1º poema da coleção, quando verifico a navegação de série, então não há botão "Anterior na coleção" (ou aponta para voltar ao índice da coleção sem sair silenciosamente para outro poema fora da série).
-- [ ] **CA03:** Dado que avanço pelos poemas via swipe ou setas de teclado (`ArrowRight`/`ArrowLeft`) dentro de uma coleção, quando mudo de poema, então o contexto `?colecao=<slug>` e a ordem curada são mantidos.
-- [ ] **CA04:** Dado uma coleção com 3 ou mais poemas, quando clico em "Começar leitura", então navego diretamente para o 1º poema da coleção com o contexto de série ativo.
-- [ ] **CA05:** Dado que aciono "Imprimir / Salvar PDF da Coleção" em `/colecao/<slug>/` ou em `/favoritos/`, quando a impressão é disparada, então `#print-library-container` contém apenas os poemas visíveis daquela lista com capa, classe `is-printing-anthology` no `body` durante a impressão, e é removido após `afterprint`.
-- [ ] **CA06:** Dado que acesso `/poema/o-abraco/?colecao=amor-e-conexao`, quando inspeciono `<head>`, então `<link rel="canonical">` e `og:url` permanecem exatamente `https://nfgbrentano.art.br/poema/o-abraco/`.
-- [ ] **CA07:** Dado que acesso `/poema/o-abraco/?colecao=colecao-inexistente`, quando a página carrega, então nenhum banner de série inválida é exibido e os links `Anterior/Próximo` usam normalmente o acervo global.
+- [x] **CA01:** Dado que estou em `/colecao/amor-e-conexao/` e abro o 1º poema da lista ordenada, quando o poema renderiza, então vejo o indicador `Poema 1 de N` da coleção e o botão "Próximo" aponta para o 2º poema dessa coleção.
+- [x] **CA02:** Dado que estou no 1º poema da coleção, quando verifico a navegação de série, então não há botão "Anterior na coleção" (ou aponta para voltar ao índice da coleção sem sair silenciosamente para outro poema fora da série).
+- [x] **CA03:** Dado que avanço pelos poemas via swipe ou setas de teclado (`ArrowRight`/`ArrowLeft`) dentro de uma coleção, quando mudo de poema, então o contexto `?colecao=<slug>` e a ordem curada são mantidos.
+- [x] **CA04:** Dado uma coleção com 3 ou mais poemas, quando clico em "Começar leitura", então navego diretamente para o 1º poema da coleção com o contexto de série ativo.
+- [x] **CA05:** Dado que aciono "Imprimir / Salvar PDF da Coleção" em `/colecao/<slug>/` ou em `/favoritos/`, quando a impressão é disparada, então `#print-library-container` contém apenas os poemas visíveis daquela lista com capa, classe `is-printing-anthology` no `body` durante a impressão, e é removido após `afterprint`.
+- [x] **CA06:** Dado que acesso `/poema/o-abraco/?colecao=amor-e-conexao`, quando inspeciono `<head>`, então `<link rel="canonical">` e `og:url` permanecem exatamente `https://nfgbrentano.art.br/poema/o-abraco/`.
+- [x] **CA07:** Dado que acesso `/poema/o-abraco/?colecao=colecao-inexistente`, quando a página carrega, então nenhum banner de série inválida é exibido e os links `Anterior/Próximo` usam normalmente o acervo global.
 
 ## O que a atividade não inclui
 
@@ -66,8 +66,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O contexto da coleção deve ficar visível na URL (`?colecao=slug`) para permitir compartilhar o link da trilha, ou apenas em `history.state`/`sessionStorage`? (`?colecao=` facilita recarregar a página sem perder o progresso, e `cleanCanonicalUrl` já remove query strings do canonical.) | PO/dev | Sim | |
-| D02 | Ao finalizar o último poema de uma coleção, devemos exibir sugestão de "Próxima coleção recomendada" ou botão "Voltar ao índice da coleção"? | design/PO | Não | |
+| D01 | O contexto da coleção deve ficar visível na URL (`?colecao=slug`) para permitir compartilhar o link da trilha, ou apenas em `history.state`/`sessionStorage`? (`?colecao=` facilita recarregar a página sem perder o progresso, e `cleanCanonicalUrl` já remove query strings do canonical.) | PO/dev | Sim | Usar `?colecao=<slug>` na URL ao navegar a partir de uma coleção para manter contexto ao recarregar/compartilhar, preservando `<link rel="canonical">`, `og:url` e JSON-LD estritamente em `https://nfgbrentano.art.br/poema/<slug>/` via `cleanCanonicalUrl` (`RNF01`, `CA06`). |
+| D02 | Ao finalizar o último poema de uma coleção, devemos exibir sugestão de "Próxima coleção recomendada" ou botão "Voltar ao índice da coleção"? | design/PO | Não | Exibir botão "Voltar ao índice da coleção" apontando para `/colecao/<slug>/` no encerramento da série (`next === null`); no 1º poema (`prev === null`), omitir "Anterior" para não sair da série. |
 
 ## Sugestões de casos de teste
 

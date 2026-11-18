@@ -8,7 +8,8 @@ import { toast } from '../components/toast.js';
 import { AudioPlayer } from '../components/audio-player.js';
 import { ImmersiveReader } from '../components/immersive-reader.js';
 import { PoemComments } from '../components/poem-comments.js';
-import { renderPoemMarkup } from '../utils/poem-template.js';
+import { renderPoemMarkup, renderSeriesBannerMarkup, renderPoemNavInnerMarkup } from '../utils/poem-template.js';
+import { resolveCollectionContextForPoem } from '../utils/collection-order.js';
 import { isFavorite, toggleFavorite } from '../utils/favorites.js';
 import { recordReading } from '../utils/reading-history.js';
 
@@ -36,6 +37,9 @@ let handleSelectionChange = null;
 let isExportingQuote = false;
 let quoteText = '';
 let readingTimer = null;
+let deferredTimer = null;
+let deferredIdleId = null;
+let prefetchTimer = null;
 
 export default {
   meta: {
@@ -45,6 +49,18 @@ export default {
     if (readingTimer) {
       clearTimeout(readingTimer);
       readingTimer = null;
+    }
+    if (deferredTimer) {
+      clearTimeout(deferredTimer);
+      deferredTimer = null;
+    }
+    if (prefetchTimer) {
+      clearTimeout(prefetchTimer);
+      prefetchTimer = null;
+    }
+    if (deferredIdleId !== null && typeof window !== 'undefined' && typeof window.cancelIdleCallback === 'function') {
+      window.cancelIdleCallback(deferredIdleId);
+      deferredIdleId = null;
     }
     if (handleScroll) window.removeEventListener('scroll', handleScroll);
     if (handleTouchStart) document.removeEventListener('touchstart', handleTouchStart);
@@ -68,6 +84,14 @@ export default {
   async render(container, params) {
     document.body.classList.add('poem-page-active');
     const slug = params.slug;
+    let requestedCollectionSlug = params?.colecao || '';
+    if (!requestedCollectionSlug && typeof window !== 'undefined') {
+      try {
+        requestedCollectionSlug = new URLSearchParams(window.location.search).get('colecao') || '';
+      } catch {
+        requestedCollectionSlug = '';
+      }
+    }
 
     const currentRoute = '/poema/' + slug;
     const isPrerendered = container.getAttribute('data-prerendered') === currentRoute;
@@ -78,6 +102,67 @@ export default {
     let nextTitle = '';
     let collectionsData = [];
     let relatedPoems = [];
+    let seriesContext = null;
+
+    const resolveSeriesContext = async (targetPoem) => {
+      if (!targetPoem || !requestedCollectionSlug || !SLUG_REGEX.test(requestedCollectionSlug)) {
+        return null;
+      }
+      try {
+        const { getPublishedPoems } = await import('../utils/poems-store.js');
+        const allPublished = await getPublishedPoems().catch(() => []);
+        const allPoems = allPublished.some(p => p && p.slug === targetPoem.slug)
+          ? allPublished
+          : [targetPoem, ...allPublished];
+
+        let firestoreCollections = [];
+        let firestoreRelations = [];
+        const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+
+        if (!isOffline) {
+          try {
+            const { db } = await import('../utils/firebase.js');
+            const { collection, query, where, getDocs } = await import('firebase/firestore');
+            const colSnap = await getDocs(
+              query(collection(db, 'collections'), where('slug', '==', requestedCollectionSlug))
+            ).catch(() => null);
+            if (colSnap && !colSnap.empty) {
+              firestoreCollections = colSnap.docs.map(d => ({ id: d.id, ...(d.data ? d.data() : {}) }));
+            }
+
+            let targetColId = firestoreCollections[0]?.id || '';
+            if (!targetColId) {
+              const { enrichCollectionsWithCurated } = await import('../data/collections.js');
+              targetColId = enrichCollectionsWithCurated([]).find(c => c.slug === requestedCollectionSlug)?.id || '';
+            }
+
+            if (targetColId) {
+              const cpSnap = await getDocs(
+                query(collection(db, 'collection_poems'), where('collection_id', '==', targetColId))
+              ).catch(() => null);
+              if (cpSnap && typeof cpSnap.forEach === 'function') {
+                cpSnap.forEach(d => {
+                  const data = d.data ? d.data() : d;
+                  if (data) firestoreRelations.push({ collection_id: targetColId, ...data });
+                });
+              }
+            }
+          } catch {
+            // Fallback seguro para curadoria/acervo local
+          }
+        }
+
+        return resolveCollectionContextForPoem({
+          collectionSlug: requestedCollectionSlug,
+          poemSlug: targetPoem.slug,
+          allPoems,
+          firestoreCollections,
+          firestoreRelations
+        });
+      } catch {
+        return null;
+      }
+    };
 
     // RF01 & CA01 & CA02: Hydrate pre-rendered DOM without removing or skeleton
     if (isPrerendered) {
@@ -97,6 +182,41 @@ export default {
         }
       }
       container.removeAttribute('data-prerendered');
+
+      if (poem && requestedCollectionSlug) {
+        seriesContext = await resolveSeriesContext(poem);
+        if (seriesContext) {
+          prevSlug = seriesContext.prevSlug;
+          nextSlug = seriesContext.nextSlug;
+          prevTitle = seriesContext.prevTitle;
+          nextTitle = seriesContext.nextTitle;
+
+          if (!container.querySelector('#poem-series-banner')) {
+            const articleEl = container.querySelector('.single-poem');
+            const headerEl = articleEl?.querySelector('header');
+            if (articleEl && headerEl) {
+              const bannerWrapper = document.createElement('div');
+              bannerWrapper.innerHTML = unwrapSafeHTML(renderSeriesBannerMarkup(seriesContext, import.meta.env.BASE_URL));
+              const bannerEl = bannerWrapper.firstElementChild;
+              if (bannerEl) {
+                articleEl.insertBefore(bannerEl, headerEl);
+              }
+            }
+          }
+
+          const navEl = container.querySelector('.poem-nav');
+          if (navEl) {
+            navEl.innerHTML = unwrapSafeHTML(renderPoemNavInnerMarkup({
+              prevSlug,
+              nextSlug,
+              prevTitle,
+              nextTitle,
+              seriesContext,
+              baseUrl: import.meta.env.BASE_URL
+            }));
+          }
+        }
+      }
     }
 
     // If not prerendered (SPA navigation from another page): fetch Firestore
@@ -246,6 +366,16 @@ export default {
         }
       }
 
+      if (requestedCollectionSlug) {
+        seriesContext = await resolveSeriesContext(poem);
+        if (seriesContext) {
+          prevSlug = seriesContext.prevSlug;
+          nextSlug = seriesContext.nextSlug;
+          prevTitle = seriesContext.prevTitle;
+          nextTitle = seriesContext.nextTitle;
+        }
+      }
+
       // Render DOM
       container.innerHTML = unwrapSafeHTML(renderPoemMarkup({
         poem,
@@ -255,9 +385,17 @@ export default {
         nextTitle,
         collectionsData,
         relatedPoems,
+        seriesContext,
         baseUrl: import.meta.env.BASE_URL
       }));
     }
+
+    const buildPoemNavUrl = (targetSlug) => {
+      const path = `${import.meta.env.BASE_URL}poema/${targetSlug}/`;
+      return seriesContext?.collectionSlug
+        ? `${path}?colecao=${encodeURIComponent(seriesContext.collectionSlug)}`
+        : path;
+    };
 
     // Rastrear visualização do poema
     trackPageView('/poema/' + poem.slug, poem.id);
@@ -541,7 +679,12 @@ export default {
     });
 
     // Audio Player Logic
-    AudioPlayer.init(container, import.meta.env.BASE_URL);
+    AudioPlayer.init(container, import.meta.env.BASE_URL, {
+      title: poem.title,
+      prevSlug,
+      nextSlug,
+      onNavigate: (targetSlug) => navigateTo(buildPoemNavUrl(targetSlug))
+    });
 
     // Immersive Mode Logic
     ImmersiveReader.init(container);
@@ -787,10 +930,10 @@ export default {
           }
           break;
         case 'ArrowRight':
-          if (nextSlug) navigateTo(`/poema/${nextSlug}/`);
+          if (nextSlug) navigateTo(buildPoemNavUrl(nextSlug));
           break;
         case 'ArrowLeft':
-          if (prevSlug) navigateTo(`/poema/${prevSlug}/`);
+          if (prevSlug) navigateTo(buildPoemNavUrl(prevSlug));
           break;
         case 'i':
         case 'I':
@@ -856,8 +999,8 @@ export default {
       const elapsedTime = Date.now() - touchStartTime;
 
       if (elapsedTime <= 500 && Math.abs(deltaX) > 100 && Math.abs(deltaX) > Math.abs(deltaY) * 3) {
-        if (deltaX > 0 && nextSlug) navigateTo(`/poema/${nextSlug}/`);
-        else if (deltaX < 0 && prevSlug) navigateTo(`/poema/${prevSlug}/`);
+        if (deltaX > 0 && nextSlug) navigateTo(buildPoemNavUrl(nextSlug));
+        else if (deltaX < 0 && prevSlug) navigateTo(buildPoemNavUrl(prevSlug));
       }
     };
 
@@ -1012,6 +1155,13 @@ export default {
 
     // RF02: Load reactions and comments deferred after idle or timeout
     const loadDeferredFeatures = () => {
+      deferredTimer = null;
+      deferredIdleId = null;
+      const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+      const isIsolatedVitest = typeof process !== 'undefined' && Boolean(process.env?.VITEST) && !globalThis.__ALLOW_DEFERRED_POEM_FEATURES_IN_TEST__;
+      if (isOffline || isIsolatedVitest) {
+        return;
+      }
       // 1. Reactions
       import('../utils/reactions.js').then(({ loadReactions, toggleReaction, EMOJIS }) => {
         const updateReactionUI = (counts, userReactions) => {
@@ -1118,14 +1268,28 @@ export default {
       }
     };
 
+    if (deferredTimer) {
+      clearTimeout(deferredTimer);
+      deferredTimer = null;
+    }
+    if (deferredIdleId !== null && typeof window !== 'undefined' && typeof window.cancelIdleCallback === 'function') {
+      window.cancelIdleCallback(deferredIdleId);
+      deferredIdleId = null;
+    }
+    if (prefetchTimer) {
+      clearTimeout(prefetchTimer);
+      prefetchTimer = null;
+    }
+
     if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(loadDeferredFeatures, { timeout: 3000 });
+      deferredIdleId = window.requestIdleCallback(loadDeferredFeatures, { timeout: 3000 });
     } else {
-      setTimeout(loadDeferredFeatures, 1000);
+      deferredTimer = setTimeout(loadDeferredFeatures, 1000);
     }
 
     // Prefetch adjacent routes (RF04)
     const prefetchRoutes = () => {
+      prefetchTimer = null;
       const BASE_URL = import.meta.env.BASE_URL;
       const slugsToPrefetch = [prevSlug, nextSlug].filter(s => typeof s === 'string' && SLUG_REGEX.test(s));
 
@@ -1136,6 +1300,6 @@ export default {
         document.head.appendChild(link);
       });
     };
-    setTimeout(prefetchRoutes, 2000);
+    prefetchTimer = setTimeout(prefetchRoutes, 2000);
   }
 };

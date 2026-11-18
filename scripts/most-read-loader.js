@@ -1,4 +1,5 @@
 import { computeMostReadPoems, filterPublishedMostRead, MOST_READ_DAYS, MOST_READ_LIMIT } from '../src/utils/most-read.js';
+import { installFirebaseNodeReferer, patchFirebaseAuthReferer } from './build-data-cache.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -65,6 +66,10 @@ export async function loadMostReadForBuild({
 
   if (adminEmail && adminPassword && (auth || signInFn)) {
     try {
+      installFirebaseNodeReferer();
+      if (auth) {
+        patchFirebaseAuthReferer(auth);
+      }
       let sIn = signInFn;
       if (!sIn) {
         const firebaseAuth = await import('firebase/auth');

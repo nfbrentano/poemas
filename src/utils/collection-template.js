@@ -40,6 +40,22 @@ export function renderCollectionMarkup({
     ? `<p class="collection-desc-large" style="margin-top: 1rem;">${escapeHtml(descTrimmed)}</p>`
     : '';
 
+  const actionsHtml = poemsList.length > 0 ? `
+    <div class="collection-actions">
+      <a
+        id="start-collection-reading-btn"
+        href="${baseUrl}poema/${escapeHtml(poemsList[0].slug)}/?colecao=${encodeURIComponent(col.slug)}"
+        data-collection-slug="${escapeHtml(col.slug)}"
+        data-first-slug="${escapeHtml(poemsList[0].slug)}"
+        class="btn-primary collection-start-reading-btn"
+        data-link
+      >Começar leitura</a>
+      <button type="button" id="print-collection-btn" class="btn-print collection-print-btn">
+        Imprimir / Salvar PDF da Coleção
+      </button>
+    </div>
+  ` : '';
+
   return `
       <section class="collection-detail fade-in">
         <header class="collection-header">
@@ -50,6 +66,7 @@ export function renderCollectionMarkup({
             ${poemsList.length} poema${poemsList.length !== 1 ? 's' : ''}
           </p>
           ${descHtml}
+          ${actionsHtml}
         </header>
 
         <div class="poems-list">
@@ -60,11 +77,13 @@ export function renderCollectionMarkup({
               const excerpt = getPoemRowExcerpt(poem, 140);
               const isFav = favSlugs.has(poem.slug) || (poem.id && favSlugs.has(poem.id));
               const favBadge = isFav ? ' <span class="favorite-badge" aria-label="Poema favoritado" title="Poema favoritado">🔖</span>' : '';
+              const hasAudio = Boolean(poem.audio_url && String(poem.audio_url).trim());
+              const audioBadge = hasAudio ? ' <span class="audio-badge" aria-label="Com narração em áudio" title="Com narração em áudio">🔊</span>' : '';
               return `
               <article class="poem-row">
-                <a href="${baseUrl}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
+                <a href="${baseUrl}poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-collection-slug="${escapeHtml(col.slug)}" data-poem-slug="${escapeHtml(poem.slug)}" data-link>
                   <div class="poem-row-main" style="flex: 1; min-width: 0;">
-                    <h3 class="poem-row-title">${escapeHtml(poem.title)}${favBadge}</h3>
+                    <h3 class="poem-row-title">${escapeHtml(poem.title)}${favBadge}${audioBadge}</h3>
                     ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
                   </div>
                   ${year ? `<span class="poem-row-year">${year}</span>` : ''}

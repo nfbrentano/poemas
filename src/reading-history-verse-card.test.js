@@ -12,6 +12,10 @@ import {
 } from './utils/reading-history.js';
 import { renderPoemMarkup } from './utils/poem-template.js';
 
+vi.mock('./utils/analytics.js', () => ({
+  trackPageView: vi.fn()
+}));
+
 describe('Cartão por Estrofe e Histórico de Leitura (SDD 2026-11-13)', () => {
   let container;
 

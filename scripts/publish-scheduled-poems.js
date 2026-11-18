@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { reportError } from '../src/utils/error-reporter.js';
+import { getFirebaseConfig, installFirebaseNodeReferer, patchFirebaseAuthReferer } from './build-data-cache.js';
 
 /**
  * Filtra poemas com status 'scheduled' que já passaram da data/hora agendada.
@@ -230,14 +231,8 @@ export async function publishDuePoems({
  * Função executada via linha de comando no GitHub Actions ou localmente.
  */
 async function main() {
-  const firebaseConfig = {
-    apiKey: process.env.VITE_FIREBASE_API_KEY,
-    authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.VITE_FIREBASE_APP_ID
-  };
+  installFirebaseNodeReferer();
+  const firebaseConfig = getFirebaseConfig();
 
   const adminEmail = process.env.FIREBASE_ADMIN_EMAIL;
   const adminPassword = process.env.FIREBASE_ADMIN_PASSWORD;
@@ -256,7 +251,7 @@ async function main() {
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const auth = getAuth(app);
+  const auth = patchFirebaseAuthReferer(getAuth(app));
 
   let sendNewsletterFn = null;
   let sendPushFn = null;
