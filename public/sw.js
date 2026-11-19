@@ -244,9 +244,12 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
       for (const client of windowClients) {
-        if (client.url && client.url.startsWith(origin) && 'navigate' in client && 'focus' in client) {
-          return client.navigate(normalizedTarget).then(() => client.focus());
-        }
+        try {
+          const clientUrl = client.url ? new URL(client.url) : null;
+          if (clientUrl && clientUrl.origin === origin && 'navigate' in client && 'focus' in client) {
+            return client.navigate(normalizedTarget).then(() => client.focus());
+          }
+        } catch (_clientUrlErr) {}
       }
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
