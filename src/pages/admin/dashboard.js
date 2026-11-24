@@ -15,10 +15,10 @@ export async function renderDashboard(container) {
       
       const [poemsRes, commentsRes, subscribersRes, viewsRes, errorsRes] = await Promise.all([
         listDocs('poems'),
-        listDocs('poem_comments', { where: [['approved', '==', false]] }),
+        listDocs('poem_comments', { where: [['approved', '==', false]], limit: 200 }),
         listDocs('subscribers', { orderBy: ['created_at', 'desc'], limit: 5 }),
-        listDocs('page_views', { where: [['created_at', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()]] }),
-        Promise.resolve(listDocs('error_logs', { where: [['status', '==', 'open']] })).catch(() => ({ data: [] }))
+        listDocs('page_views', { where: [['created_at', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()]], limit: 2500 }),
+        Promise.resolve(listDocs('error_logs', { where: [['status', '==', 'open']], limit: 200 })).catch(() => ({ data: [] }))
       ]);
       
       if (poemsRes.error) throw poemsRes.error;

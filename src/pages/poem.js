@@ -219,7 +219,8 @@ export default {
       }
     }
 
-    // If not prerendered (SPA navigation from another page): fetch Firestore
+    // If not prerendered (SPA navigation from another page): try poems-store first, then Firestore
+    let resolvedFromStore = false;
     if (!poem) {
       const skeletonHtml = `
         <div class="poem-container fade-in">
@@ -250,52 +251,94 @@ export default {
 
       console.log('[Poem] Fetching slug:', slug);
       let error = null;
+      const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
 
+      // 1. Consulta o cache do poems-store antes de ir ao Firestore (RF02, RNF01, D01)
       try {
-        const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
-        if (!isOffline) {
-          const { db } = await import('../utils/firebase.js');
-          const { collection, query, where, getDocs, limit, orderBy } = await import('firebase/firestore');
+        const { getPublishedPoems } = await import('../utils/poems-store.js');
+        const allPublished = await getPublishedPoems();
+        const idx = Array.isArray(allPublished) ? allPublished.findIndex(p => p.slug === slug) : -1;
+        const found = idx !== -1 ? allPublished[idx] : null;
+        if (found && !found._lightweight && typeof found.content === 'string' && found.content.length > 0) {
+          poem = { ...found };
+          resolvedFromStore = true;
+          if (idx < allPublished.length - 1 && !poem.prev_slug) {
+            poem.prev_slug = allPublished[idx + 1].slug;
+            poem.prev_title = allPublished[idx + 1].title;
+          }
+          if (idx > 0 && !poem.next_slug) {
+            poem.next_slug = allPublished[idx - 1].slug;
+            poem.next_title = allPublished[idx - 1].title;
+          }
+          if (Array.isArray(poem.tags) && poem.tags.length > 0 && relatedPoems.length === 0) {
+            const tagsSet = new Set(poem.tags);
+            const candidates = allPublished
+              .filter(p => p.slug !== slug && Array.isArray(p.tags) && p.tags.some(t => tagsSet.has(t)))
+              .map(p => ({
+                ...p,
+                _commonTags: p.tags.filter(t => tagsSet.has(t)).length,
+                _sameCollection: (poem.collection_slugs && p.collection_slugs &&
+                  p.collection_slugs.some(c => poem.collection_slugs.includes(c))) ? 1 : 0
+              }))
+              .sort((a, b) => {
+                if (b._commonTags !== a._commonTags) return b._commonTags - a._commonTags;
+                if (b._sameCollection !== a._sameCollection) return b._sameCollection - a._sameCollection;
+                return String(b.published_at || '').localeCompare(String(a.published_at || ''));
+              });
+            relatedPoems = candidates.slice(0, 3);
+          }
+        }
+      } catch (storeErr) {
+        console.warn('[Poem] Falha ao consultar poems-store:', storeErr);
+      }
 
-          const q = query(collection(db, 'poems'), where('slug', '==', slug), where('status', '==', 'published'), limit(1));
-          const snapshot = await getDocs(q);
+      // 2. Fallback para Firestore se não encontrado completo no store
+      if (!poem) {
+        try {
+          if (!isOffline) {
+            const { db } = await import('../utils/firebase.js');
+            const { collection, query, where, getDocs, limit, orderBy } = await import('firebase/firestore');
 
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            poem = { id: doc.id, ...doc.data() };
+            const q = query(collection(db, 'poems'), where('slug', '==', slug), where('status', '==', 'published'), limit(1));
+            const snapshot = await getDocs(q);
 
-            // RF03 & CA03: Parallel queries for prev and next poems
-            if (!poem.prev_slug || !poem.next_slug) {
-              try {
-                const prevQ = query(collection(db, 'poems'), where('status', '==', 'published'), where('published_at', '<', poem.published_at), orderBy('published_at', 'desc'), limit(1));
-                const nextQ = query(collection(db, 'poems'), where('status', '==', 'published'), where('published_at', '>', poem.published_at), orderBy('published_at', 'asc'), limit(1));
-                const [prevSnap, nextSnap] = await Promise.all([
-                  getDocs(prevQ).catch(e => { console.warn('Error fetching prev poem:', e); return null; }),
-                  getDocs(nextQ).catch(e => { console.warn('Error fetching next poem:', e); return null; })
-                ]);
+            if (!snapshot.empty) {
+              const doc = snapshot.docs[0];
+              poem = { id: doc.id, ...doc.data() };
 
-                if (prevSnap && !prevSnap.empty) {
-                  const prevDoc = prevSnap.docs[0].data();
-                  poem.prev_slug = prevDoc.slug;
-                  poem.prev_title = prevDoc.title;
+              // RF03 & CA03: Parallel queries for prev and next poems
+              if (!poem.prev_slug || !poem.next_slug) {
+                try {
+                  const prevQ = query(collection(db, 'poems'), where('status', '==', 'published'), where('published_at', '<', poem.published_at), orderBy('published_at', 'desc'), limit(1));
+                  const nextQ = query(collection(db, 'poems'), where('status', '==', 'published'), where('published_at', '>', poem.published_at), orderBy('published_at', 'asc'), limit(1));
+                  const [prevSnap, nextSnap] = await Promise.all([
+                    getDocs(prevQ).catch(e => { console.warn('Error fetching prev poem:', e); return null; }),
+                    getDocs(nextQ).catch(e => { console.warn('Error fetching next poem:', e); return null; })
+                  ]);
+
+                  if (prevSnap && !prevSnap.empty) {
+                    const prevDoc = prevSnap.docs[0].data();
+                    poem.prev_slug = prevDoc.slug;
+                    poem.prev_title = prevDoc.title;
+                  }
+                  if (nextSnap && !nextSnap.empty) {
+                    const nextDoc = nextSnap.docs[0].data();
+                    poem.next_slug = nextDoc.slug;
+                    poem.next_title = nextDoc.title;
+                  }
+                } catch (e) {
+                  console.warn('Error in parallel prev/next query:', e);
                 }
-                if (nextSnap && !nextSnap.empty) {
-                  const nextDoc = nextSnap.docs[0].data();
-                  poem.next_slug = nextDoc.slug;
-                  poem.next_title = nextDoc.title;
-                }
-              } catch (e) {
-                console.warn('Error in parallel prev/next query:', e);
               }
             }
           }
+        } catch (err) {
+          error = err;
+          console.error('[Poem] Error:', error);
         }
-      } catch (err) {
-        error = err;
-        console.error('[Poem] Error:', error);
       }
 
-      // Fallback para acervo local quando offline ou em falha de rede (CA01, CA02)
+      // Fallback para acervo local (_lightweight ou offline) se Firestore também não retornou
       if (!poem) {
         try {
           const { getPublishedPoems } = await import('../utils/poems-store.js');
@@ -347,23 +390,35 @@ export default {
       nextTitle = poem.next_title || '';
 
       if (poem.collection_slugs && poem.collection_slugs.length > 0) {
+        let curatedBySlug = new Map();
         try {
-          const { db } = await import('../utils/firebase.js');
-          const { collection, query, where, getDocs } = await import('firebase/firestore');
-          const qCols = query(collection(db, 'collections'), where('slug', 'in', poem.collection_slugs));
-          const colsSnap = await getDocs(qCols);
-          collectionsData = [];
-          colsSnap.forEach(d => collectionsData.push(d.data()));
-        } catch (e) {
-          console.warn(e);
+          const { enrichCollectionsWithCurated } = await import('../data/collections.js');
+          curatedBySlug = new Map(enrichCollectionsWithCurated([]).map(c => [c.slug, c]));
+        } catch {}
+
+        const resolvedCols = [];
+        const missingSlugs = [];
+        for (const colSlug of poem.collection_slugs) {
+          if (curatedBySlug.has(colSlug)) {
+            resolvedCols.push(curatedBySlug.get(colSlug));
+          } else {
+            missingSlugs.push(colSlug);
+          }
         }
-        if (collectionsData.length === 0) {
+
+        if (missingSlugs.length > 0 && !isOffline) {
           try {
-            const { enrichCollectionsWithCurated } = await import('../data/collections.js');
-            collectionsData = enrichCollectionsWithCurated([])
-              .filter(c => poem.collection_slugs.includes(c.slug));
-          } catch {}
+            const { db } = await import('../utils/firebase.js');
+            const { collection, query, where, getDocs } = await import('firebase/firestore');
+            const qCols = query(collection(db, 'collections'), where('slug', 'in', missingSlugs.slice(0, 30)));
+            const colsSnap = await getDocs(qCols);
+            colsSnap.forEach(d => resolvedCols.push(d.data()));
+          } catch (e) {
+            console.warn(e);
+          }
         }
+
+        collectionsData = resolvedCols;
       }
 
       if (requestedCollectionSlug) {
@@ -1210,8 +1265,8 @@ export default {
       // 2. Comments (Firestore query deferred)
       PoemComments.loadComments(poem.id, container);
 
-      // 3. Related poems (only if not pre-rendered)
-      if ((!relatedPoems || relatedPoems.length === 0) && poem.tags && poem.tags.length > 0) {
+      // 3. Related poems (only if not pre-rendered and not resolved from full store)
+      if (!resolvedFromStore && (!relatedPoems || relatedPoems.length === 0) && poem.tags && poem.tags.length > 0) {
         (async () => {
           try {
             const { db } = await import('../utils/firebase.js');

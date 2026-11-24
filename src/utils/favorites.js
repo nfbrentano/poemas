@@ -73,6 +73,52 @@ export function getFavoriteSlugs() {
 }
 
 /**
+ * Hidrata dinamicamente os selos de favorito (🔖) em listagens pré-renderizadas
+ * sem recriar o container nem modificar os nós de áudio existentes.
+ * @param {HTMLElement|null|undefined} container
+ */
+export function hydrateFavoriteBadges(container) {
+  if (!container || typeof container.querySelectorAll !== 'function') return;
+
+  const favSlugs = getFavoriteSlugs();
+  const links = container.querySelectorAll('.poem-row-link');
+
+  links.forEach((link) => {
+    let slug = link.dataset?.poemSlug || '';
+    if (!slug) {
+      const href = link.getAttribute('href') || '';
+      const match = href.match(/\/poema\/([^/?#]+)/);
+      if (match) slug = match[1];
+    }
+
+    const titleEl = link.querySelector('.poem-row-title');
+    if (!slug || !titleEl) return;
+
+    const isFav = favSlugs.has(slug);
+    const existingBadge = titleEl.querySelector('.favorite-badge');
+
+    if (isFav && !existingBadge) {
+      const badge = document.createElement('span');
+      badge.className = 'favorite-badge';
+      badge.setAttribute('aria-label', 'Poema favoritado');
+      badge.setAttribute('title', 'Poema favoritado');
+      badge.textContent = '🔖';
+
+      const audioBadge = titleEl.querySelector('.audio-badge');
+      const space = document.createTextNode(' ');
+      if (audioBadge) {
+        titleEl.insertBefore(space, audioBadge);
+        titleEl.insertBefore(badge, space);
+      } else {
+        titleEl.append(space, badge);
+      }
+    } else if (!isFav && existingBadge) {
+      existingBadge.remove();
+    }
+  });
+}
+
+/**
  * Verifica se um poema está favoritado (por slug ou por ID).
  * @param {string} slugOrId
  * @returns {boolean}

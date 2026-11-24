@@ -1,6 +1,32 @@
 import { listDocs, insertDocs, updateDocById } from './data.js';
 import { escapeHtml, unwrapSafeHTML } from '../../utils/html.js';
 
+/**
+ * Escapa uma célula CSV e neutraliza prefixos de fórmula (CSV Formula Injection).
+ * @param {unknown} value
+ * @returns {string}
+ */
+export function escapeCsvCell(value) {
+  let str = value === null || value === undefined ? '' : String(value);
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
+/**
+ * Constrói o conteúdo CSV seguro da lista de assinantes.
+ * @param {Array<object>} [subs]
+ * @returns {string}
+ */
+export function buildSubscribersCsv(subs = []) {
+  const header = 'Email,Ativo,Data Inscrição,Data Saída';
+  const rows = (Array.isArray(subs) ? subs : []).map(s =>
+    [s.email, s.active, s.created_at, s.unsubscribed_at || ''].map(escapeCsvCell).join(',')
+  );
+  return [header, ...rows].join('\n');
+}
+
 export async function renderSubscribers(container) {
     container.innerHTML = '<div class="loading">Carregando assinantes...</div>';
     
@@ -88,17 +114,16 @@ export async function renderSubscribers(container) {
     `);
 
     container.querySelector('#export-csv-btn')?.addEventListener('click', () => {
-      const csvContent = "data:text/csv;charset=utf-8," 
-        + "Email,Ativo,Data Inscrição,Data Saída\n"
-        + subs.map(s => `${s.email},${s.active},${s.created_at},${s.unsubscribed_at || ''}`).join("\n");
-      
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `assinantes_${new Date().toISOString().split('T')[0]}.csv`);
+      const csvText = buildSubscribersCsv(subs);
+      const blob = new Blob(['\uFEFF' + csvText], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `assinantes_${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     });
 
     container.querySelector('#add-subscriber-btn')?.addEventListener('click', async () => {

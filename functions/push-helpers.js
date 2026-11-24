@@ -24,17 +24,17 @@ function isAdminAuth(auth) {
   return Boolean(email && ADMIN_EMAILS.includes(email));
 }
 
-function assertAdminAuth(auth, createError = defaultCreateError) {
+function assertAdminAuth(auth, createError = defaultCreateError, actionLabel = "enviar notificações push") {
   if (!auth) {
     throw createError(
       "unauthenticated",
-      "É necessário estar autenticado para enviar notificações push."
+      `É necessário estar autenticado para ${actionLabel}.`
     );
   }
   if (!isAdminAuth(auth)) {
     throw createError(
       "permission-denied",
-      "Apenas administradores podem enviar notificações push."
+      `Apenas administradores podem ${actionLabel}.`
     );
   }
 }

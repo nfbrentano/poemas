@@ -1,4 +1,4 @@
-import { listDocs, deleteDocById } from './data.js';
+import { listDocs, deletePoemWithRelations } from './data.js';
 import { navigateTo } from '../../router.js';
 import { escapeHtml, unwrapSafeHTML } from '../../utils/html.js';
 import { debounce } from './debounce.js';
@@ -168,7 +168,7 @@ export async function renderList(container) {
             btn.innerText = 'Excluindo...';
             btn.disabled = true;
             
-            const { error } = await deleteDocById('poems', id);
+            const { error } = await deletePoemWithRelations(id);
             
             if (error) {
               console.error(error);

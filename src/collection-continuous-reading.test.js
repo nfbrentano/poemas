@@ -222,6 +222,11 @@ describe('[FEAT] Leitura contínua em coleção (Modo Antologia e impressão de 
 
     // Renderização com ?colecao=colecao-inexistente mantém navegação global sem banner
     setupFirestoreCollectionMocks();
+    getPublishedPoems.mockResolvedValue(
+      SERIES_POEMS.map(p => (p.slug === 'o-abraco'
+        ? { ...p, prev_slug: 'global-prev', prev_title: 'Global Anterior', next_slug: 'global-next', next_title: 'Global Próximo' }
+        : p))
+    );
     window.history.replaceState({}, '', '/poema/o-abraco/?colecao=colecao-inexistente');
     await poemPage.render(container, { slug: 'o-abraco', colecao: 'colecao-inexistente' });
 

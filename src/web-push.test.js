@@ -749,7 +749,7 @@ describe('Web Push na Publicação (SDD 2026-11-13)', () => {
           notify_push_on_publish: false,
         })
       );
-      expect(callFunctionMock).toHaveBeenCalledWith('sendNewsletter', { poemId: 'draft-p' });
+      expect(callFunctionMock).not.toHaveBeenCalledWith('sendNewsletter', expect.anything());
       expect(callFunctionMock).toHaveBeenCalledWith('sendPushNotification', { poemId: 'draft-p' });
       expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Web Push: 1 entregue(s)'));
 

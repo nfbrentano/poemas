@@ -9,6 +9,7 @@ import { unwrapSafeHTML } from '../utils/html.js';
 import { sortPoemsByCollectionRelations } from '../utils/collection-order.js';
 import { navigateTo } from '../router.js';
 import { printAnthology } from '../utils/print-anthology.js';
+import { hydrateFavoriteBadges } from '../utils/favorites.js';
 
 export const collection = {
   meta: {
@@ -104,6 +105,7 @@ export const collection = {
     if (error || !col) {
       if (isPrerendered) {
         container.removeAttribute('data-prerendered');
+        hydrateFavoriteBadges(container);
         return;
       }
       setNotFoundSEO();
@@ -150,6 +152,8 @@ export const collection = {
           poemsList,
           baseUrl: import.meta.env.BASE_URL
         }));
+      } else {
+        hydrateFavoriteBadges(container);
       }
     } else {
       container.innerHTML = unwrapSafeHTML(renderCollectionMarkup({

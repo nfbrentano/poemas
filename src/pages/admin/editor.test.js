@@ -477,4 +477,98 @@ Verso doze da terceira estrofe`;
       expect(previewContent.textContent).not.toContain('<pre');
     });
   });
+
+  describe('CT03 & CT04 (SDD 2026-11-24): Controle explícito de newsletter ao publicar no Editor', () => {
+    it('CT03: publica rascunho sem chamar sendNewsletter ou sendPushNotification quando checkboxes estão desmarcados', async () => {
+      getDocByIdMock.mockResolvedValueOnce({
+        data: {
+          id: 'poem-draft-silent',
+          title: 'Poema de Arquivo',
+          slug: 'poema-de-arquivo',
+          content: 'Verso antigo resgatado.',
+          status: 'draft',
+          notify_newsletter_on_publish: false,
+          notify_push_on_publish: false
+        },
+        error: null
+      });
+
+      await renderEditor(container, 'poem-draft-silent');
+      await tick();
+
+      const notificationsFieldset = container.querySelector('#publish-notifications-fields');
+      const newsletterCheckbox = container.querySelector('#notify-newsletter-on-publish');
+      const pushCheckbox = container.querySelector('#notify-push-on-publish');
+      const publishBtn = container.querySelector('#publish-btn');
+
+      expect(notificationsFieldset).not.toBeNull();
+      expect(notificationsFieldset.contains(newsletterCheckbox)).toBe(true);
+      expect(newsletterCheckbox.checked).toBe(false);
+      expect(pushCheckbox.checked).toBe(false);
+
+      // 1º clique entra no estado de confirmação
+      publishBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await tick();
+      expect(publishBtn.innerText).toContain('publicar sem notificar');
+
+      // 2º clique confirma a publicação silenciosa
+      publishBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await tick();
+
+      expect(updateDocByIdMock).toHaveBeenCalledWith(
+        'poems',
+        'poem-draft-silent',
+        expect.objectContaining({
+          status: 'published'
+        })
+      );
+      expect(callFunctionMock).not.toHaveBeenCalledWith('sendNewsletter', expect.anything());
+      expect(callFunctionMock).not.toHaveBeenCalledWith('sendPushNotification', expect.anything());
+      expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Nenhuma notificação foi enviada'));
+    });
+
+    it('CT04: dispara sendNewsletter quando #notify-newsletter-on-publish está marcado ao publicar', async () => {
+      getDocByIdMock.mockResolvedValueOnce({
+        data: {
+          id: 'poem-draft-notify',
+          title: 'Poema Inédito',
+          slug: 'poema-inedito',
+          content: 'Verso inédito para assinantes.',
+          status: 'draft',
+          notify_newsletter_on_publish: false,
+          notify_push_on_publish: false
+        },
+        error: null
+      });
+
+      await renderEditor(container, 'poem-draft-notify');
+      await tick();
+
+      const newsletterCheckbox = container.querySelector('#notify-newsletter-on-publish');
+      const publishBtn = container.querySelector('#publish-btn');
+
+      newsletterCheckbox.checked = true;
+      newsletterCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+
+      // 1º clique entra no estado de confirmação exibindo newsletter
+      publishBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await tick();
+      expect(publishBtn.innerText).toContain('enviar newsletter');
+
+      // 2º clique confirma a publicação com newsletter
+      publishBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await tick();
+
+      expect(updateDocByIdMock).toHaveBeenCalledWith(
+        'poems',
+        'poem-draft-notify',
+        expect.objectContaining({
+          status: 'published',
+          notify_newsletter_on_publish: false
+        })
+      );
+      expect(callFunctionMock).toHaveBeenCalledTimes(1);
+      expect(callFunctionMock).toHaveBeenCalledWith('sendNewsletter', { poemId: 'poem-draft-notify' });
+    });
+  });
 });

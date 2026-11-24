@@ -96,10 +96,19 @@ describe('firestore.rules: subscribers (CA08 & CT07)', () => {
 });
 
 describe('firestore.rules: page_views e email_campaign_logs (CA02, RF02)', () => {
-  it('page_views restringe leitura e gestão a administrador', () => {
+  it('page_views restringe leitura a administrador e exige schema estrito na criação anônima', () => {
     const b = block('page_views');
     expect(b).toMatch(/allow read, update, delete: if isAdmin\(\);/);
-    expect(b).toMatch(/allow create: if true;/);
+    expect(b).not.toMatch(/allow create: if true;/);
+    expect(b).toContain("hasOnly(['page', 'poem_id', 'ip_hash', 'country', 'user_agent', 'referrer', 'created_at'])");
+    expect(b).toContain("hasAll(['page', 'poem_id', 'ip_hash', 'country', 'user_agent', 'referrer', 'created_at'])");
+    expect(b).toContain('request.resource.data.page.size() <= 300');
+    expect(b).toContain('request.resource.data.poem_id.size() <= 128');
+    expect(b).toContain('request.resource.data.ip_hash.size() <= 64');
+    expect(b).toContain('request.resource.data.country.size() <= 10');
+    expect(b).toContain('request.resource.data.user_agent.size() <= 300');
+    expect(b).toContain('request.resource.data.referrer.size() <= 300');
+    expect(b).toContain('request.resource.data.created_at.size() <= 40');
   });
 
   it('email_campaign_logs restringe leitura e escrita a administrador', () => {

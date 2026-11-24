@@ -1,5 +1,6 @@
 import { db } from '../utils/firebase.js';
-import { collection, getDocs, doc, setDoc, getCountFromServer, query, where } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { getPublishedPoems } from '../utils/poems-store.js';
 import { pushToggle } from '../components/push-toggle.js';
 import { updateSEO } from '../utils/seo.js';
 import { profilePageSchema, breadcrumbSchema, faqPageSchema, SITE_URL } from '../utils/structured-data.js';
@@ -75,12 +76,10 @@ export default {
         console.error('Erro ao buscar configurações:', err);
       }
 
-      // Buscar total de poemas publicados para manter o marco dinâmico
+      // Buscar total de poemas publicados para manter o marco dinâmico via poems-store
       try {
-        const poemsRef = collection(db, 'poems');
-        const q = query(poemsRef, where('status', '==', 'published'));
-        const snapshot = await getCountFromServer(q);
-        const count = snapshot.data().count;
+        const publishedPoems = await getPublishedPoems();
+        const count = Array.isArray(publishedPoems) ? publishedPoems.length : null;
 
         if (count !== null) {
           const countEl = container.querySelector('#total-poems-count');

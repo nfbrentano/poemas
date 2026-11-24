@@ -7,6 +7,7 @@ import { escapeHtml, sanitizeUrl, unwrapSafeHTML } from '../utils/html.js';
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { getPoemRowExcerpt } from '../utils/collection-template.js';
 import { enrichCollectionsWithCurated, mergeRelationsWithCurated } from '../data/collections.js';
+import { getFavoriteSlugs } from '../utils/favorites.js';
 
 export const collections = {
   meta: {
@@ -210,14 +211,19 @@ export const collections = {
         if (filtered.length === 0) {
           poemsList.innerHTML = '<p class="empty-state-desc" style="text-align: center; padding: 2rem;">Nenhum poema corresponde aos filtros selecionados.</p>';
         } else {
+          const favSlugs = getFavoriteSlugs();
           poemsList.innerHTML = unwrapSafeHTML(filtered.map(poem => {
             const year = poem.published_at ? new Date(poem.published_at).getFullYear() : '';
             const excerpt = getPoemRowExcerpt(poem, 140);
+            const isFav = favSlugs.has(poem.slug) || (poem.id && favSlugs.has(poem.id));
+            const favBadge = isFav ? ' <span class="favorite-badge" aria-label="Poema favoritado" title="Poema favoritado">🔖</span>' : '';
+            const hasAudio = Boolean(poem.audio_url && String(poem.audio_url).trim());
+            const audioBadge = hasAudio ? ' <span class="audio-badge" aria-label="Com narração em áudio" title="Com narração em áudio">🔊</span>' : '';
             return `
               <article class="poem-row fade-in">
-                <a href="${BASE_URL}poema/${escapeHtml(poem.slug)}/" data-link class="poem-row-link">
+                <a href="${BASE_URL}poema/${escapeHtml(poem.slug)}/" data-poem-slug="${escapeHtml(poem.slug)}" data-link class="poem-row-link">
                   <div class="poem-row-main" style="flex: 1; min-width: 0;">
-                    <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                    <h3 class="poem-row-title">${escapeHtml(poem.title)}${favBadge}${audioBadge}</h3>
                     ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
                   </div>
                   ${year ? `<span class="poem-row-year">${year}</span>` : ''}

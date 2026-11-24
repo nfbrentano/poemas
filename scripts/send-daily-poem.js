@@ -1,10 +1,11 @@
 import { fileURLToPath } from 'url';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, getDocs, query, where, addDoc } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
 import { getPoemOfDay } from '../src/utils/poemOfDay.js';
 import { reportError } from '../src/utils/error-reporter.js';
 import { normalizePoemContent } from '../src/utils/text-format.js';
+import { getFirebaseConfig, installFirebaseNodeReferer } from './build-data-cache.js';
 
 export function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -95,20 +96,13 @@ export function getDailyPoemRecipients() {
     .filter(Boolean);
 }
 
-const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID
-};
-
-const gmailUser = process.env.GMAIL_USER;
-const gmailPass = process.env.GMAIL_PASS;
-const baseUrl = 'https://nfgbrentano.art.br/'; 
+const baseUrl = 'https://nfgbrentano.art.br/';
 
 export async function sendDailyPoem({ dbInstance, transporterInstance, log = console.log, errorLog = console.error } = {}) {
+  const firebaseConfig = getFirebaseConfig();
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_PASS;
+
   let db = dbInstance;
   let transporter = transporterInstance;
 
@@ -117,7 +111,8 @@ export async function sendDailyPoem({ dbInstance, transporterInstance, log = con
       errorLog('Firebase credentials and Gmail credentials (GMAIL_USER, GMAIL_PASS) are required.');
       process.exit(1);
     }
-    const app = initializeApp(firebaseConfig);
+    installFirebaseNodeReferer();
+    const app = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
     db = getFirestore(app);
   }
 

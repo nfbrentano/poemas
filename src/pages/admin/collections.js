@@ -1,4 +1,4 @@
-import { listDocs, getDocById, insertDocs, updateDocById, deleteDocById, replaceCollectionPoems, uploadFile, getPublicFileUrl } from './data.js';
+import { listDocs, getDocById, insertDocs, updateDocById, deleteCollectionWithRelations, replaceCollectionPoems, uploadFile, getPublicFileUrl } from './data.js';
 import { escapeHtml, sanitizeUrl, unwrapSafeHTML } from '../../utils/html.js';
 import { countPoemsByCollection, formatPoemCount } from './collection-counts.js';
 import {
@@ -108,7 +108,7 @@ export async function renderCollections(container) {
           
           btn.innerText = 'Excluindo...';
           btn.disabled = true;
-          const { error: delErr } = await deleteDocById('collections', btn.dataset.id);
+          const { error: delErr } = await deleteCollectionWithRelations(btn.dataset.id);
           if (delErr) {
             alert('Erro ao excluir coleção: ' + delErr.message);
           }

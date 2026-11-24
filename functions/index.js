@@ -6,7 +6,7 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const nodemailer = require("nodemailer");
 const webPush = require("web-push");
 const { buildFunctionErrorPayload, logBackendFunctionError } = require("./error-logger");
-const { buildPushPayload, handleSendPushLogic } = require("./push-helpers");
+const { assertAdminAuth, buildPushPayload, handleSendPushLogic } = require("./push-helpers");
 
 if (getApps().length === 0) {
   initializeApp();
@@ -101,13 +101,12 @@ exports.sendNewsletter = onCall(
     secrets: [gmailUser, gmailAppPassword, senderName],
   },
   async (request) => {
-    // 1. Validar autenticação
-    if (!request.auth) {
-      throw new HttpsError(
-        "unauthenticated",
-        "É necessário estar autenticado para enviar a newsletter."
-      );
-    }
+    // 1. Validar autenticação e perfil administrador (RF01, RNF02, CA01)
+    assertAdminAuth(
+      request.auth,
+      (code, message) => new HttpsError(code, message),
+      "enviar a newsletter"
+    );
 
     const { poemId, targetEmail } = request.data;
     if (!poemId) {

@@ -3,10 +3,10 @@ import { archivePageSchema, breadcrumbSchema, SITE_URL } from '../utils/structur
 import { getPublishedPoems } from '../utils/poems-store.js';
 import { renderArchiveMarkup, filterPublishedPoems } from '../utils/archive-builder.js';
 import { unwrapSafeHTML } from '../utils/html.js';
-import { trackPageView } from '../utils/analytics.js';
 
 let currentSortOrder = 'desc';
 let clickHandler = null;
+let activeContainer = null;
 
 export const archive = {
   meta: {
@@ -22,22 +22,20 @@ export const archive = {
 
     const isPrerendered = container.getAttribute('data-prerendered') === '/arquivo';
 
-    updateSEO({
-      title: 'Arquivo e Linha do Tempo Literária — Natanael Fernando Gatti Brentano',
-      description: 'Linha do tempo cronológica com marcos literários de todas as obras publicadas desde 2015 por Natanael Fernando Gatti Brentano.',
-      url: canonicalArchiveUrl,
-      type: 'website',
-      structuredData: [
-        archivePageSchema([]),
-        breadcrumbSchema(breadcrumbItems)
-      ]
-    });
-
-    trackPageView('/arquivo', 'Arquivo e Linha do Tempo Literária');
-
     let allPoems = [];
 
     if (!isPrerendered) {
+      updateSEO({
+        title: 'Arquivo e Linha do Tempo Literária — Natanael Fernando Gatti Brentano',
+        description: 'Linha do tempo cronológica com marcos literários de todas as obras publicadas desde 2015 por Natanael Fernando Gatti Brentano.',
+        url: canonicalArchiveUrl,
+        type: 'website',
+        structuredData: [
+          archivePageSchema([]),
+          breadcrumbSchema(breadcrumbItems)
+        ]
+      });
+
       // Skeleton de carregamento
       container.innerHTML = unwrapSafeHTML(`
         <div class="archive-container container fade-in">
@@ -83,9 +81,20 @@ export const archive = {
       }));
     } else {
       container.removeAttribute('data-prerendered');
-      // Carrega poemas do store em background para suportar alternância dinâmica de ordenação
+      // Carrega poemas do store em background para suportar alternância dinâmica de ordenação e atualizar JSON-LD
       getPublishedPoems().then(res => {
         allPoems = res;
+        const publishedPoems = filterPublishedPoems(res);
+        updateSEO({
+          title: 'Arquivo e Linha do Tempo Literária — Natanael Fernando Gatti Brentano',
+          description: 'Linha do tempo cronológica com marcos literários de todas as obras publicadas desde 2015 por Natanael Fernando Gatti Brentano.',
+          url: canonicalArchiveUrl,
+          type: 'website',
+          structuredData: [
+            archivePageSchema(publishedPoems),
+            breadcrumbSchema(breadcrumbItems)
+          ]
+        });
       }).catch(() => {});
     }
 
@@ -113,13 +122,15 @@ export const archive = {
       }
     };
 
+    activeContainer = container;
     container.addEventListener('click', clickHandler);
   },
 
   cleanup() {
     if (clickHandler) {
-      document.removeEventListener('click', clickHandler);
+      (activeContainer || document).removeEventListener('click', clickHandler);
       clickHandler = null;
+      activeContainer = null;
     }
   }
 };

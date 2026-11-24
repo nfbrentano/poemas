@@ -127,6 +127,81 @@ export async function deleteDocsWhere(collectionName, field, value) {
 }
 
 /**
+ * Remove um poema e todos os seus vínculos órfãos em `collection_poems` atomicamente via writeBatch.
+ * @param {string} poemId
+ * @returns {Promise<{ error: Error | null }>}
+ */
+export async function deletePoemWithRelations(poemId) {
+  try {
+    const snapshot = await getDocs(query(collection(db, 'collection_poems'), where('poem_id', '==', poemId)));
+    const batch = writeBatch(db);
+    batch.delete(doc(db, 'poems', poemId));
+    snapshot.docs.forEach(d => {
+      batch.delete(doc(db, 'collection_poems', d.id));
+    });
+    await batch.commit();
+    invalidatePoemsCache();
+    return { error: null };
+  } catch (error) {
+    return { error };
+  }
+}
+
+/**
+ * Remove uma coleção, seus vínculos em `collection_poems` e o slug correspondente de `poems.collection_slugs`.
+ * @param {string} collectionId
+ * @param {{ collectionSlug?: string }} [options]
+ * @returns {Promise<{ error: Error | null }>}
+ */
+export async function deleteCollectionWithRelations(collectionId, { collectionSlug } = {}) {
+  try {
+    let slug = collectionSlug;
+    if (!slug) {
+      try {
+        const colSnap = await getDoc(doc(db, 'collections', collectionId));
+        if (colSnap && colSnap.exists()) {
+          slug = colSnap.data()?.slug;
+        }
+      } catch (_) {}
+    }
+
+    const snapshot = await getDocs(query(collection(db, 'collection_poems'), where('collection_id', '==', collectionId)));
+    const affectedPoemIds = [...new Set(snapshot.docs.map(d => d.data()?.poem_id).filter(Boolean))];
+
+    const batch = writeBatch(db);
+    snapshot.docs.forEach(d => {
+      batch.delete(doc(db, 'collection_poems', d.id));
+    });
+
+    if (slug) {
+      const nowIso = new Date().toISOString();
+      for (const poemId of affectedPoemIds) {
+        try {
+          const pRef = doc(db, 'poems', poemId);
+          const pSnap = await getDoc(pRef);
+          if (pSnap && pSnap.exists()) {
+            const currentSlugs = pSnap.data()?.collection_slugs || [];
+            if (currentSlugs.includes(slug)) {
+              batch.update(pRef, {
+                collection_slugs: currentSlugs.filter(s => s !== slug),
+                updated_at: nowIso
+              });
+            }
+          }
+        } catch (_) {}
+      }
+    }
+
+    batch.delete(doc(db, 'collections', collectionId));
+    await batch.commit();
+    invalidatePoemsCache();
+    return { error: null };
+  } catch (error) {
+    return { error };
+  }
+}
+
+/**
  * Substitui atomicamente todas as relações de uma coleção em `collection_poems`.
  * Deleta as relações anteriores e insere as novas em um único writeBatch (RNF03).
  * Sincroniza automaticamente o campo `collection_slugs` nos documentos de `poems` afetados (RF05).

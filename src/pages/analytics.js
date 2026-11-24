@@ -2,6 +2,16 @@ import { db } from '../utils/firebase.js';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { escapeHtml, unwrapSafeHTML } from '../utils/html.js';
 
+/**
+ * Garante que apenas page_views reais de páginas de poemas entrem no cálculo de "Poemas mais lidos".
+ * Ignora registros legados com poem_id falso gravado em outras rotas (ex.: /arquivo).
+ * @param {object} v
+ * @returns {boolean}
+ */
+export function isPoemPageView(v) {
+  return Boolean(v && v.poem_id && typeof v.page === 'string' && v.page.startsWith('/poema/'));
+}
+
 // Minimal SVG line chart — no external deps
 function buildChart(data, width = 700, height = 160) {
   if (!data || data.length === 0) return '<p style="color:var(--text-muted);font-family:var(--font-ui);font-size:0.85rem;">Sem dados para o período.</p>';
@@ -322,7 +332,7 @@ export default {
 
     const today      = new Date().toISOString().slice(0, 10);
     const todayViews = views.filter(v => v.created_at.slice(0, 10) === today).length;
-    const poemViews  = views.filter(v => v.poem_id).length;
+    const poemViews  = views.filter(isPoemPageView).length;
     const poemsPerVisit = uniqueIPs > 0 ? (poemViews / uniqueIPs).toFixed(1) : '0.0';
 
     // Remove skeleton-pulse and render KPIs
@@ -392,7 +402,7 @@ export default {
 
     // Top poems
     const poemMap = {};
-    views.filter(v => v.poem_id).forEach(v => {
+    views.filter(isPoemPageView).forEach(v => {
       const key = v.page;
       poemMap[key] = (poemMap[key] || 0) + 1;
     });

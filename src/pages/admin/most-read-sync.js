@@ -91,7 +91,7 @@ export async function syncMostReadSetting({
 
     if (mostRead.length < limit) {
       const snapOlder = await gDocs(
-        qFn(cFn(db, 'page_views'), wFn('created_at', '<', sinceIso), oFn('created_at', 'desc'), lFn(10000))
+        qFn(cFn(db, 'page_views'), wFn('created_at', '<', sinceIso), oFn('created_at', 'desc'), lFn(2500))
       );
       const viewsOlder = (snapOlder?.docs || []).map(d => d.data());
       mostRead = computeMostReadPoems({

@@ -216,14 +216,14 @@ export async function renderEditor(container, id) {
             <label style="display: block; margin-bottom: var(--space-3xs); color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Data de Publicação</label>
             <input type="datetime-local" id="scheduled-at" value="${poem.scheduled_at ? new Date(poem.scheduled_at).toISOString().slice(0, 16) : ''}" style="width: 100%; padding: var(--space-sm); border: 1px solid var(--border-strong); background: var(--bg-primary); color: var(--text-primary); border-radius: 2px;">
             <p class="field-help">Se definido e o status for "Agendado", o poema será publicado automaticamente.</p>
-            <label style="display: flex; align-items: center; gap: var(--space-2xs); margin-top: var(--space-sm); font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-              <input type="checkbox" id="notify-newsletter-on-publish" ${poem.notify_newsletter_on_publish ? 'checked' : ''}>
-              Enviar newsletter automaticamente ao publicar
-            </label>
             ${poem.status === 'scheduled' ? `<p class="field-help" style="color: var(--accent-subtle); font-style: italic;">Este poema será publicado automaticamente em ${new Date(poem.scheduled_at).toLocaleString('pt-BR')}.</p>` : ''}
           </div>
 
-          <div id="publish-notifications-fields" style="margin-top: var(--space-sm); ${poem.status === 'published' ? 'display: none;' : ''}">
+          <div id="publish-notifications-fields" style="margin-top: var(--space-sm); ${poem.status === 'published' ? 'display: none;' : 'display: flex;'} flex-direction: column; gap: var(--space-xs);">
+            <label style="display: flex; align-items: center; gap: var(--space-2xs); font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+              <input type="checkbox" id="notify-newsletter-on-publish" ${poem.notify_newsletter_on_publish ? 'checked' : ''} style="width: auto;">
+              Enviar newsletter automaticamente ao publicar
+            </label>
             <label style="display: flex; align-items: center; gap: var(--space-2xs); font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
               <input type="checkbox" id="notify-push-on-publish" ${poem.notify_push_on_publish ? 'checked' : ''} style="width: auto;">
               Enviar notificação Web Push aos leitores ao publicar
@@ -504,7 +504,7 @@ export async function renderEditor(container, id) {
   statusSelect.addEventListener('change', () => {
     schedulingFields.style.display = statusSelect.value === 'scheduled' ? 'block' : 'none';
     if (publishNotificationsFields) {
-      publishNotificationsFields.style.display = statusSelect.value === 'published' ? 'none' : 'block';
+      publishNotificationsFields.style.display = statusSelect.value === 'published' ? 'none' : 'flex';
     }
     onFieldChange();
   });
@@ -794,14 +794,25 @@ export async function renderEditor(container, id) {
         return;
       }
 
+      const shouldSendNewsletter = Boolean(notifyNewsletterInput && notifyNewsletterInput.checked);
+      const shouldSendPush = Boolean(notifyPushInput && notifyPushInput.checked);
+
       if (!confirmState) {
-        publishBtn.innerText = 'Tem certeza? Clique para confirmar.';
+        if (shouldSendNewsletter && shouldSendPush) {
+          publishBtn.innerText = 'Confirmar: publicar + newsletter + push?';
+        } else if (shouldSendNewsletter) {
+          publishBtn.innerText = 'Confirmar: publicar + enviar newsletter?';
+        } else if (shouldSendPush) {
+          publishBtn.innerText = 'Confirmar: publicar + enviar Web Push?';
+        } else {
+          publishBtn.innerText = 'Confirmar: publicar sem notificar?';
+        }
         publishBtn.style.background = 'var(--error)';
         confirmState = true;
 
         setTimeout(() => {
           if (publishBtn && !publishBtn.disabled) {
-            publishBtn.innerText = 'Publicar e Notificar Assinantes';
+            publishBtn.innerText = 'Publicar Agora';
             publishBtn.style.background = 'var(--success)';
             confirmState = false;
           }
@@ -817,10 +828,12 @@ export async function renderEditor(container, id) {
       payload.collection_slugs = selectedCollectionSlugs;
       delete payload.collection_ids;
 
-      const shouldSendPush = Boolean(notifyPushInput && notifyPushInput.checked);
       payload.status = 'published';
       payload.published_at = new Date().toISOString();
       payload.updated_at = payload.published_at;
+      if (shouldSendNewsletter) {
+        payload.notify_newsletter_on_publish = false;
+      }
       if (shouldSendPush) {
         payload.notify_push_on_publish = false;
         payload.push_sent_at = payload.published_at;
@@ -842,7 +855,7 @@ export async function renderEditor(container, id) {
       if (error) {
         console.error(error);
         alert('Erro ao publicar: ' + error.message);
-        publishBtn.innerText = 'Publicar e Notificar Assinantes';
+        publishBtn.innerText = 'Publicar Agora';
         publishBtn.disabled = false;
         return;
       }
@@ -857,25 +870,28 @@ export async function renderEditor(container, id) {
       hasUnsavedChanges = false;
       window.removeEventListener('beforeunload', handleBeforeUnload);
 
-      // Trigger Cloud Function Newsletter e Web Push explícito (D01)
+      // Trigger Cloud Function Newsletter e Web Push somente se marcados explicitamente
       if (poemId) {
         let newsletterMsg = '';
         let pushMsg = '';
-        try {
-          publishBtn.innerText = 'Enviando newsletter...';
-          const { data, error: fnError } = await callFunction('sendNewsletter', { poemId });
-          if (fnError) throw fnError;
-          newsletterMsg = `Newsletter enviada com sucesso para ${data?.count || 0} assinantes.`;
-        } catch (err) {
-          console.error('Newsletter erro:', err);
-          let detailedMsg = '';
-          if (err.context && typeof err.context.json === 'function') {
-            try {
-              const errBody = await err.context.json();
-              detailedMsg = errBody.error || errBody.message || '';
-            } catch (_) {}
+
+        if (shouldSendNewsletter) {
+          try {
+            publishBtn.innerText = 'Enviando newsletter...';
+            const { data, error: fnError } = await callFunction('sendNewsletter', { poemId });
+            if (fnError) throw fnError;
+            newsletterMsg = `Newsletter enviada com sucesso para ${data?.count || 0} assinantes.`;
+          } catch (err) {
+            console.error('Newsletter erro:', err);
+            let detailedMsg = '';
+            if (err.context && typeof err.context.json === 'function') {
+              try {
+                const errBody = await err.context.json();
+                detailedMsg = errBody.error || errBody.message || '';
+              } catch (_) {}
+            }
+            newsletterMsg = `Erro ao enviar a newsletter: ${detailedMsg || err.message || 'Erro na Cloud Function'}`;
           }
-          newsletterMsg = `Erro ao enviar a newsletter: ${detailedMsg || err.message || 'Erro na Cloud Function'}`;
         }
 
         if (shouldSendPush) {
@@ -883,14 +899,19 @@ export async function renderEditor(container, id) {
             publishBtn.innerText = 'Enviando Web Push...';
             const { data: pushData, error: pushErr } = await callFunction('sendPushNotification', { poemId });
             if (pushErr) throw pushErr;
-            pushMsg = `\nWeb Push: ${pushData?.sent || 0} entregue(s), ${pushData?.failed || 0} falha(s), ${pushData?.removed || 0} expirada(s) removida(s).`;
+            pushMsg = `Web Push: ${pushData?.sent || 0} entregue(s), ${pushData?.failed || 0} falha(s), ${pushData?.removed || 0} expirada(s) removida(s).`;
           } catch (pushErr) {
             console.error('Web Push erro:', pushErr);
-            pushMsg = `\nErro ao enviar Web Push: ${pushErr?.message || 'Erro na Cloud Function'}`;
+            pushMsg = `Erro ao enviar Web Push: ${pushErr?.message || 'Erro na Cloud Function'}`;
           }
         }
 
-        alert(`Obra publicada!\n${newsletterMsg}${pushMsg}`);
+        const messages = [newsletterMsg, pushMsg].filter(Boolean);
+        if (messages.length === 0) {
+          alert('Obra publicada com sucesso! Nenhuma notificação foi enviada.');
+        } else {
+          alert(`Obra publicada!\n${messages.join('\n')}`);
+        }
       }
 
       navigateTo('/admin');

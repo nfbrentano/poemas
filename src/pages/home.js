@@ -389,6 +389,8 @@ export default {
     const favSlugs = getFavoriteSlugs();
     const podIsFav = podPoem && (favSlugs.has(podPoem.slug) || (podPoem.id && favSlugs.has(podPoem.id)));
     const podFavBadge = podIsFav ? ' <span class="favorite-badge" aria-label="Poema favoritado" title="Poema favoritado">🔖</span>' : '';
+    const podHasAudio = Boolean(podPoem && podPoem.audio_url && String(podPoem.audio_url).trim());
+    const podAudioBadge = podHasAudio ? ' <span class="audio-badge" aria-label="Com narração em áudio" title="Com narração em áudio">🔊</span>' : '';
 
     let mostReadHtml = '';
     if (!isFiltering) {
@@ -404,7 +406,7 @@ export default {
         <section class="poem-of-day fade-in">
           <p class="pod-label">— poema do dia —</p>
           <a href="${BASE_URL}poema/${podPoem.slug}/" data-link class="pod-link">
-            <h2 class="pod-title">${escapeHtml(podPoem.title)}${podFavBadge}</h2>
+            <h2 class="pod-title">${escapeHtml(podPoem.title)}${podFavBadge}${podAudioBadge}</h2>
             <p class="pod-excerpt">${escapeHtml(podExcerpt)}</p>
           </a>
         </section>

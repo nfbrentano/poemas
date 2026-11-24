@@ -240,6 +240,8 @@ function renderBaseLayout({ mainContent = '', dataPrerendered = '' }) {
 
 export function renderHomeMarkup({ poems, podPoem, allCollections = [], qualifyingSentiments = [], mostReadPoems = [] }) {
   const podExcerpt = podPoem ? getExcerpt(podPoem, 160) : '';
+  const podHasAudio = Boolean(podPoem && podPoem.audio_url && String(podPoem.audio_url).trim());
+  const podAudioBadge = podHasAudio ? ' <span class="audio-badge" aria-label="Com narração em áudio" title="Com narração em áudio">🔊</span>' : '';
   const mostReadHtml = renderMostReadMarkup(mostReadPoems, { baseUrl: '/' });
   const displayPoems = podPoem ? poems.filter(p => p.id !== podPoem.id) : poems;
   const recentPoems = displayPoems.slice(0, 20);
@@ -322,7 +324,7 @@ export function renderHomeMarkup({ poems, podPoem, allCollections = [], qualifyi
     <section class="poem-of-day fade-in">
       <p class="pod-label">— poema do dia —</p>
       <a href="/poema/${podPoem.slug}/" data-link class="pod-link">
-        <h2 class="pod-title">${escapeHtml(podPoem.title)}</h2>
+        <h2 class="pod-title">${escapeHtml(podPoem.title)}${podAudioBadge}</h2>
         <p class="pod-excerpt">${escapeHtml(podExcerpt)}</p>
       </a>
     </section>
@@ -1120,11 +1122,13 @@ async function prerender() {
             ${sortedPoems.map(poem => {
               const year = new Date(poem.published_at).getFullYear();
               const excerpt = getPoemRowExcerpt(poem, 140);
+              const hasAudio = Boolean(poem.audio_url && String(poem.audio_url).trim());
+              const audioBadge = hasAudio ? ' <span class="audio-badge" aria-label="Com narração em áudio" title="Com narração em áudio">🔊</span>' : '';
               return `
                 <article class="poem-row">
-                  <a href="/poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-link>
+                  <a href="/poema/${escapeHtml(poem.slug)}/" class="poem-row-link" data-poem-slug="${escapeHtml(poem.slug)}" data-link>
                     <div class="poem-row-main" style="flex: 1; min-width: 0;">
-                      <h3 class="poem-row-title">${escapeHtml(poem.title)}</h3>
+                      <h3 class="poem-row-title">${escapeHtml(poem.title)}${audioBadge}</h3>
                       ${excerpt ? `<p class="poem-row-excerpt" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0 0; line-height: 1.5;">${escapeHtml(excerpt)}</p>` : ''}
                     </div>
                     <span class="poem-row-year">${year}</span>
