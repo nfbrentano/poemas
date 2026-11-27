@@ -223,6 +223,8 @@ export async function router(eventOrOptions = null) {
           }
         }
 
+        const isNotFoundState = Boolean(view?.querySelector('.not-found-page'));
+
         if (component.meta && component.meta.robots) {
           let robotsTag = document.querySelector('meta[name="robots"]');
           if (!robotsTag) {
@@ -234,14 +236,20 @@ export async function router(eventOrOptions = null) {
           if (component.meta.robots.includes('noindex')) {
             setStructuredData([]);
           }
-        } else {
-          document.querySelector('meta[name="robots"]')?.remove();
+        } else if (!isNotFoundState) {
+          let robotsTag = document.querySelector('meta[name="robots"]');
+          if (!robotsTag) {
+            robotsTag = document.createElement('meta');
+            robotsTag.setAttribute('name', 'robots');
+            document.head.appendChild(robotsTag);
+          }
+          robotsTag.setAttribute('content', 'index, follow');
         }
 
         // RF07: Garantir que nenhuma rota SPA herde dados de <head> da rota anterior
         const currentCanonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href') || '';
         const expectedCanonicalUrl = buildUrl(path);
-        if (currentCanonical !== expectedCanonicalUrl) {
+        if (!isNotFoundState && currentCanonical !== expectedCanonicalUrl) {
           const metaTitle = component.meta?.title;
           const defaultPageTitle = metaTitle
             ? (metaTitle.includes('Natanael Fernando Gatti Brentano') ? metaTitle : `${metaTitle} — Natanael Fernando Gatti Brentano`)

@@ -186,6 +186,9 @@ export function poemSchema(poem, collections = []) {
     "copyrightHolder": {
       "@id": AUTHOR_ID
     },
+    "publisher": {
+      "@id": AUTHOR_ID
+    },
     "license": licenseUrl,
     "author": {
       "@type": "Person",

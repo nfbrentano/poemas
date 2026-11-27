@@ -63,5 +63,13 @@ describe('updateSEO', () => {
     expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://nfgbrentano.art.br/poema/meu-slug/');
     expect(document.querySelector('meta[property="og:url"]').getAttribute('content')).toBe('https://nfgbrentano.art.br/poema/meu-slug/');
   });
+
+  it('sets default robots (index, follow) and publisher link/meta on indexable pages', () => {
+    updateSEO({ url: 'https://nfgbrentano.art.br/poema/277' });
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('index, follow');
+    expect(document.querySelector('link[rel="publisher"]')?.getAttribute('href')).toBe('https://nfgbrentano.art.br/sobre/');
+    expect(document.querySelector('meta[name="publisher"]')?.getAttribute('content')).toBe('Natanael Fernando Gatti Brentano');
+    expect(document.querySelector('meta[name="author"]')?.getAttribute('content')).toBe('Natanael Fernando Gatti Brentano');
+  });
 });
 

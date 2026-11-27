@@ -116,7 +116,7 @@ describe('{SEO} Home: h1, título sem duplicação, canonical limpo e conteúdo 
       // 2. Limpa filtros e renderiza rota limpa
       window.history.replaceState({}, '', '/');
       await homePage.render(container, {});
-      expect(document.querySelector('meta[name="robots"]')).toBeNull();
+      expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('index, follow');
     });
   });
 
@@ -141,8 +141,11 @@ describe('{SEO} Home: h1, título sem duplicação, canonical limpo e conteúdo 
       const poemLinks = html.match(/href=["']\/poema\/[^"']+\/?["']/g) || [];
       expect(poemLinks.length).toBeGreaterThanOrEqual(20);
 
-      // Canonical e sem noindex
+      // Canonical, robots explícito index, follow e publisher
       expect(html).toMatch(/<link\s+rel=["']canonical["']\s+href=["']https:\/\/nfgbrentano\.art\.br\/["']/i);
+      expect(html).toMatch(/<link\s+rel=["']publisher["']\s+href=["']https:\/\/nfgbrentano\.art\.br\/sobre\/["']/i);
+      expect(html).toMatch(/<meta\s+name=["']publisher["']\s+content=["']Natanael Fernando Gatti Brentano["']/i);
+      expect(html).toMatch(/<meta\s+name=["']robots["']\s+content=["']index,\s*follow["']/i);
       expect(html).not.toMatch(/<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i);
     });
 

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { setNotFoundSEO, updateSEO } from './utils/seo.js';
+import { setRobotsMeta } from '../scripts/prerender.js';
 import legacyRedirects from '../scripts/legacy-redirects.json';
 
 describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs legados', () => {
@@ -12,14 +13,25 @@ describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs l
   });
 
   describe('CT01: noindex em páginas privadas prerenderizadas (CA01)', () => {
-    it('deve conter noindex, nofollow em admin, login, unsubscribe e cancelar-inscricao gerados no dist', () => {
+    it('deve conter exatamente uma tag meta robots com noindex, nofollow em admin, login, unsubscribe e cancelar-inscricao gerados no dist', () => {
       const privateRoutes = ['admin', 'login', 'unsubscribe', 'cancelar-inscricao'];
       for (const route of privateRoutes) {
         const filePath = path.resolve(process.cwd(), `dist/${route}/index.html`);
         expect(fs.existsSync(filePath), `Arquivo ${filePath} deve existir`).toBe(true);
         const content = fs.readFileSync(filePath, 'utf-8');
+        const robotsMatches = content.match(/<meta\s+name=["']robots["'][^>]*>/gi) || [];
+        expect(robotsMatches).toHaveLength(1);
         expect(content).toMatch(/<meta\s+name=["']robots["']\s+content=["']noindex,\s*nofollow["']/i);
       }
+    });
+
+    it('setRobotsMeta substitui a tag herdada index, follow sem duplicar meta robots', () => {
+      const base = '<html><head><meta name="robots" content="index, follow" /></head><body></body></html>';
+      const updated = setRobotsMeta(base, 'noindex, nofollow');
+      const matches = updated.match(/<meta\s+name=["']robots["'][^>]*>/gi) || [];
+      expect(matches).toHaveLength(1);
+      expect(updated).toContain('<meta name="robots" content="noindex, nofollow" />');
+      expect(updated).not.toContain('index, follow');
     });
   });
 
@@ -62,7 +74,7 @@ describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs l
       expect(document.querySelector('link[rel="canonical"]')).toBeNull();
     });
 
-    it('updateSEO deve restaurar canonical e remover noindex ao navegar para página válida', () => {
+    it('updateSEO deve restaurar canonical e substituir noindex por index, follow ao navegar para página válida', () => {
       setNotFoundSEO();
       expect(document.querySelector('meta[name="robots"]')).not.toBeNull();
       expect(document.querySelector('link[rel="canonical"]')).toBeNull();
@@ -74,7 +86,8 @@ describe('{SEO} Controle de indexação: noindex, robots.txt, soft 404 e slugs l
       });
 
       expect(document.title).toBe('Poema Válido — Natanael Fernando Gatti Brentano');
-      expect(document.querySelector('meta[name="robots"]')).toBeNull();
+      const robots = document.querySelector('meta[name="robots"]');
+      expect(robots?.getAttribute('content')).toBe('index, follow');
       const canonical = document.querySelector('link[rel="canonical"]');
       expect(canonical).toBeTruthy();
       expect(canonical?.getAttribute('href')).toBe('https://nfgbrentano.art.br/poema/poema-valido/');

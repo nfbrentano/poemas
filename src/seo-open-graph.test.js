@@ -94,4 +94,12 @@ describe('Open Graph: build (dist)', () => {
       expect(desc?.[1]).not.toMatch(/\n/);
     }
   });
+
+  it.skipIf(!hasDist)('CA02: dist/index.html e poemas contêm exatamente uma tag fb:app_id quando VITE_FB_APP_ID está configurado no ambiente de build', () => {
+    const distIndexHtml = fs.readFileSync(path.join(root, 'dist/index.html'), 'utf-8');
+    if (distIndexHtml.includes('property="fb:app_id"')) {
+      expect(countMeta(distIndexHtml, 'fb:app_id')).toBe(1);
+      expect(distIndexHtml).toMatch(/<meta property="fb:app_id" content="\d+"\s*\/?>/);
+    }
+  });
 });

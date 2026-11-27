@@ -2,6 +2,10 @@ import { setStructuredData, poemSchema, pageGraphSchema } from './structured-dat
 import { SITE_URL, cleanCanonicalUrl } from './url.js';
 import { sanitizeUrl } from './html.js';
 
+export const DEFAULT_ROBOTS = 'index, follow';
+export const PUBLISHER_NAME = 'Natanael Fernando Gatti Brentano';
+export const PUBLISHER_URL = cleanCanonicalUrl('/sobre/', SITE_URL);
+
 export function setNotFoundSEO() {
   document.title = 'Página não encontrada — Natanael Fernando Gatti Brentano';
 
@@ -105,17 +109,28 @@ export function updateSEO({ title, description, url, imageUrl, type = 'website',
   }
   canonical.setAttribute('href', safeCanonicalHref);
 
-  // Meta Robots
-  if (robots) {
-    setMeta('meta[name="robots"]', 'content', robots);
-  } else {
-    document.querySelector('meta[name="robots"]')?.remove();
+  // Publisher link & meta + Author meta
+  let publisherLink = document.querySelector('link[rel="publisher"]');
+  if (!publisherLink) {
+    publisherLink = document.createElement('link');
+    publisherLink.setAttribute('rel', 'publisher');
+    document.head.appendChild(publisherLink);
   }
+  publisherLink.setAttribute('href', PUBLISHER_URL);
+  setMeta('meta[name="author"]', 'content', PUBLISHER_NAME);
+  setMeta('meta[name="publisher"]', 'content', PUBLISHER_NAME);
+
+  // Meta Robots
+  setMeta('meta[name="robots"]', 'content', robots || DEFAULT_ROBOTS);
 
   // Dynamic Meta Description
   setMeta('meta[name="description"]', 'content', finalDesc);
   
   // Open Graph
+  const fbAppId = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_FB_APP_ID?.trim() : '';
+  if (fbAppId && /^\d+$/.test(fbAppId)) {
+    setMeta('meta[property="fb:app_id"]', 'content', fbAppId);
+  }
   setMeta('meta[property="og:locale"]', 'content', 'pt_BR');
   setMeta('meta[property="og:site_name"]', 'content', 'Poemas — Natanael Fernando Gatti Brentano');
   setMeta('meta[property="og:title"]', 'content', finalTitle);

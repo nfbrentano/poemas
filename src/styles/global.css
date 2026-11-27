@@ -423,7 +423,6 @@ html.align-reading-center .poem-content {
     text-align: left;
     display: -webkit-box;
     -webkit-line-clamp: 3;
-    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }

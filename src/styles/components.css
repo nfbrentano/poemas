@@ -432,7 +432,6 @@ input, textarea {
   color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.4;
@@ -597,7 +596,6 @@ input, textarea {
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1231,7 +1229,6 @@ input, textarea {
     white-space: normal;
     display: -webkit-box;
     -webkit-line-clamp: 2;
-    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2716,7 +2713,7 @@ html.align-reading-left:not(.font-family-hand) .poem-content .stanza:first-child
   line-height: 1.6;
   margin: 0;
   user-select: all;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Desktop Enhancements */

@@ -64,6 +64,31 @@ export function removeJsonLdScripts(html) {
   return result;
 }
 
+/**
+ * Ensures a single <meta name="robots" content="..."> tag in <head>,
+ * replacing any inherited tag instead of duplicating it.
+ * @param {string} html
+ * @param {string} [robotsValue='index, follow']
+ * @returns {string}
+ */
+export function setRobotsMeta(html, robotsValue = 'index, follow') {
+  if (typeof html !== 'string' || !html) return '';
+  const safeValue = escapeHtml(robotsValue || 'index, follow');
+  const tag = `<meta name="robots" content="${safeValue}" />`;
+  const existingRe = /<meta\s+name=["']robots["'][^>]*>/i;
+  if (existingRe.test(html)) {
+    let replaced = false;
+    return html.replace(/<meta\s+name=["']robots["'][^>]*>/gi, () => {
+      if (!replaced) {
+        replaced = true;
+        return tag;
+      }
+      return '';
+    });
+  }
+  return html.replace(/<\/head>/i, `  ${tag}\n</head>`);
+}
+
 const baseUrl = 'https://nfgbrentano.art.br/'; 
 
 // Remove og:image:* herdadas do template antes de inserir as da página (evita duplicatas conflitantes).
@@ -711,6 +736,7 @@ async function prerender() {
       );
 
       // 6. Inserir metadados extras, JSON-LD e __DATA__ antes de </head>
+      modifiedHtml = setRobotsMeta(modifiedHtml, 'index, follow');
       modifiedHtml = modifiedHtml.replace(
         /<\/head>/i,
         `${articleMeta}${citationMeta}${jsonLdScript}${dataScriptTag}\n  </head>`
@@ -840,9 +866,7 @@ async function prerender() {
         html = html.replace(/<\/head>/i, `${structuredDataHtml}\n</head>`);
       }
 
-      if (sr.robots) {
-        html = html.replace(/<\/head>/i, `  <meta name="robots" content="${escapeHtml(sr.robots)}" />\n</head>`);
-      }
+      html = setRobotsMeta(html, sr.robots || 'index, follow');
 
       // RF04 & CA04: Pre-renderizar DOM estático completo da página /sobre/
       if (sr.route === 'sobre') {
@@ -961,6 +985,7 @@ async function prerender() {
             .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${metaDescAttr(desc)}" />`)
             .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${ogImage}" />`);
 
+          html = setRobotsMeta(html, 'index, follow');
           html = html.replace(/<\/head>/i, `${structuredDataHtml}\n</head>`);
 
           const colMarkup = renderCollectionMarkup({
@@ -1040,6 +1065,7 @@ async function prerender() {
         .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${metaDescAttr(hubDesc)}" />`)
         .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
 
+      hubHtml = setRobotsMeta(hubHtml, 'index, follow');
       hubHtml = hubHtml.replace(/<\/head>/i, `${hubStructuredData}\n</head>`);
       fs.writeFileSync(path.join(sentimentosDir, 'index.html'), hubHtml, 'utf-8');
       console.log('Generated static HTML for /sentimentos/');
@@ -1160,11 +1186,12 @@ async function prerender() {
           .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${baseUrl.replace(/\/$/, '')}${defaultOgImage}" />`);
 
         if (isIndexable) {
+          sentHtml = setRobotsMeta(sentHtml, 'index, follow');
           const sentStructuredData = `\n    <script type="application/ld+json" data-seo="true">${serializeJsonLd(pageGraphSchema([sentimentSchema(s.name, s.slug, sortedPoems, introText), breadcrumbSchema(breadcrumbItems)]))}</script>`;
           sentHtml = sentHtml.replace(/<\/head>/i, `${sentStructuredData}\n</head>`);
         } else {
           // RF07 & CA02 & CT02: < 3 poemas recebe noindex, follow
-          sentHtml = sentHtml.replace(/<\/head>/i, `  <meta name="robots" content="noindex, follow" />\n</head>`);
+          sentHtml = setRobotsMeta(sentHtml, 'noindex, follow');
         }
 
         fs.writeFileSync(path.join(sentDir, 'index.html'), sentHtml, 'utf-8');
@@ -1227,6 +1254,7 @@ async function prerender() {
     const homeGraph = pageGraphSchema();
     const homeLdTag = `<script type="application/ld+json" data-seo="true">${serializeJsonLd(homeGraph)}</script>`;
     const mostReadScriptTag = `<script type="application/json" id="__MOST_READ__">${JSON.stringify(mostReadPoems).replace(/</g, '\\u003c')}</script>`;
+    homeHtml = setRobotsMeta(homeHtml, 'index, follow');
     homeHtml = removeJsonLdScripts(homeHtml).replace(/<\/head>/i, `  ${homeLdTag}\n  ${mostReadScriptTag}\n</head>`);
 
     fs.writeFileSync(templatePath, homeHtml, 'utf-8');

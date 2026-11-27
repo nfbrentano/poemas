@@ -50,6 +50,7 @@ describe('structured-data.js', () => {
       expect(schema.author.url).toBe('https://nfgbrentano.art.br/sobre/');
       expect(schema.license).toBe('https://creativecommons.org/licenses/by-nc-nd/4.0/');
       expect(schema.copyrightHolder['@id']).toBe(AUTHOR_ID);
+      expect(schema.publisher['@id']).toBe(AUTHOR_ID);
       expect(schema.copyrightYear).toBe(2026);
       expect(schema.wordCount).toBe(9);
       expect(schema.about).toEqual([

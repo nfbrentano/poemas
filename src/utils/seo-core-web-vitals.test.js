@@ -106,4 +106,24 @@ describe('SEO & Core Web Vitals Acceptance Tests', () => {
     expect(indexJsContent).not.toContain('initializeApp');
     expect(poemJsContent).not.toContain('initializeApp');
   });
+
+  it('W3C CSS Validator compliance: stylesheets avoid unprefixed line-clamp and deprecated clip / word-break: break-word', () => {
+    const cssFiles = [
+      'index.html',
+      'src/styles/variables.css',
+      'src/styles/global.css',
+      'src/styles/components.css',
+      'src/styles/social-card.css'
+    ];
+
+    for (const relFile of cssFiles) {
+      const content = fs.readFileSync(path.resolve(process.cwd(), relFile), 'utf-8')
+        .replace(/\/\*[\s\S]*?\*\//g, '');
+      // Unprefixed line-clamp triggers "Property line-clamp doesn't exist" in W3C Jigsaw CSS Validator
+      expect(content, `${relFile} não deve usar line-clamp sem prefixo -webkit-`).not.toMatch(/(?<![-\w])line-clamp\s*:/);
+      // Deprecated CSS2 clip and CSS Text word-break: break-word
+      expect(content, `${relFile} não deve usar propriedade depreciada clip:`).not.toMatch(/(?<![-\w])clip\s*:/);
+      expect(content, `${relFile} não deve usar valor depreciado word-break: break-word`).not.toMatch(/word-break\s*:\s*break-word/);
+    }
+  });
 });

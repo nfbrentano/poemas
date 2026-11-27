@@ -75,9 +75,9 @@ describe('{SEO} Páginas indexáveis por sentimento (SDD 2026-09-24)', () => {
       // Título da página
       expect(document.title).toContain('Poemas sobre Saudade');
 
-      // Sem noindex pois tem 12 poemas
+      // Sem noindex pois tem 12 poemas (define index, follow explícito)
       const robots = document.querySelector('meta[name="robots"]');
-      expect(robots).toBeNull();
+      expect(robots?.getAttribute('content')).toBe('index, follow');
     });
 
     it('CA06: Tags "Saudade" e "saudade " agrupam na mesma página /sentimento/saudade/', async () => {
